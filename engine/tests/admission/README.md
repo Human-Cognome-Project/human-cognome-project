@@ -4161,3 +4161,69 @@ comparison-formatting, full setup, combined accounting and operation/control
 integration remain separate. No GPU, live database, browser/full baseline rerun
 or performance qualification. Earlier failures/warnings remain preserved; local
 raw artifacts have not been independently inspected remotely.
+
+### Retained relation/focus input text qualification (2026-11-11)
+
+Tested source `6bd7ad81c8cbd86af7ae21a02f8b981a83bdd660`, stacked on #275 head
+`6bbae550f6e63a53f832a34449cf14008192e966`. Review 5859805974 found no blockers
+and authorized remaining input text. This slice groups contacts, memberships and
+focal fields at their common preparation lookup boundary; identity/selection text
+remains next. Parent smoke 43032906551 passed; native 43032906525 was pending at
+review inspection. Integrated acceptance remains through #267.
+
+Contact.a/b, Membership.occurrence/group and FocalField.value use InputText.
+Explicit projection copies construct these strings with destination allocators
+before character allocation. Ordinary snapshots detach and moves retain domains.
+Projection/membership binding, local workbench context, native lookup boundaries,
+fixture builders and viewport focus callers use explicit conversions. Output
+encoding and numerical policy are unchanged. Temporary lookup conversions remain
+unselected setup work, not claimed as retained input storage coverage.
+
+The text visitor includes every added field in both variants. Supplementary copy
+fixtures add empty, short and 139-character values in each field, alongside real
+recipe keys; these qualify copying rather than native input validity. Independent
+pointer/request/terminator/domain checks, inline/heap distinction, exact selected
+bytes, complete v1/v2 equality, refusal/reclamation/exact retry, detached source-death
+snapshots, moved lifetime and whole-owner all-site failures cover this backing.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2748 / 3244 | 3668 / 5843 |
+| Selected live / peak requested bytes | 319677 / 319677 | 387667 / 387667 |
+| Selected cumulative allocation work | 419206 | 785307 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320881 / 321554 | 391307 / 393829 |
+| Retained capacity census | 320769 | 391003 |
+
+All four CPU configurations agree. Compared with #275, selected live/peak/work
+increases 136 bytes in each owner fixture: 104 existing focus-text backing and
+32 allocator state. Whole-owner retained/peak requests and census increase 32
+bytes each; sites are unchanged. Contact/membership attachment is additionally
+exercised by the populated v1/v2 copy fixtures, not inferred from these owner totals.
+Contact/Membership/FocalField layouts are 96/96/56 bytes; input containers and
+LetterProjection remain 288/280/1304, with UUID-related layouts unchanged.
+
+Native and standalone warm builds passed on the first attempt. All 45 CPU checks
+passed: 20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared
+checks, nine supporting assembly/preparation/native-handoff/viewport checks and
+four warm CTests. No build or test warnings/errors. Clang 15/libstdc++, CPU/x64,
+Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-relation-text-domain-6bd7ad81` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and layout probe.
+Verified local archive: `setup-evidence/input-relation-text-domain-6bd7ad81.tar.gz`.
+SHA256SUMS manifest digest:
+
+    37502fc07f801f54264185ec3e1714a8e195f2b417637ffd4b08a8a3fb8a6f5c
+
+Hosted checks remain authoritative; earlier failures/warnings remain preserved.
+
+Selected reports overlap the capacity census and must not be summed. Requested
+storage is not physical memory or performance. Next: definition/occurrence IDs
+and references and selection aggregate/parts text, auditing public identity and
+serialization consumers. Other identities/comparison-formatting, full setup,
+combined accounting and operation/control integration remain separate. No GPU,
+live DB, browser/full baseline rerun or performance qualification. Historical
+failures/warnings remain preserved; raw local artifacts have not been independently
+inspected remotely.

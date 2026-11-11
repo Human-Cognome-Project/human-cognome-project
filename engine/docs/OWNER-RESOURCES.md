@@ -1614,3 +1614,30 @@ affected consumers must rebuild. Selected accounting overlaps the census.
 Next: remaining input text and its lookup/serialization boundaries. Other owner
 identities/comparison formatting, full setup, combined accounting and operations
 remain separate. This slice does not complete input-text or owner resource coverage.
+
+### Retained relation/focus input text domain (contribution awaiting review)
+
+Contact.a/b, Membership.occurrence/group and FocalField.value use InputText.
+Explicit projection row construction selects the destination allocator before
+character copying. Ordinary copies detach; moves retain domain lifetime. Other
+input identities and selection text remain excluded. The shared input-text census
+uses inline-aware backing, including heap terminators without double-counting
+inline characters in row headers.
+
+Projection and membership binding, active-workbench context, native preparation,
+fixture builders and viewport focus callers explicitly adapt allocator boundaries.
+Native lookup/output containers remain ordinary strings. These temporary boundary
+conversions are not claimed as selected retained input backing or full setup work.
+Encoding and numerical policy are unchanged; affected row layouts require rebuilds.
+
+The text visitor covers both fields of contacts/memberships and focal values in
+both input variants. Supplemented copy fixtures include empty, short and long
+values in every added field; these are copying probes, not valid native models.
+Independent pointer/request/terminator/domain checks, exact selected accounting,
+complete v1/v2 equality, refusal/reclamation/exact retry, detached source-death
+snapshots, moved lifetime and whole-owner failure controls cover the new backing.
+
+Next: definition/occurrence identities and selection text across their shared
+lookup/serialization consumers. Other owner identities/comparison formatting, full
+setup, combined accounting and operation/control integration remain separate.
+Selected reports overlap the census and are not physical-memory/performance bounds.

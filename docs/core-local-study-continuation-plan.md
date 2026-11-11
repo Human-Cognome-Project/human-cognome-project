@@ -229,15 +229,27 @@ separate before operation/control integration.
 `ce3642ee463beb76948a2497c9aeb50172c3267d` for bounded continuation with no blockers.
 Smoke 43030712985 passed; native 43030713058 remains pending at inspection.
 Integrated acceptance remains through #267.
-**Active contribution (awaiting review):** retained input parent-value text.
+**Provisionally accepted (#275):** retained input parent-value text.
 The shared-consumer audit splits the text workstream into reviewable slices:
 parent values first, preserving prepared public string outputs through explicit
 conversions. Other input identifiers cross additional lookup/serialization paths.
-**Next concrete slice:** remaining retained input text (definition and occurrence
+**Authorized remaining text workstream:** remaining retained input text (definition and occurrence
 IDs/references, selection aggregates/parts, contacts, membership and focal fields).
 Audit the shared lookup and serialization consumers before adopting allocator-aware
 strings; preserve exact values, detached snapshots and native handoff. Other
 identities/comparison formatting, full setup and combined accounting remain separate.
+
+**Dependency review (2026-11-11):** #275 review 5859805974 accepts head
+`6bbae550f6e63a53f832a34449cf14008192e966` for bounded continuation with no blockers.
+Smoke 43032906551 passed; native 43032906525 remains pending at review inspection.
+Integrated acceptance remains through #267.
+**Active contribution (awaiting review):** retained contact, membership and focal
+field text, grouped by their shared preparation lookup boundary. Preserve public
+lookup/output strings through explicit conversions and audit viewport callers.
+**Next concrete slice:** definition/occurrence IDs and references plus selection
+aggregate/parts text. Audit public identity and serialization paths before adopting
+allocator-aware strings. Other identities/comparison formatting, full setup,
+combined accounting and operation integration remain separately inventoried.
 
 ## A. Coherent source/hierarchy refresh
 
