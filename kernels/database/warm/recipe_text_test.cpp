@@ -24,7 +24,7 @@ int main() {
     warm::Tool tool;
     tool.ref.object.address=*codec::decode_token_id("00.00");
     tool.recipe=short_text;
-    const std::string prefix=warm::key(tool.ref.object)+" "+tool.epoch.str()+" ";
+    const std::string prefix=warm::key(tool.ref.object)+" "+std::string(tool.epoch.str())+" ";
     for (int state=0; state<3; ++state) {
       if (!state) tool.notation.reset();
       else tool.notation=state==1 ? RecipeText{} : moved;

@@ -24,3 +24,8 @@ add_executable(recipe_text_test recipe_text_test.cpp)
 target_link_libraries(recipe_text_test PRIVATE warm_values)
 target_compile_options(recipe_text_test PRIVATE -Wall -Wextra -Wpedantic)
 add_test(NAME recipe_text_test COMMAND recipe_text_test)
+
+add_executable(uuid_allocation_test uuid_allocation_test.cpp)
+target_link_libraries(uuid_allocation_test PRIVATE warm_values PostgreSQL::PostgreSQL)
+target_compile_options(uuid_allocation_test PRIVATE -Wall -Wextra -Wpedantic)
+add_test(NAME uuid_allocation_test COMMAND uuid_allocation_test)

@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
         throw;
       auto count = sql.query(
           "SELECT count(*) FROM warm_toolbox.bundle_lease WHERE consumer=$1",
-          {consumer.str()});
+          {std::string(consumer.str())});
       if (warm::detail::cell(count, 0, 0) != "0")
         throw warm::Error("rejected read acquired a pin");
     }

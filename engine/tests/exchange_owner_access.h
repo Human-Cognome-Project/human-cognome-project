@@ -15,7 +15,21 @@ struct ExchangeOwnerAccess {
     for (const auto &geometry : p.recipe_.geometry) visit(geometry.spheres);
     for (const auto &selection : p.recipe_.selections) visit(selection.parts);
   }
+  template<class Visit> static void recipe_uuids(const warm::Bundle &b, Visit visit) {
+    visit(b.ref.selection); visit(b.ref.revision); visit(b.owner); visit(b.creator);
+    const auto reference=[&](const auto &r) { visit(r.object.scope); visit(r.revision); };
+    for (const auto &t : b.tools) {
+      reference(t.ref); visit(t.epoch); visit(t.author);
+      for (const auto &p : t.parents) reference(p.target);
+      for (const auto &m : t.member_of) reference(m);
+    }
+    for (const auto &g : b.geometry) visit(g.object.scope);
+    for (const auto &o : b.occurrences) visit(o.definition.scope);
+    for (const auto &o : b.structural_occurrences) visit(o.definition.scope);
+    for (const auto &f : b.focal_fields) visit(f.object.scope);
+  }
   template<class Visit> static void projection_texts(const LetterProjection &p, Visit visit) {
+    recipe_uuids(p.recipe_,[&](const auto &uuid) { visit(uuid.str()); });
     for (const auto &tool : p.recipe_.tools) {
       visit(tool.recipe);
       if (tool.notation) visit(*tool.notation);

@@ -370,7 +370,7 @@ int main() {
     sql.command(
         "ALTER TABLE warm_toolbox.bundle_contact ADD CONSTRAINT "
         "injected_late_failure CHECK(selection <> '" +
-        failed.ref.selection.str() + "'::uuid)");
+        std::string(failed.ref.selection.str()) + "'::uuid)");
     const auto counts = [&] {
       auto r = sql.query(
           "SELECT (SELECT count(*) FROM warm_toolbox.tool_revision),(SELECT "
@@ -777,7 +777,7 @@ int main() {
     fresh_reader.release(private_ref, private_consumer);
     auto retained = sql.query(
         "SELECT count(*) FROM warm_toolbox.bundle_revision WHERE selection=$1",
-        {base.ref.selection.str()});
+        {std::string(base.ref.selection.str())});
     check(detail::cell(retained, 0, 0) == "3",
           "superseded revisions retained after consumer release");
     std::cout << checks << " Stage A PostgreSQL acceptance checks passed; "

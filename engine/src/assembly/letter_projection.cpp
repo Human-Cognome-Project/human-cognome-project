@@ -236,7 +236,7 @@ bool operator==(const OccurrenceKey &a, const OccurrenceKey &b) {
 std::string occurrence_text(const OccurrenceKey &k) {
   need(!k.study.nil() && (k.source.path.empty() || k.source.path.size() == 2),
        "invalid occurrence key");
-  auto text = k.study.str() + "/" + std::to_string(k.source.entry);
+  auto text = std::string(k.study.str()) + "/" + std::to_string(k.source.entry);
   for (auto ordinal : k.source.path) text += "/" + std::to_string(ordinal);
   return text;
 }
@@ -359,13 +359,14 @@ OccurrenceKey projection_key(const OccurrenceKey &key,
   return {key.study,projection_id(key.source,domain)};
 }
 warm::ObjectKey projection_object(const warm::ObjectKey &key,
-    const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {key.scope,{key.address.begin(),key.address.end(),
+    const std::shared_ptr<detail::ReservationDomain> &domain, bool recipe_uuid=false) {
+  return {recipe_uuid ? warm::Uuid(key.scope,domain) : key.scope,{key.address.begin(),key.address.end(),
       detail::SharedReservationAllocator<codec::AddressElement>(domain)}};
 }
 warm::ToolRef projection_reference(const warm::ToolRef &ref,
-    const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {projection_object(ref.object,domain),ref.revision};
+    const std::shared_ptr<detail::ReservationDomain> &domain, bool recipe_uuid=false) {
+  return {projection_object(ref.object,domain,recipe_uuid),
+      recipe_uuid ? warm::Uuid(ref.revision,domain) : ref.revision};
 }
 template<class T, class Copy> warm::RecipeTable<T> recipe_tables(
     const warm::RecipeTable<T> &rows,
@@ -388,19 +389,20 @@ warm::Bundle projection_recipe(const warm::Bundle &b,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   // Build addressed rows directly; a detached whole-recipe copy would allocate
   // their backing before admission. Other recipe storage remains outside it.
-  return {b.ref,b.owner,b.creator,b.recipe_version,
+  return {{warm::Uuid(b.ref.selection,domain),warm::Uuid(b.ref.revision,domain)},
+      warm::Uuid(b.owner,domain),warm::Uuid(b.creator,domain),b.recipe_version,
       recipe_tables(b.tools,domain,[&](const auto &t) -> warm::Tool {
-        return {projection_reference(t.ref,domain),t.epoch,projection_text(t.recipe,domain),projection_text(t.notation,domain),t.mass,
+        return {projection_reference(t.ref,domain,true),warm::Uuid(t.epoch,domain),projection_text(t.recipe,domain),projection_text(t.notation,domain),t.mass,
             recipe_tables(t.parents,domain,[&](const auto &p) -> warm::Parent {
-              return {projection_reference(p.target,domain),p.ordinal,p.stored_mass,p.contribution};
+              return {projection_reference(p.target,domain,true),p.ordinal,p.stored_mass,p.contribution};
             }),
-            recipe_tables(t.member_of,domain,[&](const auto &ref) { return projection_reference(ref,domain); }),t.author};
+            recipe_tables(t.member_of,domain,[&](const auto &ref) { return projection_reference(ref,domain,true); }),warm::Uuid(t.author,domain)};
       }),
       recipe_tables(b.geometry,domain,[&](const auto &g) -> warm::Geometry {
-        return {projection_object(g.object,domain),g.centroid,recipe_tables(g.spheres,domain,[](const auto &sphere) { return sphere; })};
+        return {projection_object(g.object,domain,true),g.centroid,recipe_tables(g.spheres,domain,[](const auto &sphere) { return sphere; })};
       }),recipe_tables(b.nodes,domain,[](const auto &n) { return n; }),
       recipe_tables(b.occurrences,domain,[&](const auto &o) -> warm::Occurrence {
-        return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node,o.position,o.velocity};
+        return {projection_id(o.id,domain),projection_object(o.definition,domain,true),o.node,o.position,o.velocity};
       }),
       recipe_tables(b.selections,domain,[&](const auto &s) -> warm::Selection {
         return {s.entry,s.exposure,recipe_tables(s.parts,domain,[&](const auto &id) { return projection_id(id,domain); })};
@@ -409,10 +411,10 @@ warm::Bundle projection_recipe(const warm::Bundle &b,
         return {projection_id(c.a,domain),projection_id(c.b,domain)};
       }),
       recipe_tables(b.structural_occurrences,domain,[&](const auto &o) -> warm::StructuralOccurrence {
-        return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node};
+        return {projection_id(o.id,domain),projection_object(o.definition,domain,true),o.node};
       }),
       recipe_tables(b.focal_fields,domain,[&](const auto &f) -> warm::FocalField {
-        return {f.kind,projection_object(f.object,domain)};
+        return {f.kind,projection_object(f.object,domain,true)};
       })};
 }
 ProjectedOccurrence projection_row(const ProjectedOccurrence &o,

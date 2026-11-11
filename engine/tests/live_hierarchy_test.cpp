@@ -2522,7 +2522,7 @@ void capture_current(engine::Runtime &r,
       "Current installed C3 English A / Dutch accented i byte fixture";
   for (std::size_t i = 0; i < mapping.prepared.particles.size(); ++i) {
     const auto &o = mapping.prepared.particles[i].occurrence;
-    const auto aggregate = i == 0 ? o.id : mapping.handle.study.str() + "/1";
+    const auto aggregate = i == 0 ? o.id : std::string(mapping.handle.study.str()) + "/1";
     context.occurrences.emplace(
         o.id,
         viewport::DisplayContext{
@@ -2543,7 +2543,7 @@ void capture_current(engine::Runtime &r,
   namespace fs = std::filesystem;
   const fs::path directory =
       output.empty() ? fs::temp_directory_path() /
-                           ("hcp-current-capture-" + warm::new_uuid().str())
+                           ("hcp-current-capture-" + std::string(warm::new_uuid().str()))
                      : fs::path(output);
   fs::create_directories(directory);
   struct Cleanup {

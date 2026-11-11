@@ -280,14 +280,14 @@ int main(int argc, char **argv) {
     sql.command("ALTER TABLE warm_toolbox.bundle_contact_v2 ADD CONSTRAINT "
                 "injected_failure "
                 "CHECK(selection <> '" +
-                invalid.ref.selection.str() + "'::uuid)");
+                std::string(invalid.ref.selection.str()) + "'::uuid)");
     rejects([&] { store.publish(store.prepare(invalid), {}); },
             "late v2 contact failure rolls back");
     check(counts() == before_failure, "late v2 failure rolls back new "
                                       "definitions, heads and structural rows");
     auto absent = sql.query(
         "SELECT count(*) FROM warm_toolbox.bundle_revision WHERE selection=$1",
-        {invalid.ref.selection.str()});
+        {std::string(invalid.ref.selection.str())});
     check(detail::cell(absent, 0, 0) == "0",
           "failed v2 publication exposes no header or partial head");
     auto next = v2;

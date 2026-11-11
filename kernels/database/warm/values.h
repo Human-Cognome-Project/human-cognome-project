@@ -30,11 +30,14 @@ struct UnboundRoot : Error {
   using Error::Error;
 };
 
+using UuidText = std::basic_string<char,std::char_traits<char>,
+    hcp::resources::SharedReservationAllocator<char>>;
 class Uuid {
  public:
   Uuid();  // Shared scope / nil.
-  explicit Uuid(std::string value);
-  const std::string &str() const { return value_; }
+  explicit Uuid(std::string_view value);
+  Uuid(const Uuid &other, const std::shared_ptr<hcp::resources::ReservationDomain> &domain);
+  const UuidText &str() const { return value_; }
   bool nil() const;
   friend bool operator==(const Uuid &a, const Uuid &b) {
     return a.value_ == b.value_;
@@ -45,7 +48,7 @@ class Uuid {
   }
 
  private:
-  std::string value_;
+  UuidText value_;
 };
 Uuid new_uuid();
 
