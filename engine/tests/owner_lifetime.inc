@@ -1503,7 +1503,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     require(aliased > catalogue_only && catalogue_only > 0,
             "shared owner data did not survive until final alias release");
   } catch (...) { if (A::active) A::end(); throw; }
-  require(retained.attempts && retained.live && retained.peak > retained.live &&
+  require(retained.attempts && retained.live && retained.peak >= retained.live && retained.released &&
               !complete.live && !complete.blocks && complete.acquired == complete.released,
           "owner adoption/teardown failed peak or full reclamation witness");
   std::size_t failure_peak = 0;

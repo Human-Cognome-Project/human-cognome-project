@@ -103,7 +103,7 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection, std:
        meter.equal(contract_->recipe().selection,projection.recipe().ref.selection) &&
        meter.equal(contract_->recipe().revision,projection.recipe().ref.revision),
        "exchange contract belongs to another projection");
-  need(occurrences_.size() == s.live.particles &&fields_.size() <= s.live.fields,
+  need(occurrences_.size() == s.live.particles && fields_.size() <= s.live.fields,
        "exchange binding inventory differs from committed execution");
   need(occurrences_.size() <= masses_.capacity() && s.live.edges <= edges_.capacity() &&
        s.live.edges <= edge_rows_.capacity() && s.particle_headers.size() <= outgoing_rows_.capacity(),
