@@ -1,6 +1,6 @@
 # Core continuation after local CUDA corrections
 
-**Maintainer reconciliation — 2026-11-11:** #278 is accepted and merged at `3cadbff286b0c4553808595f624f8a98add36682`, reviewed head `07f2d66763631afe8d62438351bfd7ece1f149c8`. Native 43087248989, smoke 43087248327 and viewport 43087248550 passed. Inspected native and viewport installation logs confirm the mirror-list rewrite and archive.ubuntu.com traffic. The earlier pending labels are historical. #279 identity/reference input text is source-reviewed and provisionally accepted at `11a4813759c1e384fa6b077499c9f06998c66f58` (review 5864859891); smoke/viewport are green and native matrix qualification is pending. #275–#277 and #279 remain unmerged. Bring current main into the stack with a history-preserving merge and qualify the combined head before integration. Next bounded work: remaining identity/comparison-formatting and membership traversal/callable audit, then complete setup, combined accounting and operation/control integration.
+**Maintainer reconciliation — 2026-11-11:** #278 is accepted and merged at `3cadbff286b0c4553808595f624f8a98add36682`, reviewed head `07f2d66763631afe8d62438351bfd7ece1f149c8`. Native 43087248989, smoke 43087248327 and viewport 43087248550 passed. Inspected native and viewport installation logs confirm the mirror-list rewrite and archive.ubuntu.com traffic. The earlier pending labels are historical. #279 identity/reference input text is source-reviewed and provisionally accepted at `11a4813759c1e384fa6b077499c9f06998c66f58` (review 5864859891); smoke/viewport are green and native matrix qualification is pending. #275–#277 and #279 remain unmerged. Current main at 6067c641 is brought into this stack by a normal merge; the combined head a75e3408 passed 45 scoped local CPU checks plus mirror/CI contract checks. Updated-head hosted qualification and maintainer integration remain pending. Next bounded work: remaining identity/comparison-formatting and membership traversal/callable audit, then complete setup, combined accounting and operation/control integration.
 
 
 Status: maintainer implementation sequencing, updated 2026-11-10. This organizes the
@@ -10,7 +10,7 @@ distinguishes completed CPU slices from remaining work. Owners: #172/#177 (hiera
 
 **Queue reconciliation — 2026-11-11:** Reviewed #268–#274 are integrated into main at `b05db31c2e591f8fbcd5c14dc7ddff14ef46b2e9`, reviewed tip `ce3642ee463beb76948a2497c9aeb50172c3267d`. Every head in that stack has successful native and smoke workflows; #272 warm also passed. #274 native 43030713058 passed all 12 jobs; inspected regression logs total 115 tests and database reports addressed_reads=24/private_reads=0. Earlier provisional/pending labels below are historical and superseded by this acceptance.
 
-**Current review queue:** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The next coding slice is definition/occurrence identities and references, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
+**Earlier review queue (preserved history):** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The active contribution attaches definition/occurrence identities and references to owner reservations, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
 
 ## Reviewed baseline and limits
 
@@ -215,7 +215,7 @@ other setup payload remain separate before combined resources and operations.
 `5ea60585234fbdea12a6f4441103d82884eb9417` for bounded continuation with no blockers.
 Smoke 43026470580 and warm 43026470847 passed; native 43026470568 remains running
 at inspection. Integrated acceptance remains through #267.
-**Active contribution (awaiting review):** nested retained input arrays:
+**Provisionally accepted (#274):** nested retained input arrays:
 Definition components/parents and Selection parts. Preserve complete values,
 detached public snapshots, domain lifetime and native handoff; attach storage
 before explicit owner copies. Input text, other identities/comparison formatting,
@@ -225,12 +225,120 @@ full setup and combined resources remain separate before operation integration.
 `8c142c3056736ba6a1a683b14ced8c79163a08ab` for bounded continuation with no blockers.
 Smoke 43028610415 passed; native 43028610546 remains running at inspection.
 Integrated acceptance remains through #267.
-**Next concrete slice after nested-input review:** retained input text in definition
+**Authorized text workstream after nested-input review:** retained input text in definition
 IDs/parent values, occurrence IDs/definitions, selection aggregates/parts, contacts,
 memberships and focal fields. Audit shared consumers; attach before copying, cover
 inline/heap strings and terminators, preserve complete values and detached snapshots.
 Other identities/comparison formatting, full setup and combined accounting remain
 separate before operation/control integration.
+
+**Dependency review (2026-11-11):** #274 review 5859635152 accepts head
+`ce3642ee463beb76948a2497c9aeb50172c3267d` for bounded continuation with no blockers.
+Smoke 43030712985 passed; native 43030713058 remains pending at inspection.
+Integrated acceptance remains through #267.
+**Provisionally accepted (#275):** retained input parent-value text.
+The shared-consumer audit splits the text workstream into reviewable slices:
+parent values first, preserving prepared public string outputs through explicit
+conversions. Other input identifiers cross additional lookup/serialization paths.
+**Authorized remaining text workstream:** remaining retained input text (definition and occurrence
+IDs/references, selection aggregates/parts, contacts, membership and focal fields).
+Audit the shared lookup and serialization consumers before adopting allocator-aware
+strings; preserve exact values, detached snapshots and native handoff. Other
+identities/comparison formatting, full setup and combined accounting remain separate.
+
+**Dependency review (2026-11-11):** #275 review 5859805974 accepts head
+`6bbae550f6e63a53f832a34449cf14008192e966` for bounded continuation with no blockers.
+Smoke 43032906551 passed; native 43032906525 remains pending at review inspection.
+Integrated acceptance remains through #267.
+**Provisionally accepted (#276):** retained contact, membership and focal
+field text, grouped by their shared preparation lookup boundary. Preserve public
+lookup/output strings through explicit conversions and audit viewport callers.
+**Authorized remaining work:** definition/occurrence IDs and references plus selection
+aggregate/parts text. Audit public identity and serialization paths before adopting
+allocator-aware strings. Other identities/comparison formatting, full setup,
+combined accounting and operation integration remain separately inventoried.
+
+**Dependency review (2026-11-11):** #276 review 5861623800 accepts head
+`755595b21b3193c5a236c2c3c5c5fb5a30be1cf7` provisionally with no source blockers.
+Smoke and native projection-values passed. Native 43034799670 failed before
+product compilation on apt DNS resolution; viewport 43034798156 had the same
+failure during Playwright dependencies and was cancelled before browser tests.
+Maintainer requested retries successfully; preserve these failed/cancelled attempts.
+Integrated acceptance remains through #267.
+**Provisionally accepted (#277):** selection aggregate/parts input text,
+plus requested membership.group.empty() cleanup avoiding an unnecessary copy.
+**Active contribution (awaiting review):** definition/occurrence identity and reference text, with explicit preparation/public-output/viewport conversions. All 45 scoped local CPU checks passed; one post-PASS cache warning and both corrected initial failures remain in the admission evidence. This completes retained input text attachment, not all owner resources. Next: audit remaining owner identities/comparison formatting and setup work, then combined accounting and operation/control integration.
+
+
+**CI dependency (2026-11-11):** #278 review 5864410183 accepts the source
+correction at `07f2d66763631afe8d62438351bfd7ece1f149c8`; the maintainer inspected
+native and viewport logs using archive.ubuntu.com after the mirror-list rewrite.
+The full required hosted run and integration remain pending at inspection. After
+integration, carry the repair into the #275–#277 stack and qualify the updated
+code before merging. The identity contribution is based on #277 and does not
+silently include the independent repair. Preserve earlier failed/cancelled runs.
+
+
+**Combined-head audit (2026-11-11):** main `6067c641` is merged normally into
+#279 at `a75e34084bed5fcfc24280b54111081d6440d58d`. The remaining-cost audit in
+[OWNER-RESOURCES](../engine/docs/OWNER-RESOURCES.md#remaining-identitycomparison-and-setup-cost-audit-2026-11-11)
+identifies comparison rendering, nil/temporary identity copies, by-value setup
+arguments, graph recursion/callable costs and unmetered declaration/binding work.
+Next concrete implementation: allocation-free ObjectKey ordering preserving
+encoded ordering and invalid-address rejection, with an independent rendering
+oracle and no-allocation controls. This audit does not change production behavior
+or establish complete constructor/combined accounting.
+
+
+**Ordering contribution (awaiting review):** #279 updated-head review 5865153858
+accepts combined head `5f1ca0c3a6fdf3d4316ff861c521e92e15907dc1` provisionally
+and authorizes allocation-free ObjectKey ordering. #279 is retargeted to main as
+the integration PR; #275–#277 remain pending reconciliation after integration.
+All 46 scoped local CPU checks passed, with one preserved post-PASS cache warning.
+The ordering contribution preserves the rendered-key oracle and both-address
+validation, with zero-allocation and malformed-input controls. Nil/containment,
+temporary copies and traversal/setup accounting remain separate subsequent work.
+
+
+**Validation contribution (awaiting review):** #280 review 5865274115 accepts
+head `5e37be82a547dd4e88371cb927bea3effa3bb6e4` provisionally and authorizes
+nonallocating nil/containment validation. The contribution removes their temporary
+UUID/key rendering, preserving malformed-address rejection and containment
+semantics with independent allocation and rendered-prefix controls. Both builds,
+47 scoped CPU checks and two prior-source negative controls passed without warnings. Subsequent
+scope remains detached identity/argument copies, membership callable/recursion
+and declaration/binding setup work before combined accounting and operations.
+#279 remains the main-targeted text-stack integration PR; queued hosted jobs do
+not qualify integration and dependent PRs stay open until disposition.
+
+
+**Adoption-copy contribution (awaiting review):** #281 review 5865407113 accepts
+head `15db4b816456fb9ff299801daac42e1624b50ead` provisionally and authorizes
+detached temporary identity/argument-copy work. Owner/binding constructors now
+borrow row/field inputs during construction, retaining independent selected maps;
+the temporary aggregate declaration UUID is explicitly reserved. Caller
+preservation/source-death and existing refusal/retry/lifetime controls cover the
+boundary. Remaining temporary identities and callable/recursive traversal plus
+declaration/binding setup budgets follow before combined resources and operations.
+
+**Projection temporary-identity contribution (awaiting review):** #282 review
+5865626048 provisionally accepts `29b82129` with no blocking findings. Private
+byte-expansion rows now borrow pinned character/byte references while source tools
+remain stable; published outputs retain independent ownership. The direct probe
+rejects prior-source UUID copies. Remaining initial projection indexes/provenance
+and rendering temporaries need audit before claiming this boundary complete;
+membership callable/recursion and declaration/binding setup budgets remain next.
+No stack merge is inferred from provisional review or local evidence.
+
+**Remediation and rendering continuation (2026-11-11):** #283 review 5866277807
+reports no source blocker and green exact-head native/smoke; #280–#282 are also
+green. #279's old runs were stuck queued; cancel/force-cancel returned 409 and
+rerun 403. Close/reopen preserved its reviewed head and triggered native
+43115507493, viewport 43115507480 and smoke 43115507510. Old attempts remain
+preserved. Integration still requires new qualification and maintainer disposition.
+The next bounded change removes temporary OccurrenceKey construction from initial
+projection rendering, sharing unchanged validation with the public formatter.
+Remaining indexes/provenance/equivalence and traversal/setup budgets remain open.
 
 ## A. Coherent source/hierarchy refresh
 

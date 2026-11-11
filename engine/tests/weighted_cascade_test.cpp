@@ -1097,8 +1097,8 @@ void assembly_objects(engine::Runtime &r, HostPath path) {
                        {"c", "c", 2, 0, {-1, 0, 0}, {}},
                        {"b-copy", "b", 3, 3, {1, 0, 0}, {}}};
   for (const auto &occ : input.occurrences) {
-    input.memberships.push_back({occ.id, "Root"});
-    input.memberships.push_back({occ.id, "Study"});
+    input.memberships.push_back({assembly::InputText(occ.id), "Root"});
+    input.memberships.push_back({assembly::InputText(occ.id), "Study"});
   }
   const auto prepared = prepare(input);
   require(prepared.particles[3].position.x == 64 &&

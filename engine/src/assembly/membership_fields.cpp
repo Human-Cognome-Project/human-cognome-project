@@ -113,7 +113,7 @@ StudyInput MembershipFields::bind(const LetterProjection &projection,
   auto input = projection.bind(nodes);
   for (const auto &edge : contributions_)
     input.memberships.push_back(
-        {occurrence_text(edge.occurrence), warm::key(edge.field.object)});
+        {InputText(occurrence_text(edge.occurrence)), InputText(warm::key(edge.field.object))});
   return input;
 }
 StructuralStudyInput MembershipFields::bind_structure(
@@ -125,7 +125,7 @@ StructuralStudyInput MembershipFields::bind_structure(
   auto input = projection.bind_structure(nodes);
   for (const auto &edge : contributions_)
     input.memberships.push_back(
-        {occurrence_text(edge.occurrence), warm::key(edge.field.object)});
+        {InputText(occurrence_text(edge.occurrence)), InputText(warm::key(edge.field.object))});
   return input;
 }
 }  // namespace assembly

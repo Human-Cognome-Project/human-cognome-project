@@ -145,14 +145,14 @@ assembly::PreparedStudy study(int n, taichi::lang::SNode &root) {
        {{"wide-A", 7, wide_mass - 1}, {"wide-B", 9, 1}}}};
   for (int i = 0; i < n; ++i) {
     const auto name = std::to_string(i);
-    s.occurrences.push_back({name,
+    s.occurrences.push_back({InputText(name),
                              i + 1 == n ? "wide" : "thirds",
                              i,
                              0,
                              {double(i * 2), 0, 0},
                              {.125, 0, 0}});
     if (i + 1 < n)
-      s.memberships.push_back({name, "language"});
+      s.memberships.push_back({assembly::InputText(name), "language"});
   }
   return prepare(s);
 }

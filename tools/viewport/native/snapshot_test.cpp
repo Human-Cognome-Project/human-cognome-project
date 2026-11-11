@@ -34,7 +34,7 @@ int main() {
     a.aggregate = {{offset / 64, 0, 0}, {1.0 / 64, 0, 0}};
     b.bytes[0].initial = {{offset + 8, 0, 0}, {3, 0, 0}};
     auto logical = ActiveAssembly::assemble(normalize_letters(f.base, {a, b}), warm::new_uuid(), false)
-      .focus({{GroupKind::Membership, warm::key(f.en)}});
+      .focus({{GroupKind::Membership, assembly::InputText(warm::key(f.en))}});
     engine::InstanceSettings settings;
     settings.read_environment = false;
     settings.cpu_threads = 1;

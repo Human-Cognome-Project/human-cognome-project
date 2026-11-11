@@ -2522,7 +2522,7 @@ void capture_current(engine::Runtime &r,
       "Current installed C3 English A / Dutch accented i byte fixture";
   for (std::size_t i = 0; i < mapping.prepared.particles.size(); ++i) {
     const auto &o = mapping.prepared.particles[i].occurrence;
-    const auto aggregate = i == 0 ? o.id : std::string(mapping.handle.study.str()) + "/1";
+    const auto aggregate = i == 0 ? std::string(o.id) : std::string(mapping.handle.study.str()) + "/1";
     context.occurrences.emplace(
         o.id,
         viewport::DisplayContext{

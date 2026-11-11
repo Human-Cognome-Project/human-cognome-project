@@ -586,8 +586,9 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
                 "projection address backing differs from independent request");
         outer += address.capacity()*sizeof(codec::AddressElement);
       });
-      require(outer && domain->result().live_bytes == outer && A::counts.live > outer,
-              "projection domain omitted table/path backing or charged excluded payload");
+      // Every retained projection allocation is now selected, including input identities.
+      require(outer && domain->result().live_bytes == outer && A::counts.live == outer,
+              "projection domain differs from independently observed complete retained backing");
       Access::projection_domains(copy,[&](const auto *d) {
         require(d == domain.get(), "explicit projection copy detached a table allocator");
       });
@@ -1300,6 +1301,37 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
   using Access = assembly::testing::ExchangeOwnerAccess;
   namespace A = allocation_lifetime;
   owner_input_admission(f,projection,rows,fields);
+  // Constructors borrow caller tables only until their domain-owned maps exist.
+  const auto same_handle=[](const auto &a,const auto &b) {
+    return a.context==b.context && a.address==b.address && a.record==b.record &&
+        a.incarnation==b.incarnation;
+  };
+  const auto same_rows=[&](const auto &a,const auto &b) {
+    return a.size()==b.size() && std::equal(a.begin(),a.end(),b.begin(),[&](const auto &x,const auto &y) {
+      return x.occurrence==y.occurrence && same_handle(x.handle,y.handle);
+    });
+  };
+  const auto same_fields=[&](const auto &a,const auto &b) {
+    return a.size()==b.size() && std::equal(a.begin(),a.end(),b.begin(),[&](const auto &x,const auto &y) {
+      return x.field.kind==y.field.kind && x.field.object==y.field.object && same_handle(x.handle,y.handle);
+    });
+  };
+  {
+    auto independent=[&] {
+      auto caller_rows=rows;
+      auto caller_fields=fields;
+      const auto *row_backing=caller_rows.data();
+      const auto *field_backing=caller_fields.data();
+      auto owner=Access::adopt(f.h,projection,caller_rows,caller_fields);
+      require(caller_rows.data()==row_backing && caller_fields.data()==field_backing &&
+                  same_rows(caller_rows,rows) && same_fields(caller_fields,fields),
+              "adoption consumed or changed caller arguments");
+      return owner;
+    }();
+    require(same_rows(Access::mappings(*independent),rows) &&
+                same_fields(Access::fields(*independent),fields),
+            "owner mappings depended on destroyed caller arguments");
+  }
   owner_reservation_admission(f,projection,rows,fields);
   owner_projection_setup(f,projection,rows,fields);
   allocation_lifetime_controls();
@@ -1471,7 +1503,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     require(aliased > catalogue_only && catalogue_only > 0,
             "shared owner data did not survive until final alias release");
   } catch (...) { if (A::active) A::end(); throw; }
-  require(retained.attempts && retained.live && retained.peak > retained.live &&
+  require(retained.attempts && retained.live && retained.peak >= retained.live && retained.released &&
               !complete.live && !complete.blocks && complete.acquired == complete.released,
           "owner adoption/teardown failed peak or full reclamation witness");
   std::size_t failure_peak = 0;

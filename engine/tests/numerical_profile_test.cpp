@@ -830,8 +830,8 @@ void assembly_sources(engine::Runtime &r, HostPath path) {
   for (int i = 0; i < 3; ++i) {
     const auto name = std::to_string(i);
     input.occurrences.push_back(
-        {name, "letter", i, 0, {double(i * 4) - 4, 0, 0}, {}});
-    input.memberships.push_back({name, "language"});
+        {InputText(name), "letter", i, 0, {double(i * 4) - 4, 0, 0}, {}});
+    input.memberships.push_back({assembly::InputText(name), "language"});
   }
   const auto prepared = prepare(input);
   FixtureSource src;

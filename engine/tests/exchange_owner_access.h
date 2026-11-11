@@ -37,6 +37,17 @@ struct ExchangeOwnerAccess {
     for (const auto &f : b.focal_fields) visit(f.object.scope);
   }
   template<class Visit> static void projection_texts(const LetterProjection &p, Visit visit) {
+    for (const auto *input : {&p.input_.definitions,&p.structural_input_.definitions})
+      for (const auto &d : *input) for (const auto &parent : d.parents) visit(parent.value);
+    const auto relations=[&](const auto &input) {
+      for (const auto &d : input.definitions) visit(d.id);
+      for (const auto &o : input.occurrences) { visit(o.id); visit(o.definition); }
+      for (const auto &s : input.selections) { visit(s.aggregate); for (const auto &part : s.parts) visit(part); }
+      for (const auto &c : input.contacts) { visit(c.a); visit(c.b); }
+      for (const auto &m : input.memberships) { visit(m.occurrence); visit(m.group); }
+      for (const auto &f : input.focal_fields) visit(f.value);
+    };
+    relations(p.input_); relations(p.structural_input_);
     recipe_uuids(p.recipe_,[&](const auto &uuid) { visit(uuid.str()); });
     visit(p.study_.str());
     const auto reference=[&](const auto &ref) {
@@ -168,6 +179,23 @@ struct ExchangeOwnerAccess {
   // normally filled only by the later public/native handoff.
   static void populate_input_tables(LetterProjection &p) {
     const auto fill=[](auto &input) {
+      if (!input.definitions.empty()) {
+        auto &parents=input.definitions.front().parents;
+        parents.push_back({InputText{},91,1});
+        parents.push_back({InputText("short"),92,2});
+        parents.push_back({InputText(137,'p'),93,3});
+      }
+      for (const auto &text : {InputText{},InputText("short"),InputText(139,'r')}) {
+        input.definitions.push_back({text,1,{},{},{}});
+        using Input = std::decay_t<decltype(input)>;
+        if constexpr (std::is_same_v<Input,StudyInput>)
+          input.occurrences.push_back({text,text,0,0,{},{}});
+        else input.occurrences.push_back({text,text,0});
+        input.selections.push_back({text,{text},Exposure::Aggregate});
+        input.contacts.push_back({text,text});
+        input.memberships.push_back({text,text});
+        input.focal_fields.push_back({GroupKind::Membership,text});
+      }
       input.nodes.push_back({nullptr,-1,ScaleRole::Root});
       input.memberships.push_back({"retained-occurrence","retained-group"});
       input.focal_fields.push_back({GroupKind::Membership,"retained-group"});

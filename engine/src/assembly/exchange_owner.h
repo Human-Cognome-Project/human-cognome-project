@@ -43,8 +43,8 @@ class ExchangeOwner {
       const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
       AdoptionInputBudget, AdoptionInputResult &, ReservationBudget, ReservationResult &,
       std::uint64_t projection_setup_work, ProjectionSetupResult &);
-  ExchangeOwner(field::Harness &, const LetterProjection &, std::vector<OccurrenceBinding>,
-                std::vector<ExchangeFieldBinding>, const std::shared_ptr<ReservationDomain> &,
+  ExchangeOwner(field::Harness &, const LetterProjection &, const std::vector<OccurrenceBinding> &,
+                const std::vector<ExchangeFieldBinding> &, const std::shared_ptr<ReservationDomain> &,
                 PreparationWork &, ProjectionSetupResult &);
   OwnerPreparationResult prepare(const OccurrenceKey &, warm::Exposure,
                const std::vector<ExchangeIncoming> &, const std::vector<ExchangeNewField> &,

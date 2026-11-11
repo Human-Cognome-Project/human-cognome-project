@@ -4,14 +4,53 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
-**Maintainer reconciliation — 2026-11-11:** #278 is accepted and merged at `3cadbff286b0c4553808595f624f8a98add36682`, reviewed head `07f2d66763631afe8d62438351bfd7ece1f149c8`. Native 43087248989, smoke 43087248327 and viewport 43087248550 passed. Inspected native and viewport installation logs confirm the mirror-list rewrite and archive.ubuntu.com traffic. The earlier pending labels are historical. #279 identity/reference input text is source-reviewed and provisionally accepted at `11a4813759c1e384fa6b077499c9f06998c66f58` (review 5864859891); smoke/viewport are green and native matrix qualification is pending. #275–#277 and #279 remain unmerged. Bring current main into the stack with a history-preserving merge and qualify the combined head before integration. Next bounded work: remaining identity/comparison-formatting and membership traversal/callable audit, then complete setup, combined accounting and operation/control integration.
+**Active rendering-copy contribution (2026-11-11):** #283 `38e81a95` has no blocking
+source finding and green exact-head native/smoke per review 5866277807. This
+continuation removes owning occurrence-key temporaries used only for initial
+projection text rendering; public validation and independent output remain intact.
+Both builds and 47 scoped CPU checks passed; a post-PASS cache warning is retained.
+Detailed evidence is in the admission record; hosted qualification/review remain
+pending. Initial projection indexes/provenance/equivalence, membership callable/
+recursion and declaration/binding setup budgets precede combined resources and
+remaining-operation integration.
+
+**#279 queue remediation (2026-11-11):** old native/viewport/smoke attempts remained
+queued, yet cancel/force-cancel returned 409 and rerun 403. Close/reopen triggered
+fresh native 43115507493, viewport 43115507480 and smoke 43115507510 at unchanged
+reviewed `5f1ca0c3`; old attempts remain preserved. Smoke and viewport passed at inspection;
+native had passed build/projection-values and was running its matrix. #280–#283 green checks do not replace #279's
+combined-head qualification. The stack remains unmerged pending maintainer action.
+
+**Provisionally accepted #282 (2026-11-11):** review 5865626048 accepts the adoption
+argument-copy slice at `29b82129`. Its 47 scoped CPU checks passed locally; the
+initial obsolete-assertion failure is preserved. Maintainer inspection reports
+smoke 43104595184 green, native 43104595076 running; #280/#281 native still running
+and #279 latest-head workflows queued. These are not integration acceptance.
+
+**Provisionally accepted #281 (2026-11-11):** review 5865407113 accepts the
+nil/containment source provisionally at `15db4b81`, with no blocking findings.
+Its 47 scoped CPU checks and two prior-source negative controls passed locally.
+At inspection, smoke 43101300624 and warm 43101300677 succeeded; native
+43101300728 was queued. These states do not imply integration or qualify the
+new adoption-copy head.
+
+**Provisionally accepted #280 (2026-11-11):** allocation-free ObjectKey ordering on
+provisional #279 head `5f1ca0c3`, authorized by updated-head review 5865153858.
+Both-address validation and the rendered-key ordering oracle are preserved.
+All 46 scoped local CPU checks passed; a post-PASS cache warning remains recorded.
+Awaiting review and hosted qualification. Next: nil/containment validation and
+temporary identity copies, then traversal/setup budgets and combined resources.
+#279 is the main-targeted integration PR for the pending text stack; dependent PRs
+remain unmerged until its hosted qualification and maintainer disposition.
+
+**Maintainer reconciliation — 2026-11-11:** #278 is accepted and merged at `3cadbff286b0c4553808595f624f8a98add36682`, reviewed head `07f2d66763631afe8d62438351bfd7ece1f149c8`. Native 43087248989, smoke 43087248327 and viewport 43087248550 passed. Inspected native and viewport installation logs confirm the mirror-list rewrite and archive.ubuntu.com traffic. The earlier pending labels are historical. #279 identity/reference input text is source-reviewed and provisionally accepted at `11a4813759c1e384fa6b077499c9f06998c66f58` (review 5864859891); smoke/viewport are green and native matrix qualification is pending. #275–#277 and #279 remain unmerged. Current main at 6067c641 is brought into this stack by a normal merge; the combined head a75e3408 passed 45 scoped local CPU checks plus mirror/CI contract checks. Updated-head hosted qualification and maintainer integration remain pending. Next bounded work: remaining identity/comparison-formatting and membership traversal/callable audit, then complete setup, combined accounting and operation/control integration.
 
 
 **Queue reconciliation — 2026-11-11:** Reviewed #268–#274 are integrated into main at `b05db31c2e591f8fbcd5c14dc7ddff14ef46b2e9`, reviewed tip `ce3642ee463beb76948a2497c9aeb50172c3267d`. Every head in that stack has successful native and smoke workflows; #272 warm also passed. #274 native 43030713058 passed all 12 jobs; inspected regression logs total 115 tests and database reports addressed_reads=24/private_reads=0. Earlier provisional/pending labels below are historical and superseded by this acceptance.
 
-**Current review queue:** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The next coding slice is definition/occurrence identities and references, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
+**Earlier review queue (preserved history):** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The next coding slice is definition/occurrence identities and references, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
 
-**Active infrastructure follow-up (awaiting review):** normalize the affected native/viewport runner APT sources to the primary Ubuntu archive, preserving authentication, pinned toolchain and gates. Local mirror fixtures, ShellCheck and orchestration contracts passed; hosted qualification remains required. See [hosted CI](../../engine/docs/HOSTED-CI.md#ubuntu-archive-resolution-repair-2026-11-11-awaiting-review). Definition/occurrence identity text remains the next coding slice.
+**Earlier infrastructure follow-up (now accepted in #278):** normalize the affected native/viewport runner APT sources to the primary Ubuntu archive, preserving authentication, pinned toolchain and gates. Local mirror fixtures, ShellCheck and orchestration contracts passed; hosted qualification remains required. See [hosted CI](../../engine/docs/HOSTED-CI.md#ubuntu-archive-resolution-repair-2026-11-11-awaiting-review). Definition/occurrence identity text remains the next coding slice.
 
 C2b-1 is accepted in #192 under the [#191 plan](../../docs/cumulative-publication-integration-plan.md). The [C2b-2 weighted native probe](../../engine/docs/WEIGHTED-NATIVE-HANDOFF.md) is accepted in #193 with [source-pinned evidence](../../engine/tests/weighted_handoff/README.md). It qualifies held-input numerical propagation, not production hierarchy or inherited response.
 
@@ -46,7 +85,7 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](../../engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
 | Latest accepted engine evidence | #274 head `ce3642ee463beb76948a2497c9aeb50172c3267d`: native 43030713058 and smoke 43030712985 passed. All 12 native jobs succeeded; inspected regression logs total 115 tests, database addressed_reads=24/private_reads=0. |
 | Accepted exchange owner | Selected resource gates integrated through #274, including projection/declaration/catalogue/map UUIDs and top-level/nested retained input tables. Input text is provisionally reviewed through #277; other identities, setup and combined accounting remain open. |
-| Next implementation | Definition/occurrence identity and reference text. #275–#277 await hosted infrastructure reconciliation and integration; see the current queue above and [continuation](../core-local-study-continuation-plan.md). |
+| Next implementation | Review nil/containment validation; then detached identity/argument copies, followed by callable/recursive traversal and declaration/binding setup accounting. Pending text-stack integration remains tracked in #279. |
 | Factoring follow-up | #230 completes the first mechanical kernel extraction under [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229). Keep #229 open; further separation follows the resource/lifetime inventory. Layered onboarding is authorized on 2026-11-08; see the [migration plan](ONBOARDING-PLAN.md). |
 | Accepted tooling | [Local evidence runner](../../engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](../../engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](../../tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](../../engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](../../docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
@@ -62,7 +101,7 @@ Do not copy historical “next” instructions back into this table.
 
 ## Active and deferred work
 
-**Immediate work:** definition/occurrence identity and reference text following #277's provisional review; reconcile blocked hosted qualification separately. Preserve exact values, detached snapshots, allocation admission and failure/retry coverage.
+**Immediate work:** review the nil/containment validation contribution, then continue temporary identity/argument copy accounting. Preserve pending-stack and historical evidence until integration.
 
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not

@@ -12,6 +12,8 @@ class SNode;
 // Host input values only. Including these does not load the engine or libpq.
 namespace assembly {
 template<class T> using InputTable = hcp::resources::SharedReservedVector<T>;
+using InputText = std::basic_string<char,std::char_traits<char>,
+    hcp::resources::SharedReservationAllocator<char>>;
 struct Point {
   double x{0}, y{0}, z{0};
 };
@@ -35,19 +37,19 @@ struct ScaleBinding {
   double units{1};
 };
 struct ParentOccurrence {
-  std::string value;
+  InputText value;
   std::uint32_t ordinal{0};
   std::uint64_t count{0};
 };
 struct Definition {
-  std::string id;
+  InputText id;
   std::uint64_t mass{0};
   Point centroid;
   InputTable<Sphere> components;
   InputTable<ParentOccurrence> parents;
 };
 struct Occurrence {
-  std::string id, definition;
+  InputText id, definition;
   int slot{-1}, study_node{-1};
   Point position;
   // Node-local spatial units per tick-time unit, converted with position.
@@ -55,22 +57,22 @@ struct Occurrence {
 };
 enum class Exposure { Aggregate, Parts };
 struct Selection {
-  std::string aggregate;
-  InputTable<std::string> parts;
+  InputText aggregate;
+  InputTable<InputText> parts;
   Exposure exposure{Exposure::Aggregate};
 };
 struct Contact {
-  std::string a, b;
+  InputText a, b;
 };
 // Explicit field names, encoded losslessly from ObjectKey by typed callers.
 // Group anchors need no live Definition, geometry, slot or naming mass.
 struct Membership {
-  std::string occurrence, group;
+  InputText occurrence, group;
 };
 enum class GroupKind { SiblingDefinition, ParentValue, Membership };
 struct FocalField {
   GroupKind kind;
-  std::string value;
+  InputText value;
 };
 struct StudyInput {
   int capacity{0};
@@ -85,7 +87,7 @@ struct StudyInput {
 // Operational structural handoff. Native preparation/admission will assign
 // payload records and initialize numerical state; source projection cannot.
 struct StructuralOccurrence {
-  std::string id, definition;
+  InputText id, definition;
   int study_node{-1};
 };
 struct StructuralStudyInput {

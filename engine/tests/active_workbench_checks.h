@@ -137,7 +137,7 @@ inline void run_focus(const warm::Bundle &recipe, bool cuda) {
                           {{1, {0, 0}}, {{offset, 0, 0}, {}}}};
       const std::vector<FocalField> focus{
           {GroupKind::SiblingDefinition,
-           warm::key(local.values.at(0).ref.object)}};
+           InputText(warm::key(local.values.at(0).ref.object))}};
       auto active = shared.revise(local).focus(focus);
       field::Parameters p;
       p.gravity = 0;
@@ -155,7 +155,7 @@ inline void run_focus(const warm::Bundle &recipe, bool cuda) {
         const auto id = occurrence_text({active.study(), {0, {}}});
         int moving = -1, context = -1;
         for (const auto &particle : initial.prepared.particles)
-          if (particle.occurrence.id == id) moving = particle.occurrence.slot;
+          if (std::string(particle.occurrence.id) == id) moving = particle.occurrence.slot;
         for (int g = 0; g < G; ++g)
           if (initial.prepared.groups[g].kind == GroupKind::Membership &&
               initial.prepared.groups[g].value ==

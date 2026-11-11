@@ -1593,3 +1593,295 @@ qualification follows from these requested-storage observations.
 
 **Current review queue:** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The next coding slice is definition/occurrence identities and references, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
 
+
+### Retained input parent-value text domain (contribution awaiting review)
+
+The authorized input-text workstream is split at shared consumer boundaries.
+ParentOccurrence.value now uses InputText, the neutral shared-allocator string
+representation. Explicit projection copies construct parent text directly with
+the destination allocator, before character allocation, retaining ordinal/count.
+Parent tables keep their existing domain attachment. Other input strings remain
+outside this bounded slice.
+
+The independent text visitor includes parent values in both input variants.
+Existing pointer/request observations distinguish inline storage from heap backing,
+check capacity plus terminator and allocator identity, and feed exact selected-byte
+accounting. Supplemented v1/v2 fixtures add empty, short and 137-character parent
+values to exercise inline/heap copies, detached source-death snapshots, moved
+lifetime, byte/work refusal, reclamation and exact retry. Whole-owner all-site
+failure injection remains active. Supplementary values are copy fixtures, not
+claims of valid native model inputs.
+
+Projection construction explicitly converts encoded keys into InputText. Native
+preparation explicitly converts parent values at the existing public group and
+participation outputs; no public output encoding or numerical change is intended.
+The capacity census uses the same inline-aware backing rule as recipe text,
+avoiding a second charge for inline characters. ParentOccurrence layout grows;
+affected consumers must rebuild. Selected accounting overlaps the census.
+
+Next: remaining input text and its lookup/serialization boundaries. Other owner
+identities/comparison formatting, full setup, combined accounting and operations
+remain separate. This slice does not complete input-text or owner resource coverage.
+
+### Retained relation/focus input text domain (contribution awaiting review)
+
+Contact.a/b, Membership.occurrence/group and FocalField.value use InputText.
+Explicit projection row construction selects the destination allocator before
+character copying. Ordinary copies detach; moves retain domain lifetime. Other
+input identities and selection text remain excluded. The shared input-text census
+uses inline-aware backing, including heap terminators without double-counting
+inline characters in row headers.
+
+Projection and membership binding, active-workbench context, native preparation,
+fixture builders and viewport focus callers explicitly adapt allocator boundaries.
+Native lookup/output containers remain ordinary strings. These temporary boundary
+conversions are not claimed as selected retained input backing or full setup work.
+Encoding and numerical policy are unchanged; affected row layouts require rebuilds.
+
+The text visitor covers both fields of contacts/memberships and focal values in
+both input variants. Supplemented copy fixtures include empty, short and long
+values in every added field; these are copying probes, not valid native models.
+Independent pointer/request/terminator/domain checks, exact selected accounting,
+complete v1/v2 equality, refusal/reclamation/exact retry, detached source-death
+snapshots, moved lifetime and whole-owner failure controls cover the new backing.
+
+Next: definition/occurrence identities and selection text across their shared
+lookup/serialization consumers. Other owner identities/comparison formatting, full
+setup, combined accounting and operation/control integration remain separate.
+Selected reports overlap the census and are not physical-memory/performance bounds.
+
+### Retained selection input text domain (contribution awaiting review)
+
+Selection.aggregate and each Selection.parts element use InputText. Explicit
+projection copies reserve the part table with its destination allocator, construct
+each string with that allocator before copying characters, and construct the
+aggregate text directly in the same domain. Ordinary snapshots detach recursively;
+moves retain lifetime. Definition/occurrence identities remain the next slice.
+
+Projection output construction and native selection lookup use explicit conversions,
+preserving existing string lookup/output interfaces and values. The review-requested
+membership emptiness check now inspects the string directly without allocating.
+Other temporary boundary conversions remain unselected setup work.
+
+The shared text visitor includes aggregate and every part in both input variants.
+Supplemented empty/short/139-character copy fixtures exercise each new field;
+these are copy probes, not native model-validity claims. Independent request,
+terminator, inline/heap and domain observations feed exact selected accounting,
+complete equality, refusal/reclamation/exact retry, detached source-death snapshots,
+moved lifetime and owner failure controls. Selected reports overlap the census.
+
+Next: definition/occurrence identities. Other owner identities/comparison formatting,
+full setup, combined resources and operation/control integration remain separate.
+
+### Retained input identity text domain (contribution awaiting review)
+
+Definition.id and both identity/reference fields of Occurrence and
+StructuralOccurrence now use InputText. Explicit projection copies construct
+these strings with the destination domain before allocating character backing.
+This completes retained text attachment in StudyInput and StructuralStudyInput,
+including their previously attached parent, selection, relation and focus text.
+Ordinary copies detach recursively; moves retain domain lifetime.
+
+Preparation lookup and public participation/group outputs keep their ordinary
+string interfaces through explicit boundary conversions. Active binding and
+viewport serialization preserve exact values. These temporary conversions remain
+unselected setup work; completion of retained input text does not qualify every
+owner identity, comparison/formatting allocation or constructor/setup cost.
+The shared inline-aware census counts heap capacity plus terminator without
+charging inline characters twice. Row layouts change and consumers must rebuild.
+
+The independent text visitor now includes definition IDs and occurrence IDs and
+references in both variants. Supplemented empty, short and 139-character copy
+fixtures exercise every new field; these are copy probes, not valid model inputs.
+Existing pointer/request/domain checks, exact selected accounting, complete v1/v2
+equality, refusal/reclamation/exact retry, detached source-death snapshots, moved
+lifetime and whole-owner failure injection cover the added backing. The projection
+copy witness now requires selected bytes to equal all independently observed
+retained allocations, rather than requiring some retained payload to stay excluded.
+
+Next: inventory remaining owner identities/comparison formatting and setup work,
+then combined resource accounting and operation/control integration. Selected
+accounting overlaps the capacity census; neither is a physical-memory or
+performance qualification.
+The next audit starts with ObjectKey comparison in kernels/database/warm/values.cpp
+(currently formatting keys) and MembershipFields::collect graph traversal/callable
+costs. Their existing semantics and accepted ordering must be preserved; retained
+input attachment alone does not bound these temporary requests.
+
+### Remaining identity/comparison and setup-cost audit (2026-11-11)
+
+Audited combined source `a75e34084bed5fcfc24280b54111081d6440d58d`, which merges
+accepted main `6067c641` into the provisionally reviewed #275–#277/#279 stack.
+This is an inventory and sequencing result, not a new complete setup budget.
+The accepted mirror repair is present; historical failed/cancelled evidence stays
+intact. Earlier text-slice “next” labels above describe their original scope.
+
+| Surface | Owning source and finding | Remaining boundary |
+|---|---|---|
+| ObjectKey ordering | `kernels/database/warm/values.cpp`, `operator<`, calls `key` twice. Membership tools/state/reached maps and target sets use it. Each comparison formats UUID/address strings outside the selected domain. | Remove formatting while preserving encoded-byte ordering and address validation, then qualify graph and owner callers. |
+| Containment and nil checks | `contains` formats both keys only to validate them; `Uuid::nil` constructs a default UUID. Projection/workbench validation uses nil checks; not every such call is on the adoption constructor path. | Separate nonallocating validation from rendering; preserve malformed-input rejection and nil semantics. |
+| Adoption identity/argument copies | `ExchangeOwner` passes `{projection_->study(), ...}` to declaration collection; ordinary UUID copy detaches. Owner and validating ExchangeBindings constructors take ordinary row/field vectors by value before building selected maps. | Inventory transient copies and their overlap explicitly. Input-admission logical byte/copy gates do not make these actual requests selected-domain allocations. Preserve caller ownership and detached snapshots. |
+| Membership graph traversal | `MembershipFields::collect` uses a recursive `std::function` and loops over tools, references and transitive target sets. Map/set nodes and key backing are already selected. | Callable storage is implementation-dependent; recursion consumes stack. Bound traversal/comparison work and depth independently of heap accounting. Removing type erasure alone would not bound recursion. |
+| Declaration and binding setup | `LetterExchangeContract::collect` searches selections/occurrences/tools and assembles declarations; `match_work_` bounds later matching, not collection. Adoption binding calls `prepare(..., UINT64_MAX)`. | Add a constructor/setup work boundary before these traversals; do not reuse later-operation matching/capture claims as constructor evidence. |
+| Conversion/output and fixed overhead | `study.cpp`, active binding and viewport deliberately convert to public ordinary strings. `ExchangeOwner::adopt` creates the reservation domain/control block outside its own quota. | Keep output conversion and caller/native/shared ownership separate in the combined inventory; count overlap once and preserve the documented overhead exclusion. |
+
+A local diagnostic linked against this source's `libwarm_values.a` measured C++
+new requests on Clang 15/libstdc++; inputs were built before observation:
+
+| Operation | Allocation calls | Cumulative requested bytes |
+|---|---:|---:|
+| ObjectKey equality, distinct one-element addresses | 0 | 0 |
+| ObjectKey ordering, one-element addresses | 4 | 220 |
+| Containment, distinct one-element addresses | 4 | 220 |
+| Nil check | 1 | 37 |
+| Ordinary UUID temporary copy | 1 | 37 |
+| Ordering with a 128-element right address | 9 | 1155 |
+
+These are transient request totals, not retained bytes, RSS or timings. The audit
+helper and commands are retained in the combined-head evidence archive. Its first
+link command incorrectly named a separate codec archive; the codec is already in
+warm_values. That helper-only diagnostic is retained; the corrected probe passed
+without a product-source change. No callable-allocation size or stack bound was
+measured by this probe.
+
+**Next concrete implementation:** remove ObjectKey comparison formatting first.
+Preserve `key(a) < key(b)` as an independent ordering oracle: canonical UUID text,
+Base62 byte order, both couplet positions, strict prefixes and long addresses.
+Validate both addresses even when scopes differ; empty, invalid-element and
+partial-tail addresses currently throw. Do not silently convert them into sortable
+keys or change the wire encoding. Verify zero C++ new for valid comparisons, exact
+ordering/equality properties, malformed-input behavior and unchanged owner/graph
+semantics. Nil/containment and temporary-copy changes can follow as separate
+bounded slices. Then meter membership/declaration/binding setup, address callable
+and stack costs, and reconcile combined resources before operation integration.
+### Allocation-free ObjectKey ordering (contribution awaiting review)
+
+Following #279 review 5865153858, ObjectKey ordering validates both addresses
+before inspecting scopes, then compares canonical scope text and full couplet
+indices lexicographically. Fixed-width full couplets and the byte-ordered Base62
+alphabet preserve the `key(a) < key(b)` ordering, including strict prefixes.
+Empty, invalid-element and partial addresses still throw the same warm::Error,
+even when the scopes alone would decide the ordering. Equality, rendering,
+containment and UUID nil/copy behavior are unchanged.
+
+The standalone ordering test compares against the unchanged rendered-key oracle,
+checks every adjacent couplet transition and reflexive case, and crosses three
+scopes, address lengths 1/2/5/128 and alphabet-boundary values. It independently
+observes zero C++ new calls for each valid comparison. Invalid left and right
+operands cover empty addresses, invalid first/second indices and partial tails
+or non-tail partials across all scope/length fixtures. A negative control links
+the new test to the previous implementation and confirms it rejects allocating
+comparison. Invalid-input exception allocation is not claimed to be zero.
+
+This eliminates temporary comparison rendering in owner membership map/set
+lookups; it does not admit or meter comparison traversal work. Selected retained
+backing remains governed by the existing domains. Remaining next slices are
+nil/containment validation, detached temporary identity/argument copies, then
+membership callable/recursion and declaration/binding setup work before combined
+accounting and operation integration. No ABI, encoding, numerical or backend
+policy change is intended.
+### Nonallocating nil and containment validation (contribution awaiting review)
+
+Following #280 review 5865274115, Uuid::nil compares its existing text against
+the canonical nil literal instead of constructing a temporary Uuid. Containment
+uses the same internal full-address validator as rendering and ObjectKey ordering,
+then performs the existing scope/length/element-prefix checks. It no longer
+renders keys solely to validate them. Both operands are validated before any
+scope or length short circuit; empty, invalid-element and partial addresses keep
+the same error message and rejection behavior. Rendering and ordering semantics,
+UUID normalization, public representations and allocator ownership are unchanged.
+
+The standalone test observes zero C++ new/new[] for valid nil and containment
+calls. Nil controls cover canonical nil, a nonzero hexadecimal digit in every
+UUID digit position (including uppercase input normalization), and an attached
+nil whose domain has exactly exhausted its 37-byte budget. Containment is checked
+against an independent rendered-text prefix oracle with explicit delimiter
+boundaries, using multiple scopes, lengths 1/2/5/128, alphabet boundaries, strict
+prefixes, equal keys and near misses. Invalid operands on both sides are checked
+across different scopes and lengths. Separate negative controls link the new test
+to the prior source and reject each old allocating implementation. Exception-path
+allocations are outside the zero-allocation claim. Existing ordering, address and
+UUID domain/lifetime tests remain active.
+
+This removes these validation temporaries; it does not meter traversal work or
+make all setup allocations selected. Next: detached temporary identity/argument
+copies, then membership callable/recursion and declaration/binding setup budgets,
+combined resources and operation/control integration. Preserve caller ownership,
+detached snapshots and current rejection/retry semantics in those later slices.
+
+### Adoption argument copies and temporary declaration identity (awaiting review)
+
+Following #281 review 5865407113, ExchangeOwner and both ExchangeBindings
+construction paths take occurrence/field vectors by const reference. They use
+those references only during construction; the existing domain-owned ExchangeMap
+copies still retain their own rows, UUIDs, paths and addresses. No caller table
+is moved from or retained by reference. The legacy binding overload continues to
+consume its declaration value intentionally; shared declaration/catalogue aliases
+and detached snapshot behavior are unchanged.
+
+The aggregate OccurrenceKey passed temporarily to LetterExchangeContract::collect
+now constructs its UUID with the owner reservation domain. That character request
+is admitted before allocation and released at the end of the same call expression;
+its cumulative work remains charged. The declaration independently owns its
+existing domain-bound copy. This accounts for the temporary without adding a
+borrowed-identity API or changing lifetime/lookup semantics.
+
+A source-death control adopts from local caller tables, checks their backing and
+values are unchanged, destroys them, then verifies the retained owner mappings.
+Existing byte/work refusal sweeps, exact retries, full allocation-site failures,
+independent retained-byte/domain witnesses, detached snapshots and shared/weak
+lifetime controls remain active. Input admission's logical byte/copy gate stays
+conservative and unchanged; eliminating redundant argument copies does not remove
+selected map copies or claim all constructor work is metered.
+
+Next: audit remaining detached temporary identity copies outside these adoption
+paths and address membership callable/recursion plus declaration/binding setup
+budgets, then combined resources and operation/control integration. Domain object/
+control-block overhead and caller/native ownership remain separately inventoried.
+
+### Borrowed byte-expansion identities (awaiting review)
+
+Review 5865626048 of #282 authorizes the remaining temporary-identity audit.
+The private ByteRef rows returned by letter_projection.cpp's expand now borrow
+character/byte ToolRefs from the source tool table. All three consumers finish
+before that table is changed or destroyed: legacy and structural normalization
+only append nodes/occurrences/selections, and project_letters reads a const bundle.
+Published occurrence definitions and ByteProvenance still copy independent values.
+The path vector and output tables remain owned; no public borrowing interface is
+introduced. Both projection tests destroy their source bundle before validating
+the resulting legacy/structural output, including UTF-8 provenance and revisions.
+
+This is initial recipe/projection preparation outside owner adoption, not newly
+selected owner allocation. A direct expansion probe observes 0 UUID-sized (37-byte)
+character requests over 13 byte rows; the same probe linked to prior source
+observes 52 and fails the zero-request check. It does not claim zero total
+allocation: row/path backing and strings remain. Owner totals are not evidence
+for this removal because adoption copies an already constructed projection.
+
+Audit boundaries still outstanding: the initial projection's owning tool/occurrence
+indexes and provenance/equivalence tables, temporary rendering keys and validation
+strings; these must be separated from intentionally independent published outputs.
+Owner projection copy helpers, contract copies and membership keys already construct
+identities in their selected domains. Standalone coordinator map copies provide
+candidate backing and cannot simply become borrowed aliases. Membership callable/
+recursion and declaration/binding setup budgets remain open, followed by combined
+resource accounting and remaining-operation integration.
+
+### Occurrence rendering argument copies (awaiting review)
+
+Following #283 review 5866277807, initial projection selection/part/contact text
+rendering now passes the existing study and OccurrenceId to a private helper.
+It no longer constructs an owning OccurrenceKey merely to render it. The public
+occurrence_text delegates to the same helper and retains the nil-study and path
+length predicate, error, normalization, decimal ranges and separator format.
+The result string remains owned; no reference escapes. Retained projection and
+snapshot copying, selected domain budgets and owner refusal/retry are unchanged.
+
+A focused comparison of the old aggregate-key call shape and the component call
+observes UUID-sized requests fall from 2 to 1 for both aggregate and byte paths;
+byte-path requests fall from 1 to 0. The remaining UUID-sized request is output
+rendering, not a temporary key. Full-range output and malformed-key controls are
+in letter_projection_test. This neither eliminates output allocation nor completes
+initial projection/index or owner setup accounting. Initial indexes/provenance/
+equivalence copies, membership callable/recursion and declaration/binding setup
+budgets remain open before combined resources and operation integration.

@@ -28,6 +28,19 @@ void rejects(F run, const char *label) {
 int main() {
   using namespace letter_fixture;
   try {
+    const warm::Uuid text_study("12345678-1234-1234-1234-123456789ABC");
+    check(occurrence_text({text_study,{UINT64_MAX,{}}}) ==
+              "12345678-1234-1234-1234-123456789abc/18446744073709551615",
+          "aggregate rendering preserves normalized scope and full entry range");
+    check(occurrence_text({text_study,{0,{0,UINT32_MAX}}}) ==
+              "12345678-1234-1234-1234-123456789abc/0/0/4294967295",
+          "byte rendering preserves full ordinal range and separators");
+    rejects([&] { occurrence_text({warm::Uuid{}, {0,{}}}); },
+            "nil study cannot render an occurrence");
+    rejects([&] { occurrence_text({text_study, {0,{1}}}); },
+            "partial byte path cannot render an occurrence");
+    rejects([&] { occurrence_text({text_study, {0,{1,2,3}}}); },
+            "oversized byte path cannot render an occurrence");
     Fixture f;
     auto requests = std::vector<LetterRequest>{
         f.request(f.english, 9, warm::Exposure::Aggregate),
@@ -37,7 +50,11 @@ int main() {
         f.request(f.repeated, 6, warm::Exposure::Aggregate)};
     auto b = normalize_letters(f.base, requests);
     warm::validate(b);
-    auto p = project_letters(b);
+    // Published identities must outlive the source of borrowed expansion refs.
+    auto p = [&] {
+      const auto source = b;
+      return project_letters(source);
+    }();
     check(p.occurrences().size() == 18,
           "five aggregates and thirteen byte alternatives; no character/nibble "
           "particles");

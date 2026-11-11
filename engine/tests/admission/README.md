@@ -4098,3 +4098,637 @@ preserved; raw local artifacts have not been independently inspected remotely.
 **Current review queue:** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The next coding slice is definition/occurrence identities and references, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
 
 Inspected #274 regression jobs 130559263122/130559263206/130559263217/130559263265 passed 28/29/29/29 tests. Database job 130559263025 reports addressed_reads=24/private_reads=0. Main was an ancestor of the reviewed tip before merge, with no main-only changes to reconcile. Local archives were not independently rerun or inspected in this reconciliation; no GPU or performance claim follows. Original commits and failed/cancelled evidence are preserved.
+
+### Retained input parent-value text qualification (2026-11-11)
+
+Tested source `08e9ccf60d190cc99ce8d64b35e4d0a15da141ad`, stacked on #274 head
+`ce3642ee463beb76948a2497c9aeb50172c3267d`. Review 5859635152 found no blockers
+and authorized retained input text. The consumer audit splits that workstream:
+this contribution covers parent values; other IDs/references cross additional
+lookup and serialization paths and remain the next slice. Parent smoke 43030712985
+passed; native 43030713058 remains pending at inspection. Integrated through #267.
+
+ParentOccurrence.value uses InputText with the neutral shared allocator. Explicit
+projection copies select its domain before copying characters. Parent ordinals,
+counts, ordering and nested table attachment remain unchanged. Other input text
+is excluded. Projection construction converts encoded keys explicitly; native
+preparation converts parent values at existing public group/participation outputs.
+
+The text visitor covers parent values in both input variants. Independent pointer/
+request observations distinguish inline backing, check heap capacity plus terminator,
+verify domain identity and exact selected bytes. Supplemented v1/v2 copy fixtures
+include empty, short and 137-character parent values, alongside real encoded keys.
+Full input equality, detached source-death snapshots, moved lifetime, byte/work
+refusal, reclamation/exact retry and whole-owner all-site failure controls apply.
+Supplementary values qualify copying, not native model validity. The census uses
+inline-aware backing rather than charging inline characters twice.
+
+Initial source `df3315e13666dbcd6abb8fb3ad73d2902732108d` failed compilation in
+letter_projection_native_test.cpp:84, comparing InputText directly with std::string.
+The corrected test converts explicitly; production code was unchanged. No tests
+or standalone warm build ran at the initial source. Initial build/source archive:
+`setup-evidence/input-parent-text-initial-df3315e1.tar.gz`, manifest digest:
+
+    0c7f1d8e9fc0e080c8501521d018a8ede20dc617404a7ca469a57826f49b6053
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2747 / 3242 | 3667 / 5841 |
+| Selected live / peak requested bytes | 319541 / 319541 | 387531 / 387531 |
+| Selected cumulative allocation work | 419070 | 785171 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320849 / 321522 | 391275 / 393797 |
+| Retained capacity census | 320737 | 390971 |
+
+All four CPU configurations agree. Compared with #274, selected live/peak/work
+increases 680 bytes in each fixture: 520 existing text backing and 160 allocator
+state. Whole-owner retained/peak requests and census increase 160 bytes each;
+allocation-site counts are unchanged. InputText is 48 bytes, ParentOccurrence 64;
+StudyInput/StructuralStudyInput/LetterProjection remain 288/280/1304. UUID-related
+layouts/encoding are unchanged.
+
+Corrected native and standalone warm builds passed. All 45 CPU checks passed:
+20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared checks,
+nine supporting assembly/preparation/native-handoff/viewport checks and four warm
+CTests. No corrected-source build or test warnings/errors. Clang 15/libstdc++,
+CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-parent-text-domain-08e9ccf6` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and layout probe.
+Verified local archive: `setup-evidence/input-parent-text-domain-08e9ccf6.tar.gz`.
+SHA256SUMS manifest digest:
+
+    fe1dd68cdf84a420a45f1bbcca178be832d891c7ff980f627a54d8495ed19c49
+
+Hosted checks remain authoritative. The corrected pass does not relabel the
+initial compiler failure or earlier warnings.
+
+Selected reports overlap the census and must not be summed. These observations
+are not physical-memory/performance bounds. Remaining input text, other identities,
+comparison-formatting, full setup, combined accounting and operation/control
+integration remain separate. No GPU, live database, browser/full baseline rerun
+or performance qualification. Earlier failures/warnings remain preserved; local
+raw artifacts have not been independently inspected remotely.
+
+### Retained relation/focus input text qualification (2026-11-11)
+
+Tested source `6bd7ad81c8cbd86af7ae21a02f8b981a83bdd660`, stacked on #275 head
+`6bbae550f6e63a53f832a34449cf14008192e966`. Review 5859805974 found no blockers
+and authorized remaining input text. This slice groups contacts, memberships and
+focal fields at their common preparation lookup boundary; identity/selection text
+remains next. Parent smoke 43032906551 passed; native 43032906525 was pending at
+review inspection. Integrated acceptance remains through #267.
+
+Contact.a/b, Membership.occurrence/group and FocalField.value use InputText.
+Explicit projection copies construct these strings with destination allocators
+before character allocation. Ordinary snapshots detach and moves retain domains.
+Projection/membership binding, local workbench context, native lookup boundaries,
+fixture builders and viewport focus callers use explicit conversions. Output
+encoding and numerical policy are unchanged. Temporary lookup conversions remain
+unselected setup work, not claimed as retained input storage coverage.
+
+The text visitor includes every added field in both variants. Supplementary copy
+fixtures add empty, short and 139-character values in each field, alongside real
+recipe keys; these qualify copying rather than native input validity. Independent
+pointer/request/terminator/domain checks, inline/heap distinction, exact selected
+bytes, complete v1/v2 equality, refusal/reclamation/exact retry, detached source-death
+snapshots, moved lifetime and whole-owner all-site failures cover this backing.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2748 / 3244 | 3668 / 5843 |
+| Selected live / peak requested bytes | 319677 / 319677 | 387667 / 387667 |
+| Selected cumulative allocation work | 419206 | 785307 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320881 / 321554 | 391307 / 393829 |
+| Retained capacity census | 320769 | 391003 |
+
+All four CPU configurations agree. Compared with #275, selected live/peak/work
+increases 136 bytes in each owner fixture: 104 existing focus-text backing and
+32 allocator state. Whole-owner retained/peak requests and census increase 32
+bytes each; sites are unchanged. Contact/membership attachment is additionally
+exercised by the populated v1/v2 copy fixtures, not inferred from these owner totals.
+Contact/Membership/FocalField layouts are 96/96/56 bytes; input containers and
+LetterProjection remain 288/280/1304, with UUID-related layouts unchanged.
+
+Native and standalone warm builds passed on the first attempt. All 45 CPU checks
+passed: 20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared
+checks, nine supporting assembly/preparation/native-handoff/viewport checks and
+four warm CTests. No build or test warnings/errors. Clang 15/libstdc++, CPU/x64,
+Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-relation-text-domain-6bd7ad81` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and layout probe.
+Verified local archive: `setup-evidence/input-relation-text-domain-6bd7ad81.tar.gz`.
+SHA256SUMS manifest digest:
+
+    37502fc07f801f54264185ec3e1714a8e195f2b417637ffd4b08a8a3fb8a6f5c
+
+Hosted checks remain authoritative; earlier failures/warnings remain preserved.
+
+Selected reports overlap the capacity census and must not be summed. Requested
+storage is not physical memory or performance. Next: definition/occurrence IDs
+and references and selection aggregate/parts text, auditing public identity and
+serialization consumers. Other identities/comparison-formatting, full setup,
+combined accounting and operation/control integration remain separate. No GPU,
+live DB, browser/full baseline rerun or performance qualification. Historical
+failures/warnings remain preserved; raw local artifacts have not been independently
+inspected remotely.
+
+### Retained selection input text qualification (2026-11-11)
+
+Tested source `dd98ef1dacc10c5d1b7a5622c728221c49f23e71`, stacked on #276 head
+`755595b21b3193c5a236c2c3c5c5fb5a30be1cf7`. Review 5861623800 found no source
+blockers and authorized continuation. Selection aggregate/parts are this bounded
+subset; definition/occurrence identities remain next. Integrated through #267.
+
+Parent hosted reconciliation, as personally inspected by the maintainer: smoke
+43034798259 and projection-values job 130570694696 passed. Native 43034799670/job
+130570695102 failed before product compilation because apt could not resolve
+azure.archive.ubuntu.com (exit 100). Viewport 43034798156/job 130570690557 had the
+same DNS failure during Playwright dependencies and was cancelled before browser
+tests. Maintainer retry requests succeeded; failed/cancelled attempts remain
+preserved and are neither product failures nor passes. No source workaround masks them.
+
+Selection.aggregate and parts elements use InputText, constructed directly with
+the selected domain before character allocation. Part tables remain attached.
+Projection construction and native lookup adapt explicitly; values, order and
+exposure are unchanged. The requested membership.group.empty() cleanup removes
+a needless string copy. Other boundary conversions remain unselected setup work.
+
+Independent text observers cover aggregate and every part in both variants,
+including inline/heap distinction, capacity plus terminator, domain identity and
+exact selected accounting. Empty/short/139-character supplemented copy fixtures
+exercise these fields without claiming native input validity. Full v1/v2 equality,
+refusal/reclamation/exact retry, detached source-death snapshots, moved lifetime
+and owner all-site failures remain active.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2752 / 3250 | 3680 / 5867 |
+| Selected live / peak requested bytes | 320023 / 320023 | 389051 / 389051 |
+| Selected cumulative allocation work | 419552 | 786691 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320977 / 321650 | 391691 / 394213 |
+| Retained capacity census | 320865 | 391387 |
+
+All four CPU configurations agree. Compared with #276, selected live/peak/work
+increases 346 / 1384 bytes: 250 / 1000 existing character backing plus 96 / 384
+allocator state. Whole-owner retained/peak requests and census increase 96 / 384;
+allocation-site counts are unchanged. StudyInput/StructuralStudyInput/LetterProjection
+remain 288/280/1304 bytes; UUID-related layouts and encoding are unchanged.
+
+Native and standalone warm builds passed. All 45 CPU checks passed: 20 exchange
+processes (five cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting
+assembly/preparation/native-handoff/viewport checks and four warm CTests. No build
+or test warnings/errors. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-selection-text-domain-dd98ef1d` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and layout probe.
+Verified local archive: `setup-evidence/input-selection-text-domain-dd98ef1d.tar.gz`.
+SHA256SUMS manifest digest:
+
+    4cb963ddd94760a6d7c317b843f2cc3d031ad12434dcffc52b38edd75a2efa25
+
+Hosted checks remain authoritative. At final parent recheck, native 43034799670
+was running; viewport 43034798156 still reported cancelled. Neither is claimed
+as passed; prior failed/cancelled attempts remain preserved.
+
+Selected accounting overlaps the census; do not sum the reports. No physical-memory
+or performance bound is claimed. Next: definition/occurrence identity and reference
+text, auditing shared lookup/public identity/serialization paths. Other identities,
+comparison-formatting, full setup, combined accounting and operation integration
+remain separate. No GPU, live DB, browser/full baseline rerun or performance
+qualification. Raw local artifacts have not been independently inspected remotely;
+earlier failures/warnings remain preserved.
+
+### Retained input identity text qualification (2026-11-11)
+
+Tested source `e15108abd5defa6125946467fdd61a34ba81aacb`, stacked on #277 head
+`c3c89044fc9aed06b0aa18540137ab9b2f54d7e9`. #277 review 5863228338 and #278 review
+5864410183 identify definition/occurrence identity text as the next coding slice.
+Integrated main is accepted through #274; #275–#277 remain provisional. The
+separate #278 CI repair is source-accepted with full hosted qualification and
+integration pending at inspection. Carry it into this stack after integration
+and qualify the updated code before merging; this source does not include it.
+Earlier DNS-failed/cancelled hosted attempts remain preserved.
+
+Definition.id and both identity/reference fields of Occurrence and
+StructuralOccurrence use InputText. Explicit copies construct character backing
+in the selected domain. This completes retained input text attachment. Preparation,
+active binding, native fixtures and viewport snapshot consumers explicitly adapt
+ordinary-string boundaries without changing identity values or output encoding.
+Temporary boundary conversions and other setup costs remain separately scoped.
+
+The independent visitor observes each new field's pointer, heap request including
+terminator, inline storage and allocator domain. Supplemented v1/v2 copy fixtures
+cover empty, short and 139-character identities/references; these are not valid
+native-model claims. Exact complete projection backing coverage now replaces the
+old requirement that some retained payload remain excluded. Full row equality,
+refusal/reclamation/exact retry, detached source-death snapshots, moves and
+whole-owner allocation-failure controls remain active.
+
+Preserved attempts:
+
+- `5ea713115707a52be96c4ad8be98e83833427329` failed compilation at
+  live_hierarchy_test.cpp:2525: a viewport fixture conditional mixed InputText and
+  std::string. No tests or warm build ran. Explicit conversion fixed it in
+  `0c05b9b4af58dbd7e9d6d020be8047d2bae0dfe3`. Archive
+  `input-identity-text-domain-5ea71311-build-failure.tar.gz`, manifest digest
+  `4b853584132c05dbb49a17d632272e68440a01a18660e6465c4a9fb817f5c213`.
+- `0c05b9b4` built successfully and passed 12 prepared, nine supporting and four
+  warm checks. Each of the four exchange configurations stopped in exchange_owner
+  at the old partial-coverage assertion; subsequent exchange cases were not run.
+  With every retained projection string selected, requiring observed live bytes
+  to exceed selected bytes is obsolete. The correction requires exact equality
+  with independently observed requests rather than weakening the bound. Archive
+  `input-identity-text-domain-0c05b9b4.tar.gz`, manifest digest
+  `8a1890cc6b9474d2a68bf5985b7e37adfefff8aa350089bfcf4d501d05223deb`.
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2761 / 3268 | 3707 / 5921 |
+| Selected live / peak requested bytes | 321185 / 321185 | 392475 / 392475 |
+| Selected cumulative allocation work | 420714 | 790115 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 321265 / 321938 | 392555 / 395077 |
+| Retained capacity census | 321153 | 392251 |
+| Failure-sweep peak requested bytes | 321923 | 395062 |
+
+All four CPU configurations agree. Relative to #277, selected live/peak/work
+increases 1162 / 3424 bytes: 874 / 2560 existing identity character backing plus
+288 / 864 allocator state. Whole-owner retained/peak requests and census increase
+288 / 864; allocation-site counts are unchanged. Definition/Occurrence/
+StructuralOccurrence layouts are 160/152/104 bytes. StudyInput/StructuralStudyInput/
+LetterProjection remain 288/280/1304 bytes; UUID-related layouts are unchanged.
+
+Selected accounting overlaps the census; do not sum these reports. Complete
+retained projection backing coverage does not establish complete setup work,
+combined owner resources, physical-memory or performance bounds. Next: audit
+remaining owner identities/comparison formatting (including ObjectKey comparison)
+and membership traversal/callable costs before combined accounting and operation
+integration. No GPU, live DB, browser/full baseline rerun or performance
+qualification. Raw local artifacts have not been independently inspected remotely;
+earlier failures/warnings remain preserved.
+Final native and standalone warm builds passed. All 45 scoped CPU checks passed:
+20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared checks,
+nine supporting assembly/preparation/native-handoff/viewport checks and four warm
+CTests. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. No build warnings/errors.
+One Taichi offline-cache lock warning follows the final PASS line in
+1-bulk-exchange_commit.log; it remains in the archive, not erased or relabeled.
+No other build/test warnings or errors were found in the final run.
+
+The final tested-to-head delta contains only four Markdown evidence/status files.
+Evidence directory `input-identity-text-domain-e15108ab` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and the layout probe.
+Verified local archive: `setup-evidence/input-identity-text-domain-e15108ab.tar.gz`.
+SHA256SUMS manifest digest:
+
+    ba4beb87ca67e045e511d1788512a0c0fe35788fb139e7c4c2c045b458d70974
+
+Hosted checks remain authoritative. At final dependency inspection, #278 native
+43087248989 had completed its compiler matrix; regression shards 3 and 4 remained
+running. No full hosted pass or integration is claimed.
+
+### Combined pending input-text stack and accepted main (2026-11-11)
+
+Review 5864859891 provisionally accepts #279 head
+`11a4813759c1e384fa6b077499c9f06998c66f58` and authorizes a normal merge from main.
+#278 is accepted and integrated at `3cadbff286b0c4553808595f624f8a98add36682`;
+its native 43087248989, smoke 43087248327 and viewport 43087248550 passed,
+with maintainer-inspected archive traffic. These later results supersede earlier
+pending labels without relabeling failed/cancelled attempts.
+
+Tested merge `a75e34084bed5fcfc24280b54111081d6440d58d` has parents #279's reviewed
+head and current main `6067c641`. The merge adds accepted CI repair/workflows and
+status records; it changes no engine, warm-value or viewport product source.
+Four documentation conflicts were resolved by preserving both historical evidence
+sets and distinguishing current acceptance from earlier queue labels. #275–#277
+and #279 remain unmerged into main pending combined qualification and disposition.
+
+The single/four-selection accounting agrees with #279 in every CPU configuration:
+selected live/peak 321185/392475 bytes, cumulative work 420714/790115,
+4117/7757 failure sites fully reclaimed, retained requested 321265/392555,
+peak requested 321938/395077 and capacity census 321153/392251. The independent
+complete projection backing witness remains exact. No physical-memory or
+performance claim follows from shared-host CPU execution.
+
+The accompanying identity/setup audit is recorded in OWNER-RESOURCES. A local
+source-pinned helper links the merged warm-values archive and records temporary
+C++ new calls for equality, ordering, containment, nil and UUID copies. Its first
+command named a nonexistent separate codec archive; corrected linking uses the
+codec already compiled into warm_values. The original helper-only diagnostic is
+retained as identity-audit-initial-build.log. No product source/build failure or
+product test rerun was needed for that helper correction.
+Combined native/standalone warm builds and all 45 scoped CPU checks passed:
+20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared checks,
+nine supporting assembly/preparation/native-handoff/viewport checks and four warm
+CTests. Integrated mirror fixtures, ShellCheck and CI orchestration contracts
+also passed. No product build/test warnings or errors occurred in this run;
+prior source warnings and the audit-helper link diagnostic remain preserved.
+Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. No GPU, live database,
+browser/full accepted-baseline rerun or performance qualification.
+
+The final tested-to-head delta contains only four Markdown evidence/status files.
+Verified archive: `setup-evidence/input-stack-main-domain-a75e3408.tar.gz`.
+The archive includes source/configuration, commands, logs, binary/runtime hashes,
+layouts and the identity audit helper/results. SHA256SUMS manifest digest:
+
+    462decf887b11ad9c00db49a70f6cec0ea412a795d90093af00978277da60e08
+
+This is contributor local qualification of the combined head. Hosted qualification
+of the updated head and maintainer integration remain pending; neither #279's
+prior-head jobs nor #278's accepted CI run substitutes for those checks.
+### Allocation-free ObjectKey ordering qualification (2026-11-11)
+
+Tested source `86e4626e83c6f7ecd6e506571f3eaad478c73350`, stacked on provisionally
+accepted #279 head `5f1ca0c3a6fdf3d4316ff861c521e92e15907dc1`. Review 5865153858
+authorizes this bounded implementation while the combined stack's hosted checks
+run. #279 is the main-targeted integration PR; #275–#277 remain pending until
+integration. Accepted main/#278 are already included. No history is rewritten.
+
+ObjectKey ordering now validates both addresses before comparing scopes and
+couplet indices. The rendered-key oracle remains unchanged. Tests cover every
+couplet transition, scopes, strict prefixes, long addresses, malformed left/right
+operands even across different scopes, and independently counted zero C++ new for
+valid comparisons. Invalid-input exception allocation is not claimed zero.
+Nil, containment, identity copies, encoding and numerical policy are unchanged.
+
+A negative control links the new test against values.cpp from #279's prior head
+and confirms the no-allocation test rejects the old comparator. The diagnostic
+wrapper initially renamed main without adding an explicit success return; its
+compiler warning is preserved in negative-initial-build.log. Adding a return to
+the local diagnostic copy corrected that helper warning. Product source did not
+change and the corrected negative control passed. This is an expected negative
+control, not a product test failure.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / work boundaries | 2761 / 3268 | 3707 / 5921 |
+| Selected live / peak requested bytes | 321185 / 321185 | 392475 / 392475 |
+| Selected cumulative allocation work | 420714 | 790115 |
+| Allocation sites, all reclaimed | 3289 | 6077 |
+| Retained / peak requested bytes | 321265 / 321938 | 392555 / 395077 |
+| Retained capacity census | 321153 | 392251 |
+
+All four CPU configurations agree. Relative to #279, 828 / 1680 temporary
+allocation sites disappear; selected reservation totals, retained storage and
+peak observations are unchanged. The diamond-graph witness reports zero
+unselected 37-byte requests and 162 failure sites; retained/temporary UUID and
+address accounting remain exact. Requested bytes are not RSS or performance.
+
+Next: nil/containment validation, detached temporary identity/argument copies,
+then callable/recursive traversal and declaration/binding setup budgets before
+combined resources and operation integration. Earlier failures, cancelled runs
+and warnings remain preserved. No GPU, live DB, browser/full accepted-baseline
+rerun or performance qualification is claimed.
+Both builds and all 46 scoped CPU checks passed: 20 exchange processes (five
+cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting native
+handoff/snapshot checks and five standalone warm CTests including the new ordering
+test. The prior-comparator negative control rejected the old implementation as
+expected. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. Product builds have no
+warnings/errors. One Taichi offline-cache lock warning follows PASS in
+1-bulk-exchange_commit.log; it and the corrected diagnostic-wrapper warning are
+retained. No other build/test diagnostics were found.
+
+The final tested-to-head delta contains only four Markdown evidence/status files.
+Verified archive: `setup-evidence/object-key-ordering-domain-86e4626e.tar.gz`.
+Commands, source/configuration, logs, binary/runtime hashes, layouts and the
+negative-control source/helper are retained. SHA256SUMS manifest digest:
+
+    09002b6a1d4761b6d2d911eeebba23a3765036d8425f6c98c602adf3132238a6
+
+Raw local artifacts have not been independently inspected remotely. Hosted checks
+remain authoritative. At parent inspection, #279 latest-head native 43098106376,
+viewport 43098106428 and smoke 43098106405 were queued; no full pass or integration
+is inferred. Original commits and earlier failure/warning evidence remain intact.
+### Nonallocating nil/containment qualification (2026-11-11)
+
+Tested `bf958b8220c1b9d08d4089d9ca9b8c2ef839345d`, stacked on #280 head
+`5e37be82a547dd4e88371cb927bea3effa3bb6e4`, provisionally accepted by review
+5865274115. #279 remains the main-targeted integration PR for the pending text
+stack, including accepted #278. Parent queued checks are not integration evidence.
+
+Uuid::nil compares against a fixed canonical literal. Containment validates both
+addresses without rendering keys, then retains the existing scope/length/element
+prefix checks. Rendering and ordering share that same private full-address
+validator. Empty, invalid-element and partial addresses retain the same error,
+including when different scopes or lengths could otherwise short circuit.
+Public values/encoding, UUID normalization and allocator lifetimes are unchanged.
+
+The new standalone test observes zero C++ new/new[] for valid calls. Nil cases
+include every UUID digit position made nonzero with uppercase input, canonical
+nil and an attached nil at its exact exhausted domain budget. The containment
+oracle is rendered text with delimiter-aware prefix boundaries, independent of
+the production element-prefix algorithm. Multiple scopes, alphabet boundaries,
+lengths 1/2/5/128, equality, strict prefixes and near misses are exercised.
+Invalid operands on each side cover empty, invalid indices and partial addresses
+across scope/length combinations. Exception allocations are excluded from the
+zero-allocation claim. Existing ordering/address/UUID tests remain active.
+
+Two negative controls link the new test to values.cpp from #280 head and run
+nil and containment independently. Each rejects its prior allocating helper as
+expected. Sources, commands and logs are retained; no product-source change is
+made for those controls.
+
+Owner metrics match #280 in all four CPU configurations: single/four-selection
+selected live/peak 321185/392475, cumulative work 420714/790115, boundaries
+2761/3268 and 3707/5921, retained/peak requests 321265/321938 and 392555/395077,
+census 321153/392251, and 3289/6077 failure sites fully reclaimed. These owner
+fixtures do not establish the helpers' allocation removal; the direct independent
+controls do. No layout, physical-memory, timing or GPU claim follows.
+
+Next: detached temporary identity/argument copies, then membership callable/
+recursion and declaration/binding setup budgets, combined resources and operation
+integration. Earlier failed/cancelled runs and warnings remain preserved. No GPU,
+live DB, browser/full accepted-baseline rerun or performance qualification.
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five
+cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting native
+handoff/snapshot checks and six standalone warm CTests. Both prior-source negative
+controls rejected the allocating helpers as expected. No build/test/helper
+warnings or errors occurred in this run. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+
+The final tested-to-head delta contains only four Markdown evidence/status files.
+Verified archive: `setup-evidence/identity-validation-domain-bf958b82.tar.gz`.
+Commands, source/configuration, logs, binary/runtime hashes, layouts and separate
+nil/containment negative controls are retained. SHA256SUMS manifest digest:
+
+    2bcfb23569e74a58316857e384018fe805a7a6f70cdfec30626932bd35a00e0a
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. At parent recheck, #280 smoke
+43099228124 and warm 43099228183 reported success; native 43099228319 was running.
+These workflow states do not imply stack integration or qualify this new head.
+
+### Adoption argument and declaration identity qualification (2026-11-11)
+
+Tested `ccd8d4d9102379b6e85ce23858456f2d4c22acb5`, stacked on #281 head
+`15db4b816456fb9ff299801daac42e1624b50ead`, provisionally accepted by review
+5865407113. #279 remains the main-targeted integration PR; pending stack heads
+are not treated as merged or fully accepted.
+
+Owner and binding row/field arguments now use const references through construction,
+avoiding detached argument copies while retaining independent domain-owned maps.
+The temporary aggregate OccurrenceKey explicitly constructs its UUID in the
+reservation domain before allocation; its full-expression lifetime is unchanged.
+The legacy consumed declaration argument remains by value. Logical input admission
+and selected retained map copies are unchanged; this is not a complete setup gate.
+
+The added control verifies caller vector backing and values are unchanged by
+adoption, destroys those caller tables, and checks the owner's independent maps.
+Existing detached snapshots, shared alias lifetime, exact reservation boundaries,
+refusal/retry and exhaustive allocation failure sweeps remain active.
+
+Initial source `8e01828dee8ea71e20d6cc0ba98744ac87407226` built successfully but all
+four exchange-owner processes stopped at the older strict peak-greater-than-live
+assertion. Removing transient argument copies allows retained storage to dominate
+the peak. The correction permits equality while requiring observed temporary
+releases and full teardown reclamation. No product behavior changed in that
+correction. The failed attempt is preserved in
+`setup-evidence/adoption-arguments-domain-8e01828d.tar.gz`, manifest digest:
+
+    c0a4467703eeb1bfdd92931d62c33195180541076304e62ecdb6fab14a63e500
+Single/four-selection metrics agree across workers 1/2 and bulk/direct:
+selected live/peak 321185/392475; cumulative allocation work 420751/790263;
+byte/work boundaries 2761/3269 and 3707/5925. Retained/peak requests are now
+321265/321265 and 392555/392555, with census 321153/392251 unchanged.
+Allocation sites fall from 3289/6077 to 3271/5927; every site is injected and
+reclaimed, with zero remaining blocks. Failure peaks are 321250/392540.
+The newly charged UUID adds 37/148 cumulative bytes for one/four selections,
+without changing retained domain bytes. These are requested-allocation witnesses,
+not physical memory or dedicated-host performance measurements.
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six standalone warm CTests. No build/test/helper warnings or errors in
+the corrected run. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no GPU computation.
+No live database, browser, full accepted-baseline rerun or performance qualification.
+
+Final tested-to-head changes are limited to four Markdown evidence/status records.
+Verified archive: `setup-evidence/adoption-arguments-domain-ccd8d4d9.tar.gz`.
+Commands, source/configuration, logs, binary/runtime hashes and layouts are retained.
+SHA256SUMS manifest digest:
+
+    a929abe8fc7d4eeb562e49a5b980c6c9d3090e524b423239d5237cbf0f1d1d90
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. At parent inspection, #281 smoke
+43101300624 and warm 43101300677 succeeded; native 43101300728 was queued.
+Next: remaining identity copies outside these paths, membership callable/recursion
+and declaration/binding setup budgets, then combined resources and operations.
+
+### Byte-expansion temporary identity qualification (2026-11-11)
+
+Tested `22c4699bac19d4961d241d8efbfb7aff8115a3ad`, stacked on #282 head
+`29b82129cd040b3bbe3fda33d2b85a12e181f904`, provisionally accepted by review
+5865626048. #279 remains main-targeted integration; the dependent stack is unmerged.
+
+The private ByteRef character/byte identities are borrowed from stable source
+tools during normalization/projection. The source tool table is never mutated by
+those consumers, and no pointer is stored in their published output. Definition
+and provenance values still copy their own identities. Legacy and structural
+projection tests now destroy a local source bundle before checking output values,
+including exact UTF-8 provenance, repeated bytes and pinned revisions. Existing
+malformed/reordered/stale input rejection remains active.
+
+A focused local probe includes the production translation unit and observes C++
+new requests of 37 bytes during expansion only, after fixture/index construction.
+Five letters yield 13 byte rows and zero such requests. Rebuilding the same probe
+against #282's letter_projection.cpp yields 52 requests and rejects that previous
+implementation. This supports removal of the four UUID character copies per row;
+it does not claim zero total allocation or account for addresses/path/table/string
+backing. Both helper sources, commands, build logs and results are retained.
+
+Owner metrics match #282 in all four CPU configurations: single/four selection
+selected live/peak 321185/392475, work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251 and 3271/5927 failure sites fully reclaimed. Those unchanged
+owner totals do not establish the expansion removal; initial projection is outside
+adoption. No physical-memory or dedicated-host performance claim follows.
+
+Remaining initial projection indexes, provenance/equivalence copies and rendering
+temporaries are still distinct from independent published outputs. Membership
+callable/recursion and declaration/binding setup budgets remain open, followed by
+combined resources and operation integration. No GPU, live DB or browser work.
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five
+cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting native
+handoff/snapshot checks and six standalone warm CTests. The prior-source expansion
+probe failed the zero-copy predicate as expected; the current probe passed.
+No build/test/helper warnings or errors. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. No performance claim.
+
+Final tested-to-head changes contain only four Markdown evidence/status records.
+Verified archive: `setup-evidence/projection-temporaries-domain-22c4699b.tar.gz`.
+Commands, source/configuration, logs, binary/runtime hashes, layouts and both
+expansion probe sources/results are retained. SHA256SUMS manifest digest:
+
+    e913ad7f9b704e8bf3813d8b7438d648dee065e491d007a386078d899632fafe
+
+Raw artifacts have not been independently inspected remotely. Hosted qualification
+and review remain required. Parent #282 smoke 43104595184 succeeded; native
+43104595076 was still running at recheck. Prior stack failures remain preserved.
+
+### Occurrence rendering argument qualification (2026-11-11)
+
+Tested `fa3bef8fde62df7cc18bb02c4822c430bdc71e09`, stacked on #283 reviewed head
+`38e81a957066e85294a0afe2555fb8dcc27090df`. Review 5866277807 reports no blocking
+finding and green native 43106388266/smoke 43106388225, permitting continuation.
+
+Selection, part and contact rendering in project_letters now passes existing
+study/OccurrenceId components to a private helper rather than constructing an
+owning temporary OccurrenceKey. Public occurrence_text delegates to the same
+helper; nil-study/path-length rejection, error message and output format are
+unchanged. The output still owns its text. No public API, domain attachment,
+independent snapshots or owner refusal/exact-retry behavior changes.
+
+Tests explicitly cover normalized uppercase UUID input, UINT64_MAX entry,
+UINT32_MAX byte ordinal, zero ordinals, separators, nil study and invalid path
+lengths 1/3. Existing source-death and projection/structural controls remain active.
+A focused local probe compares the old aggregate-key call shape with the new
+component call and requires identical text. For aggregate/byte cases, UUID-sized
+37-byte requests fall from 2 to 1; the byte case's 8-byte path request falls from
+1 to 0. These size-filtered observations support the bounded source change; output
+string allocation remains and zero total allocation is not claimed. Probe source,
+commands, binary and build/output logs are archived.
+
+#279 remediation is separate from product validation: original combined-head native
+43098106376, viewport 43098106428 and smoke 43098106405 remained queued without
+jobs. Both cancellation endpoints returned 409 (not queued yet); rerun returned
+403 (already running). Close/reopen preserved reviewed head `5f1ca0c3` and triggered
+fresh native 43115507493, viewport 43115507480 and smoke 43115507510. Old attempts
+remain preserved, never relabeled. The original API snapshots are retained locally
+as setup-evidence/pr279-run-*-before.json. No empty commit, rewrite or descendant
+suite rerun was used to repair the queue. Integration requires maintainer disposition.
+
+Owner metrics remain unchanged in all four CPU configurations: single/four selection
+selected live/peak 321185/392475, work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251, with 3271/5927 failure sites fully reclaimed. These owner
+observations do not prove the initial-rendering allocation removal.
+
+The 2-direct-exchange_commit log contains one Taichi ticache.lock warning after
+its final case_failures=0 PASS marker. The verifier explicitly checks that order
+and permits only that inspected diagnostic; it remains in the archive. No cache
+cleanup or rerun was used to erase it. No build/probe warning or product error.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five
+cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting native
+handoff/snapshot checks and six warm CTests. Clang15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no GPU/DB/browser-model
+or performance qualification. The browser was used only to inspect the CI queue.
+Final tested-to-head delta is four Markdown records. Verified archive
+`setup-evidence/occurrence-rendering-domain-fa3bef8f.tar.gz`; manifest digest:
+
+    70798865e9d3a83f485c7ece145ba9f61e721b9f1cb1051f69b0ee86bb0ab5b4
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification/review remain required. At final recheck, #279 fresh smoke
+43115507510 and viewport 43115507480 passed; native 43115507493 had passed build
+and projection-values and was running its matrix. No merge is inferred.

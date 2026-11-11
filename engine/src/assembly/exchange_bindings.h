@@ -73,11 +73,11 @@ class ExchangeBindings {
              const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &, PreparationWork &);
   CaptureResult capture(const LetterProjection &, std::uint64_t capture_work);
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
-                   std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>);
+                   const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &);
   ExchangeBindings(field::Harness &, const LetterProjection &,
                    std::shared_ptr<const LetterExchangeContract>,
                    std::shared_ptr<const MembershipFields>,
-                   std::vector<OccurrenceBinding>, std::vector<ExchangeFieldBinding>, const std::shared_ptr<ReservationDomain> & = {});
+                   const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &, const std::shared_ptr<ReservationDomain> & = {});
   field::UpdateResult validate(std::uint64_t generation, std::uint64_t work) const;
   struct Edge {
     std::size_t row;

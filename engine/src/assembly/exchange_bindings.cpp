@@ -33,17 +33,17 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const std::shared_ptr<Rese
 }
 
 ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
-    LetterExchangeContract contract, std::vector<OccurrenceBinding> occurrences,
-    std::vector<ExchangeFieldBinding> fields)
+    LetterExchangeContract contract, const std::vector<OccurrenceBinding> &occurrences,
+    const std::vector<ExchangeFieldBinding> &fields)
     : ExchangeBindings(h, projection,
         std::make_shared<const LetterExchangeContract>(std::move(contract)),
         std::make_shared<const MembershipFields>(MembershipFields::collect(projection,true)),
-        std::move(occurrences), std::move(fields)) {}
+        occurrences, fields) {}
 
 ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
     std::shared_ptr<const LetterExchangeContract> contract,
-    std::shared_ptr<const MembershipFields> memberships, std::vector<OccurrenceBinding> occurrences,
-    std::vector<ExchangeFieldBinding> fields, const std::shared_ptr<ReservationDomain> &domain)
+    std::shared_ptr<const MembershipFields> memberships, const std::vector<OccurrenceBinding> &occurrences,
+    const std::vector<ExchangeFieldBinding> &fields, const std::shared_ptr<ReservationDomain> &domain)
     : ExchangeBindings(h,domain) {
   const auto &limits = h.prepared_storage().capacity.limits();
   const ExchangeMap<ExchangeFieldBinding> trusted(fields,domain);

@@ -44,7 +44,11 @@ int main() {
     check(b.recipe_version == 2 && b.occurrences.empty() &&
               b.structural_occurrences.size() == 15,
           "coordinate-free aggregate and all exact byte alternatives");
-    auto p = project_letters(b);
+    // Published identities must outlive the source of borrowed expansion refs.
+    auto p = [&] {
+      const auto source = b;
+      return project_letters(source);
+    }();
     check(std::all_of(p.occurrences().begin(), p.occurrences().end(),
                       [](const auto &o) { return o.slot == -1; }),
           "structural projection assigns no numerical slots");

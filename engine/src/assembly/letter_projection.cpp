@@ -96,7 +96,9 @@ void byte_definition(const Tools &tools, const warm::Tool &t,
 }
 struct ByteRef {
   std::vector<std::uint32_t> path;
-  warm::ToolRef character, byte;
+  // The source tool table is stable for the entire expansion consumer call.
+  // Published provenance/occurrences still copy their own identities.
+  const warm::ToolRef *character, *byte;
 };
 std::vector<ByteRef> expand(const Tools &tools, const warm::Tool &letter) {
   need(letter.notation && !letter.notation->empty() &&
@@ -121,7 +123,7 @@ std::vector<ByteRef> expand(const Tools &tools, const warm::Tool &letter) {
                       static_cast<unsigned char>(encoded[j]));
       need(out.size() < std::size_t(INT32_MAX),
            "byte occurrence count overflow");
-      out.push_back({{std::uint32_t(i), std::uint32_t(j)}, c.ref, ref});
+      out.push_back({{std::uint32_t(i), std::uint32_t(j)}, &c.ref, &ref});
     }
     exact_form += encoded;
   }
@@ -182,7 +184,7 @@ warm::Bundle normalize_letters(warm::Bundle b,
       const warm::OccurrenceId id{r.entry, {v.path.begin(),v.path.end()}};
       const auto &state = r.bytes[i].initial;
       b.occurrences.push_back(
-          {id, v.byte.object, 0, state.position, state.velocity});
+          {id, v.byte->object, 0, state.position, state.velocity});
       selection.parts.push_back(id);
     }
     b.selections.push_back(std::move(selection));
@@ -221,7 +223,7 @@ warm::Bundle normalize_structural_letters(
     warm::Selection selection{r.entry, r.exposure, {}};
     for (const auto &v : expected) {
       const warm::OccurrenceId id{r.entry, {v.path.begin(),v.path.end()}};
-      b.structural_occurrences.push_back({id, v.byte.object, 0});
+      b.structural_occurrences.push_back({id, v.byte->object, 0});
       selection.parts.push_back(id);
     }
     b.selections.push_back(std::move(selection));
@@ -233,12 +235,17 @@ warm::Bundle normalize_structural_letters(
 bool operator==(const OccurrenceKey &a, const OccurrenceKey &b) {
   return a.study == b.study && a.source == b.source;
 }
-std::string occurrence_text(const OccurrenceKey &k) {
-  need(!k.study.nil() && (k.source.path.empty() || k.source.path.size() == 2),
+namespace {
+std::string occurrence_text_parts(const warm::Uuid &study, const warm::OccurrenceId &source) {
+  need(!study.nil() && (source.path.empty() || source.path.size() == 2),
        "invalid occurrence key");
-  auto text = std::string(k.study.str()) + "/" + std::to_string(k.source.entry);
-  for (auto ordinal : k.source.path) text += "/" + std::to_string(ordinal);
+  auto text = std::string(study.str()) + "/" + std::to_string(source.entry);
+  for (auto ordinal : source.path) text += "/" + std::to_string(ordinal);
   return text;
+}
+}  // namespace
+std::string occurrence_text(const OccurrenceKey &k) {
+  return occurrence_text_parts(k.study,k.source);
 }
 
 LetterProjection project_letters(const warm::Bundle &b) {
@@ -277,7 +284,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
       provenance.emplace(
           s.parts[i],
           ByteProvenance{
-              {out.study_, aggregate}, v.character, v.path[0], v.path[1]});
+              {out.study_, aggregate}, *v.character, v.path[0], v.path[1]});
     }
     if (s.exposure == warm::Exposure::Aggregate)
       active.insert(aggregate);
@@ -291,12 +298,12 @@ LetterProjection project_letters(const warm::Bundle &b) {
     const auto &g =
         *std::find_if(b.geometry.begin(), b.geometry.end(),
                       [&](const auto &v) { return v.object == id; });
-    Definition d{warm::key(id), *t.mass, point(g.centroid), {}, {}};
+    Definition d{InputText(warm::key(id)), *t.mass, point(g.centroid), {}, {}};
     for (const auto &s : g.spheres)
       d.components.push_back({point(s.centre), s.radius});
     for (const auto &p : t.parents)
       d.parents.push_back(
-          {warm::key(p.target.object), p.ordinal, p.contribution});
+          {InputText(warm::key(p.target.object)), p.ordinal, p.contribution});
     out.structural_input_.definitions.push_back(std::move(d));
   }
   for (const auto &[id, o] : ordered) {
@@ -309,11 +316,11 @@ LetterProjection project_letters(const warm::Bundle &b) {
     if (equivalent.count(id)) record.complete_character = equivalent.at(id);
     out.occurrences_.push_back(record);
     out.structural_input_.occurrences.push_back(
-        {occurrence_text(k), warm::key(o.definition), o.node});
+        {InputText(occurrence_text(k)), InputText(warm::key(o.definition)), o.node});
     if (b.recipe_version == 1) {
       const auto &initial = *legacy.at(id);
       out.input_.occurrences.push_back(
-          {occurrence_text(k), warm::key(o.definition), slot, o.node,
+          {InputText(occurrence_text(k)), InputText(warm::key(o.definition)), slot, o.node,
            point(initial.position), point(initial.velocity)});
     }
     if (record.active)
@@ -324,22 +331,22 @@ LetterProjection project_letters(const warm::Bundle &b) {
                                 p.contribution});
   }
   for (const auto &s : b.selections) {
-    Selection selection{occurrence_text({out.study_, {s.entry, {}}}),
+    Selection selection{InputText(occurrence_text_parts(out.study_, {s.entry, {}})),
                         {},
                         s.exposure == warm::Exposure::Aggregate
                             ? Exposure::Aggregate
                             : Exposure::Parts};
     for (const auto &id : s.parts)
-      selection.parts.push_back(occurrence_text({out.study_, id}));
+      selection.parts.push_back(InputText(occurrence_text_parts(out.study_, id)));
     out.structural_input_.selections.push_back(std::move(selection));
   }
   for (const auto &c : b.contacts)
     out.structural_input_.contacts.push_back(
-        {occurrence_text({out.study_, c.a}),
-         occurrence_text({out.study_, c.b})});
+        {InputText(occurrence_text_parts(out.study_, c.a)),
+         InputText(occurrence_text_parts(out.study_, c.b))});
   for (const auto &f : b.focal_fields)
     out.structural_input_.focal_fields.push_back(
-        {static_cast<GroupKind>(f.kind), warm::key(f.object)});
+        {static_cast<GroupKind>(f.kind), InputText(warm::key(f.object))});
   if (b.recipe_version == 1) {
     out.input_.definitions = out.structural_input_.definitions;
     out.input_.selections = out.structural_input_.selections;
@@ -445,13 +452,39 @@ template<class T> T input_row(const T &row, const std::shared_ptr<detail::Reserv
   return row;
 }
 Definition input_row(const Definition &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {row.id,row.mass,row.centroid,
+  InputTable<ParentOccurrence> parents{detail::SharedReservationAllocator<ParentOccurrence>(domain)};
+  parents.reserve(row.parents.size());
+  for (const auto &p : row.parents)
+    parents.push_back({InputText(p.value.begin(),p.value.end(),detail::SharedReservationAllocator<char>(domain)),p.ordinal,p.count});
+  return {InputText(row.id.begin(),row.id.end(),detail::SharedReservationAllocator<char>(domain)),row.mass,row.centroid,
       InputTable<Sphere>(row.components.begin(),row.components.end(),detail::SharedReservationAllocator<Sphere>(domain)),
-      InputTable<ParentOccurrence>(row.parents.begin(),row.parents.end(),detail::SharedReservationAllocator<ParentOccurrence>(domain))};
+      std::move(parents)};
 }
 Selection input_row(const Selection &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {row.aggregate,
-      InputTable<std::string>(row.parts.begin(),row.parts.end(),detail::SharedReservationAllocator<std::string>(domain)),row.exposure};
+  InputTable<InputText> parts{detail::SharedReservationAllocator<InputText>(domain)};
+  parts.reserve(row.parts.size());
+  for (const auto &part : row.parts)
+    parts.emplace_back(part.begin(),part.end(),detail::SharedReservationAllocator<char>(domain));
+  return {InputText(row.aggregate.begin(),row.aggregate.end(),detail::SharedReservationAllocator<char>(domain)),
+      std::move(parts),row.exposure};
+}
+InputText input_text(const InputText &text, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return InputText(text.begin(),text.end(),detail::SharedReservationAllocator<char>(domain));
+}
+Occurrence input_row(const Occurrence &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {input_text(row.id,domain),input_text(row.definition,domain),row.slot,row.study_node,row.position,row.velocity};
+}
+StructuralOccurrence input_row(const StructuralOccurrence &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {input_text(row.id,domain),input_text(row.definition,domain),row.study_node};
+}
+Contact input_row(const Contact &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {input_text(row.a,domain),input_text(row.b,domain)};
+}
+Membership input_row(const Membership &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {input_text(row.occurrence,domain),input_text(row.group,domain)};
+}
+FocalField input_row(const FocalField &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {row.kind,input_text(row.value,domain)};
 }
 template<class Input> Input projection_input(const Input &source,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
@@ -471,7 +504,7 @@ template<class Input> Input projection_input(const Input &source,
 }
 }
 // Explicit owner copies attach table, path, address, text and UUID backing.
-// Ordinary value copies detach; input text remains outside this domain.
+// Ordinary value copies detach, including every retained input string.
 LetterProjection::LetterProjection(const LetterProjection &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
     : study_(other.study_,domain), recipe_(projection_recipe(other.recipe_,domain)),

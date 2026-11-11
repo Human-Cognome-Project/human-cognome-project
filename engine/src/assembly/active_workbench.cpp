@@ -102,21 +102,21 @@ StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
     require(input.capacity < std::numeric_limits<int>::max());
     const auto id = occurrence(study(), {v.entry, {}});
     input.definitions.push_back(
-        {local_name(v.ref), v.mass, v.centroid, {v.components.begin(),v.components.end()}, {}});
-    input.occurrences.push_back({id, local_name(v.ref), input.capacity++, 0,
+        {InputText(local_name(v.ref)), v.mass, v.centroid, {v.components.begin(),v.components.end()}, {}});
+    input.occurrences.push_back({InputText(id), InputText(local_name(v.ref)), input.capacity++, 0,
                                  point(v.initial.position),
                                  point(v.initial.velocity)});
   }
   for (const auto &e : local_->context)
     input.memberships.push_back(
-        {occurrence(study(), e.occurrence), local_name(e.target)});
+        {InputText(occurrence(study(), e.occurrence)), InputText(local_name(e.target))});
   std::set<warm::OccurrenceId> moved;
   for (const auto &p : local_->placements) {
     require(moved.insert(p.occurrence).second);
     const auto id = occurrence(study(), p.occurrence);
     auto found =
         std::find_if(input.occurrences.begin(), input.occurrences.end(),
-                     [&](const auto &o) { return o.id == id; });
+                     [&](const auto &o) { return std::string(o.id) == id; });
     require(found != input.occurrences.end());
     found->position = point(p.initial.position);
     found->velocity = point(p.initial.velocity);
@@ -127,7 +127,7 @@ StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
             resized.insert(g.shared_definition).second);
     auto found = std::find_if(
         input.definitions.begin(), input.definitions.end(),
-        [&](const auto &d) { return d.id == warm::key(g.shared_definition); });
+        [&](const auto &d) { return std::string(d.id) == warm::key(g.shared_definition); });
     require(found != input.definitions.end());
     found->centroid = g.centroid;
     found->components.assign(g.components.begin(),g.components.end());
