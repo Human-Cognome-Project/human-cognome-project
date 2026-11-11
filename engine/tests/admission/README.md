@@ -4444,3 +4444,67 @@ layouts and the identity audit helper/results. SHA256SUMS manifest digest:
 This is contributor local qualification of the combined head. Hosted qualification
 of the updated head and maintainer integration remain pending; neither #279's
 prior-head jobs nor #278's accepted CI run substitutes for those checks.
+### Allocation-free ObjectKey ordering qualification (2026-11-11)
+
+Tested source `86e4626e83c6f7ecd6e506571f3eaad478c73350`, stacked on provisionally
+accepted #279 head `5f1ca0c3a6fdf3d4316ff861c521e92e15907dc1`. Review 5865153858
+authorizes this bounded implementation while the combined stack's hosted checks
+run. #279 is the main-targeted integration PR; #275–#277 remain pending until
+integration. Accepted main/#278 are already included. No history is rewritten.
+
+ObjectKey ordering now validates both addresses before comparing scopes and
+couplet indices. The rendered-key oracle remains unchanged. Tests cover every
+couplet transition, scopes, strict prefixes, long addresses, malformed left/right
+operands even across different scopes, and independently counted zero C++ new for
+valid comparisons. Invalid-input exception allocation is not claimed zero.
+Nil, containment, identity copies, encoding and numerical policy are unchanged.
+
+A negative control links the new test against values.cpp from #279's prior head
+and confirms the no-allocation test rejects the old comparator. The diagnostic
+wrapper initially renamed main without adding an explicit success return; its
+compiler warning is preserved in negative-initial-build.log. Adding a return to
+the local diagnostic copy corrected that helper warning. Product source did not
+change and the corrected negative control passed. This is an expected negative
+control, not a product test failure.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / work boundaries | 2761 / 3268 | 3707 / 5921 |
+| Selected live / peak requested bytes | 321185 / 321185 | 392475 / 392475 |
+| Selected cumulative allocation work | 420714 | 790115 |
+| Allocation sites, all reclaimed | 3289 | 6077 |
+| Retained / peak requested bytes | 321265 / 321938 | 392555 / 395077 |
+| Retained capacity census | 321153 | 392251 |
+
+All four CPU configurations agree. Relative to #279, 828 / 1680 temporary
+allocation sites disappear; selected reservation totals, retained storage and
+peak observations are unchanged. The diamond-graph witness reports zero
+unselected 37-byte requests and 162 failure sites; retained/temporary UUID and
+address accounting remain exact. Requested bytes are not RSS or performance.
+
+Next: nil/containment validation, detached temporary identity/argument copies,
+then callable/recursive traversal and declaration/binding setup budgets before
+combined resources and operation integration. Earlier failures, cancelled runs
+and warnings remain preserved. No GPU, live DB, browser/full accepted-baseline
+rerun or performance qualification is claimed.
+Both builds and all 46 scoped CPU checks passed: 20 exchange processes (five
+cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting native
+handoff/snapshot checks and five standalone warm CTests including the new ordering
+test. The prior-comparator negative control rejected the old implementation as
+expected. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. Product builds have no
+warnings/errors. One Taichi offline-cache lock warning follows PASS in
+1-bulk-exchange_commit.log; it and the corrected diagnostic-wrapper warning are
+retained. No other build/test diagnostics were found.
+
+The final tested-to-head delta contains only four Markdown evidence/status files.
+Verified archive: `setup-evidence/object-key-ordering-domain-86e4626e.tar.gz`.
+Commands, source/configuration, logs, binary/runtime hashes, layouts and the
+negative-control source/helper are retained. SHA256SUMS manifest digest:
+
+    09002b6a1d4761b6d2d911eeebba23a3765036d8425f6c98c602adf3132238a6
+
+Raw local artifacts have not been independently inspected remotely. Hosted checks
+remain authoritative. At parent inspection, #279 latest-head native 43098106376,
+viewport 43098106428 and smoke 43098106405 were queued; no full pass or integration
+is inferred. Original commits and earlier failure/warning evidence remain intact.

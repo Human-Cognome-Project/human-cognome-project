@@ -1754,3 +1754,29 @@ ordering/equality properties, malformed-input behavior and unchanged owner/graph
 semantics. Nil/containment and temporary-copy changes can follow as separate
 bounded slices. Then meter membership/declaration/binding setup, address callable
 and stack costs, and reconcile combined resources before operation integration.
+### Allocation-free ObjectKey ordering (contribution awaiting review)
+
+Following #279 review 5865153858, ObjectKey ordering validates both addresses
+before inspecting scopes, then compares canonical scope text and full couplet
+indices lexicographically. Fixed-width full couplets and the byte-ordered Base62
+alphabet preserve the `key(a) < key(b)` ordering, including strict prefixes.
+Empty, invalid-element and partial addresses still throw the same warm::Error,
+even when the scopes alone would decide the ordering. Equality, rendering,
+containment and UUID nil/copy behavior are unchanged.
+
+The standalone ordering test compares against the unchanged rendered-key oracle,
+checks every adjacent couplet transition and reflexive case, and crosses three
+scopes, address lengths 1/2/5/128 and alphabet-boundary values. It independently
+observes zero C++ new calls for each valid comparison. Invalid left and right
+operands cover empty addresses, invalid first/second indices and partial tails
+or non-tail partials across all scope/length fixtures. A negative control links
+the new test to the previous implementation and confirms it rejects allocating
+comparison. Invalid-input exception allocation is not claimed to be zero.
+
+This eliminates temporary comparison rendering in owner membership map/set
+lookups; it does not admit or meter comparison traversal work. Selected retained
+backing remains governed by the existing domains. Remaining next slices are
+nil/containment validation, detached temporary identity/argument copies, then
+membership callable/recursion and declaration/binding setup work before combined
+accounting and operation integration. No ABI, encoding, numerical or backend
+policy change is intended.

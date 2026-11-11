@@ -289,6 +289,16 @@ encoded ordering and invalid-address rejection, with an independent rendering
 oracle and no-allocation controls. This audit does not change production behavior
 or establish complete constructor/combined accounting.
 
+
+**Ordering contribution (awaiting review):** #279 updated-head review 5865153858
+accepts combined head `5f1ca0c3a6fdf3d4316ff861c521e92e15907dc1` provisionally
+and authorizes allocation-free ObjectKey ordering. #279 is retargeted to main as
+the integration PR; #275–#277 remain pending reconciliation after integration.
+All 46 scoped local CPU checks passed, with one preserved post-PASS cache warning.
+The ordering contribution preserves the rendered-key oracle and both-address
+validation, with zero-allocation and malformed-input controls. Nil/containment,
+temporary copies and traversal/setup accounting remain separate subsequent work.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

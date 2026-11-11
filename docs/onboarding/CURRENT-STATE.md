@@ -4,6 +4,15 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
+**Active contribution (2026-11-11):** allocation-free ObjectKey ordering on
+provisional #279 head `5f1ca0c3`, authorized by updated-head review 5865153858.
+Both-address validation and the rendered-key ordering oracle are preserved.
+All 46 scoped local CPU checks passed; a post-PASS cache warning remains recorded.
+Awaiting review and hosted qualification. Next: nil/containment validation and
+temporary identity copies, then traversal/setup budgets and combined resources.
+#279 is the main-targeted integration PR for the pending text stack; dependent PRs
+remain unmerged until its hosted qualification and maintainer disposition.
+
 **Maintainer reconciliation — 2026-11-11:** #278 is accepted and merged at `3cadbff286b0c4553808595f624f8a98add36682`, reviewed head `07f2d66763631afe8d62438351bfd7ece1f149c8`. Native 43087248989, smoke 43087248327 and viewport 43087248550 passed. Inspected native and viewport installation logs confirm the mirror-list rewrite and archive.ubuntu.com traffic. The earlier pending labels are historical. #279 identity/reference input text is source-reviewed and provisionally accepted at `11a4813759c1e384fa6b077499c9f06998c66f58` (review 5864859891); smoke/viewport are green and native matrix qualification is pending. #275–#277 and #279 remain unmerged. Current main at 6067c641 is brought into this stack by a normal merge; the combined head a75e3408 passed 45 scoped local CPU checks plus mirror/CI contract checks. Updated-head hosted qualification and maintainer integration remain pending. Next bounded work: remaining identity/comparison-formatting and membership traversal/callable audit, then complete setup, combined accounting and operation/control integration.
 
 
@@ -46,7 +55,7 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](../../engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
 | Latest accepted engine evidence | #274 head `ce3642ee463beb76948a2497c9aeb50172c3267d`: native 43030713058 and smoke 43030712985 passed. All 12 native jobs succeeded; inspected regression logs total 115 tests, database addressed_reads=24/private_reads=0. |
 | Accepted exchange owner | Selected resource gates integrated through #274, including projection/declaration/catalogue/map UUIDs and top-level/nested retained input tables. Input text is provisionally reviewed through #277; other identities, setup and combined accounting remain open. |
-| Next implementation | Combined head locally qualified; hosted qualification/integration pending. Audit identifies allocation-free ObjectKey ordering as the next bounded implementation, followed by nil/temporary copies and membership/declaration/binding setup costs. |
+| Next implementation | Review allocation-free ObjectKey ordering; then nil/containment validation and detached identity/argument copies, followed by traversal/setup accounting. Pending text-stack integration remains tracked in #279. |
 | Factoring follow-up | #230 completes the first mechanical kernel extraction under [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229). Keep #229 open; further separation follows the resource/lifetime inventory. Layered onboarding is authorized on 2026-11-08; see the [migration plan](ONBOARDING-PLAN.md). |
 | Accepted tooling | [Local evidence runner](../../engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](../../engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](../../tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](../../engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](../../docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
@@ -62,7 +71,7 @@ Do not copy historical “next” instructions back into this table.
 
 ## Active and deferred work
 
-**Immediate work:** review the combined-head evidence and identity/setup audit, then implement allocation-free ObjectKey comparison preserving encoded ordering and invalid-address rejection. Hosted qualification/integration of the pending text stack remains separate.
+**Immediate work:** qualify/review the ObjectKey ordering contribution, then continue the remaining identity and setup-cost slices. Preserve the pending stack and historical evidence until integration.
 
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not
