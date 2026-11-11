@@ -3798,3 +3798,81 @@ prepayment, transient/retained overlap and graph failure/retry witnesses. Map/
 other owner UUIDs, input payload, complete setup, combined resources and operation/
 control integration remain separate. No GPU, live DB, browser rerun or full
 baseline qualification is claimed.
+
+### Temporary catalogue graph UUID qualification (2026-11-11)
+
+Tested source `f4082be65778d5f262f1e21c448516ad90bca0b7`, stacked on #270 head
+`065958cb068f453ecc17693850693275aede3b21`. Review 5858692092 found no blockers
+and authorized this slice. Parent smoke 43020338422 passed; native 43020338513
+was running at inspection. #268–#270 remain provisional; integration is through #267.
+
+Catalogue object copies now select the UUID domain before allocation for tools,
+state, reached and ancestor-target graph keys; the retained-only flag is removed.
+Existing address/node/retained payload attachment and graph semantics are preserved.
+
+The diamond fixture independently predicts 38 temporary UUID requests (1406 bytes)
+and 27 retained requests (999 bytes), with peak overlap 2405 bytes. Address
+requests remain separately measured: temporary 570, retained 180, overlap 750 bytes.
+All 1414 graph allocation-failure sites reclaim storage. Duplicate insertion adds
+and releases one UUID/address pair without changing values. Cycle rejection
+reclaims all backing; repairing the cycle permits an exact-budget retry.
+
+Important witness correction: UUID payload and ObjectKey comparison formatting
+both request 37 bytes. The initial size-only observer incorrectly counted both.
+The corrected pointer-aware observer classifies pre-admitted requests by allocation-
+work delta, checks their count against independent graph cardinalities, and tracks
+their releases. A same-sized detached negative control verifies the distinction.
+It reports 626 unselected 37-byte formatting requests separately in this fixture.
+Those comparison temporaries remain unselected setup work; no comparator change
+or complete setup accounting is claimed. Full budget sweeps, exact retry and
+catalogue snapshot/move lifetime controls remain active.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 1578 / 2083 | 2066 / 3747 |
+| Selected live / peak requested bytes | 284997 / 284997 | 350827 / 350827 |
+| Selected cumulative allocation work | 373907 | 703475 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320017 / 320690 | 390347 / 392869 |
+| Retained capacity census | 319905 | 390043 |
+
+All four CPU configurations agree. Compared with #270, cumulative selected work
+increases 1036 bytes in each fixture. Selected live/peak, whole-owner retained/
+peak requests, allocation-site counts and census are unchanged. Temporary graph
+UUID overlap is below the existing whole-owner peak. Reports overlap and must
+not be summed; layouts/encoding/numerical behavior are unchanged.
+
+Preserved initial run at `a4b1e3d34d45bccbc672792b97724c87e6797b30`: builds passed;
+four exchange_owner lanes failed the new size-only witness, so the remaining
+16 exchange processes did not run. Twelve prepared, seven supporting and four
+warm CTests passed; overall exit 1. Archive
+`setup-evidence/catalogue-graph-uuid-initial-a4b1e3d3.tar.gz`, SHA256SUMS:
+
+    9af193f7a094ca1865596bdd100cc580324885d619ed9e89d448a2a001bad594
+
+The correction is test-only; production graph attachment is unchanged. Initial
+raw logs remain intact. Earlier failures/cache warnings are preserved separately.
+
+Final corrected-source builds passed. All 43 scoped CPU checks passed: 20 exchange
+processes across workers 1/2 and bulk/default or direct/compiler-no-unroll,
+12 prepared CTests, seven supporting CTests and four warm CTests. Final build/run
+logs contain no warnings/errors. Source stayed clean/pinned; final delta is four
+Markdown files only. Pinned Clang 15/libstdc++ x64 and Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`, shared host; no timing claim.
+
+Evidence directory `catalogue-graph-uuid-domain-f4082be6` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and unchanged layout probe.
+Verified local archive: `setup-evidence/catalogue-graph-uuid-domain-f4082be6.tar.gz`.
+SHA256SUMS manifest digest:
+
+    2ee5d3002a844e47baba1677eef171f9ceb99a35d754ea96ee7318226400f15a
+
+Raw local artifacts have not been independently inspected remotely; hosted checks
+remain authoritative. Neither the initial failed run nor historical warnings are
+relabeled by this final pass.
+
+Next: retained ExchangeMap slot UUIDs, auditing default construction/reservation/
+copy before allocation and preserving inactive-slot reuse. Other owner identities,
+comparison-formatting/input payload, full setup, combined resources and operation/
+control integration remain separate. No GPU, live DB, browser rerun, full baseline
+or performance qualification is claimed.

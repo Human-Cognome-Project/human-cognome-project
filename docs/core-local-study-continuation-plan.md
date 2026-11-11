@@ -162,7 +162,7 @@ claim follows from this contribution.
 blocking findings. Smoke 43017931238 passed; native 43017931472 remains running
 at inspection. #268 remains provisional. Integrated acceptance is through #267.
 
-**Active contribution (awaiting review):** retained catalogue UUID payload in
+**Provisionally accepted (#270):** retained catalogue UUID payload in
 MembershipFields: study/recipe identities and contribution occurrence/group
 scope/revision references. Construct identities directly with the destination
 domain and select it before contribution payload allocation. Preserve ordinary
@@ -170,13 +170,26 @@ detached snapshots, moved lifetime, exact graph outputs, address/table attachmen
 independent requests, refusal/reclamation/retry and cycle/deduplication controls.
 Temporary graph-key UUIDs deliberately remain detached in this bounded slice.
 
-**Next concrete slice:** temporary catalogue graph-key UUIDs in tools, state,
+**Dependency review (2026-11-11):** #270 review 5858692092 accepts head
+`065958cb068f453ecc17693850693275aede3b21` for bounded continuation with no blockers.
+Smoke 43020338422 passed; native 43020338513 remains running at inspection.
+#268/#269 also remain provisional; integrated acceptance remains through #267.
+**Active contribution (awaiting review):** temporary catalogue graph-key UUIDs in tools, state,
 reached and ancestor-target sets. Extend the independent graph witness to count
 UUID requests separately from addresses, distinguish temporary/retained overlap,
 and prove prepayment, diamond deduplication, duplicate insertion, cycle rejection,
 all allocation-failure cleanup and exact retry. Map/other owner UUIDs and input
 payload remain separate before full setup, combined accounting and operation/
 control integration.
+**Next concrete slice after graph UUID review:** ExchangeMap retained slot UUIDs
+for occurrence study and field scope across owner/coordinator maps. Audit default
+slot construction, explicit setup copies, reservation growth and assignment
+before attaching payload; attachment after detached resize would be too late.
+Preserve inactive-slot backing, allocation-free reuse/erase/swap, domain lifetime,
+detached snapshots, refusal cleanup and exact retry. Other owner identities, comparison-formatting temporaries and
+input payload remain separate before complete setup, combined resources and
+operation/control integration.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

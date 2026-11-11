@@ -1472,3 +1472,36 @@ the census. Next: temporary graph-key UUIDs with independent transient/retained
 request witnesses. Map/other owner UUIDs, input payload, complete setup, combined
 resources and operation/control integration remain separate. #268/#269 are
 provisionally accepted; integrated acceptance remains through #267.
+
+### Temporary catalogue graph UUID domain (contribution awaiting review)
+
+The catalogue object helper now attaches every scope UUID before allocation,
+including keys in tools/state/reached maps and ancestor-target sets. The retained-
+only switch is removed. Existing retained UUID, address and node attachment and
+graph traversal/deduplication semantics are preserved. UUID representation and
+encoding are unchanged. These temporary payloads are charged while live and
+released after collection; their cumulative work remains charged.
+
+The pinned graph fixture identifies 15-byte address requests. UUID payload and
+comparison formatting both request 37 bytes: the observer tracks prepaid UUID
+blocks by pointer, checks their counts against independent graph cardinalities,
+and reports unselected same-sized requests separately. A detached 37-byte negative
+control qualifies that distinction. Separate counters check acquired/released
+bytes, transient/retained overlap and retained-only bytes after graph teardown.
+Its diamond has four visited vertices and five unique ancestor-set entries.
+Duplicate insertion checks the extra rejected UUID/address and exact reclamation.
+Cycle rejection checks prepayment/cleanup, then repairing the cycle must permit
+an exact-budget retry. Existing all-site failure injection, full byte/work
+refusal sweeps and detached/moved catalogue lifetime controls remain active.
+
+Next: retained ExchangeMap slot UUIDs, including setup/default construction and
+inactive-slot reuse. Other owner identities, input payload, full setup and combined
+accounting remain separate before operation/control integration. Selected reports
+overlap the census; no complete allocator, physical-memory or performance claim.
+#268–#270 are provisional; integrated acceptance remains through #267.
+
+Witness calibration exposed same-sized temporary allocations in ObjectKey ordering:
+operator< renders warm::key strings, including 37-byte UUID text copies. These
+comparison-formatting requests remain unselected setup payload, not graph-key
+UUID admission. The initial size-only witness failure is retained in admission
+evidence; no comparator behavior was changed to satisfy the new witness.
