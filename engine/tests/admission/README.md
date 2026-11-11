@@ -4508,3 +4508,61 @@ Raw local artifacts have not been independently inspected remotely. Hosted check
 remain authoritative. At parent inspection, #279 latest-head native 43098106376,
 viewport 43098106428 and smoke 43098106405 were queued; no full pass or integration
 is inferred. Original commits and earlier failure/warning evidence remain intact.
+### Nonallocating nil/containment qualification (2026-11-11)
+
+Tested `bf958b8220c1b9d08d4089d9ca9b8c2ef839345d`, stacked on #280 head
+`5e37be82a547dd4e88371cb927bea3effa3bb6e4`, provisionally accepted by review
+5865274115. #279 remains the main-targeted integration PR for the pending text
+stack, including accepted #278. Parent queued checks are not integration evidence.
+
+Uuid::nil compares against a fixed canonical literal. Containment validates both
+addresses without rendering keys, then retains the existing scope/length/element
+prefix checks. Rendering and ordering share that same private full-address
+validator. Empty, invalid-element and partial addresses retain the same error,
+including when different scopes or lengths could otherwise short circuit.
+Public values/encoding, UUID normalization and allocator lifetimes are unchanged.
+
+The new standalone test observes zero C++ new/new[] for valid calls. Nil cases
+include every UUID digit position made nonzero with uppercase input, canonical
+nil and an attached nil at its exact exhausted domain budget. The containment
+oracle is rendered text with delimiter-aware prefix boundaries, independent of
+the production element-prefix algorithm. Multiple scopes, alphabet boundaries,
+lengths 1/2/5/128, equality, strict prefixes and near misses are exercised.
+Invalid operands on each side cover empty, invalid indices and partial addresses
+across scope/length combinations. Exception allocations are excluded from the
+zero-allocation claim. Existing ordering/address/UUID tests remain active.
+
+Two negative controls link the new test to values.cpp from #280 head and run
+nil and containment independently. Each rejects its prior allocating helper as
+expected. Sources, commands and logs are retained; no product-source change is
+made for those controls.
+
+Owner metrics match #280 in all four CPU configurations: single/four-selection
+selected live/peak 321185/392475, cumulative work 420714/790115, boundaries
+2761/3268 and 3707/5921, retained/peak requests 321265/321938 and 392555/395077,
+census 321153/392251, and 3289/6077 failure sites fully reclaimed. These owner
+fixtures do not establish the helpers' allocation removal; the direct independent
+controls do. No layout, physical-memory, timing or GPU claim follows.
+
+Next: detached temporary identity/argument copies, then membership callable/
+recursion and declaration/binding setup budgets, combined resources and operation
+integration. Earlier failed/cancelled runs and warnings remain preserved. No GPU,
+live DB, browser/full accepted-baseline rerun or performance qualification.
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five
+cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting native
+handoff/snapshot checks and six standalone warm CTests. Both prior-source negative
+controls rejected the allocating helpers as expected. No build/test/helper
+warnings or errors occurred in this run. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+
+The final tested-to-head delta contains only four Markdown evidence/status files.
+Verified archive: `setup-evidence/identity-validation-domain-bf958b82.tar.gz`.
+Commands, source/configuration, logs, binary/runtime hashes, layouts and separate
+nil/containment negative controls are retained. SHA256SUMS manifest digest:
+
+    2bcfb23569e74a58316857e384018fe805a7a6f70cdfec30626932bd35a00e0a
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. At parent recheck, #280 smoke
+43099228124 and warm 43099228183 reported success; native 43099228319 was running.
+These workflow states do not imply stack integration or qualify this new head.

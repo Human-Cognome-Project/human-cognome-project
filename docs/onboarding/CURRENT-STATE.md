@@ -4,7 +4,16 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
-**Active contribution (2026-11-11):** allocation-free ObjectKey ordering on
+**Active validation contribution (2026-11-11):** nonallocating nil/containment
+validation on provisionally accepted #280 `5e37be82`, authorized by review
+5865274115. Both-address rejection and containment semantics are preserved.
+Both builds, 47 scoped local CPU checks and two prior-source negative controls
+passed without warnings. Awaiting review and hosted qualification. #280 smoke
+and warm workflows report success; native remains running at inspection.
+Next: detached identity/argument copies, followed by traversal/setup budgets.
+
+
+**Provisionally accepted #280 (2026-11-11):** allocation-free ObjectKey ordering on
 provisional #279 head `5f1ca0c3`, authorized by updated-head review 5865153858.
 Both-address validation and the rendered-key ordering oracle are preserved.
 All 46 scoped local CPU checks passed; a post-PASS cache warning remains recorded.
@@ -55,7 +64,7 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](../../engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
 | Latest accepted engine evidence | #274 head `ce3642ee463beb76948a2497c9aeb50172c3267d`: native 43030713058 and smoke 43030712985 passed. All 12 native jobs succeeded; inspected regression logs total 115 tests, database addressed_reads=24/private_reads=0. |
 | Accepted exchange owner | Selected resource gates integrated through #274, including projection/declaration/catalogue/map UUIDs and top-level/nested retained input tables. Input text is provisionally reviewed through #277; other identities, setup and combined accounting remain open. |
-| Next implementation | Review allocation-free ObjectKey ordering; then nil/containment validation and detached identity/argument copies, followed by traversal/setup accounting. Pending text-stack integration remains tracked in #279. |
+| Next implementation | Review nil/containment validation; then detached identity/argument copies, followed by callable/recursive traversal and declaration/binding setup accounting. Pending text-stack integration remains tracked in #279. |
 | Factoring follow-up | #230 completes the first mechanical kernel extraction under [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229). Keep #229 open; further separation follows the resource/lifetime inventory. Layered onboarding is authorized on 2026-11-08; see the [migration plan](ONBOARDING-PLAN.md). |
 | Accepted tooling | [Local evidence runner](../../engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](../../engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](../../tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](../../engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](../../docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
@@ -71,7 +80,7 @@ Do not copy historical “next” instructions back into this table.
 
 ## Active and deferred work
 
-**Immediate work:** qualify/review the ObjectKey ordering contribution, then continue the remaining identity and setup-cost slices. Preserve the pending stack and historical evidence until integration.
+**Immediate work:** review the nil/containment validation contribution, then continue temporary identity/argument copy accounting. Preserve pending-stack and historical evidence until integration.
 
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not

@@ -299,6 +299,18 @@ The ordering contribution preserves the rendered-key oracle and both-address
 validation, with zero-allocation and malformed-input controls. Nil/containment,
 temporary copies and traversal/setup accounting remain separate subsequent work.
 
+
+**Validation contribution (awaiting review):** #280 review 5865274115 accepts
+head `5e37be82a547dd4e88371cb927bea3effa3bb6e4` provisionally and authorizes
+nonallocating nil/containment validation. The contribution removes their temporary
+UUID/key rendering, preserving malformed-address rejection and containment
+semantics with independent allocation and rendered-prefix controls. Both builds,
+47 scoped CPU checks and two prior-source negative controls passed without warnings. Subsequent
+scope remains detached identity/argument copies, membership callable/recursion
+and declaration/binding setup work before combined accounting and operations.
+#279 remains the main-targeted text-stack integration PR; queued hosted jobs do
+not qualify integration and dependent PRs stay open until disposition.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

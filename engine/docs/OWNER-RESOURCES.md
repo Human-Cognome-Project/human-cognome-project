@@ -1780,3 +1780,31 @@ nil/containment validation, detached temporary identity/argument copies, then
 membership callable/recursion and declaration/binding setup work before combined
 accounting and operation integration. No ABI, encoding, numerical or backend
 policy change is intended.
+### Nonallocating nil and containment validation (contribution awaiting review)
+
+Following #280 review 5865274115, Uuid::nil compares its existing text against
+the canonical nil literal instead of constructing a temporary Uuid. Containment
+uses the same internal full-address validator as rendering and ObjectKey ordering,
+then performs the existing scope/length/element-prefix checks. It no longer
+renders keys solely to validate them. Both operands are validated before any
+scope or length short circuit; empty, invalid-element and partial addresses keep
+the same error message and rejection behavior. Rendering and ordering semantics,
+UUID normalization, public representations and allocator ownership are unchanged.
+
+The standalone test observes zero C++ new/new[] for valid nil and containment
+calls. Nil controls cover canonical nil, a nonzero hexadecimal digit in every
+UUID digit position (including uppercase input normalization), and an attached
+nil whose domain has exactly exhausted its 37-byte budget. Containment is checked
+against an independent rendered-text prefix oracle with explicit delimiter
+boundaries, using multiple scopes, lengths 1/2/5/128, alphabet boundaries, strict
+prefixes, equal keys and near misses. Invalid operands on both sides are checked
+across different scopes and lengths. Separate negative controls link the new test
+to the prior source and reject each old allocating implementation. Exception-path
+allocations are outside the zero-allocation claim. Existing ordering, address and
+UUID domain/lifetime tests remain active.
+
+This removes these validation temporaries; it does not meter traversal work or
+make all setup allocations selected. Next: detached temporary identity/argument
+copies, then membership callable/recursion and declaration/binding setup budgets,
+combined resources and operation/control integration. Preserve caller ownership,
+detached snapshots and current rejection/retry semantics in those later slices.
