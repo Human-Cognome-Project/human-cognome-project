@@ -187,7 +187,7 @@ Smoke 43022851916 passed; native 43022851847 remains running at inspection.
 The graph witness combines allocation observations with domain telemetry; only
 its expected structural counts are independent of that telemetry. Its initial
 failure and comparison-formatting gap remain preserved. Integration is through #267.
-**Active contribution (awaiting review):** ExchangeMap retained slot UUIDs
+**Provisionally accepted (#272):** ExchangeMap retained slot UUIDs
 for occurrence study and field scope across owner/coordinator maps. Audit default
 slot construction, explicit setup copies, reservation growth and assignment
 before attaching payload; attachment after detached resize would be too late.
@@ -196,13 +196,23 @@ detached snapshots, refusal cleanup and exact retry. Other owner identities, com
 input payload remain separate before complete setup, combined resources and
 operation/control integration.
 
-**Next concrete slice after map UUID review:** retained projection input top-level
+**Active contribution (awaiting review):** retained projection input top-level
 tables in StudyInput and StructuralStudyInput (nodes, definitions, occurrences,
 selections, contacts, memberships and focal fields). Audit shared interfaces and
 consumers before adopting allocator-aware storage; select the destination domain
 before explicit owner copies. Preserve detached public snapshots, exact v1/v2
 values and native handoff. Nested input arrays/text, comparison-formatting and
 other setup payload remain separate before combined resources and operations.
+
+**Dependency review (2026-11-11):** #272 review 5859234213 accepts head
+`5ea60585234fbdea12a6f4441103d82884eb9417` for bounded continuation with no blockers.
+Smoke 43026470580 and warm 43026470847 passed; native 43026470568 remains running
+at inspection. Integrated acceptance remains through #267.
+**Next concrete slice after input-table review:** nested retained input arrays:
+Definition components/parents and Selection parts. Preserve complete values,
+detached public snapshots, domain lifetime and native handoff; attach storage
+before explicit owner copies. Input text, other identities/comparison formatting,
+full setup and combined resources remain separate before operation integration.
 
 ## A. Coherent source/hierarchy refresh
 

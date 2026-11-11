@@ -3940,3 +3940,79 @@ after auditing shared interfaces and consumers. Nested input arrays/text,
 comparison-formatting temporaries, other setup payload, combined resources and
 operation/control integration remain separate. No GPU, live DB, browser rerun
 or full baseline qualification is claimed.
+
+### Retained projection input table qualification (2026-11-11)
+
+Tested source `19263b23821992b38dbabe566b0e05b1dde3ba8d`, stacked on #272 head
+`5ea60585234fbdea12a6f4441103d82884eb9417`. Review 5859234213 found no blockers
+and authorized this shared-interface/consumer audit and bounded continuation.
+Parent smoke 43026470580 and warm 43026470847 passed; native 43026470568 was
+running at inspection. Integrated acceptance remains through #267; #268–#272
+remain provisional. Prior failures and warnings remain preserved.
+
+StudyInput and StructuralStudyInput top-level nodes, definitions, occurrences,
+selections, contacts, memberships and focal fields use InputTable, backed by the
+shared reservation allocator. Explicit projection copies select the destination
+domain before each table allocation. Nested arrays/text remain separate. Public
+bind nodes and active-workbench focus use iterator assignment; native scale
+binding and assembly fixtures consume the allocator-aware type. No model value,
+recipe version or numerical change is intended. All configured native consumers,
+including warm integration and viewport capture, were rebuilt successfully.
+
+Independent table pointer/request checks, exact selected-byte equality and all
+allocator identities now include fourteen input tables. Complete v1/v2 equality
+covers capacity, nodes, geometry, parents, starts, selections, contacts, membership
+and focus. Real recipe fixtures are supplemented with retained nodes/memberships/
+focus normally filled only at public handoff. Detached snapshots after source
+death, moves retaining domain lifetime, byte/work refusal sweeps, reclamation and
+exact retry cover these rows. Whole-owner all-site failure injection remains active.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2735 / 3218 | 3652 / 5811 |
+| Selected live / peak requested bytes | 317837 / 317837 | 385347 / 385347 |
+| Selected cumulative allocation work | 417366 | 782987 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320465 / 321138 | 390795 / 393317 |
+| Retained capacity census | 320353 | 390491 |
+
+All four CPU configurations agree. Compared with #272, selected live/peak/work
+increases 1760 / 3440 bytes. Whole-owner retained/peak requests and census each
+increase 448 bytes, reflecting allocator state in two retained projection objects;
+allocation-site counts are unchanged. The remaining selected increase accounts
+for existing top-level table backing.
+
+Pinned layouts: StudyInput 288, StructuralStudyInput 280, LetterProjection 1304
+bytes. UUID/ObjectKey/ToolRef/Tool/Parent/Geometry/Bundle remain 48/88/136/432/168/
+152/520 bytes; UUID payload remains 37 bytes. Allocator state increases retained
+projection object size; selected accounting overlaps the existing capacity census
+and must not be summed. These are requested-storage observations, not physical
+memory or performance bounds.
+
+The auxiliary layout helper initially omitted include paths and failed to find
+assembly/study_input.h. Correcting only its include paths produced the above
+report; the diagnostic is retained in layout-helper-initial-failure.txt. This was
+not a native or warm product build failure. No source change or warning-erasing
+rerun followed it.
+
+All 45 CPU checks passed: 20 exchange processes (five cases, workers 1/2,
+bulk/direct), 12 prepared checks, nine supporting checks (including assembly and
+preparation) and four warm CTests. No native/warm build or test warnings/errors.
+Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no performance claim.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-table-domain-19263b23` retains commands, logs, source,
+configuration/toolchain, binary/runtime hashes and the corrected layout probe.
+Verified local archive: `setup-evidence/input-table-domain-19263b23.tar.gz`.
+SHA256SUMS manifest digest:
+
+    d5c9513ea29df142de6c15b927d672df411d63408ac3870aa6f670dcd3acf8d9
+
+Raw local artifacts have not been independently inspected remotely; hosted checks
+remain authoritative. Historical failures and warnings remain preserved.
+
+Next: nested retained input arrays (Definition components/parents and Selection
+parts). Input text, other identities/comparison-formatting, full setup, combined
+resources and operation/control integration remain separately inventoried. No GPU,
+live database, browser rerun, full baseline or performance qualification is claimed.

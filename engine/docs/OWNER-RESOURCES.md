@@ -1530,3 +1530,33 @@ be reported rather than assumed identical. Selected accounting overlaps the
 capacity census. Next: retained projection input top-level tables, after shared
 interface/consumer audit. Nested input payload, comparison formatting, other setup,
 combined resources and operation/control integration remain separate.
+
+### Retained projection input table domain (contribution awaiting review)
+
+StudyInput and StructuralStudyInput use the shared reservation allocator for their
+seven top-level tables: nodes, definitions, occurrences, selections, contacts,
+memberships and focal fields. Explicit LetterProjection owner copies construct
+these tables with the destination domain before row allocation. Nested std::vector
+and std::string payload remains outside this bounded slice. Ordinary value copies
+detach through allocator copy selection; moves retain domain lifetime.
+
+The shared-interface audit found concrete std::vector handoffs in public bind
+nodes and active-workbench focus; these use iterator assignment into detached
+input tables. Native scale binding consumes the new table type. Assembly test
+helpers follow that type. Model values and numerical semantics are unchanged;
+container layouts grow by allocator state, requiring affected consumer rebuilds.
+The existing capacity census already visits these tables and is not added to the
+selected-domain report.
+
+The projection visitor includes all fourteen tables, including empty allocators.
+Independent pointer/request observations and exact selected-byte equality cover
+retained backing. Complete v1/v2 comparisons include capacity, layout pointers,
+geometry, parent ordinals/counts, occurrences/starts, selections, contacts,
+memberships and focus. Real v1/v2 fixtures supplement nodes/memberships/focus
+normally populated at public handoff, exercising copy, snapshot/source death,
+move lifetime, byte/work refusal and exact retry. Whole-owner failure injection
+and affected native/viewport consumer regressions remain required.
+
+Next: nested input arrays (Definition components/parents and Selection parts),
+then input text and remaining setup payload. Full setup, combined accounting and
+operation/control integration remain separate. No physical-memory/performance claim.
