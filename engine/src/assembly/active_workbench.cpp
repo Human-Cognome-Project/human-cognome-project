@@ -96,7 +96,7 @@ std::vector<Origin> ActiveAssembly::origins() const {
 StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
   require(inputs_available());
   auto input = memberships_.bind(projection_, nodes);
-  input.focal_fields = focal_fields_;
+  input.focal_fields.assign(focal_fields_.begin(),focal_fields_.end());
   if (!local_) return input;
   for (const auto &v : local_->values) {
     require(input.capacity < std::numeric_limits<int>::max());

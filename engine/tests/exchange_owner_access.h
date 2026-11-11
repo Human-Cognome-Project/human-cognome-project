@@ -7,6 +7,12 @@ struct ExchangeOwnerAccess {
   static auto reservations(const detail::ExchangeOwner &o) { return o.reservations_->result(); }
   static auto reservation_domain(const detail::ExchangeOwner &o) { return o.reservations_; }
   template<class Visit> static void projection_table_vectors(const LetterProjection &p, Visit visit) {
+    const auto input=[&](const auto &value) {
+      visit(value.nodes); visit(value.definitions); visit(value.occurrences);
+      visit(value.selections); visit(value.contacts); visit(value.memberships);
+      visit(value.focal_fields);
+    };
+    input(p.input_); input(p.structural_input_);
     visit(p.exposures_); visit(p.occurrences_); visit(p.parents_); visit(p.spare_parents_);
     visit(p.recipe_.tools); visit(p.recipe_.geometry); visit(p.recipe_.nodes);
     visit(p.recipe_.occurrences); visit(p.recipe_.selections); visit(p.recipe_.contacts);
@@ -127,8 +133,48 @@ struct ExchangeOwnerAccess {
           return x.kind==y.kind && x.object==y.object;
         });
   }
+  template<class Input> static bool input_equivalent(const Input &a, const Input &b) {
+    const auto rows=[](const auto &x,const auto &y,auto same) {
+      return x.size()==y.size() && std::equal(x.begin(),x.end(),y.begin(),same);
+    };
+    const auto point=[](const auto &x,const auto &y) { return x.x==y.x && x.y==y.y && x.z==y.z; };
+    if constexpr (std::is_same_v<Input,StudyInput>) if (a.capacity!=b.capacity) return false;
+    return rows(a.nodes,b.nodes,[](const auto &x,const auto &y) {
+      return x.layout==y.layout && x.parent==y.parent && x.role==y.role;
+    }) && rows(a.definitions,b.definitions,[&](const auto &x,const auto &y) {
+      return x.id==y.id && x.mass==y.mass && point(x.centroid,y.centroid) &&
+          rows(x.components,y.components,[&](const auto &p,const auto &q) {
+            return point(p.centre,q.centre) && p.radius==q.radius;
+          }) && rows(x.parents,y.parents,[](const auto &p,const auto &q) {
+            return p.value==q.value && p.ordinal==q.ordinal && p.count==q.count;
+          });
+    }) && rows(a.occurrences,b.occurrences,[&](const auto &x,const auto &y) {
+      bool same=x.id==y.id && x.definition==y.definition && x.study_node==y.study_node;
+      if constexpr (std::is_same_v<Input,StudyInput>)
+        same=same && x.slot==y.slot && point(x.position,y.position) && point(x.velocity,y.velocity);
+      return same;
+    }) && rows(a.selections,b.selections,[](const auto &x,const auto &y) {
+      return x.aggregate==y.aggregate && x.parts==y.parts && x.exposure==y.exposure;
+    }) && rows(a.contacts,b.contacts,[](const auto &x,const auto &y) { return x.a==y.a && x.b==y.b; }) &&
+        rows(a.memberships,b.memberships,[](const auto &x,const auto &y) {
+          return x.occurrence==y.occurrence && x.group==y.group;
+        }) && rows(a.focal_fields,b.focal_fields,[](const auto &x,const auto &y) {
+          return x.kind==y.kind && x.value==y.value;
+        });
+  }
+  // Supplement real v1/v2 projection fixtures with retained tables that are
+  // normally filled only by the later public/native handoff.
+  static void populate_input_tables(LetterProjection &p) {
+    const auto fill=[](auto &input) {
+      input.nodes.push_back({nullptr,-1,ScaleRole::Root});
+      input.memberships.push_back({"retained-occurrence","retained-group"});
+      input.focal_fields.push_back({GroupKind::Membership,"retained-group"});
+    };
+    fill(p.input_); fill(p.structural_input_);
+  }
   static bool projection_equivalent(const LetterProjection &a, const LetterProjection &b) {
-    if (!recipe_equivalent(a.recipe_,b.recipe_) || a.study_ != b.study_ || a.exposures_ != b.exposures_ ||
+    if (!input_equivalent(a.input_,b.input_) || !input_equivalent(a.structural_input_,b.structural_input_) ||
+        !recipe_equivalent(a.recipe_,b.recipe_) || a.study_ != b.study_ || a.exposures_ != b.exposures_ ||
         a.occurrences_.size() != b.occurrences_.size()) return false;
     for (std::size_t i=0; i<a.occurrences_.size(); ++i) {
       const auto &x=a.occurrences_[i], &y=b.occurrences_[i];

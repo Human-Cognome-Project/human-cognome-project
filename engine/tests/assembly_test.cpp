@@ -22,7 +22,7 @@ engine::InstanceSettings settings(bool cuda) {
 
 // Real native study schema. Scale roles are explicit host bindings, not a
 // rule inferred from dense axes, structural depth or SNode identifier.
-std::vector<StudyNode> layout(engine::Runtime &runtime) {
+InputTable<StudyNode> layout(engine::Runtime &runtime) {
   using namespace taichi::lang;
   auto root = std::make_unique<SNode>(0, SNodeType::root);
   auto &primary = root->dense(Axis(0), 1);
@@ -31,7 +31,7 @@ std::vector<StudyNode> layout(engine::Runtime &runtime) {
   auto &equivalent = nested.dense(Axis(3), 1);
   auto &leaf = equivalent.insert_children(SNodeType::place);
   leaf.dt = PrimitiveType::i32;
-  std::vector<StudyNode> nodes{{root.get(), -1, ScaleRole::Root},
+  InputTable<StudyNode> nodes{{root.get(), -1, ScaleRole::Root},
       {&primary, 0, ScaleRole::PrimaryStep},
       {&secondary, 1, ScaleRole::SecondaryCompression},
       {&nested, 2, ScaleRole::SecondaryCompression},
@@ -40,7 +40,7 @@ std::vector<StudyNode> layout(engine::Runtime &runtime) {
   return nodes;
 }
 
-StudyInput couplets(const std::vector<StudyNode> &nodes) {
+StudyInput couplets(const InputTable<StudyNode> &nodes) {
   StudyInput input;
   input.capacity = 6;
   input.nodes = nodes;

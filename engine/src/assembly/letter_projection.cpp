@@ -440,8 +440,24 @@ template<class T> auto projection_rows(const detail::SharedReservedVector<T> &ro
 }
 }
 
+namespace {
+template<class Input> Input projection_input(const Input &source,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  Input result;
+  const auto copy=[&](auto &target, const auto &rows) {
+    using Table = std::decay_t<decltype(target)>;
+    target = Table(rows.begin(),rows.end(),typename Table::allocator_type(domain));
+  };
+  copy(result.nodes,source.nodes); copy(result.definitions,source.definitions);
+  copy(result.occurrences,source.occurrences); copy(result.selections,source.selections);
+  copy(result.contacts,source.contacts); copy(result.memberships,source.memberships);
+  copy(result.focal_fields,source.focal_fields);
+  if constexpr (std::is_same_v<Input,StudyInput>) result.capacity=source.capacity;
+  return result;
+}
+}
 // Explicit owner copies attach table, path, address, text and UUID backing.
-// Ordinary value copies detach; input payload remains outside this domain.
+// Ordinary value copies detach; nested input payload remains outside this domain.
 LetterProjection::LetterProjection(const LetterProjection &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
     : study_(other.study_,domain), recipe_(projection_recipe(other.recipe_,domain)),
@@ -449,7 +465,7 @@ LetterProjection::LetterProjection(const LetterProjection &other,
       occurrences_(projection_rows(other.occurrences_,domain)),
       parents_(projection_rows(other.parents_,domain)),
       spare_parents_(projection_rows(other.spare_parents_,domain)),
-      exposure_reserved_(other.exposure_reserved_), input_(other.input_), structural_input_(other.structural_input_) {}
+      exposure_reserved_(other.exposure_reserved_), input_(projection_input(other.input_,domain)), structural_input_(projection_input(other.structural_input_,domain)) {}
 
 warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
   for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
@@ -562,7 +578,7 @@ StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {
              nodes[i].role == role(recipe_.nodes[i].role),
          "native binding differs from normalized exposure");
   auto input = input_;
-  input.nodes = nodes;
+  input.nodes.assign(nodes.begin(),nodes.end());
   return input;
 }
 StructuralStudyInput LetterProjection::bind_structure(
@@ -577,7 +593,7 @@ StructuralStudyInput LetterProjection::bind_structure(
              nodes[i].role == role(recipe_.nodes[i].role),
          "native binding differs from normalized exposure");
   auto input = structural_input_;
-  input.nodes = nodes;
+  input.nodes.assign(nodes.begin(),nodes.end());
   return input;
 }
 }  // namespace assembly

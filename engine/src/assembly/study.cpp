@@ -50,7 +50,7 @@ std::uint64_t add_mass(std::uint64_t a, std::uint64_t b) {
   return a + b;
 }
 
-std::vector<ScaleBinding> scale_bindings(const std::vector<StudyNode> &nodes) {
+std::vector<ScaleBinding> scale_bindings(const InputTable<StudyNode> &nodes) {
   std::vector<ScaleBinding> scales;
   std::set<const taichi::lang::SNode *> seen;
   for (std::size_t i = 0; i < nodes.size(); ++i) {

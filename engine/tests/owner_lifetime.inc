@@ -747,6 +747,7 @@ void recipe_payload_controls() {
   auto projection=assembly::project_letters(recipe);
   require(!recipe.occurrences.empty() && !recipe.contacts.empty() && !recipe.geometry.empty(),
           "legacy recipe address fixture lost populated fields");
+  assembly::testing::ExchangeOwnerAccess::populate_input_tables(projection);
   projection_reservation_controls(projection,false);
   letters.base.focal_fields={{warm::FieldKind::Membership,letters.en}};
   auto structural=assembly::normalize_structural_letters(letters.base,
@@ -758,7 +759,9 @@ void recipe_payload_controls() {
   structural.contacts.push_back({parts[0],parts[1]});
   structural.contacts.push_back({{1,{}},parts[0]});
   warm::validate(structural);
-  projection_reservation_controls(assembly::project_letters(structural));
+  auto structural_projection=assembly::project_letters(structural);
+  assembly::testing::ExchangeOwnerAccess::populate_input_tables(structural_projection);
+  projection_reservation_controls(structural_projection);
 }
 
 void catalogue_reservation_controls(const assembly::LetterProjection &projection) {

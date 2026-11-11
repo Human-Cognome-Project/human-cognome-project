@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "../../../common/reservation_allocator.h"
 
 namespace taichi::lang {
 class SNode;
@@ -10,6 +11,7 @@ class SNode;
 
 // Host input values only. Including these does not load the engine or libpq.
 namespace assembly {
+template<class T> using InputTable = hcp::resources::SharedReservedVector<T>;
 struct Point {
   double x{0}, y{0}, z{0};
 };
@@ -72,13 +74,13 @@ struct FocalField {
 };
 struct StudyInput {
   int capacity{0};
-  std::vector<StudyNode> nodes;
-  std::vector<Definition> definitions;
-  std::vector<Occurrence> occurrences;
-  std::vector<Selection> selections;
-  std::vector<Contact> contacts;
-  std::vector<Membership> memberships;
-  std::vector<FocalField> focal_fields;
+  InputTable<StudyNode> nodes;
+  InputTable<Definition> definitions;
+  InputTable<Occurrence> occurrences;
+  InputTable<Selection> selections;
+  InputTable<Contact> contacts;
+  InputTable<Membership> memberships;
+  InputTable<FocalField> focal_fields;
 };
 // Operational structural handoff. Native preparation/admission will assign
 // payload records and initialize numerical state; source projection cannot.
@@ -87,12 +89,12 @@ struct StructuralOccurrence {
   int study_node{-1};
 };
 struct StructuralStudyInput {
-  std::vector<StudyNode> nodes;
-  std::vector<Definition> definitions;
-  std::vector<StructuralOccurrence> occurrences;
-  std::vector<Selection> selections;
-  std::vector<Contact> contacts;
-  std::vector<Membership> memberships;
-  std::vector<FocalField> focal_fields;
+  InputTable<StudyNode> nodes;
+  InputTable<Definition> definitions;
+  InputTable<StructuralOccurrence> occurrences;
+  InputTable<Selection> selections;
+  InputTable<Contact> contacts;
+  InputTable<Membership> memberships;
+  InputTable<FocalField> focal_fields;
 };
 }  // namespace assembly
