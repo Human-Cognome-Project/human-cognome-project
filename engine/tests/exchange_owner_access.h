@@ -174,6 +174,11 @@ struct ExchangeOwnerAccess {
       {o.prospective_.get(),sizeof(*o.prospective_)}, {o.plan_.get(),sizeof(*o.plan_)},
       {ExchangeCoordinatorAccess::binding(*o.plan_),sizeof(detail::ExchangeBindings)}}};
   }
+  template<class Visit> static void map_uuids(const detail::ExchangeOwner &o, Visit visit) {
+    for (const auto &row : o.occurrences_.storage()) visit(row.occurrence.study);
+    for (const auto &row : o.fields_.storage()) visit(row.field.object.scope);
+    ExchangeCoordinatorAccess::map_uuids(*o.plan_,visit);
+  }
   template<class Visit> static void map_paths(const detail::ExchangeOwner &o, Visit visit) {
     for (const auto &row : o.occurrences_.storage()) visit(row.occurrence.source.path);
     ExchangeCoordinatorAccess::map_paths(*o.plan_,visit);

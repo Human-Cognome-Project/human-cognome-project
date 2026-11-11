@@ -18,7 +18,7 @@ int main() {
   std::weak_ptr<ReservationDomain> watch=domain;
   std::optional<Uuid> snapshot, moved;
   {
-    Uuid attached(normalized,domain), attached_nil(nil,domain);
+    Uuid attached(normalized,domain), attached_nil(domain);
     if (domain->result().live_bytes!=74 || attached.str().capacity()+1!=37 ||
         attached.str().get_allocator().domain!=domain || !attached_nil.nil()) return 3;
     snapshot.emplace(attached);
@@ -38,11 +38,14 @@ int main() {
         bytes ? 36u : UINT64_MAX, bytes ? UINT64_MAX : 36u});
     bool stopped=false;
     try { Uuid value(normalized,denied); } catch (const ReservationStop &) { stopped=true; }
+    bool nil_stopped=false;
+    try { Uuid value(denied); } catch (const ReservationStop &) { nil_stopped=true; }
+    if (!nil_stopped) return 11;
     if (!stopped || denied->result().live_bytes || denied->result().charged_work ||
         (bytes ? denied->result().required_bytes : denied->result().required_work)!=37) return 8;
   }
   auto exact=std::make_shared<ReservationDomain>(ReservationBudget{37,37});
-  { Uuid value(nil,exact); if (!value.nil() || exact->result().live_bytes!=37) return 9; }
+  { Uuid value(exact); if (!value.nil() || exact->result().live_bytes!=37) return 9; }
   if (exact->result().live_bytes) return 10;
   std::cout<<"uuid_allocation_test PASS\n";
 }

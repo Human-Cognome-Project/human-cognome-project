@@ -199,7 +199,11 @@ template<class T> void map_reservation_controls(const std::vector<T> &rows) {
     else return a.field.kind==b.field.kind && a.field.object==b.field.object;
   };
   const auto element_bytes=sizeof(key_buffer(one.front())[0]);
-  const auto initial_bytes=2*element_bytes;
+  const auto initial_bytes=2*element_bytes+37;
+  const auto uuid=[](const T &row) -> const warm::Uuid & {
+    if constexpr (std::is_same_v<T,OccurrenceBinding>) return row.occurrence.study;
+    else return row.field.object.scope;
+  };
   Map reference(one); reference.reserve(3,4);
   const auto backing = [&](const Map &map, const auto &domain) {
     std::uint64_t bytes=map.storage().capacity()*sizeof(T);
@@ -207,6 +211,10 @@ template<class T> void map_reservation_controls(const std::vector<T> &rows) {
     for (const auto &row : map.storage()) {
       const auto &path=key_buffer(row);
       require(path.get_allocator().domain == domain,"map active/inactive path domain mismatch");
+      const auto &text=uuid(row).str();
+      require(text.get_allocator().domain==domain && text.size()==36 && text.data()[36]=='\0',
+              "map active/inactive UUID domain or encoding mismatch");
+      bytes += warm::recipe_text_backing(text);
       bytes += path.capacity()*element_bytes;
     }
     return bytes;
@@ -237,6 +245,18 @@ template<class T> void map_reservation_controls(const std::vector<T> &rows) {
     });
   }
   require(!growth->result().live_bytes,"map growth denial leaked original backing");
+  for (bool bytes : {true,false}) {
+    auto d=std::make_shared<ReservationDomain>(ReservationBudget{
+        bytes ? row_bytes : UINT64_MAX,bytes ? UINT64_MAX : row_bytes});
+    A::begin();
+    bool stopped=false;
+    try { Map denied(one,d); } catch (const ReservationStop &) { stopped=true; }
+    catch (...) { A::end(); throw; }
+    const auto seen=A::end();
+    require(stopped && seen.attempts==1 && !seen.live && !seen.blocks && !d->result().live_bytes &&
+                (bytes ? d->result().required_bytes : d->result().required_work)==row_bytes+37,
+            "map UUID allocated before admission or leaked its admitted outer table");
+  }
   for (bool copying : {false,true}) {
     const auto construct = [&](const auto &d) {
       // Return a prvalue: an ordinary Map copy intentionally detaches.
@@ -249,6 +269,14 @@ template<class T> void map_reservation_controls(const std::vector<T> &rows) {
     try {
       auto value=construct(domain); value.reserve(3,4);
       full=domain->result(); sites=A::counts.attempts;
+      for (const auto &row : value.storage()) {
+        const auto &text=uuid(row).str();
+        const auto found=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==text.data(); });
+        require(found!=std::end(A::table) && found->bytes==text.capacity()+1,
+                "map UUID differs from independent allocation request");
+      }
+      require(A::counts.live==domain->result().live_bytes,"map retained unselected backing");
       require(full.live_bytes == backing(value,domain) && value.size()==1 &&
                   equal(value[0],one[0]) && value.storage().size()==3,
               "map construction/copy lost values or selected backing");
@@ -1304,6 +1332,15 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       require(request == entry.second, "unique allocation request differs from object storage size");
       unique_bytes += request;
     }
+    std::uint64_t map_uuid_bytes=0;
+    Access::map_uuids(*owner,[&](const auto &uuid) {
+      const auto &text=uuid.str();
+      const auto bytes=warm::recipe_text_backing(text);
+      require(text.get_allocator().domain==Access::reservation_domain(*owner) &&
+                  containing_request(text.data())==bytes && bytes==text.capacity()+1,
+              "owner map UUID differs from independent allocation request");
+      map_uuid_bytes += bytes;
+    });
     std::uint64_t map_path_bytes=0;
     Access::map_paths(*owner,[&](const auto &path) {
       const auto bytes=path.capacity()*sizeof(std::uint32_t);
@@ -1406,7 +1443,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       membership_bytes += bytes;
     });
     require(Access::reservations(*owner).live_bytes == census.binding.vector_bytes+
-                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes+map_path_bytes+map_address_bytes,
+                census.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+table_bytes+shared_bytes+unique_bytes+projection_bytes+membership_bytes+declaration_bytes+map_path_bytes+map_address_bytes+map_uuid_bytes,
             "owner domain differs from independently observed selected allocations");
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.

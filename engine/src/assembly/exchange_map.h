@@ -16,9 +16,8 @@ template<class T> class ExchangeMap {
       : domain_(std::move(domain)), slots_(ReservationAllocator<T>(domain_.get())) {}
   ExchangeMap(const std::vector<T> &rows, std::shared_ptr<ReservationDomain> domain = {})
       : ExchangeMap(std::move(domain)) {
-    slots_.resize(rows.size());
+    resize_slots(rows.size());
     for (std::size_t i=0; i<rows.size(); ++i) {
-      initialize_key(slots_[i],domain_);
       slots_[i]=rows[i];
     }
     size_=rows.size();
@@ -28,9 +27,8 @@ template<class T> class ExchangeMap {
   ExchangeMap(const ExchangeMap &other) : ExchangeMap(other,{}) {}
   ExchangeMap(const ExchangeMap &other, std::shared_ptr<ReservationDomain> domain)
       : ExchangeMap(std::move(domain)) {
-    slots_.resize(other.slots_.size());
+    resize_slots(other.slots_.size());
     for (std::size_t i=0; i<slots_.size(); ++i) {
-      initialize_key(slots_[i],domain_);
       nested(slots_[i]).reserve(nested(other.slots_[i]).capacity());
       slots_[i]=other.slots_[i];
     }
@@ -46,9 +44,7 @@ template<class T> class ExchangeMap {
   }
   void reserve(std::size_t count, std::size_t extent) {
     if (count < size_) throw warm::Error("exchange map reservation below live size");
-    const auto previous=slots_.size();
-    slots_.resize(count);
-    for (std::size_t i=previous; i<count; ++i) initialize_key(slots_[i],domain_);
+    resize_slots(count);
     for (auto &row : slots_) nested(row).reserve(extent);
   }
   auto begin() { return slots_.begin(); }
@@ -84,6 +80,15 @@ template<class T> class ExchangeMap {
   }
   const auto &storage() const { return slots_; }
  private:
+  void resize_slots(std::size_t count) {
+    if (count < slots_.size()) {
+      slots_.erase(slots_.begin()+count,slots_.end());
+      return;
+    }
+    slots_.reserve(count);
+    while (slots_.size() < count)
+      slots_.push_back(make_map_slot(static_cast<T *>(nullptr),domain_));
+  }
   static auto &nested(T &row) { return key_buffer(row); }
   static const auto &nested(const T &row) { return key_buffer(row); }
   // Declared first so even empty maps keep the raw outer allocator alive until
