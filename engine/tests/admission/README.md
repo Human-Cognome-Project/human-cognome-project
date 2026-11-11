@@ -4016,3 +4016,76 @@ Next: nested retained input arrays (Definition components/parents and Selection
 parts). Input text, other identities/comparison-formatting, full setup, combined
 resources and operation/control integration remain separately inventoried. No GPU,
 live database, browser rerun, full baseline or performance qualification is claimed.
+
+### Nested retained input array qualification (2026-11-11)
+
+Tested source `4820a18bb5f5aff6813b5707254cbbf8d2788e73`, stacked on #273 head
+`8c142c3056736ba6a1a683b14ced8c79163a08ab`. Review 5859431800 found no blocking
+source findings and authorized this slice. Parent smoke 43028610415 passed;
+native 43028610546 was running at inspection. Integrated acceptance remains
+through #267; #268–#273 remain provisional.
+
+Definition components/parents and Selection parts use InputTable. Explicit
+projection input copying reserves the outer table and constructs each row with
+its nested destination allocators already selected. Text stays detached. The
+input backing/domain visitor includes every nested array, including empty ones.
+Existing independent request observations, exact selected-byte equality, complete
+v1/v2 comparisons, refusal/reclamation/exact retry, detached snapshots/source death,
+moved lifetime and all-site owner failure injection exercise this added scope.
+
+The shared-consumer audit preserves the public std::vector enclosing-radius API
+and factors the unchanged calculation into an allocator-generic internal helper.
+Active-workbench local geometry and geometry overrides use iterator copies;
+assembly fixtures use InputTable. Definition/Selection layout changes require
+consumer rebuilds; model values and native handoff remain unchanged.
+
+Initial source `f0e40840f0a429c85ba93fa905c2002cb343a3d4` failed native compilation
+at active_workbench.cpp:133: geometry override still assigned std::vector into
+InputTable. The corrected source uses iterator assignment. No qualification tests
+ran at the failed source; warm build/tests were not reached. Initial build/source
+archive: `setup-evidence/input-nested-initial-f0e40840.tar.gz`, manifest digest:
+
+    c6eb73fe0e9b1d6d420528db022ad493dfe2670930b8b66fa1db109db3f26342
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2742 / 3232 | 3662 / 5831 |
+| Selected live / peak requested bytes | 318861 / 318861 | 386851 / 386851 |
+| Selected cumulative allocation work | 418390 | 784491 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320689 / 321362 | 391115 / 393637 |
+| Retained capacity census | 320577 | 390811 |
+
+All four CPU configurations agree. Compared with #273, selected live/peak/work
+increases 1024 / 1504 bytes. Whole-owner retained/peak requests and census each
+increase 224 / 320 bytes from nested allocator state; allocation-site counts are
+unchanged. The remaining selected increase accounts for existing nested backing.
+Pinned layouts: Definition 144, Selection 80 bytes; StudyInput 288,
+StructuralStudyInput 280 and LetterProjection 1304 remain unchanged. UUID-related
+layouts and encoding remain unchanged, including the 37-byte UUID payload.
+
+Corrected native and standalone warm builds passed. All 45 CPU checks passed:
+20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared checks,
+nine supporting checks (including assembly/preparation/native handoff/viewport)
+and four warm CTests. No corrected-source build or test warnings/errors.
+Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no performance claim.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-nested-domain-4820a18b` retains commands, logs, source,
+configuration/toolchain, binary/runtime hashes and layout probe.
+Verified local archive: `setup-evidence/input-nested-domain-4820a18b.tar.gz`.
+SHA256SUMS manifest digest:
+
+    5f7f86d8996bc0b30529f11dc5c5a71a7c19fc986d900c6527e53899e06048ce
+
+Hosted checks remain authoritative. The corrected pass does not relabel the
+initial compiler failure or historical warnings.
+
+Selected reports overlap the capacity census and must not be summed. These are
+requested-storage observations, not physical-memory or performance bounds.
+Next: retained input text, including inline/heap payload and terminators. Other
+identities/comparison-formatting, full setup, combined resources and operation/
+control integration remain separate. No GPU, live database, browser rerun, full
+baseline or performance qualification is claimed. Earlier failures/warnings remain
+preserved; raw local artifacts have not been independently inspected remotely.

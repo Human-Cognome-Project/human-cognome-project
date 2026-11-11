@@ -1560,3 +1560,28 @@ and affected native/viewport consumer regressions remain required.
 Next: nested input arrays (Definition components/parents and Selection parts),
 then input text and remaining setup payload. Full setup, combined accounting and
 operation/control integration remain separate. No physical-memory/performance claim.
+
+### Nested retained input array domain (contribution awaiting review)
+
+Definition components/parents and Selection parts now use InputTable. Explicit
+projection input copies reserve outer backing, then construct each row with its
+nested destination allocator selected before allocation. Other rows use ordinary
+value copies. Input text stays detached. Ordinary snapshots detach nested tables;
+moves preserve their domains. Empty nested allocators are attached too.
+
+The shared geometry calculation is factored into an allocator-generic internal
+helper, preserving the public std::vector interface and its initializer-list
+callers without temporary geometry copies. Active-workbench local geometry uses
+iterator construction at its public handoff. Assembly fixtures use InputTable.
+All configured consumers must rebuild because Definition/Selection layouts grow.
+
+The existing input-table visitor now includes components, parents and parts,
+feeding independent pointer/request checks, exact selected accounting and domain
+identity assertions. Complete v1/v2 equality, refusal/reclamation/exact retry,
+detached source-death snapshots, moved lifetime and whole-owner all-site failure
+injection exercise the nested backing. Geometry/order/counts/exposure are unchanged.
+
+Next: retained input text. Other identities/comparison formatting, full setup,
+combined resources and operation/control integration remain separately inventoried.
+Selected accounting overlaps the capacity census; no physical-memory or performance
+qualification follows from these requested-storage observations.

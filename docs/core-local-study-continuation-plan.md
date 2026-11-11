@@ -196,7 +196,7 @@ detached snapshots, refusal cleanup and exact retry. Other owner identities, com
 input payload remain separate before complete setup, combined resources and
 operation/control integration.
 
-**Active contribution (awaiting review):** retained projection input top-level
+**Provisionally accepted (#273):** retained projection input top-level
 tables in StudyInput and StructuralStudyInput (nodes, definitions, occurrences,
 selections, contacts, memberships and focal fields). Audit shared interfaces and
 consumers before adopting allocator-aware storage; select the destination domain
@@ -208,11 +208,22 @@ other setup payload remain separate before combined resources and operations.
 `5ea60585234fbdea12a6f4441103d82884eb9417` for bounded continuation with no blockers.
 Smoke 43026470580 and warm 43026470847 passed; native 43026470568 remains running
 at inspection. Integrated acceptance remains through #267.
-**Next concrete slice after input-table review:** nested retained input arrays:
+**Active contribution (awaiting review):** nested retained input arrays:
 Definition components/parents and Selection parts. Preserve complete values,
 detached public snapshots, domain lifetime and native handoff; attach storage
 before explicit owner copies. Input text, other identities/comparison formatting,
 full setup and combined resources remain separate before operation integration.
+
+**Dependency review (2026-11-11):** #273 review 5859431800 accepts head
+`8c142c3056736ba6a1a683b14ced8c79163a08ab` for bounded continuation with no blockers.
+Smoke 43028610415 passed; native 43028610546 remains running at inspection.
+Integrated acceptance remains through #267.
+**Next concrete slice after nested-input review:** retained input text in definition
+IDs/parent values, occurrence IDs/definitions, selection aggregates/parts, contacts,
+memberships and focal fields. Audit shared consumers; attach before copying, cover
+inline/heap strings and terminators, preserve complete values and detached snapshots.
+Other identities/comparison formatting, full setup and combined accounting remain
+separate before operation/control integration.
 
 ## A. Coherent source/hierarchy refresh
 
