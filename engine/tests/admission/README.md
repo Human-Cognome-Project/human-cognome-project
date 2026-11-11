@@ -4089,3 +4089,12 @@ identities/comparison-formatting, full setup, combined resources and operation/
 control integration remain separate. No GPU, live database, browser rerun, full
 baseline or performance qualification is claimed. Earlier failures/warnings remain
 preserved; raw local artifacts have not been independently inspected remotely.
+
+
+### Maintainer queue reconciliation through #274 (2026-11-11)
+
+**Queue reconciliation — 2026-11-11:** Reviewed #268–#274 are integrated into main at `b05db31c2e591f8fbcd5c14dc7ddff14ef46b2e9`, reviewed tip `ce3642ee463beb76948a2497c9aeb50172c3267d`. Every head in that stack has successful native and smoke workflows; #272 warm also passed. #274 native 43030713058 passed all 12 jobs; inspected regression logs total 115 tests and database reports addressed_reads=24/private_reads=0. Earlier provisional/pending labels below are historical and superseded by this acceptance.
+
+**Current review queue:** #275 parent-value text, #276 contact/membership/focus text and #277 selection text are source-reviewed and provisionally accepted, but remain unmerged. Inspected native jobs 130564239034 (#275), 130638929459 (#276 retry) and 130648619590 (#277) failed during toolchain installation because azure.archive.ubuntu.com could not resolve, before product compilation. #276 viewport retry job 130638930090 was cancelled during dependency installation with the same DNS failures. Preserve these attempts; complete successful hosted qualification before integration. The next coding slice is definition/occurrence identities and references, per #277 review 5863228338. Other identities/comparison formatting, complete setup, combined accounting and operation/control integration remain open. #75, #111 and #123 remain deliberately held.
+
+Inspected #274 regression jobs 130559263122/130559263206/130559263217/130559263265 passed 28/29/29/29 tests. Database job 130559263025 reports addressed_reads=24/private_reads=0. Main was an ancestor of the reviewed tip before merge, with no main-only changes to reconcile. Local archives were not independently rerun or inspected in this reconciliation; no GPU or performance claim follows. Original commits and failed/cancelled evidence are preserved.
