@@ -186,3 +186,33 @@ behavior, not remote mirror availability or hosted qualification. Raw local evid
 has not been independently inspected remotely. Hosted runs must qualify this repair
 before the blocked allocation stack can integrate; no self-merge or automatic
 relabeling of earlier attempts follows. The identity-text coding slice remains queued.
+
+### Mirror-list correction after review
+
+Review #278/5863935970 found the initial helper did not cover the runner's actual
+`mirror+file:/etc/apt/apt-mirrors.txt` indirection. Hosted native job 130734677651
+still downloaded from Azure after the old normalization message. Earlier local
+direct-source passes did not prove the workaround effective; preserve this finding
+even where installation happened to succeed.
+
+The helper now also examines `apt-mirrors.txt` within the supplied APT root. It
+changes only matching archive URLs, preserving mirror metadata, unrelated endpoints
+and the source's mirror+file/Signed-By configuration. Diagnostics list changed files
+and count them, or explicitly report no matching URL and no files changed.
+The isolated fixture includes mirror+file sources and a mirror list with priorities,
+architecture/suite metadata, security and unrelated endpoints; exact-content and
+second-run assertions verify preservation and idempotence.
+
+Correction source f137938f52a9361f479697f975353a5209324d62 first stopped at ShellCheck
+SC2129 on repeated fixture redirects; fixture/orchestration tests did not run at
+that source. The retained local log is ci-ubuntu-mirror-f137938f/shellcheck.log.
+Grouping fixture writes fixed it without changing production behavior.
+Tested correction `f87fa4baef9ad9eebe9e8bc37f0ddb6c3c6b1282`: ShellCheck, direct and
+mirror-list fixtures and existing orchestration contracts passed. Local APT sources
+were untouched. Verified archive `setup-evidence/ci-ubuntu-mirror-f87fa4ba.tar.gz`;
+manifest digest:
+
+    35f463cb94e42385e4ef18902e3b468b513cbc21ce58e87444bef7af8e567a39
+
+Hosted installation logs must additionally demonstrate archive.ubuntu.com traffic;
+fixture success alone does not establish that the runner's failing endpoint changed.
