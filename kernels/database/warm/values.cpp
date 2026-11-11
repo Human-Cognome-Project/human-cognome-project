@@ -16,6 +16,11 @@ namespace {
 void need(bool ok, const char *message) {
   if (!ok) throw Error(message);
 }
+void object_address(const codec::Address &address) {
+  need(!address.empty() && codec::is_valid_address(address) &&
+           !address.back().partial,
+       "invalid, empty or wildcard object address");
+}
 void identity(const Uuid &id) { need(!id.nil(), "nil non-scope identity"); }
 void exact(std::uint64_t n) {
   need(n <= std::uint64_t(std::numeric_limits<std::int64_t>::max()),
@@ -67,7 +72,7 @@ Uuid::Uuid(std::string_view value) : value_(value) {
 Uuid::Uuid(const Uuid &other, const std::shared_ptr<hcp::resources::ReservationDomain> &domain)
     : value_(other.value_.data(),other.value_.size(),
         hcp::resources::SharedReservationAllocator<char>(domain)) {}
-bool Uuid::nil() const { return *this == Uuid(); }
+bool Uuid::nil() const { return value_ == "00000000-0000-0000-0000-000000000000"; }
 Uuid new_uuid() {
   std::random_device random;
   std::string value = "00000000-0000-4000-8000-000000000000";
@@ -77,9 +82,7 @@ Uuid new_uuid() {
   return Uuid(value);
 }
 std::string address_text(const codec::Address &address) {
-  need(!address.empty() && codec::is_valid_address(address) &&
-           !address.back().partial,
-       "invalid, empty or wildcard object address");
+  object_address(address);
   return *codec::encode_token_id(address);
 }
 std::string address_array(const codec::Address &address) {
@@ -99,10 +102,8 @@ bool operator==(const ObjectKey &a, const ObjectKey &b) {
 }
 bool operator<(const ObjectKey &a, const ObjectKey &b) {
   // Rendering used to validate both operands, even across different scopes.
-  for (const auto *address : {&a.address, &b.address})
-    need(!address->empty() && codec::is_valid_address(*address) &&
-             !address->back().partial,
-         "invalid, empty or wildcard object address");
+  object_address(a.address);
+  object_address(b.address);
   if (a.scope != b.scope) return a.scope < b.scope;
   // Full couplets have fixed width and the alphabet is in byte order.
   // Dots occur at identical offsets; a strict address prefix sorts first.
@@ -121,8 +122,8 @@ bool operator<(const OccurrenceId &a, const OccurrenceId &b) {
   return std::tie(a.entry, a.path) < std::tie(b.entry, b.path);
 }
 bool contains(const ObjectKey &prefix, const ObjectKey &o) {
-  key(prefix);
-  key(o);
+  object_address(prefix.address);
+  object_address(o.address);
   return prefix.scope == o.scope && prefix.address.size() <= o.address.size() &&
          std::equal(prefix.address.begin(), prefix.address.end(),
                     o.address.begin());
