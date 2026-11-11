@@ -236,6 +236,16 @@ struct ExchangeOwnerAccess {
   static auto contract_copy(const LetterExchangeContract &c, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return LetterExchangeContract(c,domain);
   }
+  template<class Visit> static void contract_uuids(const LetterExchangeContract &c, Visit visit) {
+    visit(c.owner().study); visit(c.recipe().selection); visit(c.recipe().revision);
+    const auto reference=[&](const auto &r) { visit(r.object.scope); visit(r.revision); };
+    for (const auto *side : {&c.outgoing(),&c.incoming()})
+      for (const auto &source : *side) {
+        visit(source.occurrence.study); reference(source.definition);
+        for (const auto &parent : source.parents) reference(parent.target);
+      }
+    for (const auto &leaf : c.leaves()) reference(leaf.definition);
+  }
   template<class Visit> static void contract_addresses(const LetterExchangeContract &c, Visit visit) {
     for (const auto *side : {&c.outgoing(),&c.incoming()})
       for (const auto &source : *side) {

@@ -940,6 +940,25 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
     const auto construct = [&](const auto &domain) {
       return copying ? Access::contract_copy(reference,domain) : Access::contract(projection,key,target,domain);
     };
+    // Observe both collection and explicit copies without allocating in the visitor.
+    auto observed_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    A::begin();
+    try {
+      auto value=construct(observed_domain);
+      Access::contract_uuids(value,[&](const auto &uuid) {
+        const auto &text=uuid.str();
+        const auto found=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==text.data(); });
+        require(text.get_allocator().domain==observed_domain && found!=std::end(A::table) &&
+                    found->bytes==text.capacity()+1 && text.data()[text.size()]=='\0',
+                "declaration UUID request or terminator differs from independent observation");
+      });
+      require(A::counts.live==observed_domain->result().live_bytes,
+              "declaration retained unselected allocation");
+    } catch (...) { A::end(); throw; }
+    const auto observed=A::end();
+    require(!observed.live && !observed.blocks && !observed_domain->result().live_bytes,
+            "observed declaration leaked backing");
     ReservationResult full;
     std::optional<assembly::LetterExchangeContract> snapshot, moved;
     std::weak_ptr<ReservationDomain> watch;
@@ -965,9 +984,16 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
         require(address.get_allocator().domain==domain,"declaration reference address detached");
         backing += address.capacity()*sizeof(codec::AddressElement);
       });
+      Access::contract_uuids(contract,[&](const auto &uuid) {
+        require(uuid.str().get_allocator().domain==domain,"declaration UUID detached");
+        backing += warm::recipe_text_backing(uuid.str());
+      });
       require(full.live_bytes == backing && backing && Access::equivalent(contract,reference),
               "declaration omitted table backing or changed its structural values");
       snapshot.emplace(contract);
+      Access::contract_uuids(*snapshot,[&](const auto &uuid) {
+        require(!uuid.str().get_allocator().domain,"declaration snapshot retained UUID domain");
+      });
       Access::contract_addresses(*snapshot,[&](const auto &address) {
         require(!address.get_allocator().domain,"declaration snapshot retained address domain");
       });
@@ -982,6 +1008,9 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
     }
     require(!watch.expired() && Access::equivalent(*moved,reference),
             "moved declaration lost source domain or structural values");
+    Access::contract_uuids(*moved,[&](const auto &uuid) {
+      require(uuid.str().get_allocator().domain==watch.lock(),"moved declaration lost UUID domain");
+    });
     Access::contract_addresses(*moved,[&](const auto &address) {
       require(address.get_allocator().domain==watch.lock(),"moved declaration lost address domain");
     });
@@ -1005,6 +1034,7 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
         require(stopped && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
                     !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
                 "declaration construction/copy rejection failed cleanup or progress");
+        if (!allowance) require(!released.attempts,"declaration allocated before first UUID admission");
         allowance=next;
       }
     }
@@ -1241,6 +1271,15 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
         require(address.get_allocator().domain==Access::reservation_domain(*owner) &&
                     (!bytes || containing_request(address.data())==bytes),
                 "declaration address differs from observed allocation request");
+        declaration_bytes += bytes;
+      });
+    for (const auto &declaration : Access::declarations(*owner))
+      Access::contract_uuids(*declaration,[&](const auto &uuid) {
+        const auto &text=uuid.str();
+        const auto bytes=warm::recipe_text_backing(text);
+        require(text.get_allocator().domain==Access::reservation_domain(*owner) &&
+                    containing_request(text.data())==bytes && bytes==text.capacity()+1,
+                "declaration UUID differs from observed allocation request");
         declaration_bytes += bytes;
       });
     auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);

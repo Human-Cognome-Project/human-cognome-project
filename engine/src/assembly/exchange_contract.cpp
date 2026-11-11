@@ -10,13 +10,13 @@ void need(bool ok, const char *message) {
 }
 OccurrenceKey copy_occurrence(const OccurrenceKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {key.study,{key.source.entry,{key.source.path.begin(),key.source.path.end(),
+  return {warm::Uuid(key.study,domain),{key.source.entry,{key.source.path.begin(),key.source.path.end(),
       detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
 }
 warm::ToolRef copy_reference(const warm::ToolRef &ref,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {{ref.object.scope,{ref.object.address.begin(),ref.object.address.end(),
-      detail::SharedReservationAllocator<codec::AddressElement>(domain)}},ref.revision};
+  return {{warm::Uuid(ref.object.scope,domain),{ref.object.address.begin(),ref.object.address.end(),
+      detail::SharedReservationAllocator<codec::AddressElement>(domain)}},warm::Uuid(ref.revision,domain)};
 }
 template<class A>
 detail::SharedReservedVector<warm::Parent> copy_parents(const std::vector<warm::Parent,A> &parents,
@@ -79,14 +79,17 @@ LetterExchangeContract declare_letter_exchange(const LetterProjection &projectio
   return LetterExchangeContract::collect(projection,owner,target,{});
 }
 
-LetterExchangeContract::LetterExchangeContract(const std::shared_ptr<detail::ReservationDomain> &domain)
-    : outgoing_(detail::SharedReservationAllocator<ExchangeSource>(domain)),
+LetterExchangeContract::LetterExchangeContract(const OccurrenceKey &owner, const warm::BundleRef &recipe,
+    const std::shared_ptr<detail::ReservationDomain> &domain)
+    : owner_(copy_occurrence(owner,domain)),
+      recipe_{warm::Uuid(recipe.selection,domain),warm::Uuid(recipe.revision,domain)},
+      outgoing_(detail::SharedReservationAllocator<ExchangeSource>(domain)),
       incoming_(detail::SharedReservationAllocator<ExchangeSource>(domain)),
       leaves_(detail::SharedReservationAllocator<ExchangeLeaf>(domain)) {}
 
 LetterExchangeContract::LetterExchangeContract(const LetterExchangeContract &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
-    : owner_(copy_occurrence(other.owner_,domain)), recipe_(other.recipe_), from_(other.from_), to_(other.to_),
+    : owner_(copy_occurrence(other.owner_,domain)), recipe_{warm::Uuid(other.recipe_.selection,domain),warm::Uuid(other.recipe_.revision,domain)}, from_(other.from_), to_(other.to_),
       mass_(other.mass_), match_work_(other.match_work_),
       outgoing_(copy_sources(other.outgoing_,domain)),
       incoming_(copy_sources(other.incoming_,domain)),
@@ -104,9 +107,7 @@ LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &p
   need(selection != recipe.selections.end(), "exchange occurrence is not declared");
   need((target == warm::Exposure::Aggregate || target == warm::Exposure::Parts) &&
        target != projection.exposure(owner.source.entry), "exchange requires the other declared alternative");
-  LetterExchangeContract result(domain);
-  result.owner_ = copy_occurrence(owner,domain);
-  result.recipe_ = recipe.ref;
+  LetterExchangeContract result(owner,recipe.ref,domain);
   result.from_ = projection.exposure(owner.source.entry);
   result.to_ = target;
   const auto source = [&](const warm::OccurrenceId &id) {
