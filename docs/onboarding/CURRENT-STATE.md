@@ -4,17 +4,22 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
-**Active projection temporary-identity contribution (2026-11-11):** continues from
-#282 `29b82129`, provisionally accepted with no blocking finding by review
-5865626048. Private byte-expansion rows borrow stable source tool references;
-published occurrence/provenance identities remain independently owned. Source-death
-controls and a prior-source allocation probe cover this boundary. Both builds and
-47 scoped CPU checks passed without warnings; hosted qualification and review
-remain pending. Detailed evidence is in the admission record.
-Remaining initial projection indexes/rendering temporaries, membership callable/
+**Active rendering-copy contribution (2026-11-11):** #283 `38e81a95` has no blocking
+source finding and green exact-head native/smoke per review 5866277807. This
+continuation removes owning occurrence-key temporaries used only for initial
+projection text rendering; public validation and independent output remain intact.
+Both builds and 47 scoped CPU checks passed; a post-PASS cache warning is retained.
+Detailed evidence is in the admission record; hosted qualification/review remain
+pending. Initial projection indexes/provenance/equivalence, membership callable/
 recursion and declaration/binding setup budgets precede combined resources and
-operation integration. #279 remains the main-targeted integration PR; dependent
-contributions stay stacked and unmerged.
+remaining-operation integration.
+
+**#279 queue remediation (2026-11-11):** old native/viewport/smoke attempts remained
+queued, yet cancel/force-cancel returned 409 and rerun 403. Close/reopen triggered
+fresh native 43115507493, viewport 43115507480 and smoke 43115507510 at unchanged
+reviewed `5f1ca0c3`; old attempts remain preserved. Smoke and viewport passed at inspection;
+native had passed build/projection-values and was running its matrix. #280–#283 green checks do not replace #279's
+combined-head qualification. The stack remains unmerged pending maintainer action.
 
 **Provisionally accepted #282 (2026-11-11):** review 5865626048 accepts the adoption
 argument-copy slice at `29b82129`. Its 47 scoped CPU checks passed locally; the

@@ -1866,3 +1866,22 @@ identities in their selected domains. Standalone coordinator map copies provide
 candidate backing and cannot simply become borrowed aliases. Membership callable/
 recursion and declaration/binding setup budgets remain open, followed by combined
 resource accounting and remaining-operation integration.
+
+### Occurrence rendering argument copies (awaiting review)
+
+Following #283 review 5866277807, initial projection selection/part/contact text
+rendering now passes the existing study and OccurrenceId to a private helper.
+It no longer constructs an owning OccurrenceKey merely to render it. The public
+occurrence_text delegates to the same helper and retains the nil-study and path
+length predicate, error, normalization, decimal ranges and separator format.
+The result string remains owned; no reference escapes. Retained projection and
+snapshot copying, selected domain budgets and owner refusal/retry are unchanged.
+
+A focused comparison of the old aggregate-key call shape and the component call
+observes UUID-sized requests fall from 2 to 1 for both aggregate and byte paths;
+byte-path requests fall from 1 to 0. The remaining UUID-sized request is output
+rendering, not a temporary key. Full-range output and malformed-key controls are
+in letter_projection_test. This neither eliminates output allocation nor completes
+initial projection/index or owner setup accounting. Initial indexes/provenance/
+equivalence copies, membership callable/recursion and declaration/binding setup
+budgets remain open before combined resources and operation integration.

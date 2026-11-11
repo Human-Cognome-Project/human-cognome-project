@@ -330,6 +330,16 @@ and rendering temporaries need audit before claiming this boundary complete;
 membership callable/recursion and declaration/binding setup budgets remain next.
 No stack merge is inferred from provisional review or local evidence.
 
+**Remediation and rendering continuation (2026-11-11):** #283 review 5866277807
+reports no source blocker and green exact-head native/smoke; #280–#282 are also
+green. #279's old runs were stuck queued; cancel/force-cancel returned 409 and
+rerun 403. Close/reopen preserved its reviewed head and triggered native
+43115507493, viewport 43115507480 and smoke 43115507510. Old attempts remain
+preserved. Integration still requires new qualification and maintainer disposition.
+The next bounded change removes temporary OccurrenceKey construction from initial
+projection rendering, sharing unchanged validation with the public formatter.
+Remaining indexes/provenance/equivalence and traversal/setup budgets remain open.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

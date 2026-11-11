@@ -4674,3 +4674,61 @@ expansion probe sources/results are retained. SHA256SUMS manifest digest:
 Raw artifacts have not been independently inspected remotely. Hosted qualification
 and review remain required. Parent #282 smoke 43104595184 succeeded; native
 43104595076 was still running at recheck. Prior stack failures remain preserved.
+
+### Occurrence rendering argument qualification (2026-11-11)
+
+Tested `fa3bef8fde62df7cc18bb02c4822c430bdc71e09`, stacked on #283 reviewed head
+`38e81a957066e85294a0afe2555fb8dcc27090df`. Review 5866277807 reports no blocking
+finding and green native 43106388266/smoke 43106388225, permitting continuation.
+
+Selection, part and contact rendering in project_letters now passes existing
+study/OccurrenceId components to a private helper rather than constructing an
+owning temporary OccurrenceKey. Public occurrence_text delegates to the same
+helper; nil-study/path-length rejection, error message and output format are
+unchanged. The output still owns its text. No public API, domain attachment,
+independent snapshots or owner refusal/exact-retry behavior changes.
+
+Tests explicitly cover normalized uppercase UUID input, UINT64_MAX entry,
+UINT32_MAX byte ordinal, zero ordinals, separators, nil study and invalid path
+lengths 1/3. Existing source-death and projection/structural controls remain active.
+A focused local probe compares the old aggregate-key call shape with the new
+component call and requires identical text. For aggregate/byte cases, UUID-sized
+37-byte requests fall from 2 to 1; the byte case's 8-byte path request falls from
+1 to 0. These size-filtered observations support the bounded source change; output
+string allocation remains and zero total allocation is not claimed. Probe source,
+commands, binary and build/output logs are archived.
+
+#279 remediation is separate from product validation: original combined-head native
+43098106376, viewport 43098106428 and smoke 43098106405 remained queued without
+jobs. Both cancellation endpoints returned 409 (not queued yet); rerun returned
+403 (already running). Close/reopen preserved reviewed head `5f1ca0c3` and triggered
+fresh native 43115507493, viewport 43115507480 and smoke 43115507510. Old attempts
+remain preserved, never relabeled. The original API snapshots are retained locally
+as setup-evidence/pr279-run-*-before.json. No empty commit, rewrite or descendant
+suite rerun was used to repair the queue. Integration requires maintainer disposition.
+
+Owner metrics remain unchanged in all four CPU configurations: single/four selection
+selected live/peak 321185/392475, work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251, with 3271/5927 failure sites fully reclaimed. These owner
+observations do not prove the initial-rendering allocation removal.
+
+The 2-direct-exchange_commit log contains one Taichi ticache.lock warning after
+its final case_failures=0 PASS marker. The verifier explicitly checks that order
+and permits only that inspected diagnostic; it remains in the archive. No cache
+cleanup or rerun was used to erase it. No build/probe warning or product error.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five
+cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting native
+handoff/snapshot checks and six warm CTests. Clang15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no GPU/DB/browser-model
+or performance qualification. The browser was used only to inspect the CI queue.
+Final tested-to-head delta is four Markdown records. Verified archive
+`setup-evidence/occurrence-rendering-domain-fa3bef8f.tar.gz`; manifest digest:
+
+    70798865e9d3a83f485c7ece145ba9f61e721b9f1cb1051f69b0ee86bb0ab5b4
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification/review remain required. At final recheck, #279 fresh smoke
+43115507510 and viewport 43115507480 passed; native 43115507493 had passed build
+and projection-values and was running its matrix. No merge is inferred.
