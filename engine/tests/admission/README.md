@@ -4623,3 +4623,54 @@ qualification and review remain required. At parent inspection, #281 smoke
 43101300624 and warm 43101300677 succeeded; native 43101300728 was queued.
 Next: remaining identity copies outside these paths, membership callable/recursion
 and declaration/binding setup budgets, then combined resources and operations.
+
+### Byte-expansion temporary identity qualification (2026-11-11)
+
+Tested `22c4699bac19d4961d241d8efbfb7aff8115a3ad`, stacked on #282 head
+`29b82129cd040b3bbe3fda33d2b85a12e181f904`, provisionally accepted by review
+5865626048. #279 remains main-targeted integration; the dependent stack is unmerged.
+
+The private ByteRef character/byte identities are borrowed from stable source
+tools during normalization/projection. The source tool table is never mutated by
+those consumers, and no pointer is stored in their published output. Definition
+and provenance values still copy their own identities. Legacy and structural
+projection tests now destroy a local source bundle before checking output values,
+including exact UTF-8 provenance, repeated bytes and pinned revisions. Existing
+malformed/reordered/stale input rejection remains active.
+
+A focused local probe includes the production translation unit and observes C++
+new requests of 37 bytes during expansion only, after fixture/index construction.
+Five letters yield 13 byte rows and zero such requests. Rebuilding the same probe
+against #282's letter_projection.cpp yields 52 requests and rejects that previous
+implementation. This supports removal of the four UUID character copies per row;
+it does not claim zero total allocation or account for addresses/path/table/string
+backing. Both helper sources, commands, build logs and results are retained.
+
+Owner metrics match #282 in all four CPU configurations: single/four selection
+selected live/peak 321185/392475, work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251 and 3271/5927 failure sites fully reclaimed. Those unchanged
+owner totals do not establish the expansion removal; initial projection is outside
+adoption. No physical-memory or dedicated-host performance claim follows.
+
+Remaining initial projection indexes, provenance/equivalence copies and rendering
+temporaries are still distinct from independent published outputs. Membership
+callable/recursion and declaration/binding setup budgets remain open, followed by
+combined resources and operation integration. No GPU, live DB or browser work.
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five
+cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting native
+handoff/snapshot checks and six standalone warm CTests. The prior-source expansion
+probe failed the zero-copy predicate as expected; the current probe passed.
+No build/test/helper warnings or errors. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. No performance claim.
+
+Final tested-to-head changes contain only four Markdown evidence/status records.
+Verified archive: `setup-evidence/projection-temporaries-domain-22c4699b.tar.gz`.
+Commands, source/configuration, logs, binary/runtime hashes, layouts and both
+expansion probe sources/results are retained. SHA256SUMS manifest digest:
+
+    e913ad7f9b704e8bf3813d8b7438d648dee065e491d007a386078d899632fafe
+
+Raw artifacts have not been independently inspected remotely. Hosted qualification
+and review remain required. Parent #282 smoke 43104595184 succeeded; native
+43104595076 was still running at recheck. Prior stack failures remain preserved.

@@ -321,6 +321,15 @@ preservation/source-death and existing refusal/retry/lifetime controls cover the
 boundary. Remaining temporary identities and callable/recursive traversal plus
 declaration/binding setup budgets follow before combined resources and operations.
 
+**Projection temporary-identity contribution (awaiting review):** #282 review
+5865626048 provisionally accepts `29b82129` with no blocking findings. Private
+byte-expansion rows now borrow pinned character/byte references while source tools
+remain stable; published outputs retain independent ownership. The direct probe
+rejects prior-source UUID copies. Remaining initial projection indexes/provenance
+and rendering temporaries need audit before claiming this boundary complete;
+membership callable/recursion and declaration/binding setup budgets remain next.
+No stack merge is inferred from provisional review or local evidence.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

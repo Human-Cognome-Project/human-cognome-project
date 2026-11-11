@@ -4,16 +4,23 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
-**Active adoption-copy contribution (2026-11-11):** on provisionally accepted
-#281 `15db4b81`, authorized by review 5865407113. Owner/binding constructors
-borrow row/field arguments until independent domain-owned maps are established;
-the temporary declaration UUID is reserved in the same domain. Caller ownership,
-snapshot independence and refusal/retry semantics remain required. Both builds and all 47 scoped local CPU checks passed without warnings; the
-initial obsolete-assertion failure is preserved. Hosted qualification and
-review remain pending. Next: remaining detached identities outside these paths,
-membership callable/recursion and declaration/binding setup budgets, then combined
-resources and remaining-operation integration. #279 remains the main-targeted
-integration PR; #280/#281 and this continuation remain stacked and unmerged.
+**Active projection temporary-identity contribution (2026-11-11):** continues from
+#282 `29b82129`, provisionally accepted with no blocking finding by review
+5865626048. Private byte-expansion rows borrow stable source tool references;
+published occurrence/provenance identities remain independently owned. Source-death
+controls and a prior-source allocation probe cover this boundary. Both builds and
+47 scoped CPU checks passed without warnings; hosted qualification and review
+remain pending. Detailed evidence is in the admission record.
+Remaining initial projection indexes/rendering temporaries, membership callable/
+recursion and declaration/binding setup budgets precede combined resources and
+operation integration. #279 remains the main-targeted integration PR; dependent
+contributions stay stacked and unmerged.
+
+**Provisionally accepted #282 (2026-11-11):** review 5865626048 accepts the adoption
+argument-copy slice at `29b82129`. Its 47 scoped CPU checks passed locally; the
+initial obsolete-assertion failure is preserved. Maintainer inspection reports
+smoke 43104595184 green, native 43104595076 running; #280/#281 native still running
+and #279 latest-head workflows queued. These are not integration acceptance.
 
 **Provisionally accepted #281 (2026-11-11):** review 5865407113 accepts the
 nil/containment source provisionally at `15db4b81`, with no blocking findings.

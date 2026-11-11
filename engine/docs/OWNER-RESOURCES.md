@@ -1838,3 +1838,31 @@ Next: audit remaining detached temporary identity copies outside these adoption
 paths and address membership callable/recursion plus declaration/binding setup
 budgets, then combined resources and operation/control integration. Domain object/
 control-block overhead and caller/native ownership remain separately inventoried.
+
+### Borrowed byte-expansion identities (awaiting review)
+
+Review 5865626048 of #282 authorizes the remaining temporary-identity audit.
+The private ByteRef rows returned by letter_projection.cpp's expand now borrow
+character/byte ToolRefs from the source tool table. All three consumers finish
+before that table is changed or destroyed: legacy and structural normalization
+only append nodes/occurrences/selections, and project_letters reads a const bundle.
+Published occurrence definitions and ByteProvenance still copy independent values.
+The path vector and output tables remain owned; no public borrowing interface is
+introduced. Both projection tests destroy their source bundle before validating
+the resulting legacy/structural output, including UTF-8 provenance and revisions.
+
+This is initial recipe/projection preparation outside owner adoption, not newly
+selected owner allocation. A direct expansion probe observes 0 UUID-sized (37-byte)
+character requests over 13 byte rows; the same probe linked to prior source
+observes 52 and fails the zero-request check. It does not claim zero total
+allocation: row/path backing and strings remain. Owner totals are not evidence
+for this removal because adoption copies an already constructed projection.
+
+Audit boundaries still outstanding: the initial projection's owning tool/occurrence
+indexes and provenance/equivalence tables, temporary rendering keys and validation
+strings; these must be separated from intentionally independent published outputs.
+Owner projection copy helpers, contract copies and membership keys already construct
+identities in their selected domains. Standalone coordinator map copies provide
+candidate backing and cannot simply become borrowed aliases. Membership callable/
+recursion and declaration/binding setup budgets remain open, followed by combined
+resource accounting and remaining-operation integration.
