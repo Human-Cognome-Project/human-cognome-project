@@ -10,8 +10,8 @@ void need(bool condition, const char *message) {
   if (!condition) throw warm::Error(message);
 }
 warm::ObjectKey catalogue_object(const warm::ObjectKey &key,
-    const std::shared_ptr<detail::ReservationDomain> &domain, bool retained_uuid=false) {
-  return {retained_uuid ? warm::Uuid(key.scope,domain) : key.scope,{key.address.begin(),key.address.end(),
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {warm::Uuid(key.scope,domain),{key.address.begin(),key.address.end(),
       detail::SharedReservationAllocator<codec::AddressElement>(domain)}};
 }
 }  // namespace
@@ -97,8 +97,8 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
            detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
       const auto &target=tools.at(group)->ref;
       out.contributions_.push_back({std::move(occurrence),
-                                    {GroupKind::Membership, catalogue_object(group,domain,true)},
-                                    {catalogue_object(target.object,domain,true),warm::Uuid(target.revision,domain)},
+                                    {GroupKind::Membership, catalogue_object(group,domain)},
+                                    {catalogue_object(target.object,domain),warm::Uuid(target.revision,domain)},
                                     *live.mass});
     }
   }

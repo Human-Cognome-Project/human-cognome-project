@@ -857,10 +857,11 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
 
 // This fixture has only five-element addresses (15 requested bytes), empty or
 // two-ordinal paths, UUID text, table/node blocks and a larger callable. The
-// 15-byte request class therefore independently identifies address backing.
+// 15-byte and 37-byte request classes independently identify addresses and UUIDs.
 namespace catalogue_address_witness {
 inline thread_local assembly::detail::ReservationDomain *domain{};
 inline thread_local std::uint64_t previous_work{}, live{}, peak{}, acquired{}, released{};
+inline thread_local std::uint64_t uuid_live{}, uuid_peak{}, uuid_acquired{}, uuid_released{};
 inline thread_local bool prepaid=true;
 void acquire(std::size_t bytes) noexcept {
   const auto work=domain->result().charged_work;
@@ -868,10 +869,15 @@ void acquire(std::size_t bytes) noexcept {
     prepaid &= work-previous_work == bytes;
     live += bytes; acquired += bytes; peak=std::max(peak,live);
   }
+  if (bytes == 37) {
+    prepaid &= work-previous_work == bytes;
+    uuid_live += bytes; uuid_acquired += bytes; uuid_peak=std::max(uuid_peak,uuid_live);
+  }
   previous_work=work;
 }
 void release(std::size_t bytes) noexcept {
   if (bytes == 5*sizeof(codec::AddressElement)) { live-=bytes; released+=bytes; }
+  if (bytes == 37) { uuid_live-=bytes; uuid_released+=bytes; }
 }
 }
 
@@ -898,24 +904,38 @@ void catalogue_graph_address_controls() {
   // contain 3+1+1+0 unique targets despite the diamond and direct top edge.
   const auto temporary=(projection.recipe().tools.size()+2*4+5)*address_size;
   const auto retained=reference.contributions().size()*2*address_size;
+  const auto temporary_uuid=(projection.recipe().tools.size()+2*4+5)*37;
+  const auto retained_uuid=(3+reference.contributions().size()*4)*37;
   require(reference.contributions().size()==projection.occurrences().size()*3,
           "diamond catalogue failed per-occurrence deduplication");
   auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
-  W::domain=domain.get(); W::previous_work=W::live=W::peak=W::acquired=W::released=0; W::prepaid=true;
-  A::on_acquired=W::acquire; A::on_released=W::release;
-  A::begin();
+  const auto observe=[&] {
+    W::domain=domain.get(); W::previous_work=W::live=W::peak=W::acquired=W::released=0;
+    W::uuid_live=W::uuid_peak=W::uuid_acquired=W::uuid_released=0; W::prepaid=true;
+    A::on_acquired=W::acquire; A::on_released=W::release;
+    A::begin();
+  };
+  const auto finish=[] {
+    A::on_acquired=nullptr; A::on_released=nullptr; return A::end();
+  };
+  observe();
   try {
     {
       auto value=Access::catalogue(projection,domain);
       require(Access::catalogue_equivalent(value,reference) && W::prepaid &&
                   W::acquired==temporary+retained && W::peak==temporary+retained &&
-                  W::live==retained && W::released==temporary,
+                  W::live==retained && W::released==temporary &&
+                  W::uuid_acquired==temporary_uuid+retained_uuid &&
+                  W::uuid_peak==temporary_uuid+retained_uuid &&
+                  W::uuid_live==retained_uuid && W::uuid_released==temporary_uuid,
               "graph address requests, prepayment or transient overlap differ from independent fixture");
     }
   } catch (...) { A::on_acquired=nullptr; A::on_released=nullptr; A::end(); throw; }
   A::on_acquired=nullptr; A::on_released=nullptr;
   const auto released=A::end();
+  const auto address_peak=W::peak, uuid_peak=W::uuid_peak;
   require(!released.live && !released.blocks && !W::live && W::acquired==W::released &&
+              !W::uuid_live && W::uuid_acquired==W::uuid_released &&
               !domain->result().live_bytes,"graph address witness leaked temporary or retained backing");
   // Reuse the complete refusal/retry and lifetime controls with diamond ancestry.
   catalogue_reservation_controls(projection);
@@ -937,25 +957,48 @@ void catalogue_graph_address_controls() {
   auto &recipe=Access::catalogue_recipe(projection);
   recipe.tools.push_back(recipe.tools.front());
   domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
-  { auto value=Access::catalogue(projection,domain);
-    require(Access::catalogue_equivalent(value,reference),"duplicate graph key changed catalogue"); }
-  require(!domain->result().live_bytes,"duplicate graph key retained allocation");
+  observe();
+  try {
+    auto value=Access::catalogue(projection,domain);
+    require(Access::catalogue_equivalent(value,reference) && W::prepaid &&
+                W::uuid_acquired==temporary_uuid+retained_uuid+37 &&
+                W::uuid_released==temporary_uuid+37 && W::uuid_live==retained_uuid &&
+                W::acquired==temporary+retained+address_size &&
+                W::released==temporary+address_size && W::live==retained,
+            "duplicate graph key changed values or failed to prepay/release UUID and address");
+  } catch (...) { finish(); throw; }
+  const auto duplicate=finish();
+  require(!domain->result().live_bytes && !duplicate.live && !duplicate.blocks &&
+              !W::uuid_live && W::uuid_acquired==W::uuid_released,
+          "duplicate graph key retained allocation");
+  const auto duplicate_budget=domain->result();
   // Introduce a cycle only after normal recipe validation; collection must reject
   // it and reclaim every preceding node/key allocation.
   auto top_it=std::find_if(recipe.tools.begin(),recipe.tools.end(),[&](const auto &t){return t.ref==top;});
   require(top_it!=recipe.tools.end(),"graph cycle fixture lost ancestor");
   top_it->member_of={left};
   domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
-  A::begin();
+  observe();
   bool rejected=false;
   try { auto value=Access::catalogue(projection,domain); }
   catch (const warm::Error &) { rejected=true; }
-  catch (...) { A::end(); throw; }
-  const auto failed=A::end();
+  catch (...) { finish(); throw; }
+  const auto failed=finish();
+  require(W::prepaid && !W::uuid_live && W::uuid_acquired==W::uuid_released,
+          "cyclic graph UUID requests were not prepaid or reclaimed");
   require(rejected && !domain->result().live_bytes && !failed.live && !failed.blocks,
           "cyclic catalogue failed rejection or complete reclamation");
+  top_it->member_of.clear();
+  domain=std::make_shared<ReservationDomain>(ReservationBudget{duplicate_budget.peak_bytes,duplicate_budget.charged_work});
+  { auto value=Access::catalogue(projection,domain);
+    require(Access::catalogue_equivalent(value,reference) &&
+                domain->result().charged_work==duplicate_budget.charged_work,
+            "cycle repair failed exact-budget retry"); }
+  require(!domain->result().live_bytes,"cycle repair retry retained backing");
   std::cout << "catalogue_graph_addresses,temporary_bytes=" << temporary
-            << ",retained_bytes=" << retained << ",address_peak=" << W::peak
+            << ",retained_bytes=" << retained << ",address_peak=" << address_peak
+            << ",temporary_uuid_bytes=" << temporary_uuid << ",retained_uuid_bytes=" << retained_uuid
+            << ",uuid_peak=" << uuid_peak
             << ",failure_sites=" << released.attempts << " PASS\n";
 }
 void contract_reservation_controls(const assembly::LetterProjection &projection) {
