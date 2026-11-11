@@ -335,11 +335,11 @@ LetterProjection project_letters(const warm::Bundle &b) {
   }
   for (const auto &c : b.contacts)
     out.structural_input_.contacts.push_back(
-        {occurrence_text({out.study_, c.a}),
-         occurrence_text({out.study_, c.b})});
+        {InputText(occurrence_text({out.study_, c.a})),
+         InputText(occurrence_text({out.study_, c.b}))});
   for (const auto &f : b.focal_fields)
     out.structural_input_.focal_fields.push_back(
-        {static_cast<GroupKind>(f.kind), warm::key(f.object)});
+        {static_cast<GroupKind>(f.kind), InputText(warm::key(f.object))});
   if (b.recipe_version == 1) {
     out.input_.definitions = out.structural_input_.definitions;
     out.input_.selections = out.structural_input_.selections;
@@ -456,6 +456,18 @@ Definition input_row(const Definition &row, const std::shared_ptr<detail::Reserv
 Selection input_row(const Selection &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
   return {row.aggregate,
       InputTable<std::string>(row.parts.begin(),row.parts.end(),detail::SharedReservationAllocator<std::string>(domain)),row.exposure};
+}
+InputText input_text(const InputText &text, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return InputText(text.begin(),text.end(),detail::SharedReservationAllocator<char>(domain));
+}
+Contact input_row(const Contact &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {input_text(row.a,domain),input_text(row.b,domain)};
+}
+Membership input_row(const Membership &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {input_text(row.occurrence,domain),input_text(row.group,domain)};
+}
+FocalField input_row(const FocalField &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {row.kind,input_text(row.value,domain)};
 }
 template<class Input> Input projection_input(const Input &source,
     const std::shared_ptr<detail::ReservationDomain> &domain) {

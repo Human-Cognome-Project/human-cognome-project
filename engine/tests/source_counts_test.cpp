@@ -152,7 +152,7 @@ assembly::PreparedStudy study(int n, taichi::lang::SNode &root) {
                              {double(i * 2), 0, 0},
                              {.125, 0, 0}});
     if (i + 1 < n)
-      s.memberships.push_back({name, "language"});
+      s.memberships.push_back({assembly::InputText(name), "language"});
   }
   return prepare(s);
 }

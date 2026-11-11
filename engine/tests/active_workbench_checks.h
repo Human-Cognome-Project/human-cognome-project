@@ -137,7 +137,7 @@ inline void run_focus(const warm::Bundle &recipe, bool cuda) {
                           {{1, {0, 0}}, {{offset, 0, 0}, {}}}};
       const std::vector<FocalField> focus{
           {GroupKind::SiblingDefinition,
-           warm::key(local.values.at(0).ref.object)}};
+           InputText(warm::key(local.values.at(0).ref.object))}};
       auto active = shared.revise(local).focus(focus);
       field::Parameters p;
       p.gravity = 0;

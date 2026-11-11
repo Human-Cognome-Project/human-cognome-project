@@ -62,17 +62,17 @@ struct Selection {
   Exposure exposure{Exposure::Aggregate};
 };
 struct Contact {
-  std::string a, b;
+  InputText a, b;
 };
 // Explicit field names, encoded losslessly from ObjectKey by typed callers.
 // Group anchors need no live Definition, geometry, slot or naming mass.
 struct Membership {
-  std::string occurrence, group;
+  InputText occurrence, group;
 };
 enum class GroupKind { SiblingDefinition, ParentValue, Membership };
 struct FocalField {
   GroupKind kind;
-  std::string value;
+  InputText value;
 };
 struct StudyInput {
   int capacity{0};

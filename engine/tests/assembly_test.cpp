@@ -54,7 +54,7 @@ StudyInput couplets(const InputTable<StudyNode> &nodes) {
                        {"11-b", "11", 3, 4, {1, -3, 0}, {}}};
   for (int a = 0; a < 4; ++a) {
     for (int b = a + 1; b < 4; ++b) {
-      input.contacts.push_back({input.occurrences[a].id, input.occurrences[b].id});
+      input.contacts.push_back({InputText(input.occurrences[a].id), InputText(input.occurrences[b].id)});
     }
   }
   return input;

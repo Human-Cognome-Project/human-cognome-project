@@ -62,7 +62,7 @@ inline FixtureSource letters(engine::Runtime &runtime, int mode) {
     nodes.push_back({&primary, 0, assembly::ScaleRole::PrimaryStep});
   runtime.program().add_snode_tree(std::move(root), false);
   auto input = memberships.bind(projection, nodes);
-  input.focal_fields = {{assembly::GroupKind::Membership, warm::key(f.en)}};
+  input.focal_fields = {{assembly::GroupKind::Membership, assembly::InputText(warm::key(f.en))}};
   const auto prepared = assembly::prepare(input);
   FixtureSource s;
   std::vector<int> mapping(prepared.capacity, -1);

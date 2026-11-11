@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
     auto [pinned, pin] = viewport::acquire_guarded(
       [&] { return manager.acquire(ticket, consumer); }, [&] { manager.release(ticket, consumer); });
     auto logical = ActiveAssembly::assemble(pinned.bundle, owner, false)
-      .focus({{GroupKind::SiblingDefinition, key(english.object)}});
+      .focus({{GroupKind::SiblingDefinition, assembly::InputText(key(english.object))}});
     field::Parameters parameters;
     parameters.dt = float(options.dt);
     const auto handle = session.submit(logical, parameters);

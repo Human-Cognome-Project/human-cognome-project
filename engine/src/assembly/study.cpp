@@ -207,21 +207,21 @@ PreparedStudy prepare(const StudyInput &input) {
   }
   std::set<std::pair<std::string, std::string>> memberships;
   for (const auto &membership : input.memberships) {
-    require(!membership.group.empty() && active_slots.count(membership.occurrence),
+    require(!std::string(membership.group).empty() && active_slots.count(std::string(membership.occurrence)),
             "assembly: membership needs a named field and active occurrence");
-    if (!memberships.emplace(membership.occurrence, membership.group).second)
+    if (!memberships.emplace(std::string(membership.occurrence), std::string(membership.group)).second)
       continue;
-    const auto &occurrence = occurrence_at(membership.occurrence);
+    const auto &occurrence = occurrence_at(std::string(membership.occurrence));
     const auto mass = definitions.at(occurrence.definition)->mass;
-    const int group = group_for(GroupKind::Membership, membership.group);
+    const int group = group_for(GroupKind::Membership, std::string(membership.group));
     target.participation.push_back({occurrence.id, occurrence.slot, group, "", 0,
                                    mass, 1.0f});
   }
   std::set<std::pair<int, int>> pairs;
   for (const auto &contact : input.contacts) {
-    require(active_slots.count(contact.a) && active_slots.count(contact.b),
+    require(active_slots.count(std::string(contact.a)) && active_slots.count(std::string(contact.b)),
             "assembly: contact must reference active occurrences");
-    const int a = active_slots.at(contact.a), b = active_slots.at(contact.b);
+    const int a = active_slots.at(std::string(contact.a)), b = active_slots.at(std::string(contact.b));
     require(a != b && pairs.emplace(std::min(a, b), std::max(a, b)).second,
             "assembly: self or duplicate contact");
     target.contacts.push_back({a, b});
@@ -230,7 +230,7 @@ PreparedStudy prepare(const StudyInput &input) {
   count(target.contacts.size());
   std::set<int> focal;
   for (const auto &field : input.focal_fields) {
-    const auto found = groups.find({field.kind, field.value});
+    const auto found = groups.find({field.kind, std::string(field.value)});
     require(found != groups.end() && focal.insert(found->second).second,
             "assembly: focus requires distinct exposed fields");
     target.focal_groups.push_back(found->second);

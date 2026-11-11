@@ -109,7 +109,7 @@ StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
   }
   for (const auto &e : local_->context)
     input.memberships.push_back(
-        {occurrence(study(), e.occurrence), local_name(e.target)});
+        {InputText(occurrence(study(), e.occurrence)), InputText(local_name(e.target))});
   std::set<warm::OccurrenceId> moved;
   for (const auto &p : local_->placements) {
     require(moved.insert(p.occurrence).second);

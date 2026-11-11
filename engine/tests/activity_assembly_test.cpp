@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     runtime.program().add_snode_tree(std::move(root), false);
     auto input =
         fields.bind(projection, {{bound, -1, assembly::ScaleRole::Root}});
-    input.focal_fields = {{assembly::GroupKind::Membership, warm::key(f.en)}};
+    input.focal_fields = {{assembly::GroupKind::Membership, assembly::InputText(warm::key(f.en))}};
     field::Parameters p;
     p.gravity = 0;
     p.dt = 0.1f;
