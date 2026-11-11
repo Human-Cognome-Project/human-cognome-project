@@ -25,7 +25,7 @@ void point(Point p) {
   need(std::isfinite(p.x) && std::isfinite(p.y) && std::isfinite(p.z),
        "non-finite initial geometry/state");
 }
-bool text_value(const std::string &value) {
+bool text_value(std::string_view value) {
   return value.find('\0') == std::string::npos;
 }
 std::string ref_key(const ToolRef &r) {

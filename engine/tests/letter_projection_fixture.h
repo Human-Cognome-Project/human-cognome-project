@@ -34,7 +34,7 @@ struct Fixture {
     Tool t{{id, new_uuid()},
            epoch,
            "projection-fixture-v1",
-           notation,
+           RecipeText(notation),
            mass,
            {},
            {},

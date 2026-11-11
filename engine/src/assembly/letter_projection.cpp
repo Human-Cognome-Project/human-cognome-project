@@ -125,7 +125,7 @@ std::vector<ByteRef> expand(const Tools &tools, const warm::Tool &letter) {
     }
     exact_form += encoded;
   }
-  need(exact_form == *letter.notation,
+  need(std::string_view(exact_form) == std::string_view(*letter.notation),
        "letter source form differs from exact UTF-8 construction");
   need(letter.mass && *letter.mass == out.size() * std::uint64_t(2),
        "byte projection does not conserve exact letter mass");
@@ -375,13 +375,22 @@ template<class T, class Copy> warm::RecipeTable<T> recipe_tables(
   for (const auto &row : rows) result.push_back(copy(row));
   return result;
 }
+warm::RecipeText projection_text(const warm::RecipeText &text,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  return {text.data(),text.size(),detail::SharedReservationAllocator<char>(domain)};
+}
+std::optional<warm::RecipeText> projection_text(const std::optional<warm::RecipeText> &text,
+    const std::shared_ptr<detail::ReservationDomain> &domain) {
+  if (!text) return {};
+  return projection_text(*text,domain);
+}
 warm::Bundle projection_recipe(const warm::Bundle &b,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   // Build addressed rows directly; a detached whole-recipe copy would allocate
   // their backing before admission. Other recipe storage remains outside it.
   return {b.ref,b.owner,b.creator,b.recipe_version,
       recipe_tables(b.tools,domain,[&](const auto &t) -> warm::Tool {
-        return {projection_reference(t.ref,domain),t.epoch,t.recipe,t.notation,t.mass,
+        return {projection_reference(t.ref,domain),t.epoch,projection_text(t.recipe,domain),projection_text(t.notation,domain),t.mass,
             recipe_tables(t.parents,domain,[&](const auto &p) -> warm::Parent {
               return {projection_reference(p.target,domain),p.ordinal,p.stored_mass,p.contribution};
             }),

@@ -58,7 +58,7 @@ std::vector<Tool> source_tools(ColdReader &core, ColdReader &ling) {
     auto &reader = address_text(id.address).substr(0, 2) == "02" ? ling : core;
     auto r = reader.read(id.address);
     if (!r) throw Error("retained fixture endpoint missing");
-    Tool t{{id, new_uuid()}, epoch, "seed-v1", r->notation,
+    Tool t{{id, new_uuid()}, epoch, "seed-v1", std::optional<RecipeText>(r->notation),
            r->mass,          {},    {},        actor};
     tools.emplace(id, t);
     for (const auto &parent : r->parents) {

@@ -268,8 +268,8 @@ Tool Toolbox::read_tool(const ToolRef &ref) {
   need(PQntuples(r.get()) == 1, "missing tool revision");
   Tool tool{ref,
             Uuid(cell(r, 0, 0)),
-            cell(r, 0, 1),
-            nullable(r, 0, 2),
+            RecipeText(cell(r, 0, 1)),
+            std::optional<RecipeText>(nullable(r, 0, 2)),
             mass(r, 0, 3),
             {},
             {},
@@ -346,7 +346,7 @@ BundleRef Toolbox::publish(Prepared candidate,
         p);
     auto head_p = p;
     head_p.push_back(t.epoch.str());
-    head_p.push_back(t.recipe);
+    head_p.emplace_back(std::string(t.recipe));
     auto head = pg_->query(
         "SELECT revision FROM warm_toolbox.tool_head WHERE scope=$1 "
         "AND address=$2 AND epoch=$3 AND recipe=$4 FOR UPDATE",
@@ -385,8 +385,8 @@ BundleRef Toolbox::publish(Prepared candidate,
       auto p = params(t.ref);
       p.push_back(address_array(root.prefix.address));
       p.push_back(t.epoch.str());
-      p.push_back(t.recipe);
-      p.push_back(t.notation);
+      p.emplace_back(std::string(t.recipe));
+      p.push_back(t.notation ? std::optional<std::string>(std::string(*t.notation)) : std::nullopt);
       p.push_back(number(t.mass));
       p.push_back(context_.actor.str());
       p.push_back(root.snapshot_hash);
@@ -418,7 +418,7 @@ BundleRef Toolbox::publish(Prepared candidate,
       }
       auto p = params(t.ref.object);
       p.push_back(t.epoch.str());
-      p.push_back(t.recipe);
+      p.emplace_back(std::string(t.recipe));
       p.push_back(t.ref.revision.str());
       insert(*pg_, "tool_head", "scope,address,epoch,recipe,revision", p);
       if (roots.at(key(t.ref.object)).kind == BindingKind::Temporary) {

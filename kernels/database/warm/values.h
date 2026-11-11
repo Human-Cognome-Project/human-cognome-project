@@ -4,6 +4,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "../codec/codec.h"
@@ -92,11 +93,20 @@ struct Parent {
   std::optional<std::uint64_t> stored_mass;
   std::uint64_t contribution{0};
 };
+using RecipeText = std::basic_string<char,std::char_traits<char>,
+    hcp::resources::SharedReservationAllocator<char>>;
+// Inline characters are already part of the string/row object. Heap requests
+// include the terminator. Detect inline backing by location, not a fixed SSO size.
+inline std::size_t recipe_text_backing(const RecipeText &text) {
+  const auto data = reinterpret_cast<std::uintptr_t>(text.data());
+  const auto object = reinterpret_cast<std::uintptr_t>(&text);
+  return data >= object && data-object < sizeof(text) ? 0 : text.capacity()+1;
+}
 struct Tool {
   ToolRef ref;
   Uuid epoch;
-  std::string recipe;
-  std::optional<std::string> notation;
+  RecipeText recipe;
+  std::optional<RecipeText> notation;
   std::optional<std::uint64_t> mass;
   RecipeTable<Parent> parents;
   RecipeTable<ToolRef> member_of;

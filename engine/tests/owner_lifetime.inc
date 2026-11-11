@@ -522,8 +522,19 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     {
       auto copy = Access::projection_copy(projection,domain);
       if (reserve) Access::reserve_projection(copy);
-      outer = Access::projection_table_bytes(copy);
-      Access::projection_tables(copy,[&](const auto &table) { if (table.second) {
+      outer = Access::projection_backing_bytes(copy);
+      Access::projection_texts(copy,[&](const auto &text) {
+        const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
+            [&](const auto &entry) { return entry.pointer==text.data(); });
+        const auto bytes=observed==std::end(A::table) ? 0 : observed->bytes;
+        require(bytes==warm::recipe_text_backing(text) &&
+                    (!bytes || bytes==text.capacity()+1) && text.data()[text.size()]=='\0',
+                "recipe text request omitted terminator or charged inline storage");
+      });
+      for (std::size_t i=0; i<copy.recipe().tools.size(); ++i)
+        require(warm::tool_body(copy.recipe().tools[i])==warm::tool_body(projection.recipe().tools[i]),
+                "recipe text copy changed immutable encoding");
+      Access::projection_backing(copy,[&](const auto &table) { if (table.second) {
         const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
             [&](const auto &entry) { return entry.pointer==table.first; });
         require(observed!=std::end(A::table) && observed->bytes==table.second,
@@ -558,7 +569,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
         auto other_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
         auto reserved_copy=Access::projection_copy(copy,other_domain);
         if (reserve) Access::reserve_projection(reserved_copy);
-        std::uint64_t bytes=Access::projection_table_bytes(reserved_copy);
+        std::uint64_t bytes=Access::projection_backing_bytes(reserved_copy);
         Access::projection_paths(reserved_copy,[&](const auto &path) {
           require(path.get_allocator().domain == other_domain,"copied inactive projection path detached");
           bytes += path.capacity()*sizeof(std::uint32_t);
@@ -678,6 +689,19 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
 
 void recipe_payload_controls() {
   membership_fixture::Fixture letters;
+  // Unreferenced valid tools exercise absent, empty, inline and heap text without
+  // changing the letter notation contract or the requested occurrence graph.
+  for (int i=0; i<4; ++i) {
+    auto tool=letters.base.tools.front();
+    tool.ref.object=letter_fixture::object("02.00.20.01.0"+std::to_string(i));
+    tool.parents.clear(); tool.member_of.clear(); tool.mass=1;
+    tool.recipe=i==3 ? warm::RecipeText(97,'r') : warm::RecipeText("short");
+    if (i==0) tool.notation.reset();
+    else if (i==1) tool.notation=warm::RecipeText{};
+    else if (i==2) tool.notation="q\"\\";
+    else tool.notation=warm::RecipeText(131,'n');
+    letters.base.tools.push_back(std::move(tool));
+  }
   auto recipe=assembly::normalize_letters(letters.base,
       {letters.request(letters.accented,0,warm::Exposure::Aggregate),
        letters.request(letters.english,1,warm::Exposure::Parts),
@@ -1017,8 +1041,8 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
                 full.live_bytes > storage.binding.vector_bytes+storage.coordinator.vector_bytes+Access::map_outer_bytes(*owner)+
                     Access::declarations(*owner).capacity()*sizeof(std::shared_ptr<const assembly::LetterExchangeContract>)+
                     storage.declarations.object_bytes+storage.memberships.object_bytes+unique_bytes+
-                    Access::projection_table_bytes(Access::projection(*owner))+
-                    Access::projection_table_bytes(Access::spare_projection(*owner)),
+                    Access::projection_backing_bytes(Access::projection(*owner))+
+                    Access::projection_backing_bytes(Access::spare_projection(*owner)),
             "reservation domain omitted fixed buffers or repeated temporary setup");
   }
   std::uint64_t byte_boundaries = 0, work_boundaries = 0;
@@ -1167,7 +1191,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     });
     std::uint64_t projection_bytes = 0;
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
-      Access::projection_tables(*p,[&](const auto &entry) { if (entry.second) {
+      Access::projection_backing(*p,[&](const auto &entry) { if (entry.second) {
         const auto request = containing_request(entry.first);
         require(request == entry.second, "projection table differs from observed allocation request");
         projection_bytes += request;

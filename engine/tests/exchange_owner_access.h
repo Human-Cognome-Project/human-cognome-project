@@ -15,9 +15,18 @@ struct ExchangeOwnerAccess {
     for (const auto &geometry : p.recipe_.geometry) visit(geometry.spheres);
     for (const auto &selection : p.recipe_.selections) visit(selection.parts);
   }
-  template<class Visit> static void projection_tables(const LetterProjection &p, Visit visit) {
+  template<class Visit> static void projection_texts(const LetterProjection &p, Visit visit) {
+    for (const auto &tool : p.recipe_.tools) {
+      visit(tool.recipe);
+      if (tool.notation) visit(*tool.notation);
+    }
+  }
+  template<class Visit> static void projection_backing(const LetterProjection &p, Visit visit) {
     projection_table_vectors(p,[&](const auto &table) {
       visit(std::make_pair(static_cast<const void *>(table.data()),table.capacity()*sizeof(table[0])));
+    });
+    projection_texts(p,[&](const auto &text) {
+      visit(std::make_pair(static_cast<const void *>(text.data()),warm::recipe_text_backing(text)));
     });
   }
   template<class Visit> static void projection_paths(const LetterProjection &p, Visit visit) {
@@ -114,13 +123,14 @@ struct ExchangeOwnerAccess {
     };
     return same_parents(a.parents_,b.parents_) && same_parents(a.spare_parents_,b.spare_parents_);
   }
-  static auto projection_table_bytes(const LetterProjection &p) {
+  static auto projection_backing_bytes(const LetterProjection &p) {
     std::uint64_t bytes = 0;
-    projection_tables(p,[&](const auto &entry) { bytes += entry.second; });
+    projection_backing(p,[&](const auto &entry) { bytes += entry.second; });
     return bytes;
   }
   template<class Visit> static void projection_domains(const LetterProjection &p, Visit visit) {
     projection_table_vectors(p,[&](const auto &table) { visit(table.get_allocator().domain.get()); });
+    projection_texts(p,[&](const auto &text) { visit(text.get_allocator().domain.get()); });
   }
   static auto projection_copy(const LetterProjection &p, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return LetterProjection(p,domain);

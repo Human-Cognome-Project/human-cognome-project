@@ -29,6 +29,16 @@ struct Census {
     count(result.text_bytes,logical ? s.size() : s.capacity());
     count(result.text_bytes,1);
   }
+  void text(const warm::RecipeText &s) {
+    if (meter) meter->charge(1);
+    // A fresh copy uses inline storage up to its default capacity. The retained
+    // census counts actual heap capacity, including the terminator.
+    if (logical) {
+      if (s.size()>warm::RecipeText{}.capacity()) {
+        count(result.text_bytes,s.size()); count(result.text_bytes,1);
+      }
+    } else count(result.text_bytes,warm::recipe_text_backing(s));
+  }
   void uuid(const warm::Uuid &u) { text(u.str()); }
   void object(const warm::ObjectKey &o) { uuid(o.scope); buffer(o.address); }
   void tool_ref(const warm::ToolRef &t) { object(t.object); uuid(t.revision); }
