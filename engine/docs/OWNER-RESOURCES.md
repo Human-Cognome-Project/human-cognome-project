@@ -1641,3 +1641,26 @@ Next: definition/occurrence identities and selection text across their shared
 lookup/serialization consumers. Other owner identities/comparison formatting, full
 setup, combined accounting and operation/control integration remain separate.
 Selected reports overlap the census and are not physical-memory/performance bounds.
+
+### Retained selection input text domain (contribution awaiting review)
+
+Selection.aggregate and each Selection.parts element use InputText. Explicit
+projection copies reserve the part table with its destination allocator, construct
+each string with that allocator before copying characters, and construct the
+aggregate text directly in the same domain. Ordinary snapshots detach recursively;
+moves retain lifetime. Definition/occurrence identities remain the next slice.
+
+Projection output construction and native selection lookup use explicit conversions,
+preserving existing string lookup/output interfaces and values. The review-requested
+membership emptiness check now inspects the string directly without allocating.
+Other temporary boundary conversions remain unselected setup work.
+
+The shared text visitor includes aggregate and every part in both input variants.
+Supplemented empty/short/139-character copy fixtures exercise each new field;
+these are copy probes, not native model-validity claims. Independent request,
+terminator, inline/heap and domain observations feed exact selected accounting,
+complete equality, refusal/reclamation/exact retry, detached source-death snapshots,
+moved lifetime and owner failure controls. Selected reports overlap the census.
+
+Next: definition/occurrence identities. Other owner identities/comparison formatting,
+full setup, combined resources and operation/control integration remain separate.

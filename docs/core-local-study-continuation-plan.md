@@ -243,13 +243,26 @@ identities/comparison formatting, full setup and combined accounting remain sepa
 `6bbae550f6e63a53f832a34449cf14008192e966` for bounded continuation with no blockers.
 Smoke 43032906551 passed; native 43032906525 remains pending at review inspection.
 Integrated acceptance remains through #267.
-**Active contribution (awaiting review):** retained contact, membership and focal
+**Provisionally accepted (#276):** retained contact, membership and focal
 field text, grouped by their shared preparation lookup boundary. Preserve public
 lookup/output strings through explicit conversions and audit viewport callers.
-**Next concrete slice:** definition/occurrence IDs and references plus selection
+**Authorized remaining work:** definition/occurrence IDs and references plus selection
 aggregate/parts text. Audit public identity and serialization paths before adopting
 allocator-aware strings. Other identities/comparison formatting, full setup,
 combined accounting and operation integration remain separately inventoried.
+
+**Dependency review (2026-11-11):** #276 review 5861623800 accepts head
+`755595b21b3193c5a236c2c3c5c5fb5a30be1cf7` provisionally with no source blockers.
+Smoke and native projection-values passed. Native 43034799670 failed before
+product compilation on apt DNS resolution; viewport 43034798156 had the same
+failure during Playwright dependencies and was cancelled before browser tests.
+Maintainer requested retries successfully; preserve these failed/cancelled attempts.
+Integrated acceptance remains through #267.
+**Active contribution (awaiting review):** selection aggregate/parts input text,
+plus requested membership.group.empty() cleanup avoiding an unnecessary copy.
+**Next concrete slice:** definition/occurrence identities and references, auditing
+public identity, lookup and serialization boundaries. Other identities/comparison
+formatting, full setup, combined accounting and operation integration remain separate.
 
 ## A. Coherent source/hierarchy refresh
 

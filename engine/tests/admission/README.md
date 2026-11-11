@@ -4227,3 +4227,72 @@ combined accounting and operation/control integration remain separate. No GPU,
 live DB, browser/full baseline rerun or performance qualification. Historical
 failures/warnings remain preserved; raw local artifacts have not been independently
 inspected remotely.
+
+### Retained selection input text qualification (2026-11-11)
+
+Tested source `dd98ef1dacc10c5d1b7a5622c728221c49f23e71`, stacked on #276 head
+`755595b21b3193c5a236c2c3c5c5fb5a30be1cf7`. Review 5861623800 found no source
+blockers and authorized continuation. Selection aggregate/parts are this bounded
+subset; definition/occurrence identities remain next. Integrated through #267.
+
+Parent hosted reconciliation, as personally inspected by the maintainer: smoke
+43034798259 and projection-values job 130570694696 passed. Native 43034799670/job
+130570695102 failed before product compilation because apt could not resolve
+azure.archive.ubuntu.com (exit 100). Viewport 43034798156/job 130570690557 had the
+same DNS failure during Playwright dependencies and was cancelled before browser
+tests. Maintainer retry requests succeeded; failed/cancelled attempts remain
+preserved and are neither product failures nor passes. No source workaround masks them.
+
+Selection.aggregate and parts elements use InputText, constructed directly with
+the selected domain before character allocation. Part tables remain attached.
+Projection construction and native lookup adapt explicitly; values, order and
+exposure are unchanged. The requested membership.group.empty() cleanup removes
+a needless string copy. Other boundary conversions remain unselected setup work.
+
+Independent text observers cover aggregate and every part in both variants,
+including inline/heap distinction, capacity plus terminator, domain identity and
+exact selected accounting. Empty/short/139-character supplemented copy fixtures
+exercise these fields without claiming native input validity. Full v1/v2 equality,
+refusal/reclamation/exact retry, detached source-death snapshots, moved lifetime
+and owner all-site failures remain active.
+
+| Witness | One selection | Four selections |
+|---|---:|---:|
+| Byte / allocation-work boundaries | 2752 / 3250 | 3680 / 5867 |
+| Selected live / peak requested bytes | 320023 / 320023 | 389051 / 389051 |
+| Selected cumulative allocation work | 419552 | 786691 |
+| Whole-owner allocation sites, all reclaimed | 4117 | 7757 |
+| Whole-owner retained / peak requested bytes | 320977 / 321650 | 391691 / 394213 |
+| Retained capacity census | 320865 | 391387 |
+
+All four CPU configurations agree. Compared with #276, selected live/peak/work
+increases 346 / 1384 bytes: 250 / 1000 existing character backing plus 96 / 384
+allocator state. Whole-owner retained/peak requests and census increase 96 / 384;
+allocation-site counts are unchanged. StudyInput/StructuralStudyInput/LetterProjection
+remain 288/280/1304 bytes; UUID-related layouts and encoding are unchanged.
+
+Native and standalone warm builds passed. All 45 CPU checks passed: 20 exchange
+processes (five cases, workers 1/2, bulk/direct), 12 prepared checks, nine supporting
+assembly/preparation/native-handoff/viewport checks and four warm CTests. No build
+or test warnings/errors. Clang 15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+The final tested-to-head delta contains only four Markdown evidence/status files.
+
+Evidence directory `input-selection-text-domain-dd98ef1d` retains commands, logs,
+source/configuration/toolchain, binary/runtime hashes and layout probe.
+Verified local archive: `setup-evidence/input-selection-text-domain-dd98ef1d.tar.gz`.
+SHA256SUMS manifest digest:
+
+    4cb963ddd94760a6d7c317b843f2cc3d031ad12434dcffc52b38edd75a2efa25
+
+Hosted checks remain authoritative. At final parent recheck, native 43034799670
+was running; viewport 43034798156 still reported cancelled. Neither is claimed
+as passed; prior failed/cancelled attempts remain preserved.
+
+Selected accounting overlaps the census; do not sum the reports. No physical-memory
+or performance bound is claimed. Next: definition/occurrence identity and reference
+text, auditing shared lookup/public identity/serialization paths. Other identities,
+comparison-formatting, full setup, combined accounting and operation integration
+remain separate. No GPU, live DB, browser/full baseline rerun or performance
+qualification. Raw local artifacts have not been independently inspected remotely;
+earlier failures/warnings remain preserved.
