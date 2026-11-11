@@ -33,17 +33,17 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const std::shared_ptr<Rese
 }
 
 ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
-    LetterExchangeContract contract, std::vector<OccurrenceBinding> occurrences,
-    std::vector<ExchangeFieldBinding> fields)
+    LetterExchangeContract contract, const std::vector<OccurrenceBinding> &occurrences,
+    const std::vector<ExchangeFieldBinding> &fields)
     : ExchangeBindings(h, projection,
         std::make_shared<const LetterExchangeContract>(std::move(contract)),
         std::make_shared<const MembershipFields>(MembershipFields::collect(projection,true)),
-        std::move(occurrences), std::move(fields)) {}
+        occurrences, fields) {}
 
 ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
     std::shared_ptr<const LetterExchangeContract> contract,
-    std::shared_ptr<const MembershipFields> memberships, std::vector<OccurrenceBinding> occurrences,
-    std::vector<ExchangeFieldBinding> fields, const std::shared_ptr<ReservationDomain> &domain)
+    std::shared_ptr<const MembershipFields> memberships, const std::vector<OccurrenceBinding> &occurrences,
+    const std::vector<ExchangeFieldBinding> &fields, const std::shared_ptr<ReservationDomain> &domain)
     : ExchangeBindings(h,domain) {
   const auto &limits = h.prepared_storage().capacity.limits();
   const ExchangeMap<ExchangeFieldBinding> trusted(fields,domain);
@@ -103,7 +103,7 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection, std:
        meter.equal(contract_->recipe().selection,projection.recipe().ref.selection) &&
        meter.equal(contract_->recipe().revision,projection.recipe().ref.revision),
        "exchange contract belongs to another projection");
-  need(occurrences_.size() == s.live.particles && fields_.size() <= s.live.fields,
+  need(occurrences_.size() == s.live.particles &&fields_.size() <= s.live.fields,
        "exchange binding inventory differs from committed execution");
   need(occurrences_.size() <= masses_.capacity() && s.live.edges <= edges_.capacity() &&
        s.live.edges <= edge_rows_.capacity() && s.particle_headers.size() <= outgoing_rows_.capacity(),

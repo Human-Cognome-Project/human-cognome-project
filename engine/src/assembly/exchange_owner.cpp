@@ -93,7 +93,7 @@ ReservedUnique<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
 }
 
 ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projection,
-    std::vector<OccurrenceBinding> rows, std::vector<ExchangeFieldBinding> fields,
+    const std::vector<OccurrenceBinding> &rows, const std::vector<ExchangeFieldBinding> &fields,
     const std::shared_ptr<ReservationDomain> &domain,
     PreparationWork &meter, ProjectionSetupResult &setup)
     : h_(h), projection_(reserve_unique<LetterProjection>(domain,[&](auto *p) {
@@ -113,7 +113,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     const auto target = projection_->exposure(selection.entry) == warm::Exposure::Aggregate
         ? warm::Exposure::Parts : warm::Exposure::Aggregate;
     auto forward = LetterExchangeContract::collect(*projection_,
-        {projection_->study(), {selection.entry,{}}}, target,domain);
+        {warm::Uuid(projection_->study(),domain), {selection.entry,{}}}, target,domain);
     auto reverse = LetterExchangeContract(forward,domain);
     std::swap(reverse.from_, reverse.to_);
     reverse.outgoing_.swap(reverse.incoming_);
