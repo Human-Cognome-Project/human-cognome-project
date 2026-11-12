@@ -1,5 +1,15 @@
 # Core continuation after local CUDA corrections
 
+**Prepared CPU backing exports (awaiting review, 2026-11-12):** continues #302
+review 5880581671. Common launch-context queries expose actual host buffers and
+captured array identities, with separate family coverage and explicit incomplete
+host metadata. Imports/external/raw bindings cannot certify complete owned backing.
+Records are embedded in existing binding rows and included by existing sizeof-based
+capacity accounting. Main 0e82ebe0 (#300 integrated) is reconciled by normal merge
+f0e1e4b8; #301/#302 remain provisionally accepted and unmerged. Next: node/list/ambient
+exports, remaining metadata and alias resolution, trusted Harness lifetime/coverage,
+then combined admission. No full B or GPU qualification is claimed.
+
 **Maintainer integration — 2026-11-12:** #300's borrowed-resource audit is accepted and integrated by the merge containing this record, preserving `e540a8712c176c06d2f5729da2aa6602d67ec4cb`. Native 43276619607 passed all 12 jobs; smoke 43276619735 passed. Personally inspected 115 passing regression tests (29/29/29/28) and database job 131388302021 with addressed_reads=24/private_reads=0. Main includes #299 owner bootstrap admission and now the [borrowed-resource audit](../engine/docs/BORROWED-RESOURCES.md). #301 CPU record interface remains provisionally accepted at `63a46aab` (review 5880096613), and #302 array/root exports at `aa48a2e4` in [review 5880581671](https://github.com/Human-Cognome-Project/human-cognome-project/pull/302#pullrequestreview-5880581671). Both remain unmerged with native qualification running; their smoke checks passed. Local archives remain contributor-reported, not independently inspected. Neither a complete B ledger nor combined admission is built.
 
 **Next bounded task:** prepared-invocation backing exports and node/list/ambient reservations on reviewed #302. Preserve explicit required-family coverage, owner lifetime and request/rounded extent distinctions. Resolve imported registrations to actual backing owners before deduplication; account runtime metadata once. Missing coverage or unresolved ownership keeps the complete ledger unavailable. Then assemble the trusted lifetime-valid Harness snapshot, enforce checked C+B+H+D with separate work gates and complete remaining operation/control integration. The projection-copy audit stays closed; additional setup cost is acceptable for long-running focal models. #75/#111/#123 remain deliberately held. Earlier pending and next-task labels below are historical where they conflict.

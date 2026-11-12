@@ -1,5 +1,15 @@
 # Current implementation and work
 
+**Prepared CPU backing exports (awaiting review, 2026-11-12):** continues #302
+review 5880581671. Common launch-context queries expose actual host buffers and
+captured array identities, with separate family coverage and explicit incomplete
+host metadata. Imports/external/raw bindings cannot certify complete owned backing.
+Records are embedded in existing binding rows and included by existing sizeof-based
+capacity accounting. Main 0e82ebe0 (#300 integrated) is reconciled by normal merge
+f0e1e4b8; #301/#302 remain provisionally accepted and unmerged. Next: node/list/ambient
+exports, remaining metadata and alias resolution, trusted Harness lifetime/coverage,
+then combined admission. No full B or GPU qualification is claimed.
+
 **Array/root owner exports (awaiting review, 2026-11-12):** continues #301 review
 5880096613 with captured Ndarray identities and native tree-root exports through
 common ProgramImpl. Released/reset/foreign records remain explicit; imports are

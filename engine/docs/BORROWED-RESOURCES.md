@@ -7,6 +7,65 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Prepared CPU buffer exports (awaiting review, 2026-11-12)
+
+Continues [#302 review 5880581671](https://github.com/Human-Cognome-Project/human-cognome-project/pull/302#pullrequestreview-5880581671).
+This slice adds common `LaunchContextBuilder::prepared_backing(live_device)` and
+`prepared_array_record(live_device, argument)` queries, implemented for CPU prepared
+invocations. Unsupported/unprepared/unusable states do not report available coverage.
+It supersedes the prepared-invocation row of the earlier owner-export table below
+for these CPU surfaces only; no complete B ledger or combined admission is built.
+
+The CPU owner exports actual argument/result allocation pointers and their validated
+request sizes, its owned RuntimeContext request, and separate context/prepared object
+sizes. A zero-sized result allocation is an available zero request, not unavailable
+coverage. CPU preparation owns no separate device launch buffers, so that family is
+explicitly complete and empty. Other launchers leave this coverage unavailable;
+this change does not infer CUDA ownership from byte estimates or qualify GPU execution.
+
+Array identities are captured from Ndarray at binding time into existing ArrayBinding
+rows. Queries use those tokens through the independently known-live supplied Device;
+they never recapture a potentially reused numeric ID or follow a saved device pointer.
+Partial views retain full allocation extent and same-allocation aliases retain equal
+tokens. Scalar and out-of-range arguments, foreign devices, retired allocations and
+unavailable records remain distinct. Imported records remain unresolved registrations:
+even a live import prevents complete array coverage until the real backing owner is
+resolved. External/raw bindings are unavailable rather than silently counted as zero.
+Rebinding through external/raw APIs clears the prior captured record.
+
+These are synchronous, non-owning views. Keep the context, its Kernel/Program/runtime
+and supplied Device alive and quiescent while inspecting. Returned host pointers do
+not extend lifetime or certify identity across destruction/address reuse. Context move
+transfers the buffers and records; the moved-from context reports unavailable. Frozen
+contexts may change scalars through the supported setters; direct edits to public
+native internals are outside this owner contract. The future trusted Harness snapshot
+must enforce lifetime and reject caller-authored evidence; these records are not
+security capabilities or a serialized authority.
+
+Required-family coverage remains separate:
+
+| Family | Coverage in this slice |
+|---|---|
+| CPU argument/result/owned RuntimeContext buffers | Actual pointers and validated request extents under live-owner precondition |
+| CPU separate device launch buffers | Complete empty family |
+| Bound arrays | Complete only when every captured array resolves Live and Owned; aliases still need deduplication |
+| Full prepared host metadata | Explicitly incomplete; nested maps, scalar backing and other metadata are not a complete census here |
+| Other backend launch buffers | Unavailable |
+| Node/list/ambient reservations | Still unavailable through the owner-export interface |
+
+The added AllocationRecord is embedded in each existing ArrayBinding row. Reported
+`array_binding_capacity_bytes` includes it, and existing prepared_bytes/reserve math
+already uses sizeof(ArrayBinding). `incremental_record_capacity_bytes` is a subset
+for review, never an extra charge to add to that full capacity. No additional record
+vector or allocation site is introduced. The new Prepared fields belong to its object
+size, charged once with that object; neither object sizes nor buffer extents may be
+added again through overlapping owner totals. The full metadata flag stays false.
+Runtime-owned metadata remains a once-per-runtime charge, not a per-Harness/tree fee.
+
+Next: node/list/ambient request exports, remaining prepared host/backend metadata,
+imported-to-owner alias resolution and a trusted lifetime-valid Harness snapshot,
+then checked disjoint C+B+H+D admission with the separate work gates retained.
+
 ## Array and root owner exports (awaiting review, 2026-11-12)
 
 Continues [#301 review 5880096613](https://github.com/Human-Cognome-Project/human-cognome-project/pull/301#pullrequestreview-5880096613).

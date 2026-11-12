@@ -5781,3 +5781,61 @@ been independently inspected remotely. Final publication changes only four Markd
 files after the tested source. At publication #300 native 43276619607 and smoke
 passed; #301 smoke passed and native 43282494612 remains active. No acceptance or
 merge is inferred from those statuses.
+
+## Prepared CPU backing exports — 2026-11-12
+
+Continues #302 review 5880581671 at reviewed aa48a2e4. Main 0e82ebe0 integrates the
+accepted #300 audit; normal merge f0e1e4b8 reconciles its handoff notes. Two Markdown
+conflicts were resolved preserving the maintainer disposition and scoped contribution
+history. #301/#302 remain provisionally source-accepted and unmerged.
+
+Common launch-context queries expose actual CPU prepared argument/result/owned
+RuntimeContext buffers, captured array records and separate family coverage. Array
+records originate from Ndarray at binding time rather than recapturing numeric IDs
+at inspection. External/raw rebinding clears the record; imports remain unresolved.
+The records are embedded in existing ArrayBinding rows, so the existing sizeof-based
+capacity accounting includes them. Incremental record bytes are a subset, not an
+additional charge. Full host metadata, other backend launch buffers and native
+node/list/ambient reservations remain incomplete/unavailable. No complete B ledger
+or combined admission is introduced. Returned views require a live quiescent native
+owner and do not extend lifetime across destruction or address reuse.
+
+Initial d906a73e failed native compilation because the new capture used CallableBase
+instead of the originating Kernel to access Program. Correction a380d5be uses the
+originating Kernel/Program, leaving originless contexts unavailable. The original
+source, commands and compiler diagnostic are retained; that failed build is not
+qualification. Corrected code also keeps exhausted device identity unavailable.
+
+Final tested source: a380d5be40468ec45962bea1989212722d145ff4.
+Tracked Taichi tree: 561a2dec0dbbd08f07354f3d1718de6cdd173b83.
+Qualification results and verified archive follow below. CPU/shared-host scope only;
+no GPU, database, browser or performance qualification is implied.
+
+Corrected native static and dependent engine builds passed. All eight focused CTests
+passed: prepared_backing_test, prepared_launch_test, owner_backing_test,
+allocation_record_test, engine_smoke_test and record_map_padded/direct/working_set.
+The new test covers full backing through alias views, distinct coverage flags,
+metadata capacities, foreign/scalar/out-of-range/default-unavailable queries,
+allocation-free inspection, prepared execution before/after context move, external
+rebinding, unresolved imports and independent import retirement, array destruction
+and unusable state. CPU fixture: argument request 40 bytes, result request zero with
+available coverage, incremental embedded record capacity 144 bytes (a subset of full
+binding-row capacity). No per-query allocation was observed. These are request/capacity
+measurements, not physical memory or universal fixed fees.
+
+The broader matrix passed: 20 exchange processes (five cases across threads 1/2 and
+bulk/direct-no-unroll), 12 prepared execution/update tests, nine supporting native
+tests and six warm recipe tests. Including the eight focused tests, all 55 scoped CPU
+checks passed. Corrected build and captured final runtime logs contain no warnings
+or errors; the tested source remained clean. The original compiler failure remains
+in the history directory rather than being relabeled as qualification.
+
+Verified contributor-local archive: prepared-backing-domain-a380d5be.tar.gz.
+SHA256SUMS manifest: c6d2344669bd6d5caf924fc1880fc3d886a086ce6a21c2fd17b2969d6ba29eb8.
+Archive SHA256: 7b9f2c561e81e8069d374662745f83accb0e0147dd8aa7c4eca0ad2d2e4f4324.
+Includes exact source/configuration/compiler/binary pins, commands, corrected builds,
+failed initial build history and all scoped results. Raw local artifacts have not
+been independently inspected remotely. Final publication differs from the tested
+pin only in four Markdown files. Documentation whitespace and 116 local file links
+passed. Parent hosted qualification was not duplicated; no acceptance or merge is
+inferred from local results.
