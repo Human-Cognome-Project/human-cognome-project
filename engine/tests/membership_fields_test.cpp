@@ -278,12 +278,13 @@ void bounded_traversal() {
   f.tool(const_cast<Bundle &>(cycle.recipe()),f.en).member_of = {f.ref(f.en)};
   rejects([&] { membership_fields(cycle); }, "iterative traversal rejects active-stack cycles");
 
-  // Unique scopes keep a long valid chain independent of fixture address ranges.
+  // A separate public fixture address range keeps every chain dependency valid.
   letter_fixture::Fixture deep;
   std::vector<ToolRef> chain;
   constexpr std::size_t depth = 192;
   for (std::size_t i=0; i<depth; ++i) {
-    auto ref = deep.add(object("02.00.00",new_uuid()),"chain",0);
+    const auto couplet = *codec::code_to_couplet(std::uint16_t(i));
+    auto ref = deep.add(object("02.10."+std::string{couplet.first,couplet.second}),"chain",0);
     deep.tool(deep.base,ref.object).mass.reset();
     chain.push_back(ref);
   }
