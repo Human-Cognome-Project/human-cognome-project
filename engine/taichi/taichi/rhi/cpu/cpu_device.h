@@ -80,9 +80,15 @@ class CpuDevice : public LlvmDevice {
     void *ptr{nullptr};
     size_t size{0};
     bool use_cached{false};
+    bool live{false};
+    bool imported{false};
   };
 
   AllocInfo get_alloc_info(const DeviceAllocation handle);
+  AllocationRecord capture_allocation_record(DeviceAllocation) const override;
+  AllocationRecord allocation_record(AllocationRecordToken) const override;
+  AllocationRecordStorage allocation_record_storage() const override;
+  void clear() override;
 
   CpuDevice();
   ~CpuDevice() override {};
@@ -133,9 +139,10 @@ class CpuDevice : public LlvmDevice {
 
  private:
   std::vector<AllocInfo> allocations_;
+  uint64_t allocation_epoch_{1};
 
   void validate_device_alloc(const DeviceAllocation alloc) {
-    if (allocations_.size() <= alloc.alloc_id) {
+    if (alloc.device != this || allocations_.size() <= alloc.alloc_id) {
       TI_ERROR("invalid DeviceAllocation");
     }
   }

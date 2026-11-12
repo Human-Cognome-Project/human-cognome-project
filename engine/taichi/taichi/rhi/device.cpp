@@ -1,4 +1,6 @@
 #include <taichi/rhi/device.h>
+#include <atomic>
+#include <limits>
 
 #if TI_WITH_VULKAN
 #include <taichi/rhi/vulkan/vulkan_device.h>
@@ -13,6 +15,19 @@
 #endif  // TI_WITH_VULKAN
 
 namespace taichi::lang {
+
+namespace {
+uint64_t next_allocation_instance() {
+  static std::atomic<uint64_t> next{1};
+  auto value = next.load(std::memory_order_relaxed);
+  while (value != std::numeric_limits<uint64_t>::max()) {
+    if (next.compare_exchange_weak(value, value + 1, std::memory_order_relaxed))
+      return value;
+  }
+  return 0;  // Exhausted identities disable coverage; never wrap/reuse an ID.
+}
+}
+Device::Device() : allocation_instance_(next_allocation_instance()) {}
 
 const std::string rhi_result_to_string(RhiResult result) {
   switch (result) {
