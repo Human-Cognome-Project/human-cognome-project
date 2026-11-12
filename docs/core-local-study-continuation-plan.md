@@ -2,7 +2,7 @@
 
 **Maintainer acceptance — 2026-11-12:** #285 and #286 are integrated into main at `087b6aff14d454c9ebafcda28c9e9243f596e4d2`, reviewed tip `49643f2a22bbb0076584e01d990a32ff7fe0acda`. Exact-head #286 native 43130677310 and smoke 43130677322 passed; #285 native 43121173964 and smoke 43121173792 also passed. All 12 #286 native jobs succeeded. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 130894721312 reports addressed_reads=24/private_reads=0. At that integration the active review queue was clear; #75, #111 and #123 remain deliberately held. Earlier provisional/pending labels below are historical and superseded by this acceptance. No GPU or performance qualification is implied.
 
-**Next bounded task:** start from current main and audit initial occurrence indexes in `project_letters` and their publication/setup costs. Preserve value ordering, duplicate/revision rejection, source stability, exact provenance and independent published outputs; distinguish removable temporary copies from necessary owned publication storage. Keep the implementation bounded with source-death and independent allocation evidence. Membership callable/recursion, declaration/binding setup budgets, combined resource accounting and remaining operation/control integration follow. Do not repeat accepted baseline tests merely to onboard.
+**Next bounded task:** recheck current main, review dispositions and qualification of the pending stack. The active declaration contribution adds collection/reverse-copy setup admission and repairs #293's GCC 11 cleanup failure. After review, continue ExchangeBindings constructor/staging/capture under the shared setup allowance, preserving separate operational budgets. Combined resource accounting and remaining operation/control integration follow. The initial-projection copy audit remains closed; do not repeat accepted baselines merely to onboard.
 
 
 **Maintainer integration — 2026-11-11:** Reviewed #275–#277 and #279–#284 are integrated into main at `5beeb2cacf28c75cbecef385a0de1e877154bbc0`, preserving original commits through reviewed tip `09bafe48869ddf239e6e245d766c0c0e41a43364`. #279's fresh native 43115507493, viewport 43115507480 and smoke 43115507510 succeeded; #280–#284 completed their applicable hosted checks, including #284 native 43116769390 and smoke 43116769371. Original failed and stuck queued attempts remain historical, not relabeled. Earlier pending/integration labels below are superseded by this record. #285 is provisionally source-accepted at `7105c22e866af7c3cf5c1b2e452a8bf8bef643f8` (review 5866915489), targets main and awaits native qualification; its smoke passed. Next: initial tool/occurrence indexes and publication/setup costs, then membership callable/recursion, declaration/binding budgets, combined resource accounting and operation integration. No blanket GPU or performance acceptance.
@@ -472,6 +472,31 @@ for source pins, actual resource changes and qualification; this is not a timing
 physical-memory guarantee. Next: declaration collection and ExchangeBindings setup
 work, then combined accounting and operation/control integration. The projection
 copy audit remains closed and the complete owner setup gate remains outstanding.
+
+**Declaration setup admission (awaiting review, 2026-11-12):** #293 review 5875958258
+permits this bounded continuation. LetterExchangeContract::collect receives the
+owner's setup meter, admitting scalar selection scans, occurrence-path/tool-reference
+comparisons, source/parent/leaf copies, growth/relocation and match-work accumulation.
+Exposure lookup is conservatively prepaid for the full selection count, and its
+current owner-local value is reused. Reverse declaration copying and retained
+declaration-table publication are metered as well. Declarations is a distinct owner
+setup phase. Standalone collection/copies remain unrestricted and existing later
+matches/capture allowances are not repurposed. See admission for qualification.
+
+The declaration continuation also repairs #293 hosted projection-values job
+131239777540 (native run 43234968384): GCC 11 exposed partial-allocation cleanup
+failures hidden by the local Clang build. Named lifetime owners now precede nested
+aggregate publication. Initial failure evidence is retained, and standalone GCC 11
+and GCC 13 checks accompany the combined native CPU qualification. See admission
+for final pins/results; this correction does not reopen the projection copy audit.
+
+Next concrete slice: ExchangeBindings construction (buffer reservation, trusted/staged
+maps and reserve_exchange_maps), then stage/capture under the shared owner setup
+allowance. Replace owner-path UINT64_MAX gaps while keeping separately budgeted
+operational capture and matching behavior intact. Exact refusal, cleanup, retry and
+unchanged caller/native state controls remain mandatory. Declaration and membership
+admission are scoped gates, not complete constructor or combined-resource acceptance.
+Projection cleanup remains closed; operation/control integration follows the budgets.
 
 ## A. Coherent source/hierarchy refresh
 

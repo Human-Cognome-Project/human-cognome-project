@@ -5282,3 +5282,99 @@ slices. No GPU, live DB or browser work.
 Next: declaration collection and ExchangeBindings constructor work budgets, then
 combined resources and operation/control integration. This contribution bounds the
 membership portion of owner setup, not the complete owner constructor.
+
+### Declaration setup admission and GCC 11 cleanup (2026-11-12)
+
+Tested source `a867c98b27bfba55226c8820a053b890d6b58018`, continuing from #293
+`b0f2f289071def1b6f65e69fba56549cfc59d0db` under review 5875958258. Accepted main
+remains `a4de248e18d07284198c2a963af4ee458b629ffb` through #289, already included
+in this stack. #290-#293 remain unmerged at inspection; no acceptance is inferred
+from local tests. Initial-projection copy cleanup remains closed.
+
+Declaration collection now receives the owner's shared PreparationWork meter and
+reports a distinct Declarations phase. Selection, occurrence and tool searches,
+identity comparisons/copies, source/parent/leaf accumulation, vector growth and
+conservative payload relocation are admitted before execution. Reverse copying
+and shared declaration publication use the same meter. Exact pinned identities,
+ordered contributions, mass and later matches() allowance remain unchanged.
+Standalone declarations remain unrestricted. ExchangeBindings construction,
+staging and capture still need their own setup-meter integration.
+
+The four-owner focused fixture covers aggregate and parts declarations, including
+repeated leaves and maximum entry ID. It compares every ordered source, parent,
+leaf, revision, mass and matching allowance after source destruction. Collection
+and reverse copying each sweep every work, live-byte and allocation-work refusal,
+require full domain reclamation, then retry with exact allowances; one-short work
+also refuses. All 4012 structural checks pass. Collection work/refusal-boundary
+pairs by owner are 7445/276, 7156/218, 35116/1009 and 25008/819; reverse-copy pairs
+are 2214/49, 2214/49, 8446/157 and 7016/132. Owner phase checks cover all seven
+incomplete setup phases and retain caller/native state on refusal.
+
+#### Hosted failure and correction
+
+#293 smoke 43234968370 passed, but native run 43234968384's projection-values job
+131239777540 failed under Ubuntu 22.04/GCC 11.4: 232 membership cleanup assertions
+failed. It is not a qualified parent merely because its Clang/native build passed.
+The local GCC 11.5 standalone build reproduced the same 232 failures and exposed
+a declaration work-refusal cleanup failure at initial source
+`10df7d7b458f0290ba1d818d961c0efabcb68eca`. Local GCC 13.3 and Clang 15 passed that
+source. This compiler-dependent failure remains preserved, not relabeled.
+
+Allocating nested aggregate expressions did not unwind every earlier identity
+allocation under GCC 11. The correction gives each copied scope/address/revision,
+recipe pin and source payload its own local owner before assembling rows with
+moves. Membership contributions also have an explicit local lifetime before
+vector insertion. No failure assertion or work/allocation limit was relaxed.
+The membership sweep now passes all 3793 checks on GCC 11.5 and GCC 13.3, with
+work=56744, boundaries=3151 and peak domain bytes=17967 on each compiler.
+
+Both standalone compiler configurations pass all three CTests at the final pin;
+the focused membership/declaration reruns provide detailed counts and are not
+counted as additional distinct suites. New LOCAL-CI guidance includes GCC 11
+alongside the newer compiler. These Ubuntu 24.04 local results do not replace the
+hosted Ubuntu 22.04 job. Verified standalone archive:
+`setup-evidence/declaration-standalone-a867c98b.tar.gz`, SHA256SUMS digest:
+
+    74c16f8ad2f722a583cb3033cf66e14d156680b22f5086591bf14c50c89dc82a
+
+The archive includes failed GCC 11 and passing GCC 13 logs from the initial pin.
+Its final packaging command first failed because of a Windows line ending; the
+verified evidence was subsequently archived without rerunning or relabeling tests.
+The initial Clang 47-check pass is separately retained in
+`setup-evidence/declaration-setup-budget-domain-10df7d7b.tar.gz`, manifest:
+
+    f7d46838d0af9b08a0477b74e4496dd6b2dfd0922703ead7ca06ee8a7d237cdc
+
+Final native CPU qualification results follow below. Raw local artifacts have
+not been independently inspected remotely. No GPU, live database or browser work;
+all measurements are on a shared host and are not performance qualification.
+
+All four completed owner modes report single/four-selection setup work
+85804/211363 -> 104737/287803 and refusal boundaries 3072/7904 -> 3592/10115.
+Selected allocation work stays 420871/790383; selected live/peak stays
+321185/321185 and 392475/392475. Byte/work boundaries stay 2759/3271 and 3706/5927.
+Independent failure sites remain 3272/5928 with zero surviving blocks; retained/
+peak remain 321265/321265 and 392555/392555, capacity census 321153/392251 and
+failure peaks 321250/392540. These overlapping requested-resource observations
+must not be summed or interpreted as physical memory or timing guarantees.
+
+Both final builds and all 47 scoped CPU checks passed: 20 exchange processes
+(five cases, workers 1/2, bulk/direct), 12 prepared checks, nine native supporting
+checks and six warm CTests. The six standalone compiler CTests above are additional.
+Clang15/libstdc++, CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`;
+accelerator backends disabled. One offline-cache lock warning appears after the
+successful matrix result in `1-bulk-exchange_commit.log`; the verifier checks its
+location/count and rejects any other warning/error. No build warnings occurred.
+The warning and raw logs remain intact. Layouts are unchanged: study/structural
+input 288/280, projection 1304, UUID/ObjectKey/ToolRef 48/88/136, Tool/Parent/
+Geometry/Bundle 432/168/152/520, UUID payload 37 bytes on this toolchain.
+
+Verified final archive:
+`setup-evidence/declaration-setup-budget-domain-a867c98b.tar.gz`, SHA256SUMS:
+
+    4390daafb8e2364c2c113da94eb905baf695df3f9d75f4323e05a493fd89546f
+
+Final tested-to-head changes are five Markdown records only. Hosted qualification
+and review remain required, including the corrected combined head for the #293
+failure. Next: ExchangeBindings constructor/staging/capture under the shared setup
+allowance, then complete combined resource accounting and operation integration.

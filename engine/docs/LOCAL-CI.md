@@ -89,3 +89,27 @@ separate and require the user's advance GPU-use notice.
 Final acceptance remains a maintainer decision after the applicable source,
 evidence and hosted checks have been reviewed. Do not close review findings or
 mark an implementation accepted merely because a local command exits zero.
+
+## Standalone projection compiler check
+
+The hosted `projection-values` job uses the standalone project in
+`engine/tests/letter_projection` on Ubuntu 22.04 (GCC 11). The native Clang build
+alone does not cover that compiler's exception cleanup behavior. For changes to
+projection, membership or declaration construction, also run the standalone suite
+with GCC 11 and the local default GCC in separate build directories:
+
+```sh
+cmake -S engine/tests/letter_projection -B /work/build-projection-gcc11 -DCMAKE_CXX_COMPILER=g++-11
+cmake --build /work/build-projection-gcc11 -j 2
+ctest --test-dir /work/build-projection-gcc11 --output-on-failure
+cmake -S engine/tests/letter_projection -B /work/build-projection-gcc13 -DCMAKE_CXX_COMPILER=g++-13
+cmake --build /work/build-projection-gcc13 -j 2
+ctest --test-dir /work/build-projection-gcc13 --output-on-failure
+```
+
+Use an available newer GCC in place of 13, recording the actual version; do not
+substitute it for the GCC 11 check. Retain the source pin, compiler versions,
+configure/build/test logs and executable hashes alongside the CPU evidence.
+No Taichi, PostgreSQL or GPU is needed for these three standalone tests. They
+exercise refusal cleanup and ordered values; they do not replace hosted Ubuntu
+22.04 qualification or the native owner tests.

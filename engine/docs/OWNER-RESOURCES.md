@@ -2136,3 +2136,45 @@ code. See admission for resulting metrics and evidence.
 Next: declaration/binding constructor work budgets, then combined resources and
 operation/control integration. Initial-projection cleanup remains closed; this
 membership gate does not establish complete owner setup admission.
+
+
+### Declaration collection and copying work (awaiting review)
+
+LetterExchangeContract::collect accepts the owner setup meter. Selection scans
+charge scalar comparisons; occurrence scans precharge both path payloads and tool
+scans precharge full pinned references before equality. The current exposure lookup
+is conservatively prepaid for all selections and performed once. Owner/recipe,
+source/parent and leaf copies are charged before their domain-backed allocations.
+Each source/leaf append admits fixed storage plus conservative existing-row nested
+payload relocation if the vector can grow. Exact mass and match_work_ semantics,
+source/leaf order and independently owned identities remain unchanged.
+
+The owner reports Declarations phase, prepays its selection/exposure scan and
+aggregate key, and passes the meter through forward collection and reverse copying.
+Reverse-copy helpers admit vector storage and every nested identity/parent payload.
+Shared declaration objects and declaration-table growth receive fixed/relocation
+work charges before publication. Existing byte/allocation-work domains continue to
+control allocations independently. Work units are conservative logical work, not
+elapsed time or physical memory. Standalone wrappers retain unrestricted allowance;
+private standalone copy helpers may omit the meter. Later matches() work is separate.
+
+Focused tests sweep all collection and reverse-copy work boundaries for aggregate
+and parts declarations, compare every ordered source/parent/leaf and pinned revision,
+and require one-short refusal, complete domain teardown and exact retry. Existing
+source-death, malformed/revision, exact mass and independent allocation-failure
+controls remain. The owner phase sweep includes Declarations and preserves caller/
+native authority across refusal. See admission for actual counts and qualification.
+
+Remaining: ExchangeBindings reservation/trusted/staged-map construction, staging
+and capture under the shared setup meter; owner-path unrestricted setup allowances
+are not covered here. Then combined resources and operation/control integration.
+Membership/declaration gates do not establish complete owner setup admission.
+
+GCC 11 refusal cleanup also requires each allocated identity to have an explicit
+local owner before constructing nested aggregates or constructor recipe members.
+The hosted #293 projection-values failure exposed leaked partial allocations on
+that compiler; Clang 15 and GCC 13 did not reproduce it. Membership catalogue
+objects, contributions and recipe pins, plus declaration identity/source/recipe
+copies, now stage allocating values in named locals and only then move them into
+rows. No budget assertion is relaxed. Focused declaration tests additionally
+sweep every byte/allocation-work boundary and exact retry for collection and copy.

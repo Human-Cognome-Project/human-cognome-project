@@ -6,22 +6,24 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 **Maintainer acceptance — 2026-11-12:** #285 and #286 are integrated into main at `087b6aff14d454c9ebafcda28c9e9243f596e4d2`, reviewed tip `49643f2a22bbb0076584e01d990a32ff7fe0acda`. Exact-head #286 native 43130677310 and smoke 43130677322 passed; #285 native 43121173964 and smoke 43121173792 also passed. All 12 #286 native jobs succeeded. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 130894721312 reports addressed_reads=24/private_reads=0. At that integration the active review queue was clear; #75, #111 and #123 remain deliberately held. Earlier provisional/pending labels below are historical and superseded by this acceptance. No GPU or performance qualification is implied.
 
-**Integration / active membership contribution (2026-11-12):** #289 is green and
-merged at main `a4de248e`; #287/#288 were already integrated. #292 `ced6c2d8` is
-provisionally accepted by review 5875540117 and closes the bounded projection-copy
-audit. Main is included by normal merge `7be5b888` (no tree change). Membership
-collection now uses domain-charged explicit frames and a setup-work meter instead
-of recursive std::function. Owner adoption reports a Membership phase; pinned
-memoized visits, cycles, deduplication and owned contribution order are preserved.
-Both builds and 47 scoped CPU checks passed on the corrected source without warnings.
-Focused boundary/deep-chain tests pass; an initial invalid private-scope fixture
-failure is preserved. See admission for qualification. #290–#292 remain unmerged;
-this contribution needs hosted checks and review.
+**Active declaration setup contribution (2026-11-12):** #293 `b0f2f289` is
+provisionally accepted by review 5875958258. Main remains `a4de248e`, integrated
+through #289; #290–#293 are unmerged. Declaration collection and reverse-copy work
+now share the owner setup meter under a distinct Declarations phase. Selection,
+occurrence/tool searches, payload comparisons/copies, source/leaf accumulation,
+relocation and declaration publication are admitted before work. Standalone paths
+remain unrestricted. This continuation also corrects GCC 11 partial-allocation
+cleanup failures exposed by #293 hosted projection-values job 131239777540; the
+original failed run is preserved. Standalone GCC 11/13 checks now supplement the
+native CPU qualification. Both builds, 47 scoped CPU checks and six standalone
+compiler CTests passed; one post-PASS cache-lock warning is preserved. See admission
+for source-pinned qualification.
 
-Next: declaration/binding constructor work budgets, then combined resource accounting
-and operation/control integration. Standalone collection/bindings still use an
-unrestricted logical-work allowance; the owner path supplies its setup budget.
-Do not reopen initial-projection cleanup or call this a complete owner setup gate.
+Next: ExchangeBindings constructor reservation/copies, staging and capture under
+the shared setup allowance, replacing owner-path UINT64_MAX gaps while preserving
+separate later operational capture/matching budgets. Combined accounting and
+operation/control integration follow. Projection cleanup stays closed; this is
+not the complete owner setup gate. Hosted qualification/review remain required.
 
 **Active tool-index contribution (2026-11-11):** continues from source-accepted
 #285 `7105c22e` under review 5866915489, with accepted main `c2c168b3` included by
@@ -136,7 +138,7 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](../../engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
 | Latest accepted engine evidence | Integrated through #286 at `087b6aff`; reviewed tip `49643f2a`. Native 43130677310 and smoke 43130677322 passed. Inspected 115 regression tests and addressed_reads=24/private_reads=0. |
 | Accepted exchange owner | Recorded scopes through #286 integrated, including retained input text, comparison/validation and adoption-copy reductions, plus initial projection expansion/rendering/provenance/tool-index improvements. Complete setup and combined resources remain open. |
-| Next implementation | Bounded membership traversal on provisionally accepted #292, including main a4de248e through #289. Next declaration/binding constructor work budgets, combined resources and operation/control integration. #290–#292 remain unmerged; this contribution needs hosted qualification and review. |
+| Next implementation | Declaration collection/reverse-copy budgets on provisionally accepted #293. Next ExchangeBindings constructor/staging/capture under shared setup work, then combined resources and operation/control integration. Main a4de248e is through #289; #290–#293 remain unmerged. Hosted qualification and review remain required. |
 | Factoring follow-up | #230 completes the first mechanical kernel extraction under [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229). Keep #229 open; further separation follows the resource/lifetime inventory. Layered onboarding is authorized on 2026-11-08; see the [migration plan](ONBOARDING-PLAN.md). |
 | Accepted tooling | [Local evidence runner](../../engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](../../engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](../../tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](../../engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](../../docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
