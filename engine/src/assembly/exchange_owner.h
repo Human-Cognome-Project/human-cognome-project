@@ -11,10 +11,10 @@ struct OwnerPreparationResult {
   PreparationPhase phase{PreparationPhase::Staging};
   PreparationResult staging, capture, commands;
 };
-// Setup of the spare projection and both retained exposure pools only.
-// Initial projection copying is covered by AdoptionInputBudget; catalogue,
+// Membership traversal, spare projection and both retained exposure pools.
+// Initial projection copying is covered by AdoptionInputBudget;
 // declarations, maps and other constructor work remain separate.
-enum class ProjectionSetupPhase { Admission, SpareInspection, SpareCopy, CommittedParents, SpareParents, Complete };
+enum class ProjectionSetupPhase { Admission, Membership, SpareInspection, SpareCopy, CommittedParents, SpareParents, Complete };
 struct ProjectionSetupResult {
   ProjectionSetupPhase phase{ProjectionSetupPhase::Admission};
   PreparationResult work;

@@ -3,11 +3,16 @@
 #include <set>
 
 #include "harness.h"
+#include "assembly/preparation_work.h"
 #include "membership_fixture.h"
 
 namespace assembly::testing {
 struct MembershipFieldsAccess {
   static auto catalogue(const LetterProjection &p) { return MembershipFields::collect(p,true); }
+  static auto bounded(const LetterProjection &p, bool alternatives,
+      const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork &work) {
+    return MembershipFields::collect(p,alternatives,domain,&work);
+  }
 };
 }
 
@@ -190,6 +195,118 @@ void graph_failures() {
           "supported");
 }
 
+void bounded_traversal() {
+  using namespace assembly::detail;
+  using Access = assembly::testing::MembershipFieldsAccess;
+  membership_fixture::Fixture f;
+  auto p = project_letters(normalize_letters(f.base,
+      {f.request(f.english,0,warm::Exposure::Aggregate),
+       f.request(f.english,1,warm::Exposure::Parts)}));
+  const auto signature = [](const MembershipFields &fields) {
+    std::vector<std::string> out;
+    for (const auto &m : fields.contributions())
+      out.push_back(occurrence_text(m.occurrence)+"|"+warm::key(m.field.object)+"|"+
+          std::string(m.target.revision.str())+"|"+std::to_string(m.count));
+    return out;
+  };
+  const auto expected = signature(Access::catalogue(p));
+  auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  PreparationWork full(UINT64_MAX);
+  {
+    const auto fields = Access::bounded(p,true,domain,full);
+    check(signature(fields) == expected, "metered diamond catalogue preserves exact ordered values");
+  }
+  check(domain->result().live_bytes == 0, "successful traversal releases temporary and output storage");
+  const auto required = full.result().charged;
+  std::uint64_t limit = 0, boundaries = 0;
+  while (limit < required) {
+    auto denied = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    PreparationWork work(limit);
+    bool stopped = false;
+    try { Access::bounded(p,true,denied,work); }
+    catch (const PreparationStop &stop) {
+      stopped = stop.result.status == PreparationStatus::WorkExhausted &&
+          stop.result.charged <= limit && stop.result.next_required > limit &&
+          stop.result.next_required <= required;
+      limit = stop.result.next_required;
+    }
+    check(stopped && denied->result().live_bytes == 0,
+          "every work boundary refuses before its step and tears down all storage");
+    ++boundaries;
+  }
+  for (const bool bytes : {true,false}) {
+    std::uint64_t allowance = 0;
+    const auto ceiling = bytes ? domain->result().peak_bytes : domain->result().charged_work;
+    while (allowance < ceiling) {
+      auto denied = std::make_shared<ReservationDomain>(ReservationBudget{
+          bytes ? allowance : UINT64_MAX, bytes ? UINT64_MAX : allowance});
+      PreparationWork work(required);
+      bool stopped = false;
+      try { Access::bounded(p,true,denied,work); }
+      catch (const ReservationStop &) { stopped = true; }
+      const auto result = denied->result();
+      const auto next = bytes ? result.required_bytes : result.required_work;
+      check(stopped && !result.live_bytes && next > allowance && next <= ceiling,
+            "every allocation boundary including frame growth reclaims and reports next request");
+      allowance = next;
+    }
+    auto exact = std::make_shared<ReservationDomain>(ReservationBudget{
+        bytes ? ceiling : UINT64_MAX, bytes ? UINT64_MAX : ceiling});
+    PreparationWork work(required);
+    { check(signature(Access::bounded(p,true,exact,work)) == expected,
+            "exact allocation allowance retries with identical contributions"); }
+    check(!exact->result().live_bytes, "exact allocation retry releases all storage");
+  }
+  PreparationWork short_work(required-1);
+  bool short_stop = false;
+  try { Access::bounded(p,true,domain,short_work); }
+  catch (const PreparationStop &) { short_stop = true; }
+  check(short_stop && !domain->result().live_bytes, "one-short work limit refuses and tears down");
+  PreparationWork exact_work(required);
+  check(signature(Access::bounded(p,true,domain,exact_work)) == expected &&
+            exact_work.result().charged == required,
+        "exact work retry preserves deterministic contributions");
+  std::cout << "membership_traversal,work=" << required << ",boundaries=" << boundaries
+            << ",peak=" << domain->result().peak_bytes << " PASS\n";
+
+  // Mutate an owned test projection so collect itself, not projection validation,
+  // must reject the pin on a node already reached through the direct diamond edge.
+  auto stale = p;
+  f.tool(const_cast<Bundle &>(stale.recipe()),f.en_alphabet).member_of[0].revision = new_uuid();
+  rejects([&] { membership_fields(stale); }, "memoized membership visit still validates pinned revision");
+  auto cycle = p;
+  f.tool(const_cast<Bundle &>(cycle.recipe()),f.en).member_of = {f.ref(f.en)};
+  rejects([&] { membership_fields(cycle); }, "iterative traversal rejects active-stack cycles");
+
+  // Unique scopes keep a long valid chain independent of fixture address ranges.
+  letter_fixture::Fixture deep;
+  std::vector<ToolRef> chain;
+  constexpr std::size_t depth = 192;
+  for (std::size_t i=0; i<depth; ++i) {
+    auto ref = deep.add(object("02.00.00",new_uuid()),"chain",0);
+    deep.tool(deep.base,ref.object).mass.reset();
+    chain.push_back(ref);
+  }
+  for (std::size_t i=1; i<depth; ++i)
+    deep.tool(deep.base,chain[i-1].object).member_of = {chain[i]};
+  deep.tool(deep.base,deep.english).member_of = {chain.front(),chain.back()};
+  const auto deep_projection = project_letters(normalize_letters(deep.base,
+      {deep.request(deep.english,0,warm::Exposure::Aggregate)}));
+  auto deep_domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  PreparationWork deep_work(UINT64_MAX);
+  {
+    const auto fields = Access::bounded(deep_projection,false,deep_domain,deep_work);
+    check(fields.contributions().size() == depth,
+          "deep explicit frame traversal deduplicates repeated terminal reachability");
+    std::vector<ObjectKey> expected_keys;
+    for (const auto &ref : chain) expected_keys.push_back(ref.object);
+    std::sort(expected_keys.begin(),expected_keys.end());
+    for (std::size_t i=0; i<depth; ++i)
+      check(fields.contributions()[i].field.object == expected_keys[i],
+            "deep traversal retains deterministic value order");
+  }
+  check(!deep_domain->result().live_bytes, "deep frame stack and reached sets fully release");
+}
 void retained_alternatives() {
   membership_fixture::Fixture f;
   f.base.focal_fields = {{warm::FieldKind::Membership,f.en}};
@@ -243,6 +360,7 @@ int main() {
     mass_and_repetition();
     graph_failures();
     retained_alternatives();
+    bounded_traversal();
   } catch (const std::exception &e) {
     harness::record(false, "unexpected exception", e.what());
   }

@@ -41,7 +41,7 @@ class MembershipFields {
   friend struct testing::ExchangeOwnerAccess;
   static MembershipFields collect(const LetterProjection &, bool alternatives);
   static MembershipFields collect(const LetterProjection &, bool alternatives,
-      const std::shared_ptr<detail::ReservationDomain> &);
+      const std::shared_ptr<detail::ReservationDomain> &, detail::PreparationWork * = nullptr);
   warm::Uuid study_;
   warm::BundleRef recipe_;
   bool alternatives_{};
