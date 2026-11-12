@@ -36,7 +36,9 @@ void owner_input_admission(Fixture &f, const assembly::LetterProjection &project
   require(full.status == AdoptionInputStatus::Ok && full.phase == AdoptionInputPhase::Complete &&
               full.caller_bytes >= full.snapshot_bytes && full.snapshot_bytes &&
               full.required_bytes == full.caller_bytes+full.snapshot_bytes &&
-              full.copy.charged == full.snapshot_bytes && full.inspection.charged,
+              full.copy.charged == full.required_copy_work &&
+              full.required_copy_work == full.projection_copy_work+full.occurrence_copy_work+full.field_copy_work &&
+              full.projection_copy_work && full.inspection.charged,
           "adoption input charge omitted source/snapshot or work");
   std::uint64_t boundaries = 0;
   no_new([&] {
@@ -47,7 +49,8 @@ void owner_input_admission(Fixture &f, const assembly::LetterProjection &project
       require(!rejected && result.status == AdoptionInputStatus::WorkExhausted &&
                   result.phase == AdoptionInputPhase::Inspection && result.inspection.charged <= allowance &&
                   result.inspection.next_required > allowance && result.inspection.next_required <= full.inspection.charged &&
-                  !result.caller_bytes && !result.snapshot_bytes && !result.required_bytes && !result.copy.charged,
+                  !result.caller_bytes && !result.snapshot_bytes && !result.required_bytes && !result.copy.charged &&
+                  !result.projection_copy_work && !result.occurrence_copy_work && !result.field_copy_work && !result.required_copy_work,
               "adoption inspection exhaustion allocated or published a partial charge");
       allowance = result.inspection.next_required; ++boundaries;
     }
@@ -79,6 +82,54 @@ void owner_input_admission(Fixture &f, const assembly::LetterProjection &project
     }
     require(overflow && !total, "input byte product overflow changed its accumulator");
   });
+  // Compare preflight demand with actual fresh-map metering, not just the formula.
+  const auto measured_map = [](const auto &values) {
+    using T=typename std::decay_t<decltype(values)>::value_type;
+    auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    PreparationWork work(UINT64_MAX);
+    { ExchangeMap<T> map(values,domain,&work); }
+    require(!domain->result().live_bytes,"fresh map work witness leaked storage");
+    return work.result().charged;
+  };
+  for (const std::size_t count : {0,1,3}) {
+    std::vector<OccurrenceBinding> varied_rows(count);
+    std::vector<ExchangeFieldBinding> varied_fields(count ? count+1 : 0);
+    for (std::size_t i=0; i<varied_rows.size(); ++i) key_buffer(varied_rows[i]).resize(i+1);
+    for (std::size_t i=0; i<varied_fields.size(); ++i) key_buffer(varied_fields[i]).resize(2*i+1);
+    const auto row_work=measured_map(varied_rows), field_work=measured_map(varied_fields);
+    AdoptionInputResult demand;
+    no_new([&] {
+      demand=Access::input_admission(projection,varied_rows,varied_fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
+      require(demand.status==AdoptionInputStatus::Ok && demand.projection_copy_work==full.projection_copy_work &&
+                  demand.occurrence_copy_work==row_work && demand.field_copy_work==field_work &&
+                  demand.copy.charged==full.projection_copy_work+row_work+field_work,
+              "prepaid map work differs from measured construction or duplicates projection work");
+      if (!count) require(row_work==1 && field_work==1 &&
+                  demand.snapshot_bytes==full.projection_copy_work+sizeof(varied_rows)+sizeof(varied_fields),
+              "empty map work used unsigned subtraction or changed the byte census");
+      for (const auto limit : {UINT64_C(0),demand.required_copy_work-1,demand.required_copy_work}) {
+        const auto retry=Access::input_admission(projection,varied_rows,varied_fields,
+            {demand.required_bytes,demand.inspection.charged,limit});
+        require(limit==demand.required_copy_work ?
+                    retry.status==AdoptionInputStatus::Ok && retry.copy.charged==limit :
+                    retry.status==AdoptionInputStatus::WorkExhausted && !retry.copy.charged &&
+                    retry.copy.next_required==demand.required_copy_work,
+                "map component preflight zero/one-short/exact work gate failed");
+      }
+    });
+  }
+  no_new([&] {
+    PreparationWork meter(UINT64_MAX);
+    require(fresh_map_copy_work(0,UINT64_MAX,UINT64_MAX-1,meter)==UINT64_MAX,
+            "fresh map demand rejected an exact maximum sum");
+    for (const auto values : {std::array<std::uint64_t,3>{UINT64_MAX,2,0},
+          {1,UINT64_MAX,0},{UINT64_MAX/74+1,0,0},{0,1,UINT64_MAX}}) {
+      bool overflow=false;
+      try { fresh_map_copy_work(values[0],values[1],values[2],meter); }
+      catch (const PreparationStop &stop) { overflow=stop.result.status==PreparationStatus::Overflow; }
+      require(overflow,"fresh map demand product/sum wrapped");
+    }
+  });
   // Capacity-only changes are caller occupancy, never copied logical payload.
   auto spare_rows = rows;
   const auto row_charge = Access::input_admission(projection,spare_rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
@@ -101,7 +152,10 @@ void owner_input_admission(Fixture &f, const assembly::LetterProjection &project
   nested.front().occurrence.source.path.push_back(3);
   const auto populated = Access::input_admission(projection,nested,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX});
   require(populated.caller_bytes == nested_after.caller_bytes &&
-              populated.snapshot_bytes-nested_after.snapshot_bytes == sizeof(std::uint32_t),
+              populated.snapshot_bytes-nested_after.snapshot_bytes == sizeof(std::uint32_t) &&
+              populated.occurrence_copy_work-nested_after.occurrence_copy_work == sizeof(std::uint32_t) &&
+              populated.projection_copy_work==nested_after.projection_copy_work &&
+              populated.field_copy_work==nested_after.field_copy_work,
           "input snapshot charge omitted populated nested path");
   auto text_projection = projection;
   auto &text = const_cast<warm::Bundle &>(text_projection.recipe()).tools.front().recipe;
@@ -120,7 +174,9 @@ void owner_input_admission(Fixture &f, const assembly::LetterProjection &project
   std::cout << "adoption_input,selections=" << projection.recipe().selections.size()
             << ",inspection_boundaries=" << boundaries << ",inspection_work=" << full.inspection.charged
             << ",caller_bytes=" << full.caller_bytes << ",snapshot_bytes=" << full.snapshot_bytes
-            << ",required_bytes=" << full.required_bytes << " PASS\n";
+            << ",required_bytes=" << full.required_bytes << ",projection_work=" << full.projection_copy_work
+            << ",occurrence_work=" << full.occurrence_copy_work << ",field_work=" << full.field_copy_work
+            << ",copy_work=" << full.required_copy_work << " PASS\n";
 }
 
 void reservation_allocator_controls() {
