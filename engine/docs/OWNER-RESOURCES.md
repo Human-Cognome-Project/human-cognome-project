@@ -1944,3 +1944,47 @@ operation integration. Deliberately independent outputs must remain independent.
 
 **Next bounded task:** start from current main and audit initial occurrence indexes in `project_letters` and their publication/setup costs. Preserve value ordering, duplicate/revision rejection, source stability, exact provenance and independent published outputs; distinguish removable temporary copies from necessary owned publication storage. Keep the implementation bounded with source-death and independent allocation evidence. Membership callable/recursion, declaration/binding setup budgets, combined resource accounting and remaining operation/control integration follow. Do not repeat accepted baseline tests merely to onboard.
 
+
+### Ordered occurrence lookup values (awaiting review)
+
+Starting from accepted main `35814207`, project_letters' ordered index keeps its
+owned OccurrenceId key but no longer duplicates that ID inside a StructuralOccurrence
+value. Its value now holds the node and a const ObjectKey pointer into the original
+legacy/structural input row. That input remains const and stable throughout projection.
+The value is private temporary metadata; published keys, definitions and text remain
+independently owned. Ordering, duplicate/revision validation and the retained recipe
+copy are unchanged. This does not borrow map keys or remove publication storage.
+
+Both recipe-version source-death tests now verify every published occurrence's full
+definition reference/revision and node against the original normalized input. A
+focused initial-projection comparison against main observes 773→755 37-byte requests
+and 223→210 8-byte requests for 18 occurrences, 13 with byte paths: one temporary
+scope copy per row and one redundant path copy per byte row removed. Size-filtered
+observations support the source change, not total allocation or performance claims.
+
+Remaining owned occurrence-index keys, the legacy lookup, used-definition keys and
+publication copies/setup require separate audit. Membership callable/recursion and
+declaration/binding budgets follow before combined resource/operation integration.
+
+### Reuse ordered source metadata for legacy state (awaiting review)
+
+Following #287 review 5874475520, project_letters no longer builds a second legacy
+OccurrenceId-to-row map. Its ordered OccurrenceSource value carries the existing
+const legacy row pointer alongside definition/node metadata; structural rows carry
+null. The v1 publication branch reads position/velocity through that pointer.
+Initial warm::validate keeps recipe variants exclusive, and the const source rows
+remain stable until consumption. No pointer escapes into published input. Owned
+ordered keys, independent outputs, sort order and revision rejection are unchanged.
+
+The legacy source-death control assigns distinct finite position/velocity triples
+to every occurrence, destroys the projection source, then binds and verifies exact
+values plus node/occurrence association. Structural source-death and no-slot checks
+remain active. A source-to-source legacy projection probe observes 2092→2061 C++
+allocation calls and 210→197 path-sized requests for 18 occurrences/13 byte paths;
+UUID-sized requests remain 755. This removes the redundant map and copied keys,
+not all initial projection allocation. Ordered values gain one pointer each; no
+physical-memory or performance claim is made from call counts.
+
+Remaining ordered/provenance/equivalence/active occurrence keys, used-definition
+lookups and publication/setup costs need separate audit. Membership callable/
+recursion and declaration/binding budgets precede combined resources/operations.

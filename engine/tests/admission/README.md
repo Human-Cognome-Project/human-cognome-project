@@ -4856,3 +4856,109 @@ still pending. Initial occurrence indexes/publication setup are the next scope.
 
 **Next bounded task:** start from current main and audit initial occurrence indexes in `project_letters` and their publication/setup costs. Preserve value ordering, duplicate/revision rejection, source stability, exact provenance and independent published outputs; distinguish removable temporary copies from necessary owned publication storage. Keep the implementation bounded with source-death and independent allocation evidence. Membership callable/recursion, declaration/binding setup budgets, combined resource accounting and remaining operation/control integration follow. Do not repeat accepted baseline tests merely to onboard.
 
+
+### Ordered occurrence-value qualification (2026-11-12)
+
+Tested `ca10e9ed8b50db66a9d4d7fb8de8dc6ac6160095`, based directly on accepted main
+`35814207e736506812bb2a5aec57a387cbc5b4ba`. #285/#286 were integrated at
+`087b6aff14d454c9ebafcda28c9e9243f596e4d2`; the maintainer records all 12 #286 native
+jobs passed, 115 inspected regression tests and database addressed_reads=24/
+private_reads=0. Those are prior accepted evidence, not rerun for onboarding.
+
+The ordered index retains its owned OccurrenceId key but stores only a borrowed
+source definition pointer and node as value. It no longer duplicates the ID/path
+or owns another ObjectKey inside a temporary StructuralOccurrence. Both legacy and
+structural input rows remain const/stable until consumption; all published keys,
+definitions, revisions, text and recipe copies retain independent ownership.
+Iteration order and existing duplicate/revision validation are unchanged.
+
+Both recipe-version tests now compare every published occurrence's full ToolRef and
+node to the normalized input after the actual projection source copy dies. Existing
+provenance, byte order, exact mass, stale/duplicate and owner lifetime/refusal/retry
+controls remain active. The new checks short-circuit before dereferencing a missing
+source row.
+
+A size-filtered source-to-source project_letters probe over 18 occurrences (13 byte
+paths) observes main/current UUID-sized requests 773/755 and path-sized requests
+223/210. The script requires deltas 18 and 13 respectively. Output still allocates;
+these observations are not total backing, physical-memory or performance evidence.
+An initial helper retained a stale #284 source pin and compared 840/755 UUID-sized
+requests, failing the expected delta. That helper/source/binaries/logs are preserved
+with initial- prefixes. Correcting the helper baseline to current main passes;
+product code/builds were unchanged and no product test failed. The corrected and
+initial commands/results are both archived.
+
+Owner metrics stay unchanged across four CPU configurations: single/four selection
+selected live/peak 321185/392475, work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251 and 3271/5927 failure sites fully reclaimed. These overlapping
+reports must not be summed and cannot establish initial-projection savings.
+
+Remaining owned occurrence keys, legacy/used-definition lookups and publication/
+setup costs remain separate, followed by membership callable/recursion and declaration/
+binding budgets before combined resources and operations. No GPU, live DB or browser.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/test/probe warnings or product test failures;
+the initial helper comparison failure is separately preserved above. Clang15/
+libstdc++, CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/projection-occurrence-index-domain-ca10e9ed.tar.gz`; manifest digest:
+
+    47b3bce6b2c632395ced430c42521af146ec0ba1d7ada3def6183a61a53d3ef9
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required for this new contribution. There is no
+pending predecessor implementation PR; this branch targets current main directly.
+
+### Legacy occurrence lookup qualification (2026-11-12)
+
+Tested `7bebf877bdd52f48964a3ace99a1da898562322f`, continuing from #287 reviewed head
+`291e721b5ab5685cc17f8adc1c75213b0b466bb5` under review 5874475520 (no blocker,
+provisional continuation permitted). Main remains `35814207`; #287 is unmerged.
+
+The ordered OccurrenceSource carries the const source legacy row pointer, replacing
+the second legacy OccurrenceId map. Structural rows carry null and never enter the
+v1 state branch. Initial warm::validate enforces recipe-version separation. Input
+rows remain stable/const; publication copies numerical state and identities into
+owned output. No key ordering, revision validation or public ownership change.
+The ordered value gains a pointer; eliminated allocation calls are not total bytes.
+
+The new legacy source-death control assigns every occurrence distinct finite xyz
+positions/velocities, projects from a local source copy, destroys it, binds the
+projection and verifies every component, node and encoded occurrence association.
+Both recipe versions' definition/provenance source-death controls remain active,
+including structural no-slot behavior and rejection of legacy binding for v2.
+
+A focused source-to-source v1 projection probe against #287 observes total C++ new
+calls 2092→2061, path-sized requests 210→197 and UUID-sized requests unchanged at
+755. The script requires deltas 31/13/0 over 18 occurrences and 13 byte paths.
+The removed 18 map nodes and 13 copied paths agree with source inspection; this is
+not zero-total allocation, physical-memory or performance qualification. Commands,
+source versions, binaries and results are retained. No helper failure or warning.
+
+Remaining owned occurrence keys, used-definition lookups and publication/setup costs
+remain separate before membership callable/recursion, declaration/binding budgets,
+combined resources and operation integration. No GPU, live DB or browser work.
+
+Owner metrics remain unchanged in all four CPU configurations: single/four selection
+selected live/peak 321185/392475, work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251, with 3271/5927 failure sites fully reclaimed. These overlapping
+reports must not be summed; initial legacy indexing is outside owner adoption.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/test/probe warnings or errors. Clang15/libstdc++,
+CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Final tested-to-head delta contains four Markdown records. Verified archive:
+`setup-evidence/projection-legacy-index-domain-7bebf877.tar.gz`; manifest digest:
+
+    f85a12b245d94fe8d4d6661675a43ef253c268d09c5f13c7c39d408d9541b07d
+
+Raw artifacts have not been independently inspected remotely. Hosted qualification
+and review remain required. Parent #287 smoke 43218258474 passed; native 43218258553
+reported queued in its summary at recheck, but its jobs showed successful build,
+projection-values and database plus running/queued matrix jobs. This is active
+qualification, not the former no-job queue failure; no retry or merge was made.

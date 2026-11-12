@@ -4,10 +4,19 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
-**Maintainer acceptance — 2026-11-12:** #285 and #286 are integrated into main at `087b6aff14d454c9ebafcda28c9e9243f596e4d2`, reviewed tip `49643f2a22bbb0076584e01d990a32ff7fe0acda`. Exact-head #286 native 43130677310 and smoke 43130677322 passed; #285 native 43121173964 and smoke 43121173792 also passed. All 12 #286 native jobs succeeded. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 130894721312 reports addressed_reads=24/private_reads=0. The active review queue is clear; #75, #111 and #123 remain deliberately held. Earlier provisional/pending labels below are historical and superseded by this acceptance. No GPU or performance qualification is implied.
+**Maintainer acceptance — 2026-11-12:** #285 and #286 are integrated into main at `087b6aff14d454c9ebafcda28c9e9243f596e4d2`, reviewed tip `49643f2a22bbb0076584e01d990a32ff7fe0acda`. Exact-head #286 native 43130677310 and smoke 43130677322 passed; #285 native 43121173964 and smoke 43121173792 also passed. All 12 #286 native jobs succeeded. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 130894721312 reports addressed_reads=24/private_reads=0. At that integration the active review queue was clear; #75, #111 and #123 remain deliberately held. Earlier provisional/pending labels below are historical and superseded by this acceptance. No GPU or performance qualification is implied.
 
-**Next bounded task:** start from current main and audit initial occurrence indexes in `project_letters` and their publication/setup costs. Preserve value ordering, duplicate/revision rejection, source stability, exact provenance and independent published outputs; distinguish removable temporary copies from necessary owned publication storage. Keep the implementation bounded with source-death and independent allocation evidence. Membership callable/recursion, declaration/binding setup budgets, combined resource accounting and remaining operation/control integration follow. Do not repeat accepted baseline tests merely to onboard.
-
+**Active legacy-lookup contribution (2026-11-12):** continues from #287 `291e721b`,
+provisionally accepted without blockers by review 5874475520. Ordered occurrence
+metadata now carries the stable legacy source row directly, replacing the second
+map; published initial state remains independently owned. V1 source-death checks
+verify distinct position/velocity values and exact occurrence association. Both
+builds and all 47 scoped CPU checks passed without warnings/errors. Detailed
+qualification is in the admission record; hosted checks/review remain pending.
+Next: remaining owned occurrence/used-definition keys and publication/setup costs,
+then membership callable/recursion and declaration/binding budgets before combined
+resources and operations. #287 smoke 43218258474 passed; native 43218258553 was
+running at review. Main `35814207` is unchanged; no pending PR is merged here.
 
 **Active tool-index contribution (2026-11-11):** continues from source-accepted
 #285 `7105c22e` under review 5866915489, with accepted main `c2c168b3` included by
@@ -122,7 +131,7 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](../../engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
 | Latest accepted engine evidence | Integrated through #286 at `087b6aff`; reviewed tip `49643f2a`. Native 43130677310 and smoke 43130677322 passed. Inspected 115 regression tests and addressed_reads=24/private_reads=0. |
 | Accepted exchange owner | Recorded scopes through #286 integrated, including retained input text, comparison/validation and adoption-copy reductions, plus initial projection expansion/rendering/provenance/tool-index improvements. Complete setup and combined resources remain open. |
-| Next implementation | Initial occurrence indexes and publication/setup costs from current main; then membership callable/recursion, declaration/binding budgets, combined resources and operation integration. Active review queue clear. |
+| Next implementation | Legacy occurrence lookup continuation on source-accepted #287; then remaining owned index keys and publication/setup costs, membership callable/recursion, declaration/binding budgets and combined resources/operations. #287 hosted qualification and the new contribution review remain pending. |
 | Factoring follow-up | #230 completes the first mechanical kernel extraction under [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229). Keep #229 open; further separation follows the resource/lifetime inventory. Layered onboarding is authorized on 2026-11-08; see the [migration plan](ONBOARDING-PLAN.md). |
 | Accepted tooling | [Local evidence runner](../../engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](../../engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](../../tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](../../engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](../../docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |

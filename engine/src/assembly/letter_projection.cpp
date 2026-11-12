@@ -265,17 +265,21 @@ LetterProjection project_letters(const warm::Bundle &b) {
   out.recipe_ = b;
   for (const auto &s : b.selections) out.exposures_.push_back(s.exposure);
   const auto tools = index(b);
-  std::map<warm::OccurrenceId, warm::StructuralOccurrence> ordered;
-  std::map<warm::OccurrenceId, const warm::Occurrence *> legacy;
+  // The ordered key already owns the occurrence id. Borrow its definition from
+  // the stable input row; publication below still copies independent identities.
+  struct OccurrenceSource {
+    const warm::ObjectKey *definition;
+    int node;
+    const warm::Occurrence *initial; // Legacy state only; null for structural input.
+  };
+  std::map<warm::OccurrenceId, OccurrenceSource> ordered;
   std::set<warm::ObjectKey> used;
   for (const auto &o : b.occurrences) {
-    ordered.emplace(o.id,
-                    warm::StructuralOccurrence{o.id, o.definition, o.node});
-    legacy.emplace(o.id, &o);
+    ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node, &o});
     used.insert(o.definition);
   }
   for (const auto &o : b.structural_occurrences) {
-    ordered.emplace(o.id, o);
+    ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node, nullptr});
     used.insert(o.definition);
   }
   // Temporary lookup metadata borrows only from the stable source tool table.
@@ -290,7 +294,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
   std::set<warm::OccurrenceId> active;
   for (const auto &s : b.selections) {
     const warm::OccurrenceId aggregate{s.entry, {}};
-    const auto &letter = *tools.at(ordered.at(aggregate).definition);
+    const auto &letter = *tools.at(*ordered.at(aggregate).definition);
     const auto expanded = expand(tools, letter);
     if (letter.parents.size() == 1)
       equivalent.emplace(aggregate, &letter.parents[0].target);
@@ -323,7 +327,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
     out.structural_input_.definitions.push_back(std::move(d));
   }
   for (const auto &[id, o] : ordered) {
-    const auto &t = *tools.at(o.definition);
+    const auto &t = *tools.at(*o.definition);
     const OccurrenceKey k{out.study_, id};
     const auto slot = b.recipe_version == 1 ? int(out.occurrences_.size()) : -1;
     ProjectedOccurrence record{k,  t.ref, slot, o.node, active.count(id) != 0,
@@ -336,11 +340,11 @@ LetterProjection project_letters(const warm::Bundle &b) {
     if (equivalent.count(id)) record.complete_character = *equivalent.at(id);
     out.occurrences_.push_back(record);
     out.structural_input_.occurrences.push_back(
-        {InputText(occurrence_text(k)), InputText(warm::key(o.definition)), o.node});
+        {InputText(occurrence_text(k)), InputText(warm::key(*o.definition)), o.node});
     if (b.recipe_version == 1) {
-      const auto &initial = *legacy.at(id);
+      const auto &initial = *o.initial;
       out.input_.occurrences.push_back(
-          {InputText(occurrence_text(k)), InputText(warm::key(o.definition)), slot, o.node,
+          {InputText(occurrence_text(k)), InputText(warm::key(*o.definition)), slot, o.node,
            point(initial.position), point(initial.velocity)});
     }
     if (record.active)

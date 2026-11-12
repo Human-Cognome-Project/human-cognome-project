@@ -50,11 +50,40 @@ int main() {
         f.request(f.repeated, 6, warm::Exposure::Aggregate)};
     auto b = normalize_letters(f.base, requests);
     warm::validate(b);
+    for (std::size_t i = 0; i < b.occurrences.size(); ++i) {
+      const double value = double(i);
+      b.occurrences[i].position = {value + .25, -value - .5, value + .75};
+      b.occurrences[i].velocity = {-value - 1.25, value + 1.5, -value - 1.75};
+    }
     // Published identities must outlive the source of borrowed expansion refs.
     auto p = [&] {
       const auto source = b;
       return project_letters(source);
     }();
+    for (const auto &published : p.occurrences()) {
+      const auto source = std::find_if(b.occurrences.begin(), b.occurrences.end(),
+          [&](const auto &row) { return row.id == published.key.source; });
+      check(source != b.occurrences.end() &&
+                published.definition == f.ref(source->definition) && published.node == source->node,
+            "published occurrence retains exact source definition and node after source death");
+    }
+    std::vector<StudyNode> binding_nodes;
+    for (const auto &node : b.nodes)
+      binding_nodes.push_back({reinterpret_cast<const taichi::lang::SNode *>(1),
+          node.parent, static_cast<assembly::ScaleRole>(node.role)});
+    const auto bound = p.bind(binding_nodes);
+    check(bound.occurrences.size() == b.occurrences.size(),
+          "legacy handoff retains all initial-state rows");
+    for (const auto &source : b.occurrences) {
+      const auto id = occurrence_text({p.study(), source.id});
+      const auto row = std::find_if(bound.occurrences.begin(), bound.occurrences.end(),
+          [&](const auto &candidate) { return std::string(candidate.id) == id; });
+      check(row != bound.occurrences.end() && row->study_node == source.node &&
+                row->position.x == source.position.x && row->position.y == source.position.y &&
+                row->position.z == source.position.z && row->velocity.x == source.velocity.x &&
+                row->velocity.y == source.velocity.y && row->velocity.z == source.velocity.z,
+            "legacy initial position/velocity survives source death with exact occurrence association");
+    }
     check(p.occurrences().size() == 18,
           "five aggregates and thirteen byte alternatives; no character/nibble "
           "particles");
