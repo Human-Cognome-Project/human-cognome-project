@@ -204,6 +204,46 @@ template<class T> void map_reservation_controls(const std::vector<T> &rows) {
     if constexpr (std::is_same_v<T,OccurrenceBinding>) return row.occurrence.study;
     else return row.field.object.scope;
   };
+  // Exercise setup copies plus growth/shrink of inactive identity slots.
+  const auto original_setup_row=one.front();
+  const auto setup_map = [&](const auto &domain, PreparationWork &work) {
+    Map value(one,domain,&work);
+    value.reserve(3,4,&work);
+    Map copied(value,domain,&work);
+    copied.reserve(2,4,&work);
+    require(copied.size()==1 && copied.storage().size()==2 && equal(copied[0],one[0]) &&
+                key_buffer(copied.storage()[1]).capacity()>=4,
+            "metered map setup changed active identity or inactive reservation");
+  };
+  auto setup_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  PreparationWork full_setup(UINT64_MAX);
+  setup_map(setup_domain,full_setup);
+  require(!setup_domain->result().live_bytes,"metered map setup leaked storage");
+  std::uint64_t allowance=0, setup_boundaries=0;
+  while (allowance < full_setup.result().charged) {
+    PreparationWork work(allowance);
+    bool stopped=false;
+    try { setup_map(setup_domain,work); }
+    catch (const PreparationStop &stop) {
+      stopped=stop.result.status==PreparationStatus::WorkExhausted &&
+          stop.result.charged<=allowance && stop.result.next_required>allowance &&
+          stop.result.next_required<=full_setup.result().charged;
+      allowance=stop.result.next_required;
+    }
+    require(stopped && !setup_domain->result().live_bytes && equal(one[0],original_setup_row),
+            "map setup refusal failed to reclaim partial identities");
+    ++setup_boundaries;
+  }
+  PreparationWork short_setup(full_setup.result().charged-1);
+  bool short_stop=false;
+  try { setup_map(setup_domain,short_setup); } catch (const PreparationStop &) { short_stop=true; }
+  require(short_stop && !setup_domain->result().live_bytes,"one-short map setup succeeded or leaked");
+  PreparationWork exact_setup(full_setup.result().charged);
+  setup_map(setup_domain,exact_setup);
+  require(exact_setup.result().charged==full_setup.result().charged && !setup_domain->result().live_bytes,
+          "exact map setup retry failed or leaked");
+  std::cout << "map_setup,occurrence=" << std::is_same_v<T,OccurrenceBinding>
+            << ",work=" << full_setup.result().charged << ",boundaries=" << setup_boundaries << " PASS\n";
   Map reference(one); reference.reserve(3,4);
   const auto backing = [&](const Map &map, const auto &domain) {
     std::uint64_t bytes=map.storage().capacity()*sizeof(T);
@@ -1260,6 +1300,7 @@ void owner_projection_setup(Fixture &f, const assembly::LetterProjection &projec
   }
   std::uint64_t allowance = 0, boundaries = 0;
   std::array<bool,static_cast<std::size_t>(ProjectionSetupPhase::Complete)> phases{};
+  std::uint64_t binding_boundaries=0;
   while (allowance < full.work.charged) {
     ProjectionSetupResult stopped;
     A::begin();
@@ -1279,6 +1320,7 @@ void owner_projection_setup(Fixture &f, const assembly::LetterProjection &projec
     const auto phase = static_cast<std::size_t>(stopped.phase);
     require(phase < phases.size(), "projection setup rejection reported completion");
     phases[phase] = true;
+    binding_boundaries += stopped.phase == ProjectionSetupPhase::Bindings;
     allowance = stopped.work.next_required;
     ++boundaries;
   }
@@ -1292,7 +1334,8 @@ void owner_projection_setup(Fixture &f, const assembly::LetterProjection &projec
               before == TickSnapshot(f) && parents == Access::projection_parent_sizes(projection),
           "exact projection setup retry failed or changed caller/native state");
   std::cout << "owner_projection_setup,selections=" << projection.recipe().selections.size()
-            << ",boundaries=" << boundaries << ",work=" << full.work.charged << " PASS\n";
+            << ",boundaries=" << boundaries << ",work=" << full.work.charged
+            << ",binding_boundaries=" << binding_boundaries << " PASS\n";
 }
 
 void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,

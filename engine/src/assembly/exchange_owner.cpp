@@ -126,7 +126,10 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     meter.charge(sizeof(LetterExchangeContract));
     auto retained = std::allocate_shared<const LetterExchangeContract>(
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
-    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,domain);
+    setup.phase = ProjectionSetupPhase::Bindings;
+    meter.charge(sizeof(ExchangeBindings));
+    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,domain,&meter);
+    setup.phase = ProjectionSetupPhase::Declarations;
     const auto append_declaration = [&] {
       meter.charge(sizeof(declarations_[0]));
       if (declarations_.size() == declarations_.capacity())
@@ -150,13 +153,15 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
   projection_->reserve_exposure(meter);
   setup.phase = ProjectionSetupPhase::SpareParents;
   prospective_->reserve_exposure(meter);
+  setup.phase = ProjectionSetupPhase::Bindings;
+  meter.charge(sizeof(ExchangeCoordinator));
   plan_ = reserve_unique<ExchangeCoordinator>(domain,[&](auto *p) {
-    ::new (static_cast<void *>(p)) ExchangeCoordinator(h_,domain);
+    ::new (static_cast<void *>(p)) ExchangeCoordinator(h_,domain,&meter);
   });
   const auto &limits = h_.prepared_storage().capacity.limits();
-  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_);
-  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->bound_->occurrences_,plan_->bound_->fields_,&fields_);
-  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->next_,plan_->next_fields_,&fields_);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_,nullptr,&meter);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->bound_->occurrences_,plan_->bound_->fields_,&fields_,&meter);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->next_,plan_->next_fields_,&fields_,&meter);
   completed_ = true;
 }
 
