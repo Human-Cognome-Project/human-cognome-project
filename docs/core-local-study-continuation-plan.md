@@ -353,6 +353,15 @@ declaration/binding setup budgets precede combined resource/operation integratio
 #279 fresh native qualification remains in progress; smoke/viewport are green.
 No pending stack merge is inferred.
 
+**Tool-index continuation (awaiting review):** #285 review 5866915489 accepts its
+source provisionally at `7105c22e`; hosted native remains separate. Current main
+`c2c168b3` is included by normal merge `9f88ce31`, preserving the integration-through-
+#284 record and #285 evidence. Only four Markdown files differ in that merge.
+The initial Tools index now borrows stable source ObjectKey values with the same
+value comparator; separately copied lookup keys and duplicate source orders are
+checked. Initial occurrence indexes/publication setup and membership callable/
+recursion plus declaration/binding budgets remain before combined operations.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

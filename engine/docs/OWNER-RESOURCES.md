@@ -1914,3 +1914,25 @@ Published output and owner-adoption accounting remain independent of that tempor
 reduction. Initial tool/occurrence indexes, retained publication copies and their
 setup costs require separate treatment; membership callable/recursion and declaration/
 binding setup budgets remain open before combined resources/operations.
+
+### Borrowed keys in the initial tool index (awaiting review)
+
+Following #285 review 5866915489, the local normalization/projection Tools index
+stores reference_wrapper<const ObjectKey> keys alongside its existing const Tool
+pointers. Both refer into the same stable source tool table. Neither normalization
+consumer changes tools/parents and project_letters takes its bundle const. The
+index is destroyed before the source; moving the normalization result does not
+make index destruction inspect the borrowed keys. No index or reference escapes.
+
+ToolKeyLess delegates to the existing ObjectKey value comparator, including its
+validation and ordering. Transparent find and at continue matching by value;
+a separately copied lookup key resolves the same source Tool. Duplicate identity
+and inconsistent revision rejection are unchanged. Normalization duplicate tests
+cover both source orders; source-death projection tests still check independently
+owned published values. A source-to-source index probe observes zero 37-byte UUID
+requests over 22 tools, versus 22 in prior source. Map nodes still allocate;
+this is not a zero-allocation or complete setup-budget claim.
+
+Remaining initial occurrence indexes, publication copies/setup costs, membership
+callable/recursion and declaration/binding budgets precede combined resources and
+operation integration. Deliberately independent outputs must remain independent.

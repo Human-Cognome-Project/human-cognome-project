@@ -4791,3 +4791,60 @@ qualification and review remain required. At final #279 check, fresh smoke
 projection-values, all four compiler jobs, database and regression shards 2/3;
 shards 1/4 remained running. The original stuck attempts are preserved. No merge
 or final qualification is inferred from the partial matrix.
+
+### Initial tool-index qualification (2026-11-11)
+
+Tested `fc9d870b85182ee272d9e09b0c96c665d41b3a90`, continuing #285 reviewed head
+`7105c22e866af7c3cf5c1b2e452a8bf8bef643f8` under review 5866915489. Accepted main
+`c2c168b3` was included by normal merge `9f88ce31a450895cf1df3df77244285c323f907d`.
+That merge changes only four Markdown records relative to #285, preserving both
+integration-through-#284 and #285 evidence histories; no product source changed
+in reconciliation. This qualification covers the resulting combined product head.
+
+Temporary Tools keys now use reference_wrapper<const ObjectKey> into the stable
+source tool table, like their existing mapped Tool pointers. The transparent
+comparator calls ObjectKey's value comparator, preserving ordering/validation and
+value-based lookup. Neither normalization nor projection mutates tools/parents
+before index consumption finishes; published identities remain independent.
+Normalization duplicate tests cover original/reversed source order. Existing
+stale-revision rejection and both recipe versions' source-death controls apply.
+
+A focused source-to-source index probe builds 22 tools before observation. Current
+index construction has zero 37-byte requests; prior #285 source has 22 and fails
+the zero-request predicate. Lookup through separately copied ToolRefs/ObjectKeys
+must return the correct source tool for both versions, guarding against accidental
+pointer-identity lookup. This size-filtered witness supports the source change;
+map nodes still allocate, and no zero-total/setup-budget/performance claim follows.
+Both source versions, commands, binaries and logs are retained in the archive.
+
+Initial occurrence indexes and publication/setup costs remain open, followed by
+membership callable/recursion, declaration/binding budgets, combined resources and
+remaining operations. No GPU, live database or browser work. Earlier failure and
+warning records remain preserved.
+
+All four owner configurations retain the prior metrics: single/four selection
+selected live/peak 321185/392475, work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251 and 3271/5927 failure sites fully reclaimed. Initial indexing
+is outside adoption; these unchanged totals do not establish the index reduction.
+Reports overlap and must not be summed.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six standalone warm CTests. One ticache.lock warning follows the final
+PASS marker in 1-bulk-exchange_commit.log; it is retained, with its order explicitly
+verified. No build/probe warnings or product errors. No rerun/cache cleanup was
+used to suppress the warning. Clang15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host, no performance claim.
+
+Final tested-to-head delta is four Markdown records. Verified archive:
+`setup-evidence/projection-tool-index-domain-fc9d870b.tar.gz`; manifest digest:
+
+    8b7e28eabe22bf123531ec70f114717f85f488c02cdbcef64644443d8d90a5ae
+
+Raw artifacts have not been independently inspected remotely. Hosted qualification
+and review remain required for this contribution. Parent #285 exact-head native
+43121173964 and smoke 43121173792 now report success, and Patrick has accepted
+that contribution; the PR remains open at inspection. Earlier pending/failed/stuck
+attempts remain historical. #279 and the stack through #284 are integrated, not
+still pending. Initial occurrence indexes/publication setup are the next scope.

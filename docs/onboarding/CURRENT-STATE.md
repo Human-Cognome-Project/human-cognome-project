@@ -4,6 +4,23 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
+**Active tool-index contribution (2026-11-11):** continues from source-accepted
+#285 `7105c22e` under review 5866915489, with accepted main `c2c168b3` included by
+normal merge `9f88ce31`. Temporary normalization/projection tool-index keys borrow
+stable source objects and retain value ordering/validation. A focused prior-source
+probe records 22→0 UUID-sized requests and validates independent lookup keys;
+source-death and duplicate-order controls remain active. Both builds and 47 scoped
+CPU checks passed; one post-PASS cache warning is preserved. Detailed qualification
+is in the admission record; hosted qualification/review remain pending. Next:
+initial occurrence indexes/publication setup, then membership callable/recursion,
+declaration/binding budgets and combined resource/operation integration.
+
+
+**#285 qualification update (2026-11-11):** Patrick has accepted the contribution;
+exact-head native 43121173964 and smoke 43121173792 now both report success.
+The PR remains open at inspection; no merge is inferred. Earlier pending labels
+are historical. This does not qualify the new tool-index continuation.
+
 **Maintainer integration — 2026-11-11:** Reviewed #275–#277 and #279–#284 are integrated into main at `5beeb2cacf28c75cbecef385a0de1e877154bbc0`, preserving original commits through reviewed tip `09bafe48869ddf239e6e245d766c0c0e41a43364`. #279's fresh native 43115507493, viewport 43115507480 and smoke 43115507510 succeeded; #280–#284 completed their applicable hosted checks, including #284 native 43116769390 and smoke 43116769371. Original failed and stuck queued attempts remain historical, not relabeled. Earlier pending/integration labels below are superseded by this record. #285 is provisionally source-accepted at `7105c22e866af7c3cf5c1b2e452a8bf8bef643f8` (review 5866915489), targets main and awaits native qualification; its smoke passed. Next: initial tool/occurrence indexes and publication/setup costs, then membership callable/recursion, declaration/binding budgets, combined resource accounting and operation integration. No blanket GPU or performance acceptance.
 
 
