@@ -46,10 +46,11 @@ int main() {
     const auto first_new_bytes = allocation_observation::bytes.load();
     const auto first_storage = pool.backing_storage();
     if (!empty_storage.record_storage_available || !empty_storage.allocator_storage_available ||
-        empty_storage.record_allocation_bytes || empty_storage.allocator_chunk_capacity_bytes ||
+        empty_storage.allocator_chunk_capacity_bytes ||
         first_storage.allocator_object_bytes != sizeof(taichi::lang::UnifiedAllocator) ||
         first_storage.record_allocation_bytes < first_storage.record_payload_bytes ||
-        first_new_bytes != first_storage.record_allocation_bytes + first_storage.allocator_chunk_capacity_bytes ||
+        first_new_bytes != first_storage.record_allocation_bytes - empty_storage.record_allocation_bytes +
+                               first_storage.allocator_chunk_capacity_bytes ||
         first_storage.pool_instance != empty_storage.pool_instance)
       throw std::runtime_error("pool container storage disagrees with actual allocation requests");
     const auto full = pool.statistics();
@@ -147,7 +148,7 @@ int main() {
         reset.raw_allocation_calls != before_reset.raw_allocation_calls ||
         pool.backing_record(second_record.token).status != PoolBackingStatus::Unknown ||
         pool.backing_storage().record_payload_bytes ||
-        pool.backing_storage().record_allocation_bytes ||
+        pool.backing_storage().record_allocation_bytes != empty_storage.record_allocation_bytes ||
         pool.backing_storage().allocator_chunk_capacity_bytes ||
         pool.backing_storage().allocator_object_bytes != empty_storage.allocator_object_bytes) {
       throw std::runtime_error("native pool reset lost cumulative accounting");
@@ -158,7 +159,8 @@ int main() {
     catch (const std::bad_alloc &) { failed = true; }
     const auto counts = allocation_lifetime::end();
     if (!failed || counts.attempts != 1 || counts.live || pool.statistics().reserved_bytes ||
-        pool.backing_storage().record_payload_bytes || pool.backing_storage().record_allocation_bytes)
+        pool.backing_storage().record_payload_bytes ||
+        pool.backing_storage().record_allocation_bytes != empty_storage.record_allocation_bytes)
       throw std::runtime_error("failed raw metadata registration retained a mapping/record");
     exclusive = pool.allocate(17,page,true);
     if (pool.capture_backing_record(exclusive,17).status != PoolBackingStatus::Live ||
@@ -166,7 +168,8 @@ int main() {
       throw std::runtime_error("retry failed or reset revived old backing");
     pool.release(17,exclusive);
     const auto retained_storage = pool.backing_storage();
-    if (retained_storage.record_allocation_bytes || !retained_storage.allocator_chunk_capacity_bytes ||
+    if (retained_storage.record_allocation_bytes != empty_storage.record_allocation_bytes ||
+        !retained_storage.allocator_chunk_capacity_bytes ||
         retained_storage.metadata_complete)
       throw std::runtime_error("empty pool lost retained allocator storage or claimed complete metadata");
     std::cout << "first_map_request_bytes=" << first_storage.record_allocation_bytes
