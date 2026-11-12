@@ -5890,3 +5890,35 @@ Final publication differs from the tested pin only in four Markdown files. All 1
 local file links and whitespace checks passed. Parent #303 smoke 43292870875 passed;
 native 43292871002 remains active. No duplicate hosted run was requested and no
 acceptance or merge is inferred from these local results.
+
+### #304 review correction: explicit CTest runtime environment
+
+Review5881347735 identifies inherited configuration defects in #302/#303/#304.
+Hosted #302 native43287680849/job131433550369 failed owner_backing_test at
+runtime_lib_dir@43 before its assertions; the other28 shard tests passed (maintainer
+inspection). That failed attempt remains preserved and #302 is not green. Earlier
+local qualification sourced engine-env.sh, masking the absent CTest property.
+
+Corrected source e0cc9e72b1be9640fbb1becfc580744b093aa08d changes only CMake test
+properties from reviewed48d1a2b5. All three Runtime-using tests now share the existing
+TI_LIB_DIR environment and TIMEOUT900 group. Native tree remains
+62b11a6811ec7e9fe51991cdff28a2499a4ad0fe; no native implementation changes.
+CMake regenerated successfully; engine build reported no work needed. With the
+parent TI_LIB_DIR unset, verbose CTest confirms the explicit runtime path and
+900-second timeout for owner_backing_test, prepared_backing_test and
+reservation_request_test:3/3passed. The combined nine-test backing/reservation
+subset also passed with the variable unset. These nine include the three, so this
+is nine distinct tests, not12. Tested source stayed clean. CPU only, no GPU.
+The earlier56-check result remains scoped to its original source/environment;
+this focused correction does not relabel it as clean-parent-shell qualification.
+
+Evidence: runtime-ctest-fix-e0cc9e72.tar.gz, contributor-local, not independently
+inspected. Manifest SHA256 da0734563c111a389c182e272a4dd0df606d85a90442758e80aa3a5a832757d4.
+Archive SHA256 22ea2c02df67f12adeddc7b083019c0b6f8a15371c758d55e305c82f5381b56f.
+Contains commands, source/binary pins, generated CTest properties, build and verbose
+results. The final archive checksum command initially included a trailing CR and
+failed after successful tests/archive creation; a separate corrected checksum read
+succeeded without rerunning tests or changing evidence. No test failure occurred.
+Correction is carried at combined #304; unchanged parent runs are not retriggered.
+Hosted corrected qualification and review remain pending. Final documentation-only
+delta does not change tested code or configuration.

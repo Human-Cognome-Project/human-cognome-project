@@ -1,5 +1,18 @@
 # Current implementation and work
 
+**CTest qualification correction (awaiting review, 2026-11-12):** #304 review
+5881347735 blocks integration on missing runtime environment for three tests.
+#302 native run43287680849/job131433550369 failed owner_backing_test during
+initialization; its assertions were not reached. Earlier local runs inherited
+TI_LIB_DIR and did not detect the configuration omission. Corrected combined head
+e0cc9e72 adds owner_backing_test, prepared_backing_test and reservation_request_test
+to the existing explicit runtime environment/900-second timeout group. All three
+pass with TI_LIB_DIR unset in the parent shell, as does the combined nine-test
+backing/reservation subset. Original failures and earlier evidence remain preserved;
+#302 is not represented as green. The fix is carried at the combined #304 head,
+not by rerunning unchanged parents. Await corrected hosted qualification/review
+before integration; pool/alias/metadata work remains next.
+
 **Native reservation exports (awaiting review, 2026-11-12):** continues #303 review
 5880964608. Common ProgramImpl exposes bounded CPU node/list/ambient request views,
 with Present/Absent/Invalid/Unavailable states and explicit unresolved pool identity/
