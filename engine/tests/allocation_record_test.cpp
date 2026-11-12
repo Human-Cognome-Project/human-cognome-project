@@ -37,7 +37,9 @@ int main() {
       const auto owner_pool = device.allocation_pool_backing_record(owner.token);
       require(owner_pool.status == PoolBackingStatus::Live &&
                   owner_pool.token == device.allocation_pool_backing_record(registration.token).token &&
-                  owner_pool.raw_requested_bytes == 64 && !owner_pool.rounded_extent_available &&
+                  owner_pool.raw_requested_bytes == 64 && owner_pool.rounded_extent_available &&
+                  owner_pool.rounded_extent_bytes >= 64 &&
+                  owner_pool.rounded_extent_bytes == device.allocation_pool_backing_record(registration.token).rounded_extent_bytes &&
                   device.pool_backing_storage().pool_instance == owner_pool.token.pool_instance &&
                   device.Device::allocation_pool_backing_record(owner.token).status == PoolBackingStatus::Unavailable,
               "canonical owner/import pool backing mismatch");

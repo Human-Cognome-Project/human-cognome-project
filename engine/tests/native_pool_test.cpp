@@ -6,11 +6,25 @@
 #include <stdexcept>
 
 #include "taichi/rhi/common/host_memory_pool.h"
+#if defined(TI_PLATFORM_UNIX)
+#include <unistd.h>
+#else
+#include "taichi/platform/windows/windows.h"
+#endif
 
 int main() {
   try {
     using taichi::lang::HostMemoryPool;
     auto &pool = HostMemoryPool::get_instance();
+#if defined(TI_PLATFORM_UNIX)
+    const auto os_page = static_cast<std::size_t>(sysconf(_SC_PAGESIZE));
+#else
+    SYSTEM_INFO info{};
+    GetSystemInfo(&info);
+    const auto os_page = static_cast<std::size_t>(info.dwPageSize);
+#endif
+    if (os_page <= 1 || os_page == SIZE_MAX)
+      throw std::runtime_error("invalid test OS page size");
     constexpr std::size_t span = std::size_t{1} << 30;
     constexpr std::size_t page = 4096;
     const auto baseline = pool.statistics();
@@ -32,7 +46,8 @@ int main() {
         second_record.status != PoolBackingStatus::Live ||
         shared_record.token == first_record.token || !(shared_record.token == second_record.token) ||
         !(validated.token == second_record.token) || shared_record.raw_requested_bytes != span ||
-        shared_record.rounded_extent_available || shared_record.rounded_extent_bytes ||
+        !shared_record.rounded_extent_available || shared_record.rounded_extent_bytes < span ||
+        shared_record.rounded_extent_bytes % os_page ||
         !storage.available || storage.metadata_complete || !storage.incremental_record_payload_bytes ||
         storage.incremental_record_payload_bytes >= storage.record_payload_bytes ||
         pool.capture_backing_record(reinterpret_cast<void *>(first+span-1),2).status != PoolBackingStatus::Unknown ||
@@ -50,6 +65,33 @@ int main() {
     void *other_exclusive = pool.allocate(19,page,true);
     const auto other_record = pool.capture_backing_record(other_exclusive,19);
     pool.release(17,exclusive);
+    for (const auto request : {std::size_t{1}, os_page-1, os_page, os_page+1}) {
+      void *mapping = pool.allocate(request,page,true);
+      const auto record = pool.capture_backing_record(mapping,request);
+      const auto expected = request <= os_page ? os_page : 2*os_page;
+      if (record.status != PoolBackingStatus::Live || record.raw_requested_bytes != request ||
+          !record.rounded_extent_available || record.rounded_extent_bytes != expected ||
+          pool.backing_record(record.token).rounded_extent_bytes != expected ||
+          (request < expected && pool.capture_backing_record(
+              static_cast<char *>(mapping)+request,1).status != PoolBackingStatus::Unknown))
+        throw std::runtime_error("rounded backing changed request containment or extent");
+      // Isolated native mapping test: prove the final reported page is mapped.
+      static_cast<volatile char *>(mapping)[expected-1] = 23;
+      pool.release(request,mapping);
+      if (pool.backing_record(record.token).status != PoolBackingStatus::Unknown)
+        throw std::runtime_error("rounded mapping release retained identity");
+    }
+    const auto before_invalid = pool.statistics();
+    bool overflow = false, zero = false;
+    try { pool.allocate(SIZE_MAX,page,true); }
+    catch (const std::overflow_error &) { overflow = true; }
+    try { pool.allocate(0,page,true); }
+    catch (const std::invalid_argument &) { zero = true; }
+    if (!overflow || !zero || pool.statistics().allocation_calls != before_invalid.allocation_calls ||
+        pool.statistics().raw_allocation_calls != before_invalid.raw_allocation_calls ||
+        pool.statistics().reserved_bytes != before_invalid.reserved_bytes)
+      throw std::runtime_error("invalid rounded request reached allocator accounting");
+    std::cout << "os_page_bytes=" << os_page << " rounded_boundary_cases=4\n";
     exclusive = pool.allocate(17,page,true);
     if (pool.backing_record(exclusive_record.token).status != PoolBackingStatus::Unknown ||
         pool.capture_backing_record(exclusive,17).token == exclusive_record.token ||
