@@ -35,6 +35,7 @@
 
 #include "taichi/rhi/device_capability.h"
 #include "taichi/rhi/arch.h"
+#include "taichi/rhi/common/pool_backing.h"
 
 namespace taichi::lang {
 
@@ -666,6 +667,10 @@ class RHI_DLL_EXPORT Device {
   virtual AllocationRecord allocation_backing_record(AllocationRecordToken) const {
     return {};
   }
+  virtual PoolBackingRecord allocation_pool_backing_record(AllocationRecordToken) const {
+    return {};
+  }
+  virtual PoolBackingStorage pool_backing_storage() const { return {}; }
   virtual AllocationRecordStorage allocation_record_storage() const {
     return {};
   }

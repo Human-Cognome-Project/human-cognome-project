@@ -3,6 +3,7 @@
 #include "taichi/rhi/common/unified_allocator.h"
 #include "taichi/rhi/device.h"
 #include "taichi/rhi/common/memory_pool_stats.h"
+#include "taichi/rhi/common/pool_backing.h"
 #include <mutex>
 #include <vector>
 #include <memory>
@@ -28,6 +29,11 @@ class TI_DLL_EXPORT HostMemoryPool {
   void release(std::size_t size, void *ptr);
   void reset();
   Statistics statistics();
+  // Range containment only: caller independently establishes a live request.
+  // Tokens do not extend pool/request lifetime. Lookups lock, but never scan.
+  PoolBackingRecord capture_backing_record(const void *address, std::size_t bytes);
+  PoolBackingRecord backing_record(PoolBackingToken token);
+  PoolBackingStorage backing_storage();
   HostMemoryPool();
   ~HostMemoryPool();
 
@@ -37,7 +43,9 @@ class TI_DLL_EXPORT HostMemoryPool {
 
   // All the raw memory allocated from OS/Driver
   // We need to keep track of them to guarantee that they are freed
-  std::map<void *, std::size_t> raw_memory_chunks_;
+  struct RawChunk { std::size_t bytes; std::uint64_t identity; };
+  std::map<std::uintptr_t, RawChunk> raw_memory_chunks_;
+  const std::uint64_t pool_instance_;
 
   std::unique_ptr<UnifiedAllocator> allocator_;
   std::mutex mut_allocation_;

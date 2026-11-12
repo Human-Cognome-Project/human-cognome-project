@@ -82,6 +82,24 @@ RhiResult CpuDevice::import_owned_memory(AllocationRecordToken token,
   return RhiResult::success;
 }
 
+PoolBackingRecord CpuDevice::allocation_pool_backing_record(AllocationRecordToken token) const {
+  const auto owner = allocation_backing_record(token);
+  if (owner.status == AllocationRecordStatus::Unavailable) return {};
+  PoolBackingRecord result;
+  result.status = PoolBackingStatus::Unknown;
+  if (owner.status != AllocationRecordStatus::Live) return result;
+  if (!owner.extent_bytes) {
+    result.status = PoolBackingStatus::Absent;  // Live zero-byte CPU owner has no raw mapping.
+    return result;
+  }
+  return HostMemoryPool::get_instance().capture_backing_record(
+      allocations_[owner.token.allocation].ptr, owner.extent_bytes);
+}
+
+PoolBackingStorage CpuDevice::pool_backing_storage() const {
+  return HostMemoryPool::get_instance().backing_storage();
+}
+
 void CpuDevice::clear() {
   for (std::size_t i = 0; i < allocations_.size(); ++i)
     if (allocations_[i].live) dealloc_memory(DeviceAllocation{this, i});

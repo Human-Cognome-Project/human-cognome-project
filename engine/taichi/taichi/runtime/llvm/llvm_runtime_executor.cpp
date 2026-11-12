@@ -813,6 +813,18 @@ ReservationLimits LlvmRuntimeExecutor::reservation_limits() const {
           reservation_max_chunks, 1, sizeof(ReservationQuery) + sizeof(uint64_t *)};
 }
 
+PoolBackingRecord LlvmRuntimeExecutor::reservation_pool_backing(
+    ReservationKind kind, int node, ReservationList list, uint64_t index) const {
+  const auto request = reservation_request(kind, node, list, index);
+  if (request.status == ReservationStatus::Unavailable) return {};
+  PoolBackingRecord result;
+  result.status = request.status == ReservationStatus::Absent ? PoolBackingStatus::Absent
+                                                            : PoolBackingStatus::Unknown;
+  if (request.status != ReservationStatus::Present) return result;
+  return HostMemoryPool::get_instance().capture_backing_record(
+      reinterpret_cast<const void *>(request.address), request.requested_bytes);
+}
+
 ReservationRequest LlvmRuntimeExecutor::reservation_request(
     ReservationKind kind, int node, ReservationList list, uint64_t index) const {
   ReservationRequest result;
