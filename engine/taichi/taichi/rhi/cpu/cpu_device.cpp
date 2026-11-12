@@ -14,6 +14,8 @@ CpuDevice::AllocInfo CpuDevice::get_alloc_info(const DeviceAllocation handle) {
 }
 
 CpuDevice::CpuDevice() {
+  // Materialize shared bookkeeping during setup, never during metadata queries.
+  (void)HostMemoryPool::get_instance();
 }
 
 AllocationRecord CpuDevice::capture_allocation_record(DeviceAllocation handle) const {

@@ -21,6 +21,13 @@ int main() {
     {
       cpu::CpuDevice native, foreign;
       Device &device = native;
+      allocation_observation::calls = 0;
+      allocation_observation::enabled = true;
+      const auto initial_pool = device.pool_backing_storage();
+      allocation_observation::enabled = false;
+      require(!allocation_observation::calls && initial_pool.available &&
+                  !initial_pool.record_payload_bytes,
+              "first device pool metadata query allocated or fabricated raw backing");
       const auto owned = allocate(device,64);
       const auto owner = device.capture_allocation_record(owned);
       DeviceAllocation alias;
