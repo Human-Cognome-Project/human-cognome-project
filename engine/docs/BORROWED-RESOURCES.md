@@ -7,6 +7,59 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Array and root owner exports (awaiting review, 2026-11-12)
+
+Continues [#301 review 5880096613](https://github.com/Human-Cognome-Project/human-cognome-project/pull/301#pullrequestreview-5880096613).
+This first owner-export slice exposes actual array and tree-root records; it does
+not assemble a Harness ledger or enable combined admission.
+
+`Ndarray::backing_record(live_device)` retains the record identity captured when
+the array is constructed. The caller must independently keep the supplied Device
+alive and inspect under exclusive/quiescent access. Borrowed constructors require
+a current handle at construction. Queries use the captured token, so release is
+Retired and reset/reuse is Unknown rather than recapturing a new allocation at the
+same ID. A supplied foreign device is Unknown without dereferencing the saved
+handle's device pointer. Array shape does not determine backing extent: partial
+views return the same full allocation record. Imports remain Imported registrations;
+the export does not infer an underlying owner from pointer equality or count an
+import extent as disjoint backing. Mutating public legacy handles is not a supported
+way to rebind a captured owner record; construct a new view instead.
+
+`ProgramImpl::snode_root_backing_record(tree_id)` delegates to the LLVM native tree
+buffer manager. It captures the device record when registering the root, and queries
+that token through the live runtime. Missing/destroyed roots are Unknown; unsupported
+program implementations default to Unavailable. Destroying a root removes its export,
+while an independently retained value token reports Retired on the still-live CPU
+device. Equal-size roots remain distinct. Duplicate registration refuses replacement;
+failed map registration releases the acquired device allocation before rethrowing.
+The exported request is the actual request passed to the device after native root
+page rounding, not the logical field payload and not OS residency.
+
+Required-family coverage remains explicit:
+
+| Family | Current export coverage | Complete ledger consequence |
+|---|---|---|
+| Ndarray backing | Captured common allocation record; CPU live owned records observable | Imported/Unknown/Retired/Unavailable records cannot certify disjoint live backing |
+| SNode root | Native LLVM owner export; CPU record implementation | Root alone does not cover sparse reservations |
+| Node/list/ambient reservations | Unavailable through these exports | Complete ledger must remain unavailable |
+| Prepared invocation backing and bindings | Not exported by this slice | Complete ledger must remain unavailable |
+| Harness host objects/capacities and nested owner enumeration | Pending owning snapshot policy | Complete ledger must remain unavailable |
+
+Metadata policy: each Ndarray embeds one AllocationRecord, included once in its
+object size, never added again when an enclosing object census includes it. The
+existing root map embeds one record per live entry. The optional
+`ProgramImpl::snode_root_record_storage_bytes()` reports this incremental record
+payload once per Program/runtime, not once per tree or Harness. Zero means a supported
+empty record map; nullopt means unavailable. It excludes pre-existing map nodes,
+allocator overhead and root payload. Erased root entries retain no record payload.
+This incremental report is not a complete native metadata census; the future ledger
+must reconcile the existing map/device storage and shared-runtime ownership without
+double counting. Queries add no per-call heap or registry storage.
+
+Next: prepared invocation owners and node/list reservations, imported-to-owner alias
+resolution, then the trusted lifetime-valid Harness snapshot and checked C+B+H+D.
+No HCP model backend casts, new execution authority or GPU qualification are added.
+
 ## CPU allocation records (awaiting review, 2026-11-12)
 
 #300 review 5879635043 accepts the CPU-first native interface slice. The current

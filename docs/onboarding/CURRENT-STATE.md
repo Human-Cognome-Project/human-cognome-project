@@ -1,5 +1,15 @@
 # Current implementation and work
 
+**Array/root owner exports (awaiting review, 2026-11-12):** continues #301 review
+5880096613 with captured Ndarray identities and native tree-root exports through
+common ProgramImpl. Released/reset/foreign records remain explicit; imports are
+unresolved registrations, not certified backing. Incremental root-record metadata
+is reported once per runtime. Prepared invocation and node/list coverage remain
+unavailable; no complete B ledger or combined admission is claimed. Main b2eb86c7
+(#299 integrated) is reconciled by normal merge ca24735f; #300/#301 remain unmerged.
+Next: prepared invocation and node/list exports, alias resolution and trusted
+Harness coverage/lifetime, then combined admission. The projection-copy audit stays closed.
+
 Read when selecting work, reviewing acceptance or asking what is built. For the next bounded task, use the [continuation handoff](../core-local-study-continuation-plan.md#next-agent-task--2026-11-05). You do not need the conceptual introduction first.
 
 ## Current state

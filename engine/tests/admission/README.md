@@ -5724,3 +5724,60 @@ Includes source/configuration/binary pins, commands, full corrected native/engin
 build logs, preserved interrupted-target history and all scoped result logs.
 Raw local artifacts have not been independently inspected remotely. The final
 publication changes only five Markdown files after the tested code pin.
+
+## Array/root native backing exports — 2026-11-12
+
+Continues #301 review 5880096613 on reviewed 63a46aab. Current main b2eb86c7
+integrates #299; normal merge ca24735f reconciles it into this stack. #300/#301
+remain source-accepted but unmerged while hosted native qualification continues.
+
+The common Ndarray export captures allocation identity at construction and inspects
+through a supplied known-live Device. Native LLVM tree roots capture their records
+at registration and expose them through common ProgramImpl. Equal-size allocations
+remain distinct, partial views report complete allocation extents, and imports remain
+unresolved registrations. Unknown/Retired/Unavailable are not accepted zero backing.
+Root record payload is reported once per runtime; embedded array records belong to
+the array object census. See the owning BORROWED-RESOURCES coverage table: prepared
+invocation and node/list families, complete host metadata and trusted Harness
+coverage/lifetime remain outstanding. No complete B or combined gate is implemented.
+
+Initial source 398e2238 completed the native static library build. Its intermediate
+engine build was intentionally interrupted before qualification to use the final
+metadata additions, common-program-accessor test correction and constructor cleanup.
+Both command/source/build histories are retained. The intermediate build is not a
+pass and the uncompiled accessor typo is not described as a successful test.
+
+Final source and scoped qualification results are recorded below. CPU/shared-host
+scope only: no GPU, database, browser or performance qualification is implied.
+
+Tested source: 6a741e4f6fc24e0f703825ba1d796bc48614ff83.
+Tracked Taichi tree: 0a23a7a8b587b2105abbf9d67f5435ad1320224a.
+The final native static library and engine rebuilt together successfully. All six
+focused CTests passed: owner_backing_test, allocation_record_test, engine_smoke_test
+and record_map_padded/direct/working_set. New owner controls cover partial views,
+foreign devices, unresolved imported aliases, independent import retirement,
+release/reset/reuse, owned-array destruction, distinct equal-sized roots,
+missing/destroyed roots, default unavailable coverage, allocation-free inspection
+and root metadata removal. CPU fixture observations: logical array request 28 bytes,
+root device request 4096 bytes after native page rounding, Ndarray object 224 bytes.
+These are scoped request/layout measurements, not physical residency or portable fees.
+
+The broader CPU matrix passed: 20 exchange processes (five cases across threads 1/2
+and bulk/direct-no-unroll), 12 prepared execution/update tests, nine supporting
+native tests and six warm recipe tests. Including the focused six, all 53 scoped
+checks passed. Tested source stayed clean. Completed builds had no compiler
+warnings/errors. One passing 2-direct-exchange_commit process reported a shared
+Taichi offline-cache lock warning while tests ran in parallel. The first archive
+verifier rejected that diagnostic; the final verifier requires and preserves that
+exact sole warning. No cache cleanup or test rerun was performed, and no source
+build/test failure occurred. Both verifier versions and the diagnostic are retained.
+
+Verified contributor-local archive: owner-backing-domain-6a741e4f.tar.gz.
+SHA256SUMS manifest: f9e058236bafcbc5cad8a4b9b54d24d3244c2483715c776318cd830582f9b57d.
+Archive SHA256: 68a576162397c51e7ca58c225870e5c9f25c60304e0a4da18b96b32b6b31ec8a.
+Includes source/configuration/compiler/binary pins, commands, complete final builds,
+intermediate build history and all scoped result logs. Raw local artifacts have not
+been independently inspected remotely. Final publication changes only four Markdown
+files after the tested source. At publication #300 native 43276619607 and smoke
+passed; #301 smoke passed and native 43282494612 remains active. No acceptance or
+merge is inferred from those statuses.

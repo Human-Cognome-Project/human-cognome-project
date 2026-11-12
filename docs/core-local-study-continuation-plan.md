@@ -1,5 +1,15 @@
 # Core continuation after local CUDA corrections
 
+**Array/root owner exports (awaiting review, 2026-11-12):** continues #301 review
+5880096613 with captured Ndarray identities and native tree-root exports through
+common ProgramImpl. Released/reset/foreign records remain explicit; imports are
+unresolved registrations, not certified backing. Incremental root-record metadata
+is reported once per runtime. Prepared invocation and node/list coverage remain
+unavailable; no complete B ledger or combined admission is claimed. Main b2eb86c7
+(#299 integrated) is reconciled by normal merge ca24735f; #300/#301 remain unmerged.
+Next: prepared invocation and node/list exports, alias resolution and trusted
+Harness coverage/lifetime, then combined admission. The projection-copy audit stays closed.
+
 **Maintainer integration — 2026-11-12:** #299 is accepted and integrated by the merge containing this record, preserving reviewed head `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Native 43274126767 passed all 12 jobs; smoke 43274126747 and warm 43274126853 passed. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 131379495998 reports addressed_reads=24/private_reads=0. #298 is already merged at `319f892a`. #300 audit is source-accepted at `e540a871` under review 5879635043 and #301 common/CPU allocation interface is provisionally accepted at `63a46aab` under [review 5880096613](https://github.com/Human-Cognome-Project/human-cognome-project/pull/301#pullrequestreview-5880096613); both remain unmerged with native qualification active. Local archives remain contributor-reported, not independently inspected. Main now includes owner bootstrap admission, not the pending native record interface or complete B ledger.
 
 **Next bounded task:** actual native owner backing exports on reviewed #301, including array/tree-root, node/list and prepared-launch families. Resolve imported registrations to actual owners before deduplication; record identity alone is not backing identity. Preserve explicit coverage and unavailable status, lifetime validity and retained metadata accounting. Then assemble the trusted Harness snapshot, enforce checked disjoint C+B+H+D admission and complete remaining operation/control integration. HCP model code remains backend-independent. Initial-projection copy audit stays closed; additional setup cost is acceptable for long-running focal models. #75/#111/#123 remain deliberately held. Earlier pending and next labels below are historical where they conflict.
