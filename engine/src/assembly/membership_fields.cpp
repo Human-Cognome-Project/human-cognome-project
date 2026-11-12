@@ -155,8 +155,15 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
            detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
       const auto &target=tools.at(group)->ref;
       work.copy_key(target.revision);
-      if (out.contributions_.size() == out.contributions_.capacity())
+      if (out.contributions_.size() == out.contributions_.capacity()) {
         work.elements(out.contributions_.size(),sizeof(MembershipContribution));
+        // Conservatively admit nested payload relocation even if a move is used.
+        for (const auto &retained : out.contributions_) {
+          work.copy_key(retained.occurrence);
+          work.copy_key(retained.field.object);
+          work.copy_key(retained.target);
+        }
+      }
       out.contributions_.push_back({std::move(occurrence),
                                     {GroupKind::Membership, catalogue_object(group,domain,work)},
                                     {catalogue_object(target.object,domain,work),warm::Uuid(target.revision,domain)},
