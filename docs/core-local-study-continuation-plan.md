@@ -8,7 +8,16 @@
 
 **Next bounded task:** track actual domain bootstrap request bytes with an outer tracker whose lifetime safely covers domain/control-block destruction, and establish a trusted disjoint borrowed-resource ledger. Then enforce combined accounted-byte admission using those disjoint components and selected live requests; do not sum overlapping snapshot, retained, peak or cumulative-work counters. Preserve checked arithmetic, pre-allocation refusal, reclamation, native state and exact retry controls. Remaining operation/control integration follows. The projection copy audit is closed. Additional setup work remains acceptable for long-running focal models; reducing setup totals is not an acceptance gate. #75/#111/#123 remain deliberately held/deferred.
 
-**Borrowed backing audit (awaiting review, 2026-11-12):** #299 review 5879484896
+**Native allocation records (awaiting review, 2026-11-12):** #300 review 5879635043
+accepts a CPU-first common native contract. This contribution adds explicit record
+status/ownership and separate original-request/extent fields, with device-instance
+and reset-epoch value tokens checked only through a known-live owner. CPU supplies
+the records and retained metadata; unsupported backends report Unavailable. Tests
+cover alias/import/retirement/reset/address reuse and registration-failure retry.
+See [native record contract](../engine/docs/BORROWED-RESOURCES.md#cpu-allocation-records-awaiting-review-2026-11-12). Main `9025c301` (#298 integrated) is reconciled by normal merge `2a919e22`;
+#299/#300 remain reviewed but unmerged. Next owner backing exports, trusted Harness
+coverage/lifetime, then combined admission; no complete B/GPU acceptance is claimed.
+**Borrowed backing audit (historical contribution, 2026-11-12):** #299 review 5879484896
 accepts owner bootstrap provisionally and authorizes the trusted native B ledger.
 The source audit identifies missing common allocation extent/lifecycle queries,
 private SNode/node-pool and prepared-launch backing, and incomplete per-harness

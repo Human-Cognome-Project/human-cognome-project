@@ -5672,3 +5672,55 @@ Raw local evidence remains contributor-reported, not independently inspected
 remotely. Final changes after the tested code are six Markdown files only.
 Documentation file links resolve and whitespace validation passes. #298's native
 run remains active at final publication; the new PR also awaits hosted review.
+
+## Native allocation-record contract and CPU implementation — 2026-11-12
+
+Continues #300 review 5879635043, which accepts the bounded CPU-first slice and
+explicit Unavailable behavior elsewhere. Current main `9025c301` includes accepted
+#298; normal merge `2a919e22` reconciles its two handoff documents into the reviewed
+#299/#300 stack. Tested code is `48236f411b46eda54bf1f23b50d30e4ca3fc1a0c`;
+tracked Taichi tree is `e74df27a42357efc43bc9f08d3b8048f91b4cf29`.
+
+Common Device now supplies allocation record/status/ownership, value identity and
+retained metadata queries, with CPU implementation and default Unavailable on
+other backends. Tokens contain no Device pointer or lifetime lease; inspection
+requires a known-live native owner. CPU reset epochs and process-local device
+instances reject stale IDs and same-address reconstructed devices. Imports report
+registration extent but no owned request, and release never frees imported backing.
+Zero allocations have explicit live/retired state. Allocation metadata registration
+failure clears the unpublished handle and unwinds acquired payload. The new native
+CTest is included automatically by the hosted round-robin test selection.
+
+The common Device layout/vtable changed: native static libraries and the dependent
+engine were rebuilt together. The first command mistakenly selected the object-only
+`taichi_core` target. It was intentionally interrupted before engine linking/tests;
+its log and command are retained. Corrected `taichi_core_static` rebuilt the archive
+and dependencies, then the engine rebuilt successfully. No source build/test failure
+occurred. Source `2068ad7c` contains the final runtime changes; later code commits
+add registration-failure/import-alias/invalid-token test controls. Final qualification
+runs those controls at the tested pin above.
+
+The five focused CPU CTests passed: allocation_record_test, engine_smoke_test and
+record_map_padded/direct/working_set. The new test covers owned direct/runtime
+requests, view aliases, distinct equal-size allocations, foreign handles/tokens,
+zero live/retired requests, import ownership and alias release, stale reset IDs,
+invalid token extents, same-address device reconstruction, base Unavailable
+fallback, allocation-free inspection, metadata storage and registration failure/retry.
+Measured test metadata: CPU device object 96 bytes; retained record table 192 bytes
+for its fixture capacity. These are accounted layout measurements, not physical
+residency or portable fixed fees. No new per-token heap or allocation registry is
+introduced. The closed projection-copy audit and existing H/D/input work gates
+remain unchanged.
+
+Broader CPU qualification passed: 20 exchange processes (five cases across threads 1/2 and bulk/direct-no-unroll), 12 prepared execution/update tests, nine supporting native tests and six warm recipe tests. Together with the five focused checks, all 52 scoped CPU checks passed. Completed build and matrix logs contain no warnings/errors; source remained clean at the tested pin. No GPU,
+PostgreSQL, browser or performance qualification is implied. This does not implement
+all borrowed backing exports, trusted Harness coverage/lifetime, or combined B
+admission; those remain the next work after this native prerequisite.
+
+Verified contributor-local archive: native-record-domain-48236f41.tar.gz.
+SHA256SUMS manifest: 34889eecc83fda5c15c173c5b2c042ab4d6bb175569a59c37e476bd8323944cd.
+Archive SHA256: 6c056f9d04a1faec386c98e96588b8df165e7ea659de8e01c6429ca5c482460d.
+Includes source/configuration/binary pins, commands, full corrected native/engine
+build logs, preserved interrupted-target history and all scoped result logs.
+Raw local artifacts have not been independently inspected remotely. The final
+publication changes only five Markdown files after the tested code pin.
