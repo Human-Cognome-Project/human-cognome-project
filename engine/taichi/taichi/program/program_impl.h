@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 
 #include "taichi/aot/module_builder.h"
 #include "taichi/ir/statements.h"
@@ -58,6 +59,12 @@ class ProgramImpl {
   // Inspection requires a live, quiescent Program/runtime owner.
   virtual AllocationRecord snode_root_backing_record(int tree_id) {
     return {};
+  }
+
+  // Incremental root-record metadata, once per Program, not once per tree.
+  // Nullopt means unavailable, not zero. Not a complete map-node census.
+  virtual std::optional<std::size_t> snode_root_record_storage_bytes() const {
+    return std::nullopt;
   }
 
   virtual std::size_t get_snode_num_dynamically_allocated(

@@ -70,12 +70,17 @@ void native_owners() {
   auto &program = runtime.program();
   auto &impl = *program.prog_impl;
   auto &device = *impl.get_compute_device();
+  require(impl.snode_root_record_storage_bytes() == 0 &&
+              !impl.ProgramImpl::snode_root_record_storage_bytes(),
+          "empty supported metadata confused with unavailable");
   require(impl.snode_root_backing_record(-1).status == AllocationRecordStatus::Unknown,
           "missing root reported as zero backing");
   auto *first = tree(program);
   auto *second = tree(program);
   const auto a = impl.snode_root_backing_record(first->id());
   const auto b = impl.snode_root_backing_record(second->id());
+  require(impl.snode_root_record_storage_bytes() == 2 * sizeof(AllocationRecord),
+          "root record storage missing or counted per query");
   require(a.status == AllocationRecordStatus::Live &&
               a.ownership == AllocationOwnership::Owned && a.requested_bytes >= 7 * sizeof(int) &&
               a.extent_bytes == a.requested_bytes && b.requested_bytes == a.requested_bytes &&
@@ -104,6 +109,8 @@ void native_owners() {
               impl.snode_root_backing_record(second->id()).token == b.token,
           "root destruction did not retire exactly its backing");
   program.destroy_snode_tree(second);
+  require(impl.snode_root_record_storage_bytes() == 0,
+          "root record metadata retained after destruction");
   std::cout << "root_request=" << a.requested_bytes << " array_request="
             << array_record.requested_bytes << " ndarray_object=" << sizeof(Ndarray) << '\n';
 }

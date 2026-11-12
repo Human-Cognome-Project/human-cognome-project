@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 
 #ifdef TI_WITH_LLVM
 
@@ -57,6 +58,12 @@ class LlvmRuntimeExecutor {
     if (!snode_tree_buffer_manager_)
       return {};
     return snode_tree_buffer_manager_->root_backing_record(tree_id);
+  }
+
+  std::optional<std::size_t> snode_root_record_storage_bytes() const {
+    if (!snode_tree_buffer_manager_)
+      return std::nullopt;
+    return snode_tree_buffer_manager_->root_record_storage_bytes();
   }
 
   void check_runtime_error(uint64 *result_buffer);

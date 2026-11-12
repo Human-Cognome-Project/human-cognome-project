@@ -106,6 +106,10 @@ class LlvmProgramImpl : public ProgramImpl {
     return runtime_exec_->snode_root_backing_record(tree_id);
   }
 
+  std::optional<std::size_t> snode_root_record_storage_bytes() const override {
+    return runtime_exec_->snode_root_record_storage_bytes();
+  }
+
   template <typename T>
   T fetch_result(int i, uint64 *result_buffer) {
     return runtime_exec_->fetch_result<T>(i, result_buffer);
