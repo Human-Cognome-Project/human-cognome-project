@@ -6,6 +6,7 @@ struct ExchangeOwnerAccess {
   static auto resources(const detail::ExchangeOwner &o) { return o.storage(); }
   static auto reservations(const detail::ExchangeOwner &o) { return o.reservations_->result(); }
   static auto reservation_domain(const detail::ExchangeOwner &o) { return o.reservations_; }
+  static auto bootstrap_tracker(const detail::ExchangeOwner &o) { return o.bootstrap_; }
   template<class Visit> static void projection_table_vectors(const LetterProjection &p, Visit visit) {
     const auto input=[&](const auto &value) {
       visit(value.nodes); visit(value.definitions); visit(value.occurrences);
@@ -377,16 +378,20 @@ struct ExchangeOwnerAccess {
       const std::vector<detail::ExchangeFieldBinding> &fields,
       detail::AdoptionInputBudget budget, detail::AdoptionInputResult &result) {
     detail::ReservationResult reservation;
+    detail::ReservationResult bootstrap;
     detail::ProjectionSetupResult setup;
-    return detail::ExchangeOwner::adopt(h,p,rows,fields,budget,result,{UINT64_MAX,UINT64_MAX},reservation,UINT64_MAX,setup);
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,budget,result,{UINT64_MAX,UINT64_MAX},reservation,UINT64_MAX,setup,
+        {UINT64_MAX,UINT64_MAX},bootstrap);
   }
   static auto adopt(field::Harness &h, const LetterProjection &p,
       const std::vector<detail::OccurrenceBinding> &rows,
       const std::vector<detail::ExchangeFieldBinding> &fields,
       detail::ReservationBudget budget, detail::ReservationResult &result) {
     detail::AdoptionInputResult input;
+    detail::ReservationResult bootstrap;
     detail::ProjectionSetupResult setup;
-    return detail::ExchangeOwner::adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},input,budget,result,UINT64_MAX,setup);
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},input,budget,result,UINT64_MAX,setup,
+        {UINT64_MAX,UINT64_MAX},bootstrap);
   }
   static auto adopt(field::Harness &h, const LetterProjection &p,
       const std::vector<detail::OccurrenceBinding> &rows,
@@ -394,8 +399,19 @@ struct ExchangeOwnerAccess {
       std::uint64_t setup_work, detail::ProjectionSetupResult &setup) {
     detail::AdoptionInputResult input;
     detail::ReservationResult reservation;
+    detail::ReservationResult bootstrap;
     return detail::ExchangeOwner::adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},input,
-        {UINT64_MAX,UINT64_MAX},reservation,setup_work,setup);
+        {UINT64_MAX,UINT64_MAX},reservation,setup_work,setup,{UINT64_MAX,UINT64_MAX},bootstrap);
+  }
+  static auto adopt_bootstrap(field::Harness &h, const LetterProjection &p,
+      const std::vector<detail::OccurrenceBinding> &rows,
+      const std::vector<detail::ExchangeFieldBinding> &fields,
+      detail::ReservationBudget budget, detail::ReservationResult &bootstrap,
+      detail::ReservationResult &selected) {
+    detail::AdoptionInputResult input;
+    detail::ProjectionSetupResult setup;
+    return detail::ExchangeOwner::adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},input,
+        {UINT64_MAX,UINT64_MAX},selected,UINT64_MAX,setup,budget,bootstrap);
   }
   static auto adopt(field::Harness &h, const LetterProjection &p,
       const std::vector<detail::OccurrenceBinding> &rows,

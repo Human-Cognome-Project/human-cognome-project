@@ -70,10 +70,12 @@ ReservedUnique<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
     const LetterProjection &projection, const std::vector<OccurrenceBinding> &rows,
     const std::vector<ExchangeFieldBinding> &fields, AdoptionInputBudget budget,
     AdoptionInputResult &result, ReservationBudget budgeted_buffers, ReservationResult &reservation,
-    std::uint64_t projection_setup_work, ProjectionSetupResult &setup) {
+    std::uint64_t projection_setup_work, ProjectionSetupResult &setup,
+    ReservationBudget bootstrap_budget, ReservationResult &bootstrap) {
   // References cross this gate. No by-value argument copy or owner allocation
   // may precede it. Later constructor setup remains a separately scoped domain.
   reservation = {};
+  bootstrap = {};
   setup = {};
   result = input_admission(projection,rows,fields,budget);
   if (result.status != AdoptionInputStatus::Ok) return {};
@@ -82,27 +84,47 @@ ReservedUnique<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
   // payload work and actual allocator requests have their separate gates.
   try { meter.charge(1); }
   catch (const PreparationStop &stop) { setup.work = stop.result; return {}; }
-  // The domain and its own control block are separate overhead. Shared data
-  // allocators keep it alive through their final strong/weak reference release.
-  auto domain = std::make_shared<ReservationDomain>(budgeted_buffers);
+  hcp::resources::BootstrapReservations tracker;
+  std::shared_ptr<ReservationDomain> domain;
+  // Failed construction cannot publish aliases. Release the domain before the
+  // final outer handle, then report zero live bootstrap requests after unwind.
+  const auto unwind_bootstrap = [&] {
+    domain.reset();
+    if (tracker) {
+      bootstrap = tracker.result();
+      tracker = {};
+      bootstrap.live_bytes = 0;
+    }
+  };
   try {
+    tracker = hcp::resources::BootstrapReservations::create(bootstrap_budget,bootstrap);
+    domain = hcp::resources::reserve_domain(tracker,budgeted_buffers);
     auto owner = reserve_unique<ExchangeOwner>(domain,[&](auto *p) {
       ::new (static_cast<void *>(p)) ExchangeOwner(h,projection,rows,fields,domain,meter,setup);
     });
     reservation = domain->result();
     owner->reservations_ = std::move(domain);
+    bootstrap = tracker.result();
+    owner->bootstrap_ = std::move(tracker);
     setup.phase = ProjectionSetupPhase::Complete;
     setup.work = meter.result();
     return owner;
   } catch (const PreparationStop &stop) {
     setup.work = stop.result;
     reservation = domain->result();
+    unwind_bootstrap();
     return {};
   } catch (const ReservationStop &) {
     // Constructor members/temporaries have unwound while the domain stays alive.
-    reservation = domain->result();
+    if (domain) reservation = domain->result();
+    unwind_bootstrap();
     setup.work = meter.result();
     return {};
+  } catch (...) {
+    if (domain) reservation = domain->result();
+    unwind_bootstrap();
+    setup.work = meter.result();
+    throw;
   }
 }
 
