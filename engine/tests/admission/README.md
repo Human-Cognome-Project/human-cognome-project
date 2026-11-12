@@ -6088,3 +6088,58 @@ remotely. Final publication differs from tested source only in four Markdown fil
 120 local file links and whitespace checks passed. Parent #306 smoke43305748766
 passed; native43305748693 remains active at inspection. Hosted results and review,
 not local qualification alone, govern integration; #302's failed attempt is preserved.
+
+## Rounded host-pool extents — 2026-11-12
+
+Continues #307 review5882509096 at88aa2cd0. Fetched main a139c21b, which integrates
+qualified #302–#305. Maintainer inspected119 passing regressions and database
+addressed_reads24/private_reads0 on #305; the original #302 initialization failure
+remains preserved. Normal merge ba723dd0 resolves two handoff-document conflicts by
+preserving current maintainer integration plus historical contribution records.
+#306/#307 remain source-accepted with native qualification pending; no duplicate run.
+
+Host pool setup captures OS page size; nonzero raw requests are rounded with checked
+padding arithmetic before the OS call. Successful mappings retain original and rounded
+lengths separately. Live pool records report rounded virtual extent through existing
+owner/request bridges. Request containment, allocator tails, Device records and prepared
+view bounds remain based on original sizes. Padding is not usable view capacity.
+Rounded extents are not physical residency; full B and remaining metadata are not built.
+See [the ownership contract and OS references](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:afa366af4202939491330576f09ab93e40a8369a.
+Tracked Taichi tree:a106dd6d1f94ccbf8d6c33de6decbf67f1f72ea3.
+Native pool tests now independently obtain the host page size and cover1,page-1,page,
+page+1 requests, retained/query-time extent agreement, actual final-page access,
+padding exclusion from request containment, release invalidation, zero/overflow
+rejection before accounting publication, and existing allocation-failure cleanup.
+Device and runtime request tests require rounded coverage without changing raw requests
+or owned-import identity. Added pool field/map-value length is included once through
+existing sizeof-based reports; full metadata remains incomplete. Query work unchanged.
+Execution qualification is Linux/WSL CPU/shared-host only. Native Windows source uses
+GetSystemInfo/VirtualAlloc semantics but Windows execution remains unqualified; no GPU,
+database, browser or performance qualification is implied.
+
+Parent status refresh: #306 native43305748693/smoke43305748766 and #307
+native43310337611/smoke43310337168 now report success. These workflow conclusions
+were checked without duplicating runs; raw hosted job logs were not independently
+re-inspected here. Maintainer integration remains separate from these status checks.
+
+Native static and dependent engine builds passed without compiler warnings/errors.
+All57 scoped CPU checks passed:10focused,20exchange processes (five cases across
+threads1/2 and bulk/direct-no-unroll),12prepared execution/update,9supporting native,
+6warm recipe. Focused/prepared/supporting CTests ran with parent TI_LIB_DIR unset;
+direct executables used the explicit runtime environment. The fixture reports
+os_page_bytes4096 and four passing rounded-boundary cases. Tested source stayed clean;
+no source build/test failure occurred.
+
+One passing 1-bulk-exchange_commit case emitted an offline-cache lock warning during
+parallel execution. The exact diagnostic remains in runtime-warnings.txt and its
+original log. No cache cleanup or test rerun; runtime logs are not claimed warning-free.
+
+Verified contributor-local archive:rounded-pool-domain-afa366af.tar.gz.
+SHA256SUMS manifest:ad830f5ac85a8dbd6fe641e391b98e9000f881fa1510660d6b4cf4a29874ac5c.
+Archive SHA256:10db420ff3a757cad8c51292ee0fb7c105939b321b3bc0928e90e7c3f29f4dca.
+Includes source/configuration/compiler/binary pins, commands, complete build/results
+and preserved diagnostics. Raw artifacts have not been independently inspected remotely.
+Final publication differs from tested source only in four Markdown files;121local
+file links and whitespace checks passed. No self-merge or duplicate hosted run.

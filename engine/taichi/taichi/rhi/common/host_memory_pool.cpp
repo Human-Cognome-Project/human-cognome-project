@@ -3,9 +3,11 @@
 #include <memory>
 #include <atomic>
 #include <limits>
+#include <stdexcept>
 
 #if defined(TI_PLATFORM_UNIX)
 #include <sys/mman.h>
+#include <unistd.h>
 #else
 #include "taichi/platform/windows/windows.h"
 #endif
@@ -13,6 +15,18 @@
 namespace taichi::lang {
 
 namespace {
+std::size_t system_page_size() {
+#if defined(TI_PLATFORM_UNIX)
+  const auto size = sysconf(_SC_PAGESIZE);
+  if (size <= 0) throw std::runtime_error("host page size unavailable");
+  return static_cast<std::size_t>(size);
+#else
+  SYSTEM_INFO info{};
+  GetSystemInfo(&info);
+  if (!info.dwPageSize) throw std::runtime_error("host page size unavailable");
+  return info.dwPageSize;
+#endif
+}
 std::uint64_t next_pool_identity() {
   static std::atomic<std::uint64_t> next{1};
   auto value = next.load(std::memory_order_relaxed);
@@ -32,7 +46,8 @@ void release_raw_mapping(void *ptr, std::size_t bytes) {
 }
 }
 
-HostMemoryPool::HostMemoryPool() : pool_instance_(next_pool_identity()) {
+HostMemoryPool::HostMemoryPool()
+    : pool_instance_(next_pool_identity()), os_page_size_(system_page_size()) {
   allocator_ = std::unique_ptr<UnifiedAllocator>(new UnifiedAllocator());
 
   TI_TRACE("Memory pool created. Default buffer size per allocator = {} MB",
@@ -87,6 +102,8 @@ PoolBackingRecord HostMemoryPool::capture_backing_record(const void *address,
   result.status = PoolBackingStatus::Live;
   result.token = {pool_instance_, found->second.identity, found->first};
   result.raw_requested_bytes = found->second.bytes;
+  result.rounded_extent_available = true;
+  result.rounded_extent_bytes = found->second.rounded_bytes;
   return result;
 }
 
@@ -102,6 +119,8 @@ PoolBackingRecord HostMemoryPool::backing_record(PoolBackingToken token) {
   result.status = PoolBackingStatus::Live;
   result.token = token;
   result.raw_requested_bytes = found->second.bytes;
+  result.rounded_extent_available = true;
+  result.rounded_extent_bytes = found->second.rounded_bytes;
   return result;
 }
 
@@ -139,9 +158,15 @@ void *HostMemoryPool::allocate_raw_memory(std::size_t size) {
     when calling this method.
   */
 
+  if (!size) throw std::invalid_argument("zero raw host mapping request");
+  const auto remainder = size % os_page_size_;
+  const auto padding = remainder ? os_page_size_ - remainder : 0;
+  if (size > std::numeric_limits<std::size_t>::max() - padding)
+    throw std::overflow_error("host mapping extent overflow");
+  const auto rounded = size + padding;
   void *ptr = nullptr;
 #if defined(TI_PLATFORM_UNIX)
-  ptr = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS,
+  ptr = mmap(nullptr, rounded, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS,
              -1, 0);
   TI_ERROR_IF(ptr == MAP_FAILED, "Virtual memory allocation ({} B) failed.",
               size);
@@ -149,12 +174,12 @@ void *HostMemoryPool::allocate_raw_memory(std::size_t size) {
   MEMORYSTATUSEX stat;
   stat.dwLength = sizeof(stat);
   GlobalMemoryStatusEx(&stat);
-  if (stat.ullAvailVirtual < size) {
+  if (stat.ullAvailVirtual < rounded) {
     TI_P(stat.ullAvailVirtual);
     TI_P(size);
     TI_ERROR("Insufficient virtual memory space");
   }
-  ptr = VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+  ptr = VirtualAlloc(nullptr, rounded, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
   TI_ERROR_IF(ptr == nullptr, "Virtual memory allocation ({} B) failed.", size);
 #endif
   TI_ERROR_IF(((uint64_t)ptr) % page_size != 0,
@@ -167,9 +192,9 @@ void *HostMemoryPool::allocate_raw_memory(std::size_t size) {
   }
 
   try {
-    raw_memory_chunks_.emplace(base, RawChunk{size, next_pool_identity()});
+    raw_memory_chunks_.emplace(base, RawChunk{size, next_pool_identity(), rounded});
   } catch (...) {
-    release_raw_mapping(ptr, size);
+    release_raw_mapping(ptr, rounded);
     throw;
   }
   ++statistics_.raw_allocation_calls;
@@ -191,7 +216,7 @@ void HostMemoryPool::deallocate_raw_memory(void *ptr) {
     TI_ERROR("Memory address ({:}) is not allocated", ptr);
   }
 
-  std::size_t size = raw_memory_chunks_.at(base).bytes;
+  std::size_t size = raw_memory_chunks_.at(base).rounded_bytes;
   release_raw_mapping(ptr, size);
   raw_memory_chunks_.erase(base);
 }

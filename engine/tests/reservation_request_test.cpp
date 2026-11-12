@@ -39,7 +39,8 @@ std::uint64_t exercise() {
   allocation_observation::enabled = false;
   require(!allocation_observation::calls && metadata_pool.status == PoolBackingStatus::Live &&
               metadata_pool.raw_requested_bytes >= metadata.requested_bytes &&
-              !metadata_pool.rounded_extent_available &&
+              metadata_pool.rounded_extent_available &&
+              metadata_pool.rounded_extent_bytes >= metadata_pool.raw_requested_bytes &&
               owner.reservation_pool_backing(ReservationKind::Ambient,127).status == PoolBackingStatus::Absent &&
               owner.reservation_pool_backing(ReservationKind::Ambient,-1).status == PoolBackingStatus::Unknown &&
               owner.ProgramImpl::reservation_pool_backing(ReservationKind::Ambient,-1).status == PoolBackingStatus::Unavailable,

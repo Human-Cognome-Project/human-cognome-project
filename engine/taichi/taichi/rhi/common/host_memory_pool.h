@@ -43,9 +43,14 @@ class TI_DLL_EXPORT HostMemoryPool {
 
   // All the raw memory allocated from OS/Driver
   // We need to keep track of them to guarantee that they are freed
-  struct RawChunk { std::size_t bytes; std::uint64_t identity; };
+  struct RawChunk {
+    std::size_t bytes;
+    std::uint64_t identity;
+    std::size_t rounded_bytes;
+  };
   std::map<std::uintptr_t, RawChunk> raw_memory_chunks_;
   const std::uint64_t pool_instance_;
+  const std::size_t os_page_size_;
 
   std::unique_ptr<UnifiedAllocator> allocator_;
   std::mutex mut_allocation_;
