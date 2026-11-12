@@ -1965,3 +1965,26 @@ observations support the source change, not total allocation or performance clai
 Remaining owned occurrence-index keys, the legacy lookup, used-definition keys and
 publication copies/setup require separate audit. Membership callable/recursion and
 declaration/binding budgets follow before combined resource/operation integration.
+
+### Reuse ordered source metadata for legacy state (awaiting review)
+
+Following #287 review 5874475520, project_letters no longer builds a second legacy
+OccurrenceId-to-row map. Its ordered OccurrenceSource value carries the existing
+const legacy row pointer alongside definition/node metadata; structural rows carry
+null. The v1 publication branch reads position/velocity through that pointer.
+Initial warm::validate keeps recipe variants exclusive, and the const source rows
+remain stable until consumption. No pointer escapes into published input. Owned
+ordered keys, independent outputs, sort order and revision rejection are unchanged.
+
+The legacy source-death control assigns distinct finite position/velocity triples
+to every occurrence, destroys the projection source, then binds and verifies exact
+values plus node/occurrence association. Structural source-death and no-slot checks
+remain active. A source-to-source legacy projection probe observes 2092→2061 C++
+allocation calls and 210→197 path-sized requests for 18 occurrences/13 byte paths;
+UUID-sized requests remain 755. This removes the redundant map and copied keys,
+not all initial projection allocation. Ordered values gain one pointer each; no
+physical-memory or performance claim is made from call counts.
+
+Remaining ordered/provenance/equivalence/active occurrence keys, used-definition
+lookups and publication/setup costs need separate audit. Membership callable/
+recursion and declaration/binding budgets precede combined resources/operations.

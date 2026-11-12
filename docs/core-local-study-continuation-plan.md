@@ -376,6 +376,15 @@ keys, legacy/used-definition lookups and publication/setup costs remain separate
 followed by membership callable/recursion and declaration/binding budgets before
 combined resources/operations. No prior accepted baseline is rerun merely to onboard.
 
+**Legacy lookup continuation (awaiting review, 2026-11-12):** #287 review 5874475520
+provisionally accepts `291e721b` with no blocker. The temporary ordered occurrence
+value now carries the legacy source-row pointer directly, eliminating the second
+legacy map and its duplicate keys. V1 source-death handoff checks distinct exact
+positions/velocities and occurrence association; structural output remains independent.
+Remaining owned occurrence/used-definition keys and publication/setup costs precede
+membership callable/recursion, declaration/binding budgets and combined operations.
+Main remains `35814207`; #287 is unmerged pending full hosted qualification.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in
