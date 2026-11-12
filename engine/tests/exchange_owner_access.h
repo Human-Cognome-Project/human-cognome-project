@@ -407,11 +407,13 @@ struct ExchangeOwnerAccess {
       const std::vector<detail::OccurrenceBinding> &rows,
       const std::vector<detail::ExchangeFieldBinding> &fields,
       detail::ReservationBudget budget, detail::ReservationResult &bootstrap,
-      detail::ReservationResult &selected) {
+      detail::ReservationResult &selected,
+      detail::ReservationBudget selected_budget = {UINT64_MAX,UINT64_MAX},
+      std::uint64_t setup_work = UINT64_MAX) {
     detail::AdoptionInputResult input;
     detail::ProjectionSetupResult setup;
     return detail::ExchangeOwner::adopt(h,p,rows,fields,{UINT64_MAX,UINT64_MAX,UINT64_MAX},input,
-        {UINT64_MAX,UINT64_MAX},selected,UINT64_MAX,setup,budget,bootstrap);
+        selected_budget,selected,setup_work,setup,budget,bootstrap);
   }
   static auto adopt(field::Harness &h, const LetterProjection &p,
       const std::vector<detail::OccurrenceBinding> &rows,

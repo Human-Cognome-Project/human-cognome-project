@@ -1338,6 +1338,26 @@ void owner_bootstrap_admission(Fixture &f, const assembly::LetterProjection &pro
                 !stopped.live_bytes && stopped.charged_work == (fail == 1 ? outer : full.live_bytes) &&
                 before == TickSnapshot(f),"bootstrap/first owner allocation failure lost accounting or state");
   }
+  // Refusals after bootstrap must report its reclaimed live bytes while retaining
+  // prepaid work; the initial setup refusal must not start bootstrap at all.
+  for (int gate : {0,1,2}) {
+    ReservationResult stopped, selected_failure;
+    A::begin();
+    bool returned = false;
+    try {
+      auto owner = Access::adopt_bootstrap(f.h,projection,rows,fields,
+          {UINT64_MAX,UINT64_MAX},stopped,selected_failure,
+          {gate == 1 ? 0u : UINT64_MAX,UINT64_MAX},gate == 2 ? 1u : (gate == 0 ? 0u : UINT64_MAX));
+      returned = bool(owner);
+    } catch (...) { A::end(); throw; }
+    const auto observed = A::end();
+    require(!returned && !observed.live && !observed.blocks && !stopped.live_bytes &&
+                stopped.status == ReservationStatus::Ok &&
+                stopped.charged_work == (gate == 0 ? 0 : full.charged_work) &&
+                !selected_failure.live_bytes &&
+                (gate != 1 || selected_failure.status == ReservationStatus::ByteExhausted) &&
+                before == TickSnapshot(f),"constructor refusal failed separate bootstrap unwind");
+  }
   ReservationResult exact, exact_selected;
   auto retry = Access::adopt_bootstrap(f.h,projection,rows,fields,
       {full.live_bytes,full.charged_work},exact,exact_selected);
