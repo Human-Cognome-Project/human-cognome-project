@@ -90,6 +90,15 @@ void run() {
   require(device.import_owned_memory(owner_token, sizeof(int), 2*sizeof(int), &proven_import) ==
               RhiResult::success, "owned import creation failed");
   Ndarray proven_view(proven_import, PrimitiveType::i32, {2});
+  Ndarray oversized_view(proven_import, PrimitiveType::i32, {4});
+  auto oversized = compiled.make_context();
+  oversized.set_arg_ndarray({0},*owned);
+  oversized.set_arg_ndarray({1},oversized_view);
+  oversized.set_arg_int({2},0);
+  compiled.prepare(oversized);  // No launch: the view exceeds its registration.
+  require(!oversized.prepared_backing(device).array_bindings_complete &&
+              oversized.prepared_array_backing_record(device,1).status == AllocationRecordStatus::Unknown,
+          "full owner extent hid an oversized import view");
   auto proven = compiled.make_context();
   proven.set_arg_ndarray({0}, *owned);
   proven.set_arg_ndarray({1}, proven_view);

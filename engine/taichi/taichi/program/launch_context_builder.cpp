@@ -62,7 +62,10 @@ AllocationRecord LaunchContextBuilder::prepared_array_record(
 AllocationRecord LaunchContextBuilder::prepared_array_backing_record(
     const Device &live_device, std::size_t argument) const {
   const auto registration = prepared_array_record(live_device, argument);
-  if (registration.status != AllocationRecordStatus::Live) {
+  const auto element_bytes = registration.status == AllocationRecordStatus::Live
+                                 ? data_type_size(array_bindings[argument].type) : 0;
+  if (registration.status != AllocationRecordStatus::Live || element_bytes <= 0 ||
+      array_bindings[argument].elements > registration.extent_bytes / element_bytes) {
     AllocationRecord result;
     result.status = registration.status == AllocationRecordStatus::Unavailable
                         ? AllocationRecordStatus::Unavailable
