@@ -45,6 +45,13 @@ int main() {
     allocation_observation::enabled = false;
     const auto first_new_bytes = allocation_observation::bytes.load();
     const auto first_storage = pool.backing_storage();
+    std::cout << "first_observed_new_bytes=" << first_new_bytes
+              << " first_map_bytes=" << first_storage.record_allocation_bytes
+              << " empty_map_bytes=" << empty_storage.record_allocation_bytes
+              << " first_vector_bytes=" << first_storage.allocator_chunk_capacity_bytes
+              << " empty_vector_bytes=" << empty_storage.allocator_chunk_capacity_bytes
+              << " allocator_object_bytes=" << first_storage.allocator_object_bytes
+              << " payload_bytes=" << first_storage.record_payload_bytes << '\n';
     if (!empty_storage.record_storage_available || !empty_storage.allocator_storage_available ||
         empty_storage.allocator_chunk_capacity_bytes ||
         first_storage.allocator_object_bytes != sizeof(taichi::lang::UnifiedAllocator) ||
