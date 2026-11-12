@@ -47,9 +47,17 @@ int main() {
           "coordinate-free aggregate and all exact byte alternatives");
     // Published identities must outlive the source of borrowed expansion refs.
     auto p = [&] {
-      const auto source = b;
+      auto source = b;
+      std::reverse(source.structural_occurrences.begin(), source.structural_occurrences.end());
       return project_letters(source);
     }();
+    std::vector<warm::OccurrenceId> expected_ids;
+    for (const auto &row : b.structural_occurrences) expected_ids.push_back(row.id);
+    std::sort(expected_ids.begin(), expected_ids.end());
+    std::vector<warm::OccurrenceId> published_ids;
+    for (const auto &row : p.occurrences()) published_ids.push_back(row.key.source);
+    check(published_ids == expected_ids,
+          "published occurrence order is by value after shuffled source death");
     for (const auto &published : p.occurrences()) {
       const auto source = std::find_if(b.structural_occurrences.begin(), b.structural_occurrences.end(),
           [&](const auto &row) { return row.id == published.key.source; });
