@@ -1,5 +1,16 @@
 # Current implementation and work
 
+**Host-pool backing identity (awaiting review, 2026-11-12):** continues #306
+review5881942652 at52696f12. Native raw allocation identities survive chunk-index
+movement and reject stale tokens after release/reset/reuse. Common Device/Program
+queries resolve proven live owner/request ranges; raw imports remain unresolved.
+Raw request sizes are exported, rounded OS extents remain unavailable. Shared pool
+metadata is reported once by pool identity with explicit exclusions, not per owner.
+Lookup work is logarithmic and remains to be metered with Harness enumeration.
+Main e11525a0 is already an ancestor; #302–#306 integration awaits hosted qualification.
+Next: rounded extents/remaining metadata, trusted Harness coverage/deduplication/work,
+then combined C+B+H+D. No full B or GPU claim; held #75/#111/#123 remain unchanged.
+
 **Prepared owned-import adoption (awaiting review, 2026-11-12):** continues #305
 review5881732238 at44c890b7. Separate canonical backing queries preserve captured
 registration identity, validate bound byte extent against the registration, and
