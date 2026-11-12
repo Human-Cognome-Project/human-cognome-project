@@ -49,6 +49,13 @@ int main() {
       const auto source = b;
       return project_letters(source);
     }();
+    for (const auto &published : p.occurrences()) {
+      const auto source = std::find_if(b.structural_occurrences.begin(), b.structural_occurrences.end(),
+          [&](const auto &row) { return row.id == published.key.source; });
+      check(source != b.structural_occurrences.end() &&
+                published.definition == f.ref(source->definition) && published.node == source->node,
+            "published occurrence retains exact source definition and node after source death");
+    }
     check(std::all_of(p.occurrences().begin(), p.occurrences().end(),
                       [](const auto &o) { return o.slot == -1; }),
           "structural projection assigns no numerical slots");

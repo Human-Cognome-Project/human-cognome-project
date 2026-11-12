@@ -55,6 +55,13 @@ int main() {
       const auto source = b;
       return project_letters(source);
     }();
+    for (const auto &published : p.occurrences()) {
+      const auto source = std::find_if(b.occurrences.begin(), b.occurrences.end(),
+          [&](const auto &row) { return row.id == published.key.source; });
+      check(source != b.occurrences.end() &&
+                published.definition == f.ref(source->definition) && published.node == source->node,
+            "published occurrence retains exact source definition and node after source death");
+    }
     check(p.occurrences().size() == 18,
           "five aggregates and thirteen byte alternatives; no character/nibble "
           "particles");
