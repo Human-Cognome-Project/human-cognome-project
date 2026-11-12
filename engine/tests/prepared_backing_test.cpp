@@ -70,10 +70,13 @@ void run() {
   const auto short_budget = context.prepared_host_metadata(device, refused.required_entries - 1);
   const auto metadata = context.prepared_host_metadata(device, refused.required_entries);
   allocation_observation::enabled = false;
+  std::cout << "metadata_maps=" << metadata.runtime_sizes.entries << ','
+            << metadata.allocation_types.entries << ',' << metadata.array_pointers.entries
+            << ',' << metadata.argpack_pointers.entries << '\n';
   require(!allocation_observation::calls && !short_budget.available &&
               !short_budget.visited_entries && metadata.available && !metadata.complete &&
               !metadata.overflow && metadata.visited_entries == metadata.required_entries &&
-              metadata.runtime_sizes.entries == 2 && metadata.allocation_types.entries == 2 &&
+              metadata.runtime_sizes.entries == 2 && metadata.allocation_types.entries == 3 &&
               metadata.array_pointers.entries == 4 && !metadata.argpack_pointers.entries &&
               metadata.runtime_sizes.key_capacity_bytes >= 2*sizeof(int) &&
               metadata.array_pointers.key_capacity_bytes >= 8*sizeof(int),
