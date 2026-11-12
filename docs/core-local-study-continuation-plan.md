@@ -8,6 +8,17 @@
 
 Additional setup work is acceptable where it benefits long-running focal models; lower setup totals are not an acceptance gate. The initial-projection copy audit is closed. #75/#111/#123 remain held/deferred. Earlier dated pending, integrated and “next” labels below are historical and superseded by this record where they conflict.
 
+**Map copy-work contribution (awaiting review, 2026-11-12):** implements #296
+review 5877302279's checked component replacement. Projection work is retained
+once; fresh occurrence/field map work is prepaid separately and exposed in the
+result. The byte census and selected request/allocation-work limits are unchanged.
+Fixed units explicitly cover bounded header/scalar/control initialization. Empty,
+unequal-input, overflow and pre-allocation refusal/retry controls accompany the
+change. Both builds, 47 scoped CPU checks and six standalone compiler CTests passed
+without warnings; see admission for source-pinned evidence. Main through #294 is
+included by normal merge `9acdd5fb`. Next: domain bootstrap tracking and a trusted
+disjoint borrowed ledger before combined admission; operation integration follows.
+
 **Binding setup contribution (awaiting review, 2026-11-12):** continues from #294
 review 5876572990 at `32fe9928`, including current main `7bf08034` by normal merge
 `cdcf28e0`. The shared owner setup meter now covers binding/coordinator buffer

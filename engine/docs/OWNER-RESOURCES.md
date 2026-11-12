@@ -2229,3 +2229,21 @@ This completes this scoped binding setup path, not combined owner-resource
 acceptance. Reconcile remaining fixed/domain/control-block overhead, caller and
 borrowed native resources and complete budget composition before advancing the
 remaining operation/control integration. Projection copy cleanup stays closed.
+
+
+### Initial map copy-work replacement (awaiting review)
+
+Input admission now prepays logical projection copy work once plus checked fresh
+construction work for each initial map. The separate work components and total
+are exposed in AdoptionInputResult. Input byte census C+S and selected live/peak
+request / cumulative allocation-work limits are unchanged. The input gate remains
+allocation-free, returns no partial demand on inspection failure, and makes one
+copy-work reservation after the byte check. Initial map constructors do not charge
+the same prepaid work again to the owner setup meter.
+
+The [accounting record](ADOPTION-ACCOUNTING.md#checked-map-prepayment-implementation-awaiting-review)
+defines the fixed logical admission policy and exact formulas. Existing fixed units
+cover bounded header/scalar/control initialization; variable payload work remains
+separately metered. This is neither physical allocation accounting nor a fee for
+opaque allocator/driver work. Next: domain bootstrap request tracking and a trusted
+disjoint borrowed-resource ledger, then the combined accounted-byte limit.

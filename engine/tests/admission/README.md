@@ -5460,3 +5460,91 @@ review remain required. Next: finish the setup/resource inventory and combined
 caller/owner/borrowed accounting, then remaining operation/control integration.
 Domain/control-block overhead and combined resource acceptance are not claimed
 complete by this binding gate. The projection copy audit remains closed.
+
+### Initial map copy-work component qualification (2026-11-12)
+
+Tested source `763b9b6e8574efd1b91efc3c5a6d910a1b9d29eb`, continuing from #296
+`c43de24155d9852f9d202abe3360cec739e1c014` under review 5877302279. Current main
+`a67255c6` integrates reviewed #290-#294 and is included by normal merge
+`9acdd5fb`. Two status-document conflicts retain current maintainer integration
+and historical contribution records. #295/#296 remain unmerged at inspection.
+
+The input copy-work gate now charges P+M_occurrences+M_fields, with checked fresh
+map demand M=1+n*(3*sizeof(T)+74)+K. It does not form an unchecked 3*sizeof(T),
+subtract unsigned M-S or charge the old snapshot a second time. The byte gate
+still uses C+S. Result fields expose each work component and the required sum,
+published only after successful inspection; byte refusal still precedes one
+copy-work charge. Initial maps omit the setup meter because their work is prepaid.
+
+The existing fixed initial/membership admissions explicitly cover bounded
+header/scalar/control initialization, with bounded checked metadata arithmetic in
+inspection charges. These logical units do not replace payload work, selected
+request quotas or opaque allocator/driver accounting. Domain bootstrap request
+tracking and a trusted disjoint borrowed-resource ledger remain next.
+
+Extended owner input controls compare fresh-map demand with actual metered map
+construction for empty and unequal occurrence/field counts with different nested
+payload sizes. They require zero selected live bytes after each measured map,
+zero/one-short/exact work admission without C++ allocation, intact caller/native
+state and successful actual-owner retry. Empty maps preserve the two header byte
+charges while replacing their work with one unit each. Existing capacity-only
+slack, populated payload and recipe text controls remain; path growth must affect
+only the corresponding map work component. Checked row/UUID products and sums
+exercise overflow, and an exact UINT64_MAX sum is accepted by the arithmetic helper.
+Inspection refusal must leave all four work-breakdown fields unpublished.
+
+Initial code `a4e53a5b` built successfully. Before runtime qualification, inspection
+found an overflow-test input with zero row extent, which is not a valid sizeof(T)
+for this helper. Only that test input changed to one at the final pin; no product
+failure was observed or relabeled. Final source, builds and test results are
+recorded below. The earlier build log remains locally preserved.
+
+GCC 11.5 and GCC 13.3 each pass all three standalone projection CTests after the
+shared admission header changed. This checks shared-header/compiler compatibility;
+map adoption behavior is exercised by the native owner controls, not claimed from
+the standalone suites. Verified `setup-evidence/map-copy-work-standalone-763b9b6e.tar.gz`;
+SHA256SUMS:
+
+    79feefc61db9cf4a6d7a686a24ae33671cc83cf2b02fe85a5a6491cbae0e6ad7
+
+All four owner configurations agree on this new input breakdown (single/four
+selection fixtures):
+
+| Input measurement | Single selection | Four selections |
+|---|---:|---:|
+| Caller bytes C | 34107 | 56164 |
+| Snapshot bytes S | 33083 | 50700 |
+| Required input bytes C+S | 67190 | 106864 |
+| Projection copy work P | 32362 | 48130 |
+| Occurrence-map copy work | 435 | 2637 |
+| Field-map copy work | 1348 | 4042 |
+| Required copy work (old -> new) | 33083 -> 34145 | 50700 -> 54809 |
+
+Inspection work/boundaries remain 1905/1161 and 2923/1713. Separate owner setup
+work/boundaries remain 581709/7402 and 1287811/22443, including 3810/12328 binding
+boundaries. The map change is prepaid in input copy work, not duplicated in the setup meter.
+Selected allocation work remains 420871/790383 and live/peak 321185/321185 and
+392475/392475. All 3272/5928 independent failure sites reclaim every block;
+retained/peak remains 321265/321265 and 392555/392555, census 321153/392251 and
+failure peaks 321250/392540. These overlapping counters are not summed.
+
+Both final native/warm builds and all 47 scoped CPU checks passed: 20 exchange
+processes (five cases, workers 1/2, bulk/direct), 12 prepared CTests, nine native
+supporting tests and six warm CTests. The six GCC standalone CTests above are
+additional. No final build/test warnings or errors. Shared-host Clang15/libstdc++,
+CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; accelerator backends
+disabled. Retained projection/value layouts are unchanged; AdoptionInputResult
+adds four scalar work counters, not new owner heap backing.
+
+Verified final archive `setup-evidence/map-copy-work-domain-763b9b6e.tar.gz`;
+SHA256SUMS:
+
+    d5fc37a945ca6fd22106667de361852663d9465c0327f291f9508f9c47384168
+
+Final tested-to-head changes are five Markdown records only. Local documentation
+file targets and whitespace checks pass. Raw machine-local artifacts have not
+been independently inspected remotely. No GPU, live database, browser or timing
+qualification. #296 smoke 43249326530 passed; native 43249326537 remains running.
+No duplicate hosted retry or merge was initiated. Hosted checks and review remain
+required for this contribution. Next: domain bootstrap request tracking and the
+trusted disjoint borrowed ledger, then bounded combined accounted-byte admission.

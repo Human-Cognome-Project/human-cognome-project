@@ -7,6 +7,39 @@ It does not implement or accept a combined admission limit. Audited runtime:
 `c118e6efea6902a3996af126e67840f5c4e7da1a`. Main `5ef632f2` adds current handoff
 notes; normal merge `46e7d1ad` preserves them in this continuation.
 
+## Checked map prepayment implementation (awaiting review)
+
+Following #296 review 5877302279, input admission now computes separate
+`projection_copy_work`, `occurrence_copy_work`, `field_copy_work` and
+`required_copy_work` values. The last is the checked sum P+M_occurrences+M_fields;
+it replaces the former copy-work charge S. Caller/snapshot/required **byte** values
+remain C, S and C+S. Demand arithmetic is part of allocation-free inspection; only
+a complete inspection publishes the breakdown. Byte refusal still precedes the
+single copy-work charge. Zero/short work refuses with zero charged copy work and
+the full required amount, before owner/domain allocation.
+
+The initial map constructors intentionally still omit the setup meter: their
+fresh construction demand has already been prepaid here. Capacity slack remains
+caller occupancy only. Payload growth changes just its owning component; an empty
+map costs one resize admission, not its old vector-header snapshot charge. No
+unsigned subtraction or duplicated snapshot work is used. The implementation
+checks each multiplication/addition rather than first forming unchecked 3*t or
+an unsigned M-S. Its helper is for fresh maps and nonzero sizeof(T), not growth.
+
+Fixed-work policy: the existing initial admission unit covers bounded owner/domain
+header, scalar and control initialization; membership's fixed admission covers
+bounded catalogue header/scalar construction and publication control. Existing
+fixed metadata inspection charges include bounded checked arithmetic. These are
+logical fixed-operation units, not byte-for-byte construction estimates. They do
+not cover input-sized scans/copies/reservations, native computation, opaque allocator
+runtime or physical memory. Existing size-based conservative charges remain where
+already specified; no arbitrary new sizeof-based fee is added. Domain bootstrap
+**request bytes** and a trusted disjoint borrowed ledger remain the next work.
+
+The historical inventory/formulas below describe the reviewed #295 boundary;
+this section supersedes its proposed map-work replacement and open fixed-fee choice.
+Combined admission is still not implemented or accepted.
+
 ## Counters have different meanings
 
 | Counter | What it measures | Do not add it to |
