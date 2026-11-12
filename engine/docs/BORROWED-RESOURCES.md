@@ -7,6 +7,45 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Prepared owned-import adoption (awaiting review, 2026-11-12)
+
+Continues [#305 review 5881732238](https://github.com/Human-Cognome-Project/human-cognome-project/pull/305#pullrequestreview-5881732238).
+Prepared contexts now expose `prepared_array_backing_record(live_device, argument)`
+separately from `prepared_array_record`. The latter still reports the captured
+registration, including Imported identity/view extent or Retired status. The new
+query validates that registration and its bound byte extent before asking the common
+Device interface for canonical live Owned backing. It never substitutes a new numeric
+handle, infers ownership from an address, or casts to a backend in model code.
+
+The bound element count must fit within the registration's extent using division
+before canonical resolution. This prevents a view larger than its imported range
+from becoming covered merely because the original owner has enough total bytes.
+Type/rank/shape validation at prepare remains unchanged; this additional check is
+accounting coverage, not an automatic launch guard. The oversized-view negative test
+is prepared but never launched. Unknown queries supply no usable backing bytes.
+
+`prepared_backing().array_bindings_complete` now requires canonical live Owned backing
+for every array binding, accepting explicit same-device owned imports whose owners
+remain live. Raw imports, foreign/stale/retired/unavailable bindings, external arrays
+and unusable contexts still cannot complete coverage. A live import registration with
+a retired owner remains Live through the registration query but Unknown through the
+canonical query. Import retirement invalidates only that binding; the owner remains
+usable. Context moves preserve captures/owner resolution and disable moved-from views.
+
+No new retained fields or registry are added. Existing ArrayBinding/Prepared object
+and capacity accounting is unchanged. One canonical binding query performs at most
+three indexed record validations on CPU. The summary already scans array_bindings;
+it remains input-sized work and must be prepaid/metered by the future Harness,
+including this added validation. Fixed per-binding depth does not make traversal free.
+
+Known-live quiescent context, Kernel, Program, Device, registration and backing owners
+remain required for execution. Queries grant no lifetime lease or launch-time guard.
+Full owner records enable future deduplication; this API does not itself aggregate or
+deduplicate a Harness ledger. Host metadata remains incomplete, and pool backing
+identity/rounded extents, remaining metadata and lifetime-valid work-metered combined
+C+B+H+D admission remain outstanding. No full B or GPU qualification is claimed.
+This section supersedes the earlier statement that all prepared Imported registrations
+necessarily leave coverage incomplete, only for the explicit proven-owned path.
 ## Explicit owned imports (awaiting review, 2026-11-12)
 
 Continues [#304 review 5881459672](https://github.com/Human-Cognome-Project/human-cognome-project/pull/304#pullrequestreview-5881459672).

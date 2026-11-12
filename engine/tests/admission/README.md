@@ -5980,3 +5980,53 @@ remotely. Published head differs from tested source only in four Markdown files;
 118 local file links and whitespace checks passed. Parent #304 smoke43299289118
 passed; native43299289153 remains active at inspection. No duplicate qualification
 or self-merge. Local results do not replace authoritative hosted CI or acceptance.
+
+## Prepared owned-import backing adoption — 2026-11-12
+
+Continues #305 review5881732238 at44c890b7. Provisional source acceptance is recorded;
+#302–#305 integration remains pending corrected parent/hosted qualification. Main
+e11525a0 is already an ancestor. No duplicate hosted run or unchanged-parent rerun.
+
+The new prepared_array_backing_record preserves the separate registration query and
+resolves canonical live Owned backing through common Device. Array coverage now
+accepts explicit owned imports only while both registration and owner validate.
+Raw imports remain unresolved. Bound elements must fit the registration extent before
+resolving full owner backing; a larger owner cannot certify an oversized import view.
+This is accounting coverage, not an added execution guard or lifetime lease. Existing
+prepare type/rank/shape checks remain unchanged. No new retained metadata is added;
+summary scans remain input-sized work to meter before eventual combined admission.
+See [the scoped ownership contract](../../docs/BORROWED-RESOURCES.md).
+
+Initial implementation11f4cf86 began native rebuild; it was deliberately stopped to
+add the registration-extent boundary and negative test. The source pin, commands and
+interrupted build log are retained as history, not reported as qualification.
+Corrected tested source:684a1687ce5dffbf11592f063c9ed5f52f376ce8.
+Tracked Taichi tree:15d7d5bda369ad8faa73bbc8b23fb9b3aa2ff815.
+
+Extended prepared_backing_test covers canonical full owner vs Imported view identity,
+nonzero-offset actual execution, context move/execution, allocation-free first queries,
+oversized-view refusal without launch, foreign/scalar/out-of-range inputs, raw/external
+refusal, independent import retirement, and a Live registration whose backing owner
+has retired. Existing tests continue to exercise owned views, context buffers, metadata
+capacity, unusable/default states and captured array destruction. CPU/shared-host only;
+no GPU, database, browser or performance qualification is implied.
+
+Corrected native static and dependent engine builds passed. All56 scopedCPU checks
+passed:9focused,20exchange (five cases across threads1/2 and bulk/direct-no-unroll),
+12prepared execution/update,9supporting native,6warm recipe. Focused/prepared/supporting
+CTests ran with parent TI_LIB_DIR unset; direct executables used the explicit runtime
+environment. Corrected build and captured final runtime logs contain no warnings or
+errors. Tested source remained clean. The interrupted intermediate build is retained
+without a pass claim; no source compiler/test failure occurred in final qualification.
+Prepared fixture requests remain arguments40/result0 bytes and embedded record
+capacity144 bytes, unchanged by this slice and not portable fixed fees.
+
+Verified contributor-local archive:prepared-import-domain-684a1687.tar.gz.
+SHA256SUMS manifest:391688cfa350a074473b5ff6bab1665f555f22d57363fa90b2a685e9a2bada81.
+Archive SHA256:49b59c0348e35e04ea40cc79ff2b1f1fa465f452a4eb97ab7e8fc448b3e53138.
+Includes source/configuration/compiler/binary pins, commands, corrected build/results,
+and interrupted-source history. Raw artifacts are not independently inspected remotely.
+Final publication differs from the tested source only in four Markdown files;119local
+file links and whitespace checks passed. Parent #305 smoke43302942605 passed;
+native43302942903 remains active at inspection. No duplicate hosted qualification,
+self-merge or inference of final acceptance from local results.

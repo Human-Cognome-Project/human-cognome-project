@@ -1,5 +1,16 @@
 # Core continuation after local CUDA corrections
 
+**Prepared owned-import adoption (awaiting review, 2026-11-12):** continues #305
+review5881732238 at44c890b7. Separate canonical backing queries preserve captured
+registration identity, validate bound byte extent against the registration, and
+accept only live explicitly proven owned backing for array coverage. Raw imports
+remain unresolved; full host metadata remains incomplete. No new retained metadata.
+Summary traversal remains input-sized work requiring future metering. Main e11525a0
+is already in this stack; #302–#305 remain unmerged pending corrected parent/hosted
+qualification. Next: underlying pool identity/rounded extents and remaining metadata,
+then trusted Harness lifetime/deduplication/work accounting and combined C+B+H+D.
+No full B or GPU claim; held #75/#111/#123 remain unchanged.
+
 **Explicit owned-import backing (awaiting review, 2026-11-12):** continues #304
 review5881459672 at d40daac0. Common Device captures same-device Owned provenance at
 import creation and resolves canonical live backing with bounded indexed queries.
