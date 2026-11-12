@@ -50,6 +50,7 @@ class LaunchContextBuilder {
     HostBackingView arguments, results, runtime_context;
     std::size_t context_object_bytes{0}, prepared_object_bytes{0};
     std::size_t array_binding_capacity_bytes{0};
+    std::size_t scalar_capacity_bytes{0};
     // Subset of array_binding_capacity_bytes, never an additional charge.
     std::size_t incremental_record_capacity_bytes{0};
   };
@@ -59,6 +60,22 @@ class LaunchContextBuilder {
   // Only live owned or explicitly proven owned-import backing completes array
   // coverage. This is inspection, not an execution lifetime guard.
   PreparedBacking prepared_backing(const Device &live_device) const;
+  struct BindingMapStorage {
+    std::size_t entries{0}, buckets{0};
+    // Value payload is a subset of unmeasured node allocation storage.
+    std::size_t value_payload_bytes{0}, key_capacity_bytes{0};
+  };
+  struct PreparedHostMetadata {
+    bool available{false};
+    bool complete{false};  // Map nodes/bucket allocations remain unmeasured.
+    bool overflow{false};
+    std::size_t required_entries{0}, visited_entries{0};
+    BindingMapStorage runtime_sizes, allocation_types, array_pointers, argpack_pointers;
+  };
+  // Quiescent owner required. Four constant-time size checks precede traversal;
+  // insufficient entry budget refuses without visiting any map entries.
+  PreparedHostMetadata prepared_host_metadata(const Device &live_device,
+                                               std::size_t entry_budget) const;
   AllocationRecord prepared_array_record(const Device &live_device,
                                          std::size_t argument) const;
   // Separate from the captured registration: canonical full backing for dedup.
@@ -163,6 +180,7 @@ class LaunchContextBuilder {
   RuntimeContext &get_context();
 
  private:
+  bool prepared_backing_available(const Device &live_device) const;
   TypedConstant fetch_ret_impl(int offset, const Type *dt);
   CallableBase *kernel_;
   // Generic/AOT CallableBase contexts retain the ordinary path only.

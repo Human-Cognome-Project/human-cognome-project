@@ -8,17 +8,68 @@
 #include <cstring>
 #include <limits>
 #include <stdexcept>
+#include <type_traits>
 
 namespace taichi::lang {
+
+bool LaunchContextBuilder::prepared_backing_available(const Device &live_device) const {
+  return prepared && prepared->usable && prepared->backing_buffers_available &&
+         prepared->backing_device_instance &&
+         prepared->backing_device_instance == live_device.allocation_instance() &&
+         prepared->backing_arg_bytes == arg_buffer_size &&
+         prepared->backing_result_bytes == result_buffer_size;
+}
+
+LaunchContextBuilder::PreparedHostMetadata LaunchContextBuilder::prepared_host_metadata(
+    const Device &live_device, std::size_t entry_budget) const {
+  PreparedHostMetadata result;
+  if (!prepared_backing_available(live_device))
+    return result;
+  const auto add = [&](std::size_t &total, std::size_t n) {
+    if (n > std::numeric_limits<std::size_t>::max() - total) {
+      result.overflow = true;
+      return false;
+    }
+    total += n;
+    return true;
+  };
+  for (auto size : {array_runtime_sizes.size(), device_allocation_type.size(),
+                    array_ptrs.size(), argpack_ptrs.size()})
+    if (!add(result.required_entries, size))
+      return result;
+  if (entry_budget < result.required_entries)
+    return result;
+  const auto inspect = [&](const auto &map, BindingMapStorage &storage) {
+    using Map = std::decay_t<decltype(map)>;
+    storage.entries = map.size();
+    storage.buckets = map.bucket_count();
+    if (map.size() > std::numeric_limits<std::size_t>::max() / sizeof(typename Map::value_type)) {
+      result.overflow = true;
+      return false;
+    }
+    storage.value_payload_bytes = map.size() * sizeof(typename Map::value_type);
+    for (const auto &entry : map) {
+      ++result.visited_entries;
+      if (entry.first.capacity() > std::numeric_limits<std::size_t>::max() / sizeof(int)) {
+        result.overflow = true;
+        return false;
+      }
+      if (!add(storage.key_capacity_bytes, entry.first.capacity() * sizeof(int)))
+        return false;
+    }
+    return true;
+  };
+  result.available = inspect(array_runtime_sizes, result.runtime_sizes) &&
+                     inspect(device_allocation_type, result.allocation_types) &&
+                     inspect(array_ptrs, result.array_pointers) &&
+                     inspect(argpack_ptrs, result.argpack_pointers);
+  return result;
+}
 
 LaunchContextBuilder::PreparedBacking LaunchContextBuilder::prepared_backing(
     const Device &live_device) const {
   PreparedBacking result;
-  if (!prepared || !prepared->usable || !prepared->backing_buffers_available ||
-      !prepared->backing_device_instance ||
-      prepared->backing_device_instance != live_device.allocation_instance() ||
-      prepared->backing_arg_bytes != arg_buffer_size ||
-      prepared->backing_result_bytes != result_buffer_size)
+  if (!prepared_backing_available(live_device))
     return result;
   result.buffers_available = true;
   result.device_buffers_complete = true;  // CPU owns no separate device buffers.
@@ -38,6 +89,7 @@ LaunchContextBuilder::PreparedBacking LaunchContextBuilder::prepared_backing(
   result.context_object_bytes = sizeof(LaunchContextBuilder);
   result.prepared_object_bytes = sizeof(Prepared);
   result.array_binding_capacity_bytes = array_bindings.capacity() * sizeof(ArrayBinding);
+  result.scalar_capacity_bytes = prepared->scalars.capacity() * sizeof(Prepared::Scalar);
   result.incremental_record_capacity_bytes = array_bindings.capacity() * sizeof(AllocationRecord);
   return result;
 }

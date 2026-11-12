@@ -41,6 +41,7 @@ void run() {
   context.set_arg_ndarray({1}, part);
   context.set_arg_int({2}, 7);
   compiled.prepare(context);
+  context.prepared->scalars.reserve(context.prepared->scalars.size() + 7);
   const auto view = context.prepared_backing(device);
   const auto a = context.prepared_array_record(device, 0);
   const auto b = context.prepared_array_record(device, 1);
@@ -51,11 +52,52 @@ void run() {
               view.runtime_context.data && view.runtime_context.requested_bytes &&
               view.context_object_bytes == sizeof(LaunchContextBuilder) &&
               view.prepared_object_bytes == sizeof(LaunchContextBuilder::Prepared) &&
+              view.scalar_capacity_bytes == context.prepared->scalars.capacity() *
+                  sizeof(LaunchContextBuilder::Prepared::Scalar) &&
+              view.scalar_capacity_bytes > context.prepared->scalars.size() *
+                  sizeof(LaunchContextBuilder::Prepared::Scalar) &&
               view.array_binding_capacity_bytes ==
                   context.array_bindings.capacity() * sizeof(LaunchContextBuilder::ArrayBinding) &&
               view.incremental_record_capacity_bytes ==
                   context.array_bindings.capacity() * sizeof(AllocationRecord),
           "prepared buffer/metadata coverage incorrect");
+  const auto refused = context.prepared_host_metadata(device, 0);
+  require(!refused.available && !refused.overflow && !refused.visited_entries &&
+              refused.required_entries > 0,
+          "metadata inspection traversed without entry budget");
+  allocation_observation::calls = 0;
+  allocation_observation::enabled = true;
+  const auto short_budget = context.prepared_host_metadata(device, refused.required_entries - 1);
+  const auto metadata = context.prepared_host_metadata(device, refused.required_entries);
+  allocation_observation::enabled = false;
+  require(!allocation_observation::calls && !short_budget.available &&
+              !short_budget.visited_entries && metadata.available && !metadata.complete &&
+              !metadata.overflow && metadata.visited_entries == metadata.required_entries &&
+              metadata.runtime_sizes.entries == 2 && metadata.allocation_types.entries == 2 &&
+              metadata.array_pointers.entries == 4 && !metadata.argpack_pointers.entries &&
+              metadata.runtime_sizes.key_capacity_bytes >= 2*sizeof(int) &&
+              metadata.array_pointers.key_capacity_bytes >= 8*sizeof(int),
+          "budgeted metadata coverage or allocation-free retry incorrect");
+  // Spare capacity inside a key must be charged, not just its logical length.
+  std::vector<int> extra_key{999};
+  extra_key.reserve(23);
+  const auto extra_capacity = extra_key.capacity() * sizeof(int);
+  context.argpack_ptrs.emplace(std::move(extra_key), nullptr);
+  const auto expanded = context.prepared_host_metadata(device, metadata.required_entries + 1);
+  require(expanded.available && expanded.argpack_pointers.entries == 1 &&
+              expanded.argpack_pointers.key_capacity_bytes == extra_capacity &&
+              expanded.visited_entries == metadata.visited_entries + 1,
+          "nested key spare capacity was omitted");
+  context.argpack_ptrs.clear();
+  const auto cleared = context.prepared_host_metadata(device, metadata.required_entries);
+  require(cleared.available && !cleared.argpack_pointers.key_capacity_bytes &&
+              !cleared.argpack_pointers.value_payload_bytes && !cleared.complete,
+          "cleared map retained key storage or claimed bucket completeness");
+  require(!context.prepared_host_metadata(foreign, SIZE_MAX).available,
+          "foreign device certified prepared host metadata");
+  std::cout << "prepared_metadata_entries=" << metadata.required_entries
+            << " scalar_capacity_bytes=" << view.scalar_capacity_bytes
+            << " extra_key_capacity_bytes=" << extra_capacity << '\n';
   require(a.status == AllocationRecordStatus::Live && a.token == b.token &&
               a.requested_bytes == sizeof(values) && b.extent_bytes == sizeof(values),
           "prepared views lost captured backing identity/extent");
@@ -76,6 +118,9 @@ void run() {
   engine::readback(*owned, values, sizeof(values));
   require(values[0] == 10, "prepared execution changed");
   auto moved = std::move(context);
+  require(!context.prepared_host_metadata(device, SIZE_MAX).available &&
+              moved.prepared_host_metadata(device, metadata.required_entries).available,
+          "move lost metadata or left source coverage available");
   require(!context.prepared_backing(device).buffers_available &&
               moved.prepared_backing(device).arguments.data == view.arguments.data,
           "move lost owner buffers or left source coverage live");
