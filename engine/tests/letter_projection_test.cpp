@@ -299,6 +299,13 @@ int main() {
         "duplicate request entry rejected");
     rejects([&] { normalize_letters(b, {r}); },
             "normalization cannot silently replace an existing recipe");
+    auto duplicate_definitions = f.base;
+    duplicate_definitions.tools.push_back(duplicate_definitions.tools.front());
+    rejects([&] { normalize_letters(duplicate_definitions, {r}); },
+            "temporary tool index rejects duplicate identity during normalization");
+    std::reverse(duplicate_definitions.tools.begin(), duplicate_definitions.tools.end());
+    rejects([&] { normalize_letters(duplicate_definitions, {r}); },
+            "duplicate identity rejection does not depend on source ordering");
     r.letter.revision = new_uuid();
     rejects([&] { normalize_letters(f.base, {r}); },
             "stale requested letter revision rejected");

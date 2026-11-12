@@ -2,6 +2,7 @@
 #include "assembly/preparation_work.h"
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 #include <map>
 #include <set>
@@ -11,11 +12,20 @@ namespace {
 void need(bool condition, const char *message) {
   if (!condition) throw warm::Error(message);
 }
-using Tools = std::map<warm::ObjectKey, const warm::Tool *>;
+struct ToolKeyLess {
+  using is_transparent = void;
+  bool operator()(const warm::ObjectKey &a, const warm::ObjectKey &b) const {
+    return a < b;
+  }
+};
+// The index is local to normalization/projection; neither mutates source tools.
+// Keys borrow the same stable objects as the mapped Tool pointers.
+using Tools = std::map<std::reference_wrapper<const warm::ObjectKey>,
+                       const warm::Tool *, ToolKeyLess>;
 Tools index(const warm::Bundle &b) {
   Tools tools;
   for (const auto &t : b.tools)
-    need(tools.emplace(t.ref.object, &t).second,
+    need(tools.emplace(std::cref(t.ref.object), &t).second,
          "duplicate definition identity");
   return tools;
 }
