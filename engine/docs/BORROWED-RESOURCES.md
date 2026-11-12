@@ -7,6 +7,103 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Native host-pool backing identity (awaiting review, 2026-11-12)
+
+Continues [#306 review 5881942652](https://github.com/Human-Cognome-Project/human-cognome-project/pull/306#pullrequestreview-5881942652).
+The native HostMemoryPool raw-allocation map now retains allocation identity alongside
+its existing exact raw request size. A process-wide nonwrapping identity generator
+assigns distinct pool instances and raw allocation identities. Tokens contain pool
+instance, allocation identity and base address; an address or movable allocator chunk
+index alone is never identity. Release removes the record; reset does not reset the
+identity generator. Exhausted identity leaves coverage Unavailable rather than reusing
+an identity. Current token lookup returns Unknown after release/reset/replacement.
+
+`capture_backing_record(address, bytes)` establishes only containment in a currently
+tracked raw allocation. It requires an independently established live nonzero request;
+it is not proof that an arbitrary address names a valid suballocation. Zero-size/null,
+cross-boundary and overflowing-size ranges return Unknown. Lookup uses an ordered
+integer-address map and subtraction bounds, never a full chunk walk or pointer
+arithmetic across allocations. Captured `backing_record(token)` validates identity
+without dereferencing saved addresses. Both lock the native pool and allocate nothing;
+they do not extend request/owner/pool lifetime or prevent a later reset.
+
+Common `Device::allocation_pool_backing_record` first validates canonical Owned
+provenance, then maps that live owner's range to raw backing. Explicit owned imports
+resolve to the same pool token as their owner; raw imports remain Unknown. A live
+zero-byte CPU owner has no raw mapping and reports Absent. Common
+`ProgramImpl::reservation_pool_backing` first obtains the native CPU request and then
+resolves its range; absent requests stay Absent, invalid selectors yield Unknown, and
+unsupported implementations stay Unavailable. The original request query retains its
+own status and flags. These separate bridges do not add model-side backend casts.
+
+The result reports `raw_requested_bytes`, not OS rounding, committed/resident physical
+bytes or a per-Harness total. `rounded_extent_available` remains false and rounded
+bytes remain unusable zero. Distinct suballocations sharing a raw chunk share its token:
+never add the chunk and its contained requests as disjoint backing. This resolves raw
+host-pool identity for supported live requests only; it does not establish exhaustive
+owner-to-pool membership or account unused/orphaned pool reservations for a Harness.
+
+`pool_backing_storage` reports the pool instance, whole HostMemoryPool object size and
+live map value payload bytes. Incremental payload is the new value layout minus the
+prior layout and is a subset of total payload. The added pool-instance field is already
+inside the object size. Count this storage once per shared pool, not per Device/tree.
+Map node/allocator overhead, UnifiedAllocator object/vector capacity, and the shared
+process-wide atomic identity generator remain excluded; metadata_complete is false.
+CPU device construction materializes the shared pool bookkeeping before inspection;
+the first device metadata query does not perform lazy setup or allocate a raw mapping.
+Raw-map registration failure now releases its acquired OS mapping before propagating
+failure. Allocation identity may be consumed on failure but is never reused.
+
+Pool map lookup is logarithmic in tracked raw allocations, with synchronization; it is
+not the reservation query's fixed-depth one-unit lookup. Metadata size queries are
+constant-sized. The eventual Harness must explicitly meter these lookups and any
+input-sized enumeration/validation before combined admission; no complete work gate
+or hidden snapshot is introduced here. The caller keeps device/runtime/request owners
+live and quiescent and the shared pool intact; resetting the pool while owners remain
+live is outside the contract. Tokens are not lifetime leases or execution guards.
+
+Next: authoritative rounded extents, remaining prepared/runtime/pool metadata, then
+trusted lifetime-valid required-family coverage and canonical backing deduplication
+with prepaid work before checked C+B+H+D. No full B, other-backend or GPU qualification.
+## Prepared owned-import adoption (awaiting review, 2026-11-12)
+
+Continues [#305 review 5881732238](https://github.com/Human-Cognome-Project/human-cognome-project/pull/305#pullrequestreview-5881732238).
+Prepared contexts now expose `prepared_array_backing_record(live_device, argument)`
+separately from `prepared_array_record`. The latter still reports the captured
+registration, including Imported identity/view extent or Retired status. The new
+query validates that registration and its bound byte extent before asking the common
+Device interface for canonical live Owned backing. It never substitutes a new numeric
+handle, infers ownership from an address, or casts to a backend in model code.
+
+The bound element count must fit within the registration's extent using division
+before canonical resolution. This prevents a view larger than its imported range
+from becoming covered merely because the original owner has enough total bytes.
+Type/rank/shape validation at prepare remains unchanged; this additional check is
+accounting coverage, not an automatic launch guard. The oversized-view negative test
+is prepared but never launched. Unknown queries supply no usable backing bytes.
+
+`prepared_backing().array_bindings_complete` now requires canonical live Owned backing
+for every array binding, accepting explicit same-device owned imports whose owners
+remain live. Raw imports, foreign/stale/retired/unavailable bindings, external arrays
+and unusable contexts still cannot complete coverage. A live import registration with
+a retired owner remains Live through the registration query but Unknown through the
+canonical query. Import retirement invalidates only that binding; the owner remains
+usable. Context moves preserve captures/owner resolution and disable moved-from views.
+
+No new retained fields or registry are added. Existing ArrayBinding/Prepared object
+and capacity accounting is unchanged. One canonical binding query performs at most
+three indexed record validations on CPU. The summary already scans array_bindings;
+it remains input-sized work and must be prepaid/metered by the future Harness,
+including this added validation. Fixed per-binding depth does not make traversal free.
+
+Known-live quiescent context, Kernel, Program, Device, registration and backing owners
+remain required for execution. Queries grant no lifetime lease or launch-time guard.
+Full owner records enable future deduplication; this API does not itself aggregate or
+deduplicate a Harness ledger. Host metadata remains incomplete, and pool backing
+identity/rounded extents, remaining metadata and lifetime-valid work-metered combined
+C+B+H+D admission remain outstanding. No full B or GPU qualification is claimed.
+This section supersedes the earlier statement that all prepared Imported registrations
+necessarily leave coverage incomplete, only for the explicit proven-owned path.
 ## Explicit owned imports (awaiting review, 2026-11-12)
 
 Continues [#304 review 5881459672](https://github.com/Human-Cognome-Project/human-cognome-project/pull/304#pullrequestreview-5881459672).

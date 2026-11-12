@@ -91,6 +91,8 @@ class CpuDevice : public LlvmDevice {
   RhiResult import_owned_memory(AllocationRecordToken, uint64_t offset,
                                 uint64_t size, DeviceAllocation *out) override;
   AllocationRecord allocation_backing_record(AllocationRecordToken) const override;
+  PoolBackingRecord allocation_pool_backing_record(AllocationRecordToken) const override;
+  PoolBackingStorage pool_backing_storage() const override;
   AllocationRecordStorage allocation_record_storage() const override;
   void clear() override;
 

@@ -1,8 +1,34 @@
 # Current implementation and work
 
+**Maintainer integration — 2026-11-12:** #306–#307 are accepted and integrated by the merge containing this record, preserving reviewed `88aa2cd0ce6360b2cc2d9d1f446294bb50203309`. #306 native 43305748693/smoke 43305748766 passed; #307 native 43310337611 passed all 12 jobs and smoke 43310337168 passed. Personally inspected #307's 119 passing regressions (30/30/30/29), including native_pool_test, allocation_record_test, prepared_backing_test and reservation_request_test; database job 131512684418 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#305; the original #302 initialization failure remains preserved. #308 rounded virtual mapping extents are provisionally source-accepted at `10b3ed7f` in review 5883275400; smoke passed, native qualification remains active. Contributor-local archives were not independently inspected. Older pending/next labels below are historical where they conflict.
+
+**Next bounded task:** remaining prepared/runtime/pool metadata on reviewed #308, then lifetime-valid required-family Harness coverage and canonical backing deduplication with prepaid lookup/enumeration work before checked C+B+H+D admission. Rounded mapping extents are not physical residency; shared chunks and contained requests are not disjoint charges. Preserve native authority and separate work gates; setup cost is acceptable for long-running focal models. No full B or GPU qualification is claimed. Projection-copy audit stays closed; #75/#111/#123 remain held.
+
 **Maintainer integration — 2026-11-12:** #302–#305 are accepted and integrated by the merge containing this record, preserving reviewed `44c890b78c973be21a5b2e705ac79c334da3ae4e`. Corrected #304 native 43299289153 and smoke 43299289118 passed; #305 native 43302942903 passed all 12 jobs and smoke 43302942605 passed. Personally inspected 119 passing regression tests (30/30/30/29), including allocation_record_test, owner_backing_test, prepared_backing_test and reservation_request_test; database job 131487117070 reports addressed_reads=24/private_reads=0. The original #302 initialization failure remains preserved, not reclassified as green. Contributor-local archives were not independently inspected. #306 prepared canonical import adoption and #307 host-pool identity remain provisionally source-accepted, with native qualification pending; their smoke runs passed. This supersedes older pending/status labels below.
 
 **Next bounded task:** authoritative rounded extents and remaining prepared/runtime/pool metadata on the reviewed #307 stack, followed by trusted Harness required-family coverage, lifetime validity, canonical backing deduplication and prepaid lookup/enumeration work before checked C+B+H+D admission. Shared raw chunks and contained requests are not disjoint charges. Preserve independent work gates and native authority; setup cost is acceptable for long-running focal models. No complete B or GPU qualification is claimed. Projection-copy audit stays closed; #75/#111/#123 remain held.
+
+**Host-pool backing identity (awaiting review, 2026-11-12):** continues #306
+review5881942652 at52696f12. Native raw allocation identities survive chunk-index
+movement and reject stale tokens after release/reset/reuse. Common Device/Program
+queries resolve proven live owner/request ranges; raw imports remain unresolved.
+Raw request sizes are exported, rounded OS extents remain unavailable. Shared pool
+metadata is reported once by pool identity with explicit exclusions, not per owner.
+Lookup work is logarithmic and remains to be metered with Harness enumeration.
+Main e11525a0 is already an ancestor; #302–#306 integration awaits hosted qualification.
+Next: rounded extents/remaining metadata, trusted Harness coverage/deduplication/work,
+then combined C+B+H+D. No full B or GPU claim; held #75/#111/#123 remain unchanged.
+
+**Prepared owned-import adoption (awaiting review, 2026-11-12):** continues #305
+review5881732238 at44c890b7. Separate canonical backing queries preserve captured
+registration identity, validate bound byte extent against the registration, and
+accept only live explicitly proven owned backing for array coverage. Raw imports
+remain unresolved; full host metadata remains incomplete. No new retained metadata.
+Summary traversal remains input-sized work requiring future metering. Main e11525a0
+is already in this stack; #302–#305 remain unmerged pending corrected parent/hosted
+qualification. Next: underlying pool identity/rounded extents and remaining metadata,
+then trusted Harness lifetime/deduplication/work accounting and combined C+B+H+D.
+No full B or GPU claim; held #75/#111/#123 remain unchanged.
 
 **Explicit owned-import backing (awaiting review, 2026-11-12):** continues #304
 review5881459672 at d40daac0. Common Device captures same-device Owned provenance at

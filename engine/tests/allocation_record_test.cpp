@@ -21,12 +21,26 @@ int main() {
     {
       cpu::CpuDevice native, foreign;
       Device &device = native;
+      allocation_observation::calls = 0;
+      allocation_observation::enabled = true;
+      const auto initial_pool = device.pool_backing_storage();
+      allocation_observation::enabled = false;
+      require(!allocation_observation::calls && initial_pool.available &&
+                  !initial_pool.record_payload_bytes,
+              "first device pool metadata query allocated or fabricated raw backing");
       const auto owned = allocate(device,64);
       const auto owner = device.capture_allocation_record(owned);
       DeviceAllocation alias;
       require(device.import_owned_memory(owner.token,16,24,&alias) == RhiResult::success,
               "proven owned import failed");
       const auto registration = device.capture_allocation_record(alias);
+      const auto owner_pool = device.allocation_pool_backing_record(owner.token);
+      require(owner_pool.status == PoolBackingStatus::Live &&
+                  owner_pool.token == device.allocation_pool_backing_record(registration.token).token &&
+                  owner_pool.raw_requested_bytes == 64 && !owner_pool.rounded_extent_available &&
+                  device.pool_backing_storage().pool_instance == owner_pool.token.pool_instance &&
+                  device.Device::allocation_pool_backing_record(owner.token).status == PoolBackingStatus::Unavailable,
+              "canonical owner/import pool backing mismatch");
       require(registration.ownership == AllocationOwnership::Imported &&
                   registration.extent_bytes == 24 && !registration.requested_bytes &&
                   !(registration.token == owner.token), "import registration collapsed into owner");
@@ -42,6 +56,8 @@ int main() {
                   mapped == static_cast<char *>(native.get_alloc_info(owned).ptr)+16,
               "owned import mapped wrong offset");
       const auto raw = native.import_memory(mapped,24);
+      require(device.allocation_pool_backing_record(device.capture_allocation_record(raw).token).status ==
+                  PoolBackingStatus::Unknown, "raw import gained pool provenance");
       require(device.allocation_backing_record(device.capture_allocation_record(raw).token).status ==
                   AllocationRecordStatus::Unknown, "raw pointer match fabricated provenance");
       DeviceAllocation rejected = owned;
@@ -68,6 +84,8 @@ int main() {
               "second owned import failed");
       const auto second = device.capture_allocation_record(alias).token;
       device.dealloc_memory(owned);
+      require(device.allocation_pool_backing_record(second).status == PoolBackingStatus::Unknown,
+              "retired owner still resolved pool backing");
       require(device.allocation_record(second).status == AllocationRecordStatus::Live &&
                   device.allocation_backing_record(second).status == AllocationRecordStatus::Unknown &&
                   device.import_owned_memory(owner.token,0,0,&rejected) == RhiResult::invalid_usage,
@@ -78,6 +96,8 @@ int main() {
       native.clear();
       const auto zero = allocate(device,0);
       const auto zero_owner = device.capture_allocation_record(zero).token;
+      require(device.allocation_pool_backing_record(zero_owner).status == PoolBackingStatus::Absent,
+              "zero owner fabricated raw backing");
       require(device.import_owned_memory(zero_owner,0,0,&alias) == RhiResult::success &&
                   device.allocation_backing_record(device.capture_allocation_record(alias).token).token == zero_owner &&
                   device.allocation_backing_record(second).status == AllocationRecordStatus::Unknown,

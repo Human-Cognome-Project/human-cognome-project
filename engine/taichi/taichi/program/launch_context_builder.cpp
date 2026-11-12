@@ -26,7 +26,7 @@ LaunchContextBuilder::PreparedBacking LaunchContextBuilder::prepared_backing(
   for (std::size_t i = 0; i < array_bindings.size(); ++i) {
     if (array_bindings[i].rank < 0)
       continue;
-    const auto record = prepared_array_record(live_device, i);
+    const auto record = prepared_array_backing_record(live_device, i);
     if (record.status != AllocationRecordStatus::Live ||
         record.ownership != AllocationOwnership::Owned)
       result.array_bindings_complete = false;
@@ -57,6 +57,22 @@ AllocationRecord LaunchContextBuilder::prepared_array_record(
   if (record.status == AllocationRecordStatus::Unavailable)
     return {};
   return live_device.allocation_record(record.token);
+}
+
+AllocationRecord LaunchContextBuilder::prepared_array_backing_record(
+    const Device &live_device, std::size_t argument) const {
+  const auto registration = prepared_array_record(live_device, argument);
+  const auto element_bytes = registration.status == AllocationRecordStatus::Live
+                                 ? data_type_size(array_bindings[argument].type) : 0;
+  if (registration.status != AllocationRecordStatus::Live || element_bytes <= 0 ||
+      array_bindings[argument].elements > registration.extent_bytes / element_bytes) {
+    AllocationRecord result;
+    result.status = registration.status == AllocationRecordStatus::Unavailable
+                        ? AllocationRecordStatus::Unavailable
+                        : AllocationRecordStatus::Unknown;
+    return result;
+  }
+  return live_device.allocation_backing_record(registration.token);
 }
 
 namespace {

@@ -58,6 +58,8 @@ class ProgramImpl {
 
   // Requires a live quiescent owner. No implicit full-capacity enumeration.
   virtual ReservationLimits reservation_limits() const { return {}; }
+  virtual PoolBackingRecord reservation_pool_backing(ReservationKind kind, int node,
+      ReservationList list = ReservationList::Elements, uint64_t index = 0) const { return {}; }
   virtual ReservationRequest reservation_request(ReservationKind kind, int node,
       ReservationList list = ReservationList::Elements, uint64_t index = 0) const {
     return {};

@@ -14,6 +14,8 @@ CpuDevice::AllocInfo CpuDevice::get_alloc_info(const DeviceAllocation handle) {
 }
 
 CpuDevice::CpuDevice() {
+  // Materialize shared bookkeeping during setup, never during metadata queries.
+  (void)HostMemoryPool::get_instance();
 }
 
 AllocationRecord CpuDevice::capture_allocation_record(DeviceAllocation handle) const {
@@ -80,6 +82,24 @@ RhiResult CpuDevice::import_owned_memory(AllocationRecordToken token,
   allocations_.push_back(info);  // Failure leaves the owner and output untouched.
   *out = DeviceAllocation{this, id};
   return RhiResult::success;
+}
+
+PoolBackingRecord CpuDevice::allocation_pool_backing_record(AllocationRecordToken token) const {
+  const auto owner = allocation_backing_record(token);
+  if (owner.status == AllocationRecordStatus::Unavailable) return {};
+  PoolBackingRecord result;
+  result.status = PoolBackingStatus::Unknown;
+  if (owner.status != AllocationRecordStatus::Live) return result;
+  if (!owner.extent_bytes) {
+    result.status = PoolBackingStatus::Absent;  // Live zero-byte CPU owner has no raw mapping.
+    return result;
+  }
+  return HostMemoryPool::get_instance().capture_backing_record(
+      allocations_[owner.token.allocation].ptr, owner.extent_bytes);
+}
+
+PoolBackingStorage CpuDevice::pool_backing_storage() const {
+  return HostMemoryPool::get_instance().backing_storage();
 }
 
 void CpuDevice::clear() {

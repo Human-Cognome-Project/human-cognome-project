@@ -5980,3 +5980,111 @@ remotely. Published head differs from tested source only in four Markdown files;
 118 local file links and whitespace checks passed. Parent #304 smoke43299289118
 passed; native43299289153 remains active at inspection. No duplicate qualification
 or self-merge. Local results do not replace authoritative hosted CI or acceptance.
+
+## Prepared owned-import backing adoption — 2026-11-12
+
+Continues #305 review5881732238 at44c890b7. Provisional source acceptance is recorded;
+#302–#305 integration remains pending corrected parent/hosted qualification. Main
+e11525a0 is already an ancestor. No duplicate hosted run or unchanged-parent rerun.
+
+The new prepared_array_backing_record preserves the separate registration query and
+resolves canonical live Owned backing through common Device. Array coverage now
+accepts explicit owned imports only while both registration and owner validate.
+Raw imports remain unresolved. Bound elements must fit the registration extent before
+resolving full owner backing; a larger owner cannot certify an oversized import view.
+This is accounting coverage, not an added execution guard or lifetime lease. Existing
+prepare type/rank/shape checks remain unchanged. No new retained metadata is added;
+summary scans remain input-sized work to meter before eventual combined admission.
+See [the scoped ownership contract](../../docs/BORROWED-RESOURCES.md).
+
+Initial implementation11f4cf86 began native rebuild; it was deliberately stopped to
+add the registration-extent boundary and negative test. The source pin, commands and
+interrupted build log are retained as history, not reported as qualification.
+Corrected tested source:684a1687ce5dffbf11592f063c9ed5f52f376ce8.
+Tracked Taichi tree:15d7d5bda369ad8faa73bbc8b23fb9b3aa2ff815.
+
+Extended prepared_backing_test covers canonical full owner vs Imported view identity,
+nonzero-offset actual execution, context move/execution, allocation-free first queries,
+oversized-view refusal without launch, foreign/scalar/out-of-range inputs, raw/external
+refusal, independent import retirement, and a Live registration whose backing owner
+has retired. Existing tests continue to exercise owned views, context buffers, metadata
+capacity, unusable/default states and captured array destruction. CPU/shared-host only;
+no GPU, database, browser or performance qualification is implied.
+
+Corrected native static and dependent engine builds passed. All56 scopedCPU checks
+passed:9focused,20exchange (five cases across threads1/2 and bulk/direct-no-unroll),
+12prepared execution/update,9supporting native,6warm recipe. Focused/prepared/supporting
+CTests ran with parent TI_LIB_DIR unset; direct executables used the explicit runtime
+environment. Corrected build and captured final runtime logs contain no warnings or
+errors. Tested source remained clean. The interrupted intermediate build is retained
+without a pass claim; no source compiler/test failure occurred in final qualification.
+Prepared fixture requests remain arguments40/result0 bytes and embedded record
+capacity144 bytes, unchanged by this slice and not portable fixed fees.
+
+Verified contributor-local archive:prepared-import-domain-684a1687.tar.gz.
+SHA256SUMS manifest:391688cfa350a074473b5ff6bab1665f555f22d57363fa90b2a685e9a2bada81.
+Archive SHA256:49b59c0348e35e04ea40cc79ff2b1f1fa465f452a4eb97ab7e8fc448b3e53138.
+Includes source/configuration/compiler/binary pins, commands, corrected build/results,
+and interrupted-source history. Raw artifacts are not independently inspected remotely.
+Final publication differs from the tested source only in four Markdown files;119local
+file links and whitespace checks passed. Parent #305 smoke43302942605 passed;
+native43302942903 remains active at inspection. No duplicate hosted qualification,
+self-merge or inference of final acceptance from local results.
+
+## Native host-pool backing identity — 2026-11-12
+
+Continues #306 review5881942652 at52696f12. Provisional source acceptance recorded;
+stack integration awaits hosted qualification. Main e11525a0 is already an ancestor.
+No unchanged-parent rerun, duplicate hosted qualification or self-merge.
+
+Native raw-allocation records now carry nonwrapping pool/allocation identities and
+exact raw request sizes. Token validation rejects release/reset/address reuse without
+dereferencing saved pointers; allocator vector indexes are not used as identity.
+Range containment uses an ordered integer-address map and subtraction bounds. Common
+Device/Program bridges first validate supported live owner/request provenance. Raw
+imports remain unresolved; zero owned CPU payload has no raw mapping (Absent).
+Rounded extents remain unavailable. Shared raw backing must not be summed with its
+contained requests. No full B or physical-memory accounting is claimed.
+
+Metadata object/value payload belongs once to the shared pool. Incremental value
+payload is a subset, not extra storage; full pool/node/allocator metadata remains
+incomplete. Failed map registration releases its acquired OS mapping. Lookup is
+logarithmic, not the request API's fixed-depth unit, and future Harness work metering
+must cover lookup and enumeration. See [the ownership contract](../../docs/BORROWED-RESOURCES.md).
+
+Corrected tested source:34432410b75fb53d03190494f0bb0cb35dd9e8f9.
+Tracked Taichi tree:bb2ced8560731a914dab4ecb6914d7959a8c4593.
+Extended native_pool_test exercises shared/distinct raw identity, exact raw size,
+explicit unknown rounding, allocation-free capture/validation/metadata, invalid and
+cross-boundary/oversized/null/zero ranges, foreign pool identity, release/reallocation,
+allocator swap-erase movement, reset, failed metadata registration and exact retry.
+Extended allocation_record_test covers owner/import shared pool identity, raw-import
+refusal, zero backing, retired owner and default-unavailable API. Extended
+reservation_request_test covers live native metadata requests, allocation-free query,
+Absent/invalid/unsupported cases. CPU/shared-host scope only; no GPU, database, browser
+or performance qualification is implied. Pool reset is confined to the isolated test
+process after its allocations are no longer used; retained databases are untouched.
+
+Initial d5d59ddd native build was deliberately interrupted to move lazy shared-pool
+bookkeeping initialization into CPU device construction. Corrected first-device
+metadata inspection is allocation-free before any raw backing exists. Initial source,
+commands and interrupted log remain in history without a qualification claim.
+
+Corrected native static and dependent engine builds passed. All57 scoped CPU checks
+passed:10focused (including native_pool_test),20exchange processes (five cases across
+threads1/2 and bulk/direct-no-unroll),12prepared execution/update,9supporting native,
+6warm recipe. Focused/prepared/supporting CTests ran with parent TI_LIB_DIR unset;
+direct executables used the explicit runtime environment. Corrected build and captured
+final runtime logs contain no warnings or errors. Tested source remained clean. No
+source compiler/test failure occurred; the interrupted intermediate build remains
+unqualified history. No GPU or performance claim is inferred from this shared host.
+
+Verified contributor-local archive:host-pool-domain-34432410.tar.gz.
+SHA256SUMS manifest:6ab07a7832ec069cea9786a0c8b62c053d480fb587d269225192782dac7de115.
+Archive SHA256:908cce66995a326b929f5b927c167f653a247518cf592f3ef2d3c7580235170e.
+Includes source/configuration/compiler/binary pins, exact commands, corrected results
+and interrupted-source history. Raw artifacts have not been independently inspected
+remotely. Final publication differs from tested source only in four Markdown files;
+120 local file links and whitespace checks passed. Parent #306 smoke43305748766
+passed; native43305748693 remains active at inspection. Hosted results and review,
+not local qualification alone, govern integration; #302's failed attempt is preserved.

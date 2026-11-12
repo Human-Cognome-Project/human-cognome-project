@@ -85,6 +85,73 @@ void run() {
   engine::readback(*owned, values, sizeof(values));
   require(values[0] == 19, "moved prepared execution changed");
 
+  const auto owner_token = owned->backing_record(device).token;
+  DeviceAllocation proven_import;
+  require(device.import_owned_memory(owner_token, sizeof(int), 2*sizeof(int), &proven_import) ==
+              RhiResult::success, "owned import creation failed");
+  Ndarray proven_view(proven_import, PrimitiveType::i32, {2});
+  Ndarray oversized_view(proven_import, PrimitiveType::i32, {4});
+  auto oversized = compiled.make_context();
+  oversized.set_arg_ndarray({0},*owned);
+  oversized.set_arg_ndarray({1},oversized_view);
+  oversized.set_arg_int({2},0);
+  compiled.prepare(oversized);  // No launch: the view exceeds its registration.
+  require(!oversized.prepared_backing(device).array_bindings_complete &&
+              oversized.prepared_array_backing_record(device,1).status == AllocationRecordStatus::Unknown,
+          "full owner extent hid an oversized import view");
+  auto proven = compiled.make_context();
+  proven.set_arg_ndarray({0}, *owned);
+  proven.set_arg_ndarray({1}, proven_view);
+  proven.set_arg_int({2}, 2);
+  compiled.prepare(proven);
+  allocation_observation::calls = 0;
+  allocation_observation::enabled = true;
+  const auto proven_backing = proven.prepared_array_backing_record(device, 1);
+  const auto proven_summary = proven.prepared_backing(device);
+  allocation_observation::enabled = false;
+  const auto proven_registration = proven.prepared_array_record(device, 1);
+  require(!allocation_observation::calls && proven_summary.array_bindings_complete &&
+              !proven_summary.host_metadata_complete &&
+              proven_backing.token == owner_token && proven_backing.extent_bytes == sizeof(values) &&
+              proven_registration.ownership == AllocationOwnership::Imported &&
+              proven_registration.extent_bytes == 2*sizeof(int) &&
+              !(proven_registration.token == proven_backing.token),
+          "prepared import conflated registration with canonical backing or allocated");
+  require(proven.prepared_array_backing_record(foreign,1).status == AllocationRecordStatus::Unknown &&
+              proven.prepared_array_backing_record(device,2).status == AllocationRecordStatus::Unknown &&
+              proven.prepared_array_backing_record(device,99).status == AllocationRecordStatus::Unknown,
+          "canonical query accepted foreign/scalar/out-of-range binding");
+  values[1] = 5;
+  engine::upload(*owned, values, sizeof(values));
+  compiled.launch(proven);
+  runtime.synchronize();
+  engine::readback(*owned, values, sizeof(values));
+  require(values[0] == 7, "prepared partial import used wrong offset");
+  auto proven_moved = std::move(proven);
+  require(!proven.prepared_backing(device).buffers_available &&
+              proven_moved.prepared_array_backing_record(device,1).token == owner_token,
+          "move lost canonical backing or retained source coverage");
+  proven_moved.set_prepared_int(2,3);
+  compiled.launch(proven_moved);
+  runtime.synchronize();
+  engine::readback(*owned, values, sizeof(values));
+  require(values[0] == 8, "moved partial import execution changed");
+  device.dealloc_memory(proven_import);
+  require(!proven_moved.prepared_backing(device).array_bindings_complete &&
+              proven_moved.prepared_array_record(device,1).status == AllocationRecordStatus::Retired &&
+              proven_moved.prepared_array_backing_record(device,1).status == AllocationRecordStatus::Unknown &&
+              moved.prepared_backing(device).array_bindings_complete,
+          "retired import still certified backing or retired owner");
+  DeviceAllocation remaining_import;
+  require(device.import_owned_memory(owner_token,0,sizeof(values),&remaining_import) ==
+              RhiResult::success, "remaining import failed");
+  Ndarray remaining_view(remaining_import,PrimitiveType::i32,{4});
+  auto remaining = compiled.make_context();
+  remaining.set_arg_ndarray({0},remaining_view);
+  remaining.set_arg_ndarray({1},part);
+  remaining.set_arg_int({2},0);
+  compiled.prepare(remaining);
+
   auto external = compiled.make_context();
   external.set_arg_ndarray({0}, *owned);
   external.set_arg_external_array_with_shape({0}, reinterpret_cast<uintptr_t>(values),
@@ -94,6 +161,7 @@ void run() {
   compiled.prepare(external);
   require(external.prepared_backing(device).buffers_available &&
               !external.prepared_backing(device).array_bindings_complete &&
+              external.prepared_array_backing_record(device, 0).status == AllocationRecordStatus::Unavailable &&
               external.prepared_array_record(device, 0).status == AllocationRecordStatus::Unavailable,
           "external rebind retained prior owned record");
 
@@ -107,6 +175,7 @@ void run() {
   import_context.set_arg_int({2}, 0);
   compiled.prepare(import_context);
   require(!import_context.prepared_backing(device).array_bindings_complete &&
+              import_context.prepared_array_backing_record(device, 0).status == AllocationRecordStatus::Unknown &&
               import_context.prepared_array_record(device, 0).ownership == AllocationOwnership::Imported,
           "import registration certified owned backing");
   cpu.dealloc_memory(imported);
@@ -114,6 +183,11 @@ void run() {
               moved.prepared_backing(device).array_bindings_complete,
           "import retirement affected original owner");
   owned.reset();
+  require(remaining.prepared_array_record(device,0).status == AllocationRecordStatus::Live &&
+              remaining.prepared_array_backing_record(device,0).status == AllocationRecordStatus::Unknown &&
+              !remaining.prepared_backing(device).array_bindings_complete,
+          "live registration certified retired backing");
+  device.dealloc_memory(remaining_import);
   require(!moved.prepared_backing(device).array_bindings_complete &&
               moved.prepared_array_record(device, 0).status == AllocationRecordStatus::Retired,
           "prepared binding recaptured released array");

@@ -56,10 +56,14 @@ class LaunchContextBuilder {
 
   // Non-owning, synchronous views: caller keeps context/kernel/runtime/device
   // alive and quiescent. Views do not certify identity after owner destruction.
-  // Imported/unknown/unavailable bindings prevent complete array coverage.
+  // Only live owned or explicitly proven owned-import backing completes array
+  // coverage. This is inspection, not an execution lifetime guard.
   PreparedBacking prepared_backing(const Device &live_device) const;
   AllocationRecord prepared_array_record(const Device &live_device,
                                          std::size_t argument) const;
+  // Separate from the captured registration: canonical full backing for dedup.
+  AllocationRecord prepared_array_backing_record(const Device &live_device,
+                                                 std::size_t argument) const;
   enum class DevAllocType : int8_t {
     kNone = 0,
     kNdarray = 1,

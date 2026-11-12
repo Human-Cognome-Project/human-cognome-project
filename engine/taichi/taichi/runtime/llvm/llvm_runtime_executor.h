@@ -55,6 +55,8 @@ class LlvmRuntimeExecutor {
 
   void deallocate_memory_on_device(DeviceAllocation handle);
   ReservationLimits reservation_limits() const;
+  PoolBackingRecord reservation_pool_backing(ReservationKind kind, int node,
+      ReservationList list, uint64_t index) const;
   ReservationRequest reservation_request(ReservationKind kind, int node,
       ReservationList list, uint64_t index) const;
 

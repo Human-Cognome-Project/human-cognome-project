@@ -1,6 +1,8 @@
 #include "taichi/rhi/common/host_memory_pool.h"
 
 #include <memory>
+#include <atomic>
+#include <limits>
 
 #if defined(TI_PLATFORM_UNIX)
 #include <sys/mman.h>
@@ -10,7 +12,27 @@
 
 namespace taichi::lang {
 
-HostMemoryPool::HostMemoryPool() {
+namespace {
+std::uint64_t next_pool_identity() {
+  static std::atomic<std::uint64_t> next{1};
+  auto value = next.load(std::memory_order_relaxed);
+  while (value != std::numeric_limits<std::uint64_t>::max()) {
+    if (next.compare_exchange_weak(value, value + 1, std::memory_order_relaxed))
+      return value;
+  }
+  return 0;  // Disable identity coverage instead of wrapping.
+}
+void release_raw_mapping(void *ptr, std::size_t bytes) {
+#if defined(TI_PLATFORM_UNIX)
+  const bool failed = munmap(ptr, bytes) != 0;
+#else
+  const bool failed = !VirtualFree(ptr, 0, MEM_RELEASE);
+#endif
+  TI_ERROR_IF(failed, "Failed to free virtual memory ({} B)", bytes);
+}
+}
+
+HostMemoryPool::HostMemoryPool() : pool_instance_(next_pool_identity()) {
   allocator_ = std::unique_ptr<UnifiedAllocator>(new UnifiedAllocator());
 
   TI_TRACE("Memory pool created. Default buffer size per allocator = {} MB",
@@ -36,7 +58,7 @@ HostMemoryPool::Statistics HostMemoryPool::statistics() {
   Statistics result;
   static_cast<MemoryPoolStatistics &>(result) = statistics_;
   for (const auto &entry : raw_memory_chunks_) {
-    result.reserved_bytes += entry.second;
+    result.reserved_bytes += entry.second.bytes;
   }
   if (allocator_) {
     for (const auto &chunk : allocator_->chunks_) {
@@ -45,6 +67,51 @@ HostMemoryPool::Statistics HostMemoryPool::statistics() {
     }
   }
   return result;
+}
+
+PoolBackingRecord HostMemoryPool::capture_backing_record(const void *address,
+                                                        std::size_t bytes) {
+  std::lock_guard<std::mutex> lock(mut_allocation_);
+  PoolBackingRecord result;
+  if (!pool_instance_) return result;
+  result.status = PoolBackingStatus::Unknown;
+  if (!address || !bytes) return result;
+  const auto value = reinterpret_cast<std::uintptr_t>(address);
+  auto found = raw_memory_chunks_.upper_bound(value);
+  if (found == raw_memory_chunks_.begin()) return result;
+  --found;
+  const auto offset = value - found->first;
+  if (offset >= found->second.bytes || bytes > found->second.bytes - offset)
+    return result;
+  if (!found->second.identity) return {};
+  result.status = PoolBackingStatus::Live;
+  result.token = {pool_instance_, found->second.identity, found->first};
+  result.raw_requested_bytes = found->second.bytes;
+  return result;
+}
+
+PoolBackingRecord HostMemoryPool::backing_record(PoolBackingToken token) {
+  std::lock_guard<std::mutex> lock(mut_allocation_);
+  PoolBackingRecord result;
+  if (!pool_instance_) return result;
+  result.status = PoolBackingStatus::Unknown;
+  if (token.pool_instance != pool_instance_ || !token.allocation) return result;
+  const auto found = raw_memory_chunks_.find(token.base);
+  if (found == raw_memory_chunks_.end() || found->second.identity != token.allocation)
+    return result;
+  result.status = PoolBackingStatus::Live;
+  result.token = token;
+  result.raw_requested_bytes = found->second.bytes;
+  return result;
+}
+
+PoolBackingStorage HostMemoryPool::backing_storage() {
+  std::lock_guard<std::mutex> lock(mut_allocation_);
+  using OldPayload = std::pair<const std::uintptr_t, std::size_t>;
+  using Payload = decltype(raw_memory_chunks_)::value_type;
+  return {bool(pool_instance_), false, pool_instance_, sizeof(*this),
+          raw_memory_chunks_.size() * sizeof(Payload),
+          raw_memory_chunks_.size() * (sizeof(Payload) - sizeof(OldPayload))};
 }
 
 void HostMemoryPool::release(std::size_t size, void *ptr) {
@@ -94,11 +161,17 @@ void *HostMemoryPool::allocate_raw_memory(std::size_t size) {
               "Allocated address ({:}) is not aligned by page size {}", ptr,
               page_size);
 
-  if (raw_memory_chunks_.count(ptr)) {
+  const auto base = reinterpret_cast<std::uintptr_t>(ptr);
+  if (raw_memory_chunks_.count(base)) {
     TI_ERROR("Memory address ({:}) is already allocated", ptr);
   }
 
-  raw_memory_chunks_[ptr] = size;
+  try {
+    raw_memory_chunks_.emplace(base, RawChunk{size, next_pool_identity()});
+  } catch (...) {
+    release_raw_mapping(ptr, size);
+    throw;
+  }
   ++statistics_.raw_allocation_calls;
   return ptr;
 }
@@ -113,21 +186,14 @@ void HostMemoryPool::deallocate_raw_memory(void *ptr) {
     The caller ensures that no other thread is accessing the memory pool
     when calling this method.
   */
-  if (!raw_memory_chunks_.count(ptr)) {
+  const auto base = reinterpret_cast<std::uintptr_t>(ptr);
+  if (!raw_memory_chunks_.count(base)) {
     TI_ERROR("Memory address ({:}) is not allocated", ptr);
   }
 
-  std::size_t size = raw_memory_chunks_[ptr];
-#if defined(TI_PLATFORM_UNIX)
-  if (munmap(ptr, size) != 0)
-#else
-  // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualfree
-  // According to MS Doc: size must be when using MEM_RELEASE
-  if (!VirtualFree(ptr, 0, MEM_RELEASE))
-#endif
-    TI_ERROR("Failed to free virtual memory ({} B)", size);
-
-  raw_memory_chunks_.erase(ptr);
+  std::size_t size = raw_memory_chunks_.at(base).bytes;
+  release_raw_mapping(ptr, size);
+  raw_memory_chunks_.erase(base);
 }
 
 void HostMemoryPool::reset() {
@@ -136,7 +202,7 @@ void HostMemoryPool::reset() {
 
   const auto ptr_map_copied = raw_memory_chunks_;
   for (auto &ptr : ptr_map_copied) {
-    deallocate_raw_memory(ptr.first);
+    deallocate_raw_memory(reinterpret_cast<void *>(ptr.first));
   }
 }
 

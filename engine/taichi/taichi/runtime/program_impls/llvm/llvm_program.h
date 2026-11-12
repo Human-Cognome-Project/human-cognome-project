@@ -109,6 +109,10 @@ class LlvmProgramImpl : public ProgramImpl {
   ReservationLimits reservation_limits() const override {
     return runtime_exec_->reservation_limits();
   }
+  PoolBackingRecord reservation_pool_backing(ReservationKind kind, int node,
+      ReservationList list, uint64_t index) const override {
+    return runtime_exec_->reservation_pool_backing(kind, node, list, index);
+  }
   ReservationRequest reservation_request(ReservationKind kind, int node,
       ReservationList list, uint64_t index) const override {
     return runtime_exec_->reservation_request(kind, node, list, index);

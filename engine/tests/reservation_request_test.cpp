@@ -33,6 +33,17 @@ std::uint64_t exercise() {
               metadata.requested_bytes == 128 * sizeof(std::uint64_t) && metadata.alignment == 4096 &&
               !metadata.backing_identity_complete && !metadata.rounded_extent_available && !metadata.extent_bytes,
           "ambient request metadata missing, allocated during query, or certified rounded backing");
+  allocation_observation::calls = 0;
+  allocation_observation::enabled = true;
+  const auto metadata_pool = owner.reservation_pool_backing(ReservationKind::AmbientMetadata,-1);
+  allocation_observation::enabled = false;
+  require(!allocation_observation::calls && metadata_pool.status == PoolBackingStatus::Live &&
+              metadata_pool.raw_requested_bytes >= metadata.requested_bytes &&
+              !metadata_pool.rounded_extent_available &&
+              owner.reservation_pool_backing(ReservationKind::Ambient,127).status == PoolBackingStatus::Absent &&
+              owner.reservation_pool_backing(ReservationKind::Ambient,-1).status == PoolBackingStatus::Unknown &&
+              owner.ProgramImpl::reservation_pool_backing(ReservationKind::Ambient,-1).status == PoolBackingStatus::Unavailable,
+          "native request pool bridge incorrect or allocated");
   require(owner.reservation_request(ReservationKind::Ambient, 127).status == ReservationStatus::Absent &&
               owner.reservation_request(ReservationKind::Ambient, -1).status == ReservationStatus::Invalid &&
               owner.reservation_request(ReservationKind::Ambient, 128).status == ReservationStatus::Invalid &&
