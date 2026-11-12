@@ -2037,3 +2037,35 @@ now stays in its stable source. This is not total-byte or performance evidence.
 Remaining active/equivalence indexes, independently owned publication copies and
 setup-work limits remain separate. Membership callable/recursion and declaration/
 binding budgets precede combined resources and remaining-operation integration.
+
+
+### Consolidate active/equivalence metadata (awaiting review)
+
+Following #290 review 5875081581, OccurrenceSource owns an activity flag and borrows
+an optional complete-character ToolRef from the stable source tool table. Both are
+initialized for every legacy/structural row. Selection processing resolves aggregate
+and part IDs through the existing ordered map by value, then updates that metadata.
+No reference to the synthesized aggregate is retained. Complete-character metadata
+is attached for a single-parent letter regardless of activity, preserving inactive
+aggregates. Publication copies the full pinned reference into owned optional output.
+The temporary active set and equivalence map are removed; provenance is unchanged.
+
+Source-death tests cover exact activity and complete-character presence/full revision
+in v1/v2, mixed exposures, shuffled input, repeated/multibyte characters, inactive
+aggregates and empty byte equivalence. Existing deterministic slots, v1 state,
+v2 no-slot and malformed/revision controls remain active.
+
+On Clang15/libstdc++, sizeof(OccurrenceSource) grows 24→32 and the actual libstdc++
+ordered-node type grows 64→72. The local source probe retains originals and separate
+sizeof-instrumented copies. Across 18 occurrences this adds 144 requested node bytes.
+Aggregate exposure removes 8 calls, mixed exposure 28 (including 12 copied paths).
+Observed cumulative requested bytes decrease 181845→181325 and 191597→190341,
+respectively. This includes all observed ordinary C++ new requests during the call;
+it is not retained/peak memory, allocator overhead, all allocation APIs or timing.
+Public layouts and owner accounting are unchanged; projection runs before adoption.
+
+Publication audit boundary: local ProjectedOccurrence record copying and reusable
+OccurrenceKey staging warrant one bounded audit. Definition/Selection staging moves
+already; recipe and published identities must remain owned. Do not extend this into
+another unbounded index cleanup. Membership callable/recursion and declaration/
+binding setup budgets remain before combined resources/operation integration.

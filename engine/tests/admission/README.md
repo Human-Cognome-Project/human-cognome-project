@@ -5067,3 +5067,71 @@ passed and regression jobs were active. No duplicate retry or merge was made.
 No GPU, live DB or browser work. Remaining active/equivalence synthetic-key lifetime
 and publication/setup costs precede membership callable/recursion, declaration/
 binding budgets, combined resources and remaining-operation integration.
+
+
+### Selection metadata consolidation qualification (2026-11-12)
+
+Tested `d1c61a5eab9164c1b9db54209a601c8d961090dc`, continuing from #290 reviewed head
+`070f5a6c523fcdbc3e627dad6691f74eeb6e489a` under review 5875081581 (no blocker,
+provisional continuation permitted). Main remains `35814207`; #287–#290 are unmerged.
+
+OccurrenceSource now contains an initialized activity flag and optional borrowed
+complete-character pointer. Selection processing resolves aggregate/part values in
+the ordered map, sets activity and attaches the source single-parent ToolRef even
+for inactive aggregates. No synthesized key is stored. Publication copies the pinned
+reference into owned output; the provenance map is unchanged. The separate active
+set and equivalence map are removed. V1/v2 source-death controls verify exact
+Aggregate/Parts activity and complete-reference presence/revision, including shuffled
+mixed input, inactive aggregates and bytes. Existing repeated/multibyte, ordering,
+v1 initial-state, v2 no-slot and malformed/revision controls remain active.
+
+The focused v1 source comparison against #290 measures 18 occurrences, 13 byte paths
+and three complete-character aggregates in both exposure cases:
+
+| Observation | Aggregate prior/current | Mixed prior/current |
+|---|---|---|
+| Active occurrences / active byte paths | 5/0 in both | 13/12 in both |
+| C++ new calls | 2011 / 2003 | 2124 / 2096 |
+| Path-sized requests | 171 / 171 | 218 / 206 |
+| UUID-sized requests | 743 / 743 | 775 / 775 |
+| Cumulative requested bytes | 181845 / 181325 | 191597 / 190341 |
+
+The script requires removed calls = active rows + equivalent rows + active byte
+paths, removed path requests = active byte paths, and unchanged UUID counts.
+Probe-only sizeof instrumentation records metadata 24→32 and actual libstdc++
+ordered-node type 64→72, adding 144 requested node bytes across 18 rows. Original
+and instrumented sources, commands, binaries and logs are retained. The observed
+cumulative byte differences (520/1256) include this growth; they are not retained/
+peak memory, allocator overhead, other allocation APIs or performance evidence.
+Public layouts remain unchanged. No probe failure or diagnostic was observed.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/probe errors or product test failures.
+Two Taichi cache-lock warnings occurred after the final PASS in the one-worker bulk
+and direct exchange_commit logs. Both are preserved; verification permits exactly
+those two inspected post-PASS diagnostics and rejects other warnings/errors. No
+cache cleanup or test rerun was used to erase them. Clang15/libstdc++, CPU/x64,
+Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Owner metrics remain unchanged across all four configurations: single/four selection
+live/peak 321185/392475, work 420751/790263, byte/work boundaries 2761/3269 and
+3707/5925, retained/peak 321265/321265 and 392555/392555, census 321153/392251.
+All 3271/5927 failure sites fully reclaim blocks; failure peaks 321250/392540.
+These overlapping reports must not be summed; initial projection precedes adoption.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/projection-selection-metadata-domain-d1c61a5e.tar.gz`;
+SHA256SUMS digest:
+
+    28fcd7ab7c80dceb7b653d268eb4e37f67fcec6b6bcf5843e5f600ad7d4fdb6e
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. #290 smoke 43225419276 passed and native
+43225419105 was running at review; no duplicate retry or merge was made. No GPU,
+live DB or browser work.
+
+Next bounded audit: local ProjectedOccurrence record copying and OccurrenceKey
+staging versus necessary owned outputs. Definition/Selection staging already moves;
+retained recipe and public input/parent/identity stores remain owned. Stop initial
+projection cleanup at that explicit boundary, then proceed to membership callable/
+recursion and declaration/binding setup budgets, combined resources and operation/
+control integration. This contribution does not complete the owner setup gate.

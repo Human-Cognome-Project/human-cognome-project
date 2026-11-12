@@ -410,6 +410,25 @@ Next: active/equivalence synthetic-key lifetime and publication/setup costs, the
 membership callable/recursion, declaration/binding budgets and combined resources/
 operation integration.
 
+**Selection-metadata continuation (awaiting review, 2026-11-12):** #290 review
+5875081581 directs consolidation into the existing ordered metadata. Each row starts
+inactive with no complete-character pointer; selection processing resolves aggregate/
+part IDs by value, sets activity and attaches the stable single-parent ToolRef even
+for inactive aggregates. Publication copies it into owned optional output. The
+active/equivalence containers are removed; provenance remains unchanged. Local
+source comparison records 8/28 fewer calls for aggregate/mixed exposures, while
+ordered nodes grow 64→72 bytes. See admission for complete qualification and limits.
+
+The remaining initial-publication audit is bounded: inspect the local
+ProjectedOccurrence record copied into occurrences_ and the reusable OccurrenceKey
+k; distinguish redundant staging copies from independently owned output identities.
+Definition/Selection staging already moves. Retained recipe_, structural input,
+legacy handoff and parent records have independent ownership requirements and must
+not silently become views. Stop expanding initial-projection cleanup once this
+boundary is explicit. Then membership callable/recursion and declaration/binding
+setup budgets precede combined resources and operation/control integration;
+projection allocation reductions do not complete the owner setup gate.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in
