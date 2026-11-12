@@ -1,6 +1,6 @@
 # Core continuation after local CUDA corrections
 
-**Maintainer acceptance — 2026-11-12:** #285 and #286 are integrated into main at `087b6aff14d454c9ebafcda28c9e9243f596e4d2`, reviewed tip `49643f2a22bbb0076584e01d990a32ff7fe0acda`. Exact-head #286 native 43130677310 and smoke 43130677322 passed; #285 native 43121173964 and smoke 43121173792 also passed. All 12 #286 native jobs succeeded. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 130894721312 reports addressed_reads=24/private_reads=0. The active review queue is clear; #75, #111 and #123 remain deliberately held. Earlier provisional/pending labels below are historical and superseded by this acceptance. No GPU or performance qualification is implied.
+**Maintainer acceptance — 2026-11-12:** #285 and #286 are integrated into main at `087b6aff14d454c9ebafcda28c9e9243f596e4d2`, reviewed tip `49643f2a22bbb0076584e01d990a32ff7fe0acda`. Exact-head #286 native 43130677310 and smoke 43130677322 passed; #285 native 43121173964 and smoke 43121173792 also passed. All 12 #286 native jobs succeeded. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 130894721312 reports addressed_reads=24/private_reads=0. At that integration the active review queue was clear; #75, #111 and #123 remain deliberately held. Earlier provisional/pending labels below are historical and superseded by this acceptance. No GPU or performance qualification is implied.
 
 **Next bounded task:** start from current main and audit initial occurrence indexes in `project_letters` and their publication/setup costs. Preserve value ordering, duplicate/revision rejection, source stability, exact provenance and independent published outputs; distinguish removable temporary copies from necessary owned publication storage. Keep the implementation bounded with source-death and independent allocation evidence. Membership callable/recursion, declaration/binding setup budgets, combined resource accounting and remaining operation/control integration follow. Do not repeat accepted baseline tests merely to onboard.
 
@@ -384,6 +384,18 @@ positions/velocities and occurrence association; structural output remains indep
 Remaining owned occurrence/used-definition keys and publication/setup costs precede
 membership callable/recursion, declaration/binding budgets and combined operations.
 Main remains `35814207`; #287 is unmerged pending full hosted qualification.
+
+**Used-definition lookup continuation (awaiting review, 2026-11-12):** #288 review
+5874675639 permits bounded continuation at `8772552d`. The temporary set now borrows
+stable definition keys from const input occurrence rows using value ordering;
+publication still creates independent definitions. V1/v2 source-death tests compare
+published IDs with an independent encoded-key set, covering deduplication/order.
+The local source comparison removes 12 UUID-sized requests and 24 total allocation
+calls for 12 distinct used definitions; public layouts are unchanged. See admission
+for source-pinned qualification and limits. Main remains `35814207`; #287/#288 are
+unmerged, with #288 smoke passed and native running at inspection. Remaining owned
+occurrence-index keys and publication/setup costs precede membership callable/
+recursion, declaration/binding budgets and combined resources/operation integration.
 
 ## A. Coherent source/hierarchy refresh
 

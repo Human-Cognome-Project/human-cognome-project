@@ -1988,3 +1988,28 @@ physical-memory or performance claim is made from call counts.
 Remaining ordered/provenance/equivalence/active occurrence keys, used-definition
 lookups and publication/setup costs need separate audit. Membership callable/
 recursion and declaration/binding budgets precede combined resources/operations.
+
+
+### Borrow used-definition lookup keys (awaiting review)
+
+Following #288 review 5874675639, project_letters' temporary used-definition set
+stores reference_wrapper<const ObjectKey> with the existing ToolKeyLess comparator.
+References point to definition objects in const legacy/structural source rows,
+whose lifetime and address stability span construction and consumption. Comparator
+ordering remains by value, so equal keys from distinct occurrence rows deduplicate.
+No synthesized key is borrowed and no reference escapes into published output.
+Publication still owns the definition text, geometry and parent records.
+
+Both recipe-version source-death tests now compare published definition IDs against
+an independent set of encoded source keys, checking exact membership, unique values
+and order after the actual projection source is destroyed. Existing duplicate,
+revision and complete occurrence-reference controls remain active. A local v1
+source comparison against #288 observes 755→743 UUID-sized requests and 2061→2037
+allocation calls for 12 distinct definitions; path-sized requests remain 197.
+This is a selected temporary-copy reduction, not total-byte or performance evidence.
+Public layouts and owner-adoption metrics are unchanged; initial projection occurs
+before owner adoption and these results must not be attributed to its quotas.
+
+Remaining owned occurrence-index keys and publication/setup costs require separate
+audit. Membership callable/recursion and declaration/binding budgets follow before
+combined resources and remaining-operation integration.
