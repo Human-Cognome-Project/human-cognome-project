@@ -51,6 +51,20 @@ int main() {
       std::reverse(source.structural_occurrences.begin(), source.structural_occurrences.end());
       return project_letters(source);
     }();
+    for (const auto &published : p.occurrences()) {
+      const auto selection = std::find_if(b.selections.begin(), b.selections.end(),
+          [&](const auto &s) { return s.entry == published.key.source.entry; });
+      check(selection != b.selections.end(), "published occurrence has a selection");
+      const bool aggregate = published.key.source.path.empty();
+      check(published.active == (aggregate ==
+                (selection->exposure == warm::Exposure::Aggregate)),
+            "source-death publication retains exact aggregate/parts activity");
+      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      const bool complete = aggregate && definition.parents.size() == 1;
+      check(bool(published.complete_character) == complete &&
+                (!complete || *published.complete_character == definition.parents.front().target),
+            "complete character retains pinned reference even for inactive aggregates");
+    }
     std::vector<warm::OccurrenceId> expected_ids;
     for (const auto &row : b.structural_occurrences) expected_ids.push_back(row.id);
     std::sort(expected_ids.begin(), expected_ids.end());
