@@ -16,11 +16,48 @@ CpuDevice::AllocInfo CpuDevice::get_alloc_info(const DeviceAllocation handle) {
 CpuDevice::CpuDevice() {
 }
 
+AllocationRecord CpuDevice::capture_allocation_record(DeviceAllocation handle) const {
+  if (handle.device != this) {
+    AllocationRecord result;
+    result.status = AllocationRecordStatus::Unknown;
+    return result;
+  }
+  return allocation_record({allocation_instance(), allocation_epoch_, handle.alloc_id});
+}
+
+AllocationRecord CpuDevice::allocation_record(AllocationRecordToken token) const {
+  AllocationRecord result;
+  if (!allocation_instance() || !allocation_epoch_) return result;
+  result.status = AllocationRecordStatus::Unknown;
+  if (token.device_instance != allocation_instance() || token.epoch != allocation_epoch_ ||
+      token.allocation >= allocations_.size()) return result;
+  const auto &info = allocations_[token.allocation];
+  result.token = token;
+  result.status = info.live ? AllocationRecordStatus::Live : AllocationRecordStatus::Retired;
+  result.ownership = info.imported ? AllocationOwnership::Imported : AllocationOwnership::Owned;
+  result.requested_bytes = info.imported ? 0 : info.size;
+  result.extent_bytes = info.size;  // CPU exclusive request, not OS page residency.
+  return result;
+}
+
+AllocationRecordStorage CpuDevice::allocation_record_storage() const {
+  return {true, sizeof(*this), allocations_.capacity() * sizeof(AllocInfo)};
+}
+
+void CpuDevice::clear() {
+  for (std::size_t i = 0; i < allocations_.size(); ++i)
+    if (allocations_[i].live) dealloc_memory(DeviceAllocation{this, i});
+  allocations_.clear();  // Retained capacity is still reported by storage().
+  if (allocation_epoch_)
+    allocation_epoch_ = allocation_epoch_ == UINT64_MAX ? 0 : allocation_epoch_ + 1;
+}
+
 RhiResult CpuDevice::allocate_memory(const AllocParams &params,
                                      DeviceAllocation *out_devalloc) {
   AllocInfo info;
   info.size = params.size;
   info.use_cached = false;
+  info.live = true;
 
   if (info.size == 0) {
     info.ptr = nullptr;
@@ -36,7 +73,13 @@ RhiResult CpuDevice::allocate_memory(const AllocParams &params,
   out_devalloc->alloc_id = allocations_.size();
   out_devalloc->device = this;
 
-  allocations_.push_back(info);
+  try {
+    allocations_.push_back(info);
+  } catch (...) {
+    if (info.ptr) HostMemoryPool::get_instance().release(info.size, info.ptr);
+    *out_devalloc = kDeviceNullAllocation;
+    throw;
+  }
 
   return RhiResult::success;
 }
@@ -61,16 +104,14 @@ uint64_t *CpuDevice::allocate_llvm_runtime_memory_jit(
 void CpuDevice::dealloc_memory(DeviceAllocation handle) {
   validate_device_alloc(handle);
   AllocInfo &info = allocations_[handle.alloc_id];
-  if (info.size == 0) {
-    return;
-  }
-  if (info.ptr == nullptr) {
+  if (!info.live) {
     TI_ERROR("the DeviceAllocation is already deallocated");
   }
-  if (!info.use_cached) {
+  if (!info.imported && !info.use_cached && info.size) {
     HostMemoryPool::get_instance().release(info.size, info.ptr);
-    info.ptr = nullptr;
   }
+  info.ptr = nullptr;
+  info.live = false;
 }
 
 RhiResult CpuDevice::upload_data(DevicePtr *device_ptr,
@@ -151,6 +192,8 @@ DeviceAllocation CpuDevice::import_memory(void *ptr, size_t size) {
   AllocInfo info;
   info.ptr = ptr;
   info.size = size;
+  info.live = true;
+  info.imported = true;
 
   DeviceAllocation alloc;
   alloc.alloc_id = allocations_.size();

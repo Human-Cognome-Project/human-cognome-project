@@ -305,6 +305,10 @@ add_executable(engine_smoke_test tests/engine_smoke_test.cpp)
 target_include_directories(engine_smoke_test PRIVATE tests)
 target_link_libraries(engine_smoke_test PRIVATE engine_support)
 add_test(NAME engine_smoke_test COMMAND engine_smoke_test)
+add_executable(allocation_record_test tests/allocation_record_test.cpp)
+target_link_libraries(allocation_record_test PRIVATE engine_support)
+target_compile_options(allocation_record_test PRIVATE -Wall -Wextra)
+add_test(NAME allocation_record_test COMMAND allocation_record_test)
 set_tests_properties(engine_smoke_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 

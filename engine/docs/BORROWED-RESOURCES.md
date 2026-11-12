@@ -7,6 +7,79 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## CPU allocation records (awaiting review, 2026-11-12)
+
+#300 review 5879635043 accepts the CPU-first native interface slice. The current
+contribution adds `capture_allocation_record`, `allocation_record` and
+`allocation_record_storage` to common native `Device`, with CPU implementation.
+The source audit below remains pinned to #299; this section supersedes its missing
+common-query statement for CPU only. The complete B ledger is still not built.
+
+The record separates `requested_bytes` from `extent_bytes`, and reports Live,
+Retired, Unknown or Unavailable plus Owned/Imported/Unknown ownership. CPU exclusive
+allocations use equal original-request and backend-request extents; neither means
+OS page residency. Other backends inherit Unavailable and unavailable metadata
+coverage, not an accepted zero-byte record. GPU rounding fields are not fabricated
+from a logical array shape. Implementing those backends remains separate work.
+
+Imported CPU registrations are marked Imported: requested_bytes is zero because
+this device made no backing request, while extent_bytes is the supplied external
+extent. This is registration metadata, not proof of the external allocation's
+ownership, identity or lifetime. Releasing/clearing a registration does not free
+external memory. Do not add its extent to owned backing until the real owner and
+aliases are resolved. Zero-sized owned allocations have an explicit live bit;
+null pointer alone no longer determines whether a record has retired.
+
+Tokens are values containing a process-local device instance, reset epoch and
+allocation ID. The common device instance counter never wraps into reused IDs;
+identity exhaustion disables CPU record coverage. CPU allocation IDs append within
+an epoch, and `clear()` releases live owned requests, retires imports without
+freeing external memory, clears rows and changes the epoch. Epoch exhaustion also
+disables coverage. Record-vector capacity remains retained and observable after
+clear. Unknown tokens return no extent; retained retired rows preserve their
+original extents until clear. Native stream/publication generation is unrelated.
+
+**Lifetime precondition:** token inspection requires an independently known-live
+Device under exclusive synchronous access. Tokens contain no saved Device pointer,
+do not extend device lifetime, and are not serializable authority or capability
+credentials. After the owner dies, do not query through its old pointer to discover
+expiry. A new live device rejects the previous instance token even if its object
+address is reused. Capturing a token from a raw DeviceAllocation is allowed only
+while the owning native boundary proves that handle current; legacy raw handles
+cannot distinguish an ID reused after reset. Later validation uses the captured
+token. The future Harness snapshot must enforce its own owner lifetime before
+calling these APIs; a token alone does not solve that boundary.
+
+Retained metadata uses a separate accounted-capacity policy: the CPU query reports
+`sizeof(CpuDevice)` once and the existing allocation table's capacity times its
+extended AllocInfo size. The object includes new device-instance and epoch fields;
+record rows include explicit live/import bits. No new per-token heap storage or
+global allocation registry is introduced. The single common atomic identity counter
+is process-global fixed support, not a per-device charge. Device capability-map
+backing, allocator headers, process/JIT/driver/pool state and physical residency
+are not implied by this narrow metadata report. Do not add the device object again
+through another enclosing census. Queries allocate no storage and do not walk rows.
+
+CPU allocation now unwinds its acquired payload if table registration throws;
+the output handle is cleared. Existing CPU imports are explicitly non-owning on
+release. Device copy is disabled so instance identity cannot be duplicated by a
+copy. This slice does not change CPU destruction into a process/pool reclamation
+policy; callers still follow native object/runtime teardown ordering. `clear()`
+is an explicit quiescent resource operation, not an operation during a kernel or
+while an owner still uses old handles.
+
+`allocation_record_test` is registered in the native CTest suite (the hosted
+round-robin selection includes new tests). It covers owned direct/runtime requests,
+alias views, distinct equal-sized allocations, foreign devices, live/retired zero
+requests, imported storage release/reset, retained metadata, allocation-free
+inspection, ID reuse after clear, same-address device reconstruction, default
+Unavailable behavior, and registration-allocation failure with retry. The CPU test
+uses explicit CpuDevice construction; HCP model code adds no backend casts.
+
+Remaining: native owner backing exports for tree/node/list and prepared-launch
+families, complete trusted Harness coverage/lifetime, then combined accounted-byte
+admission. Existing H/D and input/work gates remain unchanged. This contribution
+does not qualify GPU allocation behavior or claim complete borrowed accounting.
 ## What the owner actually borrows
 
 `ExchangeOwner` borrows one [Harness](../src/field/field.h), which owns the

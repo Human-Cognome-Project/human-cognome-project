@@ -613,11 +613,50 @@ class RHI_DLL_EXPORT PipelineCache {
 
 using UPipelineCache = std::unique_ptr<PipelineCache>;
 
+enum class AllocationRecordStatus { Unavailable, Unknown, Live, Retired };
+enum class AllocationOwnership { Unknown, Owned, Imported };
+// Value identity, not a pointer or a lifetime lease. Query only through an
+// independently known-live Device under its exclusive resource boundary.
+struct AllocationRecordToken {
+  uint64_t device_instance{0}, epoch{0}, allocation{0};
+  bool operator==(const AllocationRecordToken &other) const {
+    return device_instance == other.device_instance && epoch == other.epoch &&
+           allocation == other.allocation;
+  }
+};
+struct AllocationRecord {
+  AllocationRecordStatus status{AllocationRecordStatus::Unavailable};
+  AllocationOwnership ownership{AllocationOwnership::Unknown};
+  AllocationRecordToken token;
+  uint64_t requested_bytes{0}, extent_bytes{0};
+};
+struct AllocationRecordStorage {
+  bool available{false};
+  // Accounted retained capacity, not allocator metadata or physical residency.
+  uint64_t device_object_bytes{0}, record_capacity_bytes{0};
+};
+
 class RHI_DLL_EXPORT Device {
   DeviceCapabilityConfig caps_{};
+  const uint64_t allocation_instance_;
 
  public:
+  Device();
+  Device(const Device &) = delete;
+  Device &operator=(const Device &) = delete;
   virtual ~Device() {};
+  uint64_t allocation_instance() const { return allocation_instance_; }
+  // Capture requires a currently owned native handle; legacy handles alone
+  // cannot distinguish a stale ID reused after reset. Retain/query the token.
+  virtual AllocationRecord capture_allocation_record(DeviceAllocation) const {
+    return {};
+  }
+  virtual AllocationRecord allocation_record(AllocationRecordToken) const {
+    return {};
+  }
+  virtual AllocationRecordStorage allocation_record_storage() const {
+    return {};
+  }
 
   struct AllocParams {
     uint64_t size{0};

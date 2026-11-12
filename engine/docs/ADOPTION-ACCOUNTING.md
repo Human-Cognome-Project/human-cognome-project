@@ -299,3 +299,14 @@ retain released Ndarray records. Tree roots, node/list pools and the owning Harn
 components need explicit coverage. Array views are not allocations. The audit
 records a passing focused CPU identity/alias/retirement probe and a finite native
 hook/owner-export sequence. It does not supply B or enable C+B+H+D admission.
+
+## Common native allocation records — 2026-11-12 (awaiting review)
+
+[The CPU contract](BORROWED-RESOURCES.md#cpu-allocation-records-awaiting-review-2026-11-12)
+implements the first slice authorized by #300 review 5879635043: common record
+queries with explicit status/ownership, request/extent separation, value identity
+and CPU reset/retirement coverage. Inspection requires a known-live owner; tokens
+never query a saved dead pointer. Unsupported backends report Unavailable. CPU
+record metadata has an explicit separate retained-capacity report. This is not
+complete Harness B coverage: tree/node/list and launcher backing exports, owner
+lifetime validation and combined policy remain pending. H/D gates are unchanged.
