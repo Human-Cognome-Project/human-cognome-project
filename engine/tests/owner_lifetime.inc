@@ -123,7 +123,7 @@ void owner_input_admission(Fixture &f, const assembly::LetterProjection &project
     require(fresh_map_copy_work(0,UINT64_MAX,UINT64_MAX-1,meter)==UINT64_MAX,
             "fresh map demand rejected an exact maximum sum");
     for (const auto values : {std::array<std::uint64_t,3>{UINT64_MAX,2,0},
-          {1,UINT64_MAX,0},{UINT64_MAX/74+1,0,0},{0,1,UINT64_MAX}}) {
+          {1,UINT64_MAX,0},{UINT64_MAX/74+1,1,0},{0,1,UINT64_MAX}}) {
       bool overflow=false;
       try { fresh_map_copy_work(values[0],values[1],values[2],meter); }
       catch (const PreparationStop &stop) { overflow=stop.result.status==PreparationStatus::Overflow; }
