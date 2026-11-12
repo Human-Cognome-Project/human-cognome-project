@@ -4,6 +4,12 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 ## Current state
 
+**Maintainer integration — 2026-11-12:** #299 is accepted and integrated by the merge containing this record, preserving reviewed head `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Native 43274126767 passed all 12 jobs; smoke 43274126747 and warm 43274126853 passed. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 131379495998 reports addressed_reads=24/private_reads=0. #298 is already merged at `319f892a`. #300 audit is source-accepted at `e540a871` under review 5879635043 and #301 common/CPU allocation interface is provisionally accepted at `63a46aab` under [review 5880096613](https://github.com/Human-Cognome-Project/human-cognome-project/pull/301#pullrequestreview-5880096613); both remain unmerged with native qualification active. Local archives remain contributor-reported, not independently inspected. Main now includes owner bootstrap admission, not the pending native record interface or complete B ledger.
+
+**Next bounded task:** actual native owner backing exports on reviewed #301, including array/tree-root, node/list and prepared-launch families. Resolve imported registrations to actual owners before deduplication; record identity alone is not backing identity. Preserve explicit coverage and unavailable status, lifetime validity and retained metadata accounting. Then assemble the trusted Harness snapshot, enforce checked disjoint C+B+H+D admission and complete remaining operation/control integration. HCP model code remains backend-independent. Initial-projection copy audit stays closed; additional setup cost is acceptable for long-running focal models. #75/#111/#123 remain deliberately held. Earlier pending and next labels below are historical where they conflict.
+
+**Previous disposition (historical):**
+
 **Maintainer disposition — 2026-11-12:** #298 is accepted and merged at `319f892a1aa35e29597e89e461c0512eba233e33`. Native 43268613665 passed all 12 jobs; smoke 43268613606 and warm 43268613622 passed. Personally inspected regression logs: 115 passing tests (29/29/29/28); database job 131360157711 reports addressed_reads=24/private_reads=0. #299 owner integration is provisionally source-accepted at `5771326e` (review 5879484896), but native qualification remains active and it is unmerged. #300's five-file documentation audit is accepted at `e540a871` in [review 5879635043](https://github.com/Human-Cognome-Project/human-cognome-project/pull/300#pullrequestreview-5879635043); smoke passed, native is active, and it remains unmerged. Local probe archives are contributor-reported, not independently inspected.
 
 **Next bounded task:** implement the common native allocation-record contract and CPU implementation/tests authorized by #300: original request versus rounded extent, live/retired/unknown status, explicit import ownership and validity across device lifetime/reset/reuse. Unsupported coverage is unavailable, never zero; HCP model code consumes one interface. Then export actual owner backing (including tree/node/list and prepared-launch families), assemble the trusted Harness ledger and enforce checked combined C+B+H+D admission. Resolve aliases and pool/suballocation overlap at the owning boundary; include new ledger storage in the policy and keep backing validity distinct from publication generation. Do not query dead device pointers to test expiry. This is scoped accounted-byte work, not a process-wide profiler. Remaining operation/control integration follows. The projection-copy audit stays closed; additional setup cost is acceptable for long-running focal models. #75/#111/#123 remain deliberately held. Earlier pending and next-task labels below are historical where they conflict.
@@ -12,7 +18,17 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 **Next bounded task:** track actual domain bootstrap request bytes with an outer tracker whose lifetime safely covers domain/control-block destruction, and establish a trusted disjoint borrowed-resource ledger. Then enforce combined accounted-byte admission using those disjoint components and selected live requests; do not sum overlapping snapshot, retained, peak or cumulative-work counters. Preserve checked arithmetic, pre-allocation refusal, reclamation, native state and exact retry controls. Remaining operation/control integration follows. The projection copy audit is closed. Additional setup work remains acceptable for long-running focal models; reducing setup totals is not an acceptance gate. #75/#111/#123 remain deliberately held/deferred.
 
-**Bootstrap tracker prerequisite (awaiting review, 2026-11-12):** a new shared
+**Owner bootstrap integration (awaiting review, 2026-11-12):** continues from
+#298 review 5879152987 on `386be0a0`; #298 remains open while hosted qualification
+finishes. Owner admission now gates actual outer tracker/domain control-block
+requests and reports them separately from selected owner requests. Both bootstrap
+boundaries precede owner construction/native mutation. Later constructor refusals
+and allocation exceptions release bootstrap storage while preserving prepaid work;
+selected weak references retain the tracker through final release. See [adoption accounting](../../engine/docs/ADOPTION-ACCOUNTING.md#owner-bootstrap-integration-awaiting-review).
+Next: the trusted disjoint borrowed-resource ledger, then combined accounted-byte
+admission and remaining operation/control integration. Both builds and all 47 scoped CPU checks passed without warnings; this new
+integration evidence is recorded separately from the accepted helper evidence.
+**Bootstrap tracker prerequisite (historical contribution, 2026-11-12):** a new shared
 native helper accounts for its own outer allocation and the actual rebound
 reservation-domain/control-block request, with lifetime through the final weak
 release. It keeps bootstrap and selected requests disjoint. See
@@ -202,7 +218,7 @@ in the same documentation change. Preserve provisional versus merged acceptance.
 | Accepted private operations | Certified placement (#203), ordinary admission/bootstrap (#210), live focus (#211), exact full/reduced f64 rebase (#212/#213), and source-bound mass/momentum/placement accounting with [atomic exchange](../../engine/docs/ATOMIC-EXCHANGE.md) through #219. These are bounded private primitives; an enduring operational owner/public Add API is not accepted. |
 | Latest accepted engine evidence | Integrated through corrected #294, reviewed head `32fe9928`; all 12 native jobs and smoke passed. Inspected 115 regression tests and addressed_reads=24/private_reads=0. |
 | Accepted exchange owner | Scopes through #297 integrated: binding setup, accounting inventory and checked initial-map work prepayment. Combined admission remains open; projection-copy audit stays closed. |
-| Next implementation | Common native allocation-record contract and CPU implementation, then backing exports/trusted borrowed ledger, combined admission and operation/control integration. |
+| Next implementation | Owner backing exports on reviewed #301, trusted Harness ledger, combined admission and operation/control integration. |
 | Factoring follow-up | #230 completes the first mechanical kernel extraction under [#229](https://github.com/Human-Cognome-Project/human-cognome-project/issues/229). Keep #229 open; further separation follows the resource/lifetime inventory. Layered onboarding is authorized on 2026-11-08; see the [migration plan](ONBOARDING-PLAN.md). |
 | Accepted tooling | [Local evidence runner](../../engine/docs/LOCAL-CI.md) (#204), [parallel hosted CI](../../engine/docs/HOSTED-CI.md) (#206), and optional [offline viewport](../../tools/viewport/README.md). #220's AJV 8.18.0 fix is merged: hosted 15 model tests, reproducible bundle and 125 browser checks passed. Observation is not engine control or proof of natural clustering. |
 | Outstanding qualification | #156 owns integrated operation acceptance; #145 owns actual GPU, transfer/pinning and resource qualification. Scoped [GTX 1070 evidence](../../engine/docs/CUDA-LOCAL-VALIDATION.md) is not blanket GPU acceptance. Mixed-precision repair, complete operation/hardware matrix and [Docker release](../../docs/onboarding/AGENT-START.md#intended-local-study-and-release) remain separately scoped. |
@@ -218,7 +234,7 @@ Do not copy historical “next” instructions back into this table.
 
 ## Active and deferred work
 
-**Immediate work:** common native allocation-record contract and CPU implementation under #300 review 5879635043. Preserve refusal/retry, reclamation and native authority.
+**Immediate work:** owner backing exports under #301 review 5880096613, then trusted borrowed accounting. Preserve refusal/retry, reclamation and native authority.
 
 - Continue #156 through the accepted #170 stages. #162's bounded foundation and
   #139's original A–D sequence are complete; their closures do not close #156/#145. Held #123 must not

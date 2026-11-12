@@ -5598,3 +5598,77 @@ Next: integrate the helper at the owner adoption boundary and add native refusal
 unchanged-state/retry witnesses, then the trusted disjoint borrowed-resource ledger
 and combined accounted-byte policy. H does not cover allocator metadata, physical
 residency, process allocations or borrowed runtime backing.
+
+## Owner bootstrap admission — 2026-11-12 (awaiting review)
+
+Continues #298 review 5879152987 on `386be0a03a1de22092d848f711c4264bb46995d5`.
+Main remains `f20acbb8`, integrated through #297. #298's smoke/warm runs passed;
+its native run 43268613665 remains active at this contribution's source review.
+No duplicate hosted run or merge was initiated. Tested source:
+`f1cabfd5d9aa44d4d73ef8e4fefad2c93025caf9`; subsequent changes are documentation.
+
+Owner adoption now uses the bootstrap tracker and reserve_domain factory with a
+separate budget/result. It keeps H separate from selected D. Input/setup gates
+precede bootstrap; byte/work refusal at either bootstrap boundary precedes selected
+allocation. Later setup/selected refusals and unexpected exceptions unwind both
+surfaces, retain prepaid work and report zero live bootstrap bytes. Successful
+owners and selected allocator lifetimes retain the tracker through final weak
+release. [The contract](../../docs/ADOPTION-ACCOUNTING.md#owner-bootstrap-integration-awaiting-review)
+records the census overlap and remaining borrowed/combined policy boundary.
+
+New native owner controls exercise zero/one-short/exact bootstrap byte/work limits,
+both allocation failures plus the first owner request failure, initial setup and
+later constructor/setup/selected refusals, independent H+D observation, unchanged
+native snapshots and exact retry. Weak catalogue release after owner/domain/tracker
+handles disappear reclaims all blocks. Existing complete selected-reservation,
+setup and every-allocation-site failure sweeps remain enabled.
+
+Measured single/four-selection results, identical across one/two CPU workers and
+bulk/direct-no-unroll modes:
+
+| Counter | Single | Four |
+|---|---:|---:|
+| Bootstrap outer tracker request | 72 | 72 |
+| Bootstrap live/peak/prepaid work H | 160 | 160 |
+| Selected live/peak D | 321193 | 392483 |
+| Selected cumulative allocation work | 420879 | 790391 |
+| Observed retained/peak owner requests | 321353 | 392643 |
+| Retained-capacity census | 321161 | 392259 |
+| Independent allocation failure sites | 3273 | 5929 |
+| Failure-sweep peak requests | 321338 | 392628 |
+
+The owner tracker handle adds eight selected object bytes on this toolchain. H
+replaces the formerly excluded 80-byte domain request with measured 72+88 bytes;
+observed retained/peak totals increase by 88 and allocation sites by one. These
+are layout measurements, not hardcoded budget fees. C+S and P+M_occurrences+M_fields
+remain unchanged (67190/106864 bytes and 34145/54809 copy work). Counters overlap
+and must not be summed into a physical-memory claim.
+
+The initial build at `6576d4de` passed; the final code adds explicit later-refusal
+witnesses before runtime qualification. Local commands/logs are retained under
+owner-bootstrap-domain-f1cabfd5. Full qualification and archive verification are recorded below. CPU-only Clang15/libstdc++ on shared Ubuntu/WSL x64;
+no GPU/database/browser or performance qualification. No standalone helper baseline
+rerun is required: that source is unchanged from reviewed #298. Its prior GCC11/
+GCC13/Clang15 evidence does not imply a new GCC qualification of owner integration.
+
+Next: establish the trusted disjoint borrowed-resource ledger, then enforce the
+combined accounted-byte policy and continue remaining operation/control integration.
+The projection-copy audit stays closed. No complete owner-resource acceptance is
+claimed by this scoped change.
+
+Final qualification: native and warm builds passed; all 47 scoped CPU checks
+passed (20 exchange processes, 12 prepared CTests, nine supporting native CTests,
+six warm CTests). No build/test warnings or errors. All owner measurements above
+were compared across the four configurations and match. The tracked Taichi tree
+is `5ba579a8a11255b7a258cde93801070956d81d57`, not a separate submodule commit;
+its source is clean. Runtime/binary hashes and configuration are in the archive.
+
+Verified local archive `setup-evidence/owner-bootstrap-domain-f1cabfd5.tar.gz`;
+SHA256SUMS manifest:
+
+    6f0919f6ea624d557745cc73eb9711b14f6af19f21089da42a57d396b51d5726
+
+Raw local evidence remains contributor-reported, not independently inspected
+remotely. Final changes after the tested code are six Markdown files only.
+Documentation file links resolve and whitespace validation passes. #298's native
+run remains active at final publication; the new PR also awaits hosted review.

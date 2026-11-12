@@ -1,6 +1,7 @@
 #pragma once
 #include "assembly/exchange_coordinator.h"
 #include "assembly/adoption_input.h"
+#include "../../../common/bootstrap_reservations.h"
 
 namespace assembly {
 namespace testing { struct ExchangeOwnerAccess; }
@@ -13,7 +14,8 @@ struct OwnerPreparationResult {
 };
 // Membership/declaration/binding setup, spare projection and retained exposure pools.
 // Initial projection copying is covered by AdoptionInputBudget;
-// Combined borrowed-resource admission and domain overhead remain separate.
+// Bootstrap requests and selected requests have separate gates; combined
+// borrowed-resource admission remains pending.
 enum class ProjectionSetupPhase { Admission, Membership, Declarations, Bindings, SpareInspection, SpareCopy, CommittedParents, SpareParents, Complete };
 struct ProjectionSetupResult {
   ProjectionSetupPhase phase{ProjectionSetupPhase::Admission};
@@ -42,7 +44,8 @@ class ExchangeOwner {
   static ReservedUnique<ExchangeOwner> adopt(field::Harness &, const LetterProjection &,
       const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &,
       AdoptionInputBudget, AdoptionInputResult &, ReservationBudget, ReservationResult &,
-      std::uint64_t projection_setup_work, ProjectionSetupResult &);
+      std::uint64_t projection_setup_work, ProjectionSetupResult &,
+      ReservationBudget bootstrap_budget, ReservationResult &bootstrap);
   ExchangeOwner(field::Harness &, const LetterProjection &, const std::vector<OccurrenceBinding> &,
                 const std::vector<ExchangeFieldBinding> &, const std::shared_ptr<ReservationDomain> &,
                 PreparationWork &, ProjectionSetupResult &);
@@ -58,6 +61,7 @@ class ExchangeOwner {
   field::Harness &h_;
   // Declared before the buffers: destroyed after every attached allocator.
   std::shared_ptr<ReservationDomain> reservations_;
+  hcp::resources::BootstrapReservations bootstrap_;
   ReservedUnique<LetterProjection> projection_, prospective_;
   ExchangeMap<OccurrenceBinding> occurrences_;
   ExchangeMap<ExchangeFieldBinding> fields_;

@@ -14,9 +14,11 @@ allocation work and retained-capacity censuses remain distinct.
 
 `bootstrap_reservations.h` supplies the bounded lifetime prerequisite requested
 in [#297 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/297#pullrequestreview-5878815959).
-It is not yet wired into `ExchangeOwner::adopt`: that path still uses its existing
-untracked `make_shared<ReservationDomain>`. Owner integration, trusted disjoint
-borrowed accounting and combined admission remain follow-on work.
+The helper is provisionally accepted by #298 review 5879152987. The owner
+integration contribution now wires it into `ExchangeOwner::adopt`, with a separate
+bootstrap budget/result and retained tracker handle. See the
+[adoption contract](../engine/docs/ADOPTION-ACCOUNTING.md#owner-bootstrap-integration-awaiting-review).
+Trusted disjoint borrowed accounting and combined admission remain follow-on work.
 
 `BootstrapReservations::create` admits the outer tracker's own `sizeof(State)`
 allocator request before allocation. Its intrusive handles occupy caller/allocator

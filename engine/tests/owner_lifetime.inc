@@ -1272,6 +1272,102 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
   }
 }
 
+void owner_bootstrap_admission(Fixture &f, const assembly::LetterProjection &projection,
+    const std::vector<assembly::detail::OccurrenceBinding> &rows,
+    const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  namespace A = allocation_lifetime;
+  const TickSnapshot before(f);
+  ReservationResult initial, full, selected;
+  std::uint64_t outer;
+  {
+    auto tracker = hcp::resources::BootstrapReservations::create({UINT64_MAX,UINT64_MAX},initial);
+    outer = initial.live_bytes;
+  }
+  A::begin();
+  try {
+    auto owner = Access::adopt_bootstrap(f.h,projection,rows,fields,{UINT64_MAX,UINT64_MAX},full,selected);
+    require(owner && full.status == ReservationStatus::Ok && full.live_bytes > outer &&
+                full.live_bytes == full.peak_bytes && full.charged_work == full.live_bytes &&
+                A::counts.live == full.live_bytes+selected.live_bytes,
+            "owner bootstrap and selected ledgers differ from observed requests");
+    auto tracker = Access::bootstrap_tracker(*owner);
+    auto domain = Access::reservation_domain(*owner);
+    auto catalogue = Access::memberships(*owner);
+    std::weak_ptr<const assembly::MembershipFields> weak = catalogue;
+    owner.reset(); catalogue.reset();
+    require(weak.expired() && domain->result().live_bytes &&
+                tracker.result().live_bytes == full.live_bytes &&
+                A::counts.live == domain->result().live_bytes+tracker.result().live_bytes,
+            "owner weak catalogue lost bootstrap or selected accounting");
+    domain.reset(); tracker = {};
+    weak.reset();
+    require(!A::counts.live && !A::counts.blocks,"owner weak release retained bootstrap cycle");
+  } catch (...) { A::end(); throw; }
+  require(!A::end().live,"owner bootstrap teardown leaked");
+  for (bool work : {false,true}) for (auto limit : {std::uint64_t{0},outer-1,outer,full.live_bytes-1}) {
+    ReservationResult stopped, untouched;
+    A::begin();
+    bool returned = false;
+    try {
+      auto owner = Access::adopt_bootstrap(f.h,projection,rows,fields,
+          work ? ReservationBudget{UINT64_MAX,limit} : ReservationBudget{limit,UINT64_MAX},stopped,untouched);
+      returned = bool(owner);
+    } catch (...) { A::end(); throw; }
+    const auto observed = A::end();
+    const auto first = limit < outer;
+    require(!returned && stopped.status == (work ? ReservationStatus::WorkExhausted : ReservationStatus::ByteExhausted) &&
+                stopped.required_bytes == (first ? outer : full.live_bytes) &&
+                stopped.required_work == stopped.required_bytes && !stopped.live_bytes &&
+                stopped.charged_work == (first ? 0 : outer) &&
+                observed.attempts == (first ? 0u : 1u) && !observed.live && !observed.blocks &&
+                untouched.status == ReservationStatus::Ok && !untouched.charged_work &&
+                before == TickSnapshot(f),"bootstrap refusal mutated native state or reached owner allocation");
+  }
+  for (std::size_t fail : {1u,2u,3u}) {
+    ReservationResult stopped, selected_failure;
+    A::begin(fail);
+    bool failed = false;
+    try { auto owner = Access::adopt_bootstrap(f.h,projection,rows,fields,
+        {UINT64_MAX,UINT64_MAX},stopped,selected_failure); }
+    catch (const std::bad_alloc &) { failed = true; }
+    catch (...) { A::end(); throw; }
+    const auto observed = A::end();
+    require(failed && observed.attempts == fail && !observed.live && !observed.blocks &&
+                !stopped.live_bytes && stopped.charged_work == (fail == 1 ? outer : full.live_bytes) &&
+                before == TickSnapshot(f),"bootstrap/first owner allocation failure lost accounting or state");
+  }
+  // Refusals after bootstrap must report its reclaimed live bytes while retaining
+  // prepaid work; the initial setup refusal must not start bootstrap at all.
+  for (int gate : {0,1,2}) {
+    ReservationResult stopped, selected_failure;
+    A::begin();
+    bool returned = false;
+    try {
+      auto owner = Access::adopt_bootstrap(f.h,projection,rows,fields,
+          {UINT64_MAX,UINT64_MAX},stopped,selected_failure,
+          {gate == 1 ? 0u : UINT64_MAX,UINT64_MAX},gate == 2 ? 1u : (gate == 0 ? 0u : UINT64_MAX));
+      returned = bool(owner);
+    } catch (...) { A::end(); throw; }
+    const auto observed = A::end();
+    require(!returned && !observed.live && !observed.blocks && !stopped.live_bytes &&
+                stopped.status == ReservationStatus::Ok &&
+                stopped.charged_work == (gate == 0 ? 0 : full.charged_work) &&
+                !selected_failure.live_bytes &&
+                (gate != 1 || selected_failure.status == ReservationStatus::ByteExhausted) &&
+                before == TickSnapshot(f),"constructor refusal failed separate bootstrap unwind");
+  }
+  ReservationResult exact, exact_selected;
+  auto retry = Access::adopt_bootstrap(f.h,projection,rows,fields,
+      {full.live_bytes,full.charged_work},exact,exact_selected);
+  require(retry && exact.live_bytes == full.live_bytes && exact.charged_work == full.charged_work &&
+              before == TickSnapshot(f),"exact owner bootstrap retry failed");
+  std::cout << "owner_bootstrap,selections=" << projection.recipe().selections.size()
+            << ",outer_bytes=" << outer << ",bootstrap_bytes=" << full.live_bytes
+            << ",bootstrap_work=" << full.charged_work << " PASS\n";
+}
+
 void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
@@ -1431,6 +1527,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
                 same_fields(Access::fields(*independent),fields),
             "owner mappings depended on destroyed caller arguments");
   }
+  owner_bootstrap_admission(f,projection,rows,fields);
   owner_reservation_admission(f,projection,rows,fields);
   owner_projection_setup(f,projection,rows,fields);
   allocation_lifetime_controls();

@@ -255,3 +255,36 @@ adoption yet, establish B, or enforce C+B+H+D. Owner integration and native refu
 unchanged-state/retry controls are next, followed by the trusted disjoint borrowed
 ledger and combined policy. No accepted native baseline is rerun for this isolated
 helper; standalone compiler qualification is recorded in the admission evidence.
+
+## Owner bootstrap integration (awaiting review)
+
+Following #298 review 5879152987, `ExchangeOwner::adopt` accepts a separate
+`ReservationBudget bootstrap_budget` and `ReservationResult bootstrap`. Input
+inspection/copy prepayment and the initial setup gate still precede all allocation.
+The tracker then admits its own request and the actual rebound domain/control-block
+request before any selected owner allocation. Byte/work refusals return an empty
+owner with bootstrap demand/status and zero live bytes; selected demand remains
+untouched if bootstrap was refused. No hardcoded control-block size is used.
+
+Successful owners retain a tracker handle; allocator-held handles also cover all
+selected aliases and final weak releases. The result argument is an admission
+snapshot, never a retained caller pointer. Later snapshots come from the retained
+tracker. Existing selected-allocation and setup results remain independent.
+
+Constructor setup/reservation refusal unwinds selected members and the domain,
+then the last local outer handle. Bootstrap live bytes are reported as zero after
+that cleanup; peak, prepaid work and refusal demand are preserved. Unexpected
+exceptions, including bad_alloc at either bootstrap request or any later owner
+request, follow the same cleanup and populate results before propagating. Failed
+construction publishes no shared aliases. A failed outer allocation still reports
+its prepaid work through create's local snapshot. Initial input/setup refusal
+reports an untouched bootstrap result and performs no bootstrap request.
+
+The new owner handle increases `sizeof(ExchangeOwner)` and its selected allocation
+by one pointer on the qualified toolchain. The retained-capacity census still
+includes the domain object, not the bootstrap tracker's allocation/control-block
+requests; it is not a substitute for H or disjoint from it. Independent observation
+checks H+D against current owner-related C++ requests in the qualified fixtures.
+Do not add that census, input snapshot S or cumulative work to H+D. Borrowed native
+backing, allocator internals and physical residency are outside these request
+ledgers. Trusted B and combined C+B+H+D enforcement remain pending.
