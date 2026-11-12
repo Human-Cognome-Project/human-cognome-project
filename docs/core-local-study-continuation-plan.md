@@ -18,6 +18,17 @@ Next after review: complete the remaining setup/resource inventory and combined
 caller/owner/borrowed accounting, then remaining operation/control integration.
 This is not complete owner-resource acceptance; projection copy cleanup stays closed.
 
+**Accounting inventory contribution (awaiting review, 2026-11-12):**
+[The source audit](../engine/docs/ADOPTION-ACCOUNTING.md) maps all adoption operations after #295 and
+resolves the initial-map distinction: input prepayment covers one logical row copy,
+while the metered map constructor additionally counts reservation and nil-slot
+initialization. Selected allocations are already gated. The proposed next change
+replaces only map work components, retaining projection prepayment once and leaving
+the input byte census distinct. Fixed-construction policy, domain bootstrap tracking
+and a trusted disjoint borrowed-resource ledger must be explicit before a combined
+limit; the inventory specifies that finite implementation boundary. Runtime code is
+unchanged and accepted native baselines are not rerun for this documentation slice.
+
 **Historical records below:** earlier pending, integrated and “next” statements are source-pinned history and are superseded by this disposition where they conflict. #75, #111 and #123 remain deliberately held/deferred. CPU acceptance does not qualify the full GPU path.
 
 

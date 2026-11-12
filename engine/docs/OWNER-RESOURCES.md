@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+**Current setup inventory (2026-11-12, awaiting review):**
+[Adoption accounting](ADOPTION-ACCOUNTING.md) maps every adoption operation to its
+current gates after #295, derives the initial-map snapshot/work overlap, and
+separates selected requests, domain overhead, caller capacity and borrowed native
+resources. Its proposed work-component replacement and combined-limit prerequisites
+supersede conflicting historical "next" or by-value snapshot descriptions below.
+No combined admission limit is implemented by that inventory.
+
 Accepted through #259 on 2026-11-10; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--247-through-259-2026-11-10)
 records the integrated stack. Remaining limits below are still open.
 
