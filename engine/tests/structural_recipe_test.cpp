@@ -93,6 +93,27 @@ void bounded_declaration(const LetterProjection &p, const OccurrenceKey &owner,
             "every declaration work boundary refuses and reclaims all partial storage");
       ++boundaries;
     }
+    for (const bool bytes : {true,false}) {
+      std::uint64_t allowance=0;
+      const auto ceiling=bytes ? domain->result().peak_bytes : domain->result().charged_work;
+      while (allowance < ceiling) {
+        auto denied=std::make_shared<ReservationDomain>(ReservationBudget{
+            bytes ? allowance : UINT64_MAX, bytes ? UINT64_MAX : allowance});
+        PreparationWork work(required);
+        bool stopped=false;
+        try { run(denied,work); } catch (const ReservationStop &) { stopped=true; }
+        const auto result=denied->result();
+        const auto next=bytes ? result.required_bytes : result.required_work;
+        check(stopped && !result.live_bytes && next > allowance && next <= ceiling,
+              "every declaration allocation boundary reclaims partial identities and rows");
+        allowance=next;
+      }
+      auto exact_domain=std::make_shared<ReservationDomain>(ReservationBudget{
+          bytes ? ceiling : UINT64_MAX, bytes ? UINT64_MAX : ceiling});
+      PreparationWork work(required);
+      { check(exact(run(exact_domain,work)), "exact declaration allocation allowance preserves ordered values"); }
+      check(!exact_domain->result().live_bytes, "exact declaration allocation retry releases storage");
+    }
     PreparationWork short_work(required-1);
     bool stopped=false;
     try { run(domain,short_work); } catch (const PreparationStop &) { stopped=true; }

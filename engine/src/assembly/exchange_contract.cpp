@@ -12,14 +12,20 @@ void need(bool ok, const char *message) {
 OccurrenceKey copy_occurrence(const OccurrenceKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter = nullptr) {
   if (meter) meter->copy_key(key);
-  return {warm::Uuid(key.study,domain),{key.source.entry,{key.source.path.begin(),key.source.path.end(),
-      detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
+  // Named owners keep earlier allocations alive for exception cleanup on GCC 11.
+  auto study = warm::Uuid(key.study,domain);
+  detail::SharedReservedVector<std::uint32_t> path(key.source.path.begin(),key.source.path.end(),
+      detail::SharedReservationAllocator<std::uint32_t>(domain));
+  return {std::move(study),{key.source.entry,std::move(path)}};
 }
 warm::ToolRef copy_reference(const warm::ToolRef &ref,
     const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter = nullptr) {
   if (meter) meter->copy_key(ref);
-  return {{warm::Uuid(ref.object.scope,domain),{ref.object.address.begin(),ref.object.address.end(),
-      detail::SharedReservationAllocator<codec::AddressElement>(domain)}},warm::Uuid(ref.revision,domain)};
+  auto scope = warm::Uuid(ref.object.scope,domain);
+  codec::Address address(ref.object.address.begin(),ref.object.address.end(),
+      detail::SharedReservationAllocator<codec::AddressElement>(domain));
+  auto revision = warm::Uuid(ref.revision,domain);
+  return {{std::move(scope),std::move(address)},std::move(revision)};
 }
 template<class A>
 detail::SharedReservedVector<warm::Parent> copy_parents(const std::vector<warm::Parent,A> &parents,
@@ -36,9 +42,13 @@ auto copy_sources(const detail::SharedReservedVector<ExchangeSource> &sources,
   detail::SharedReservedVector<ExchangeSource> result{detail::SharedReservationAllocator<ExchangeSource>(domain)};
   if (meter) { meter->charge(1); meter->elements(sources.size(),sizeof(ExchangeSource)); }
   result.reserve(sources.size());
-  for (const auto &source : sources)
-    result.push_back({copy_occurrence(source.occurrence,domain,meter),copy_reference(source.definition,domain,meter),source.mass,source.node,
-                      copy_parents(source.parents,domain,meter)});
+  for (const auto &source : sources) {
+    auto occurrence = copy_occurrence(source.occurrence,domain,meter);
+    auto definition = copy_reference(source.definition,domain,meter);
+    auto parents = copy_parents(source.parents,domain,meter);
+    result.push_back({std::move(occurrence),std::move(definition),source.mass,source.node,
+                      std::move(parents)});
+  }
   return result;
 }
 auto copy_leaves(const detail::SharedReservedVector<ExchangeLeaf> &leaves,
@@ -54,6 +64,12 @@ warm::Uuid copy_uuid(const warm::Uuid &id,
     const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter) {
   if (meter) meter->copy_key(id);
   return warm::Uuid(id,domain);
+}
+warm::BundleRef copy_recipe(const warm::BundleRef &recipe,
+    const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter) {
+  auto selection = copy_uuid(recipe.selection,domain,meter);
+  auto revision = copy_uuid(recipe.revision,domain,meter);
+  return {std::move(selection),std::move(revision)};
 }
 void relocation_work(const ExchangeSource &source, detail::PreparationWork &work) {
   work.copy_key(source.occurrence); work.copy_key(source.definition);
@@ -109,14 +125,14 @@ LetterExchangeContract declare_letter_exchange(const LetterProjection &projectio
 LetterExchangeContract::LetterExchangeContract(const OccurrenceKey &owner, const warm::BundleRef &recipe,
     const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter)
     : owner_(copy_occurrence(owner,domain,meter)),
-      recipe_{copy_uuid(recipe.selection,domain,meter),copy_uuid(recipe.revision,domain,meter)},
+      recipe_(copy_recipe(recipe,domain,meter)),
       outgoing_(detail::SharedReservationAllocator<ExchangeSource>(domain)),
       incoming_(detail::SharedReservationAllocator<ExchangeSource>(domain)),
       leaves_(detail::SharedReservationAllocator<ExchangeLeaf>(domain)) {}
 
 LetterExchangeContract::LetterExchangeContract(const LetterExchangeContract &other,
     const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter)
-    : owner_(copy_occurrence(other.owner_,domain,meter)), recipe_{copy_uuid(other.recipe_.selection,domain,meter),copy_uuid(other.recipe_.revision,domain,meter)}, from_(other.from_), to_(other.to_),
+    : owner_(copy_occurrence(other.owner_,domain,meter)), recipe_(copy_recipe(other.recipe_,domain,meter)), from_(other.from_), to_(other.to_),
       mass_(other.mass_), match_work_(other.match_work_),
       outgoing_(copy_sources(other.outgoing_,domain,meter)),
       incoming_(copy_sources(other.incoming_,domain,meter)),
@@ -152,8 +168,11 @@ LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &p
         [&](const auto &t) { return work.equal(t.ref,occurrence->definition); });
     need(tool != recipe.tools.end() && tool->mass && *tool->mass,
          "missing exact exchange definition mass");
-    return ExchangeSource{copy_occurrence(occurrence->key,domain,&work), copy_reference(occurrence->definition,domain,&work), *tool->mass,
-                          occurrence->node, copy_parents(tool->parents,domain,&work)};
+    auto key = copy_occurrence(occurrence->key,domain,&work);
+    auto definition = copy_reference(occurrence->definition,domain,&work);
+    auto parents = copy_parents(tool->parents,domain,&work);
+    return ExchangeSource{std::move(key),std::move(definition),*tool->mass,
+                          occurrence->node,std::move(parents)};
   };
   detail::SharedReservedVector<ExchangeSource> aggregate{detail::SharedReservationAllocator<ExchangeSource>(domain)},
       parts{detail::SharedReservationAllocator<ExchangeSource>(domain)};

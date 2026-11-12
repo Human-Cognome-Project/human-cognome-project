@@ -12,8 +12,12 @@ void need(bool condition, const char *message) {
 warm::ObjectKey catalogue_object(const warm::ObjectKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork &work) {
   work.copy_key(key);
-  return {warm::Uuid(key.scope,domain),{key.address.begin(),key.address.end(),
-      detail::SharedReservationAllocator<codec::AddressElement>(domain)}};
+  // Keep each allocation independently owned across later refusal points.
+  // GCC 11 does not fully unwind these nested aggregate temporaries.
+  auto scope = warm::Uuid(key.scope,domain);
+  codec::Address address(key.address.begin(),key.address.end(),
+      detail::SharedReservationAllocator<codec::AddressElement>(domain));
+  return {std::move(scope),std::move(address)};
 }
 struct MembershipKeyLess {
   detail::PreparationWork *work;
@@ -164,10 +168,13 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
           work.copy_key(retained.target);
         }
       }
-      out.contributions_.push_back({std::move(occurrence),
-                                    {GroupKind::Membership, catalogue_object(group,domain,work)},
-                                    {catalogue_object(target.object,domain,work),warm::Uuid(target.revision,domain)},
-                                    *live.mass});
+      auto field_object = catalogue_object(group,domain,work);
+      auto target_object = catalogue_object(target.object,domain,work);
+      auto revision = warm::Uuid(target.revision,domain);
+      MembershipContribution contribution{std::move(occurrence),
+          {GroupKind::Membership,std::move(field_object)},
+          {std::move(target_object),std::move(revision)},*live.mass};
+      out.contributions_.push_back(std::move(contribution));
     }
   }
   return out;
