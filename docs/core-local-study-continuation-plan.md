@@ -1,5 +1,9 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer integration — 2026-11-12:** #308 rounded host-pool virtual extents are accepted and integrated by the merge containing this record, preserving reviewed `10b3ed7f6f0401148716311cfe0181e0d75362d9`. Native 43321294234 passed all 12 jobs; smoke 43321294253 passed. Personally inspected 119 passing regressions (30/30/30/29), including native_pool_test, allocation_record_test, prepared_backing_test and reservation_request_test; database job 131549865939 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#307. #309 pool container metadata is provisionally source-accepted at `6b3180b5`; smoke 43328681937 passed and native 43328682126 remains active. Local archives were not independently inspected; historical failures remain preserved. Older status/next labels below are historical where they conflict.
+
+**Next bounded task:** remaining prepared/runtime/shared metadata on reviewed #309, then trusted lifetime-valid required-family Harness coverage and canonical backing deduplication with prepaid lookup/enumeration before checked C+B+H+D admission. Retained requested storage is distinct from transient peak, heap rounding and physical residency. Preserve native authority and separate work gates; setup cost remains acceptable for long-running focal models. No full B or GPU qualification; projection-copy audit stays closed and #75/#111/#123 remain held.
+
 **Pool container metadata (awaiting review, 2026-11-12):** continues #308
 review5883275400 at10b3ed7f. Native map allocator requests and retained allocator
 object/vector storage are now reported separately; value/incremental payload remains
