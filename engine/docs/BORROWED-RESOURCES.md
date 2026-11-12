@@ -7,6 +7,50 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Pool container metadata (awaiting review, 2026-11-12)
+
+Continues [#308 review 5883275400](https://github.com/Human-Cognome-Project/human-cognome-project/pull/308#pullrequestreview-5883275400).
+PoolBackingStorage now separately reports live raw-map allocation request bytes,
+UnifiedAllocator object bytes, and retained chunk-vector capacity bytes, with explicit
+record/allocator storage availability. The existing record_payload_bytes and cumulative
+incremental payload remain subsets of map allocation bytes, not extra disjoint charges.
+The allocator object includes its vector control object; the vector element buffer is
+separate. Pool object size includes its embedded map, counter and allocator state.
+
+The raw map uses a stateful rebinding RequestCountingAllocator. Each successful
+allocate(n) adds checked n*sizeof(actual allocated type) to the owner counter; failure
+leaves it unchanged and deallocate subtracts the matching request. This measures the
+standard library's actual node allocation requests rather than guessing node headers
+from value sizes. It does not measure malloc usable size, heap rounding or physical
+residency. Empty-map implementation storage, if allocated, is included too.
+
+The counter is embedded before the map so it outlives the map and all rebound allocator
+copies. Pool mutation/query synchronization protects it; it is not a separately allocated
+registry. Internal reset map copies share that counter while they exist, and destruction
+removes their requests. The locked snapshot reports retained state after reset, not a
+transient peak or a prepayment mechanism for reset's temporary copy.
+
+Chunk-vector storage is capacity*sizeof(MemoryChunk), including unused retained slots.
+Erasing an exclusive chunk can remove map storage while retaining vector capacity;
+reset replaces the allocator and releases that buffer. The fresh allocator object is
+still retained. Availability distinguishes known empty storage from unsupported defaults.
+A live-allocation witness compares retained map/vector growth with C++ new requests
+still live after allocation. Cumulative requests also include temporary storage and are
+reported separately. Tests neither hard-code node size nor presume empty-map overhead is zero.
+
+Count these disjoint requested-storage surfaces once per pool identity: pool object,
+map allocation requests, allocator object and chunk-vector buffer. Do not additionally
+add map value/incremental payload. These are separate from mapped data backing, whose
+canonical tokens/rounded virtual extents are unchanged. Full metadata_complete remains
+false: process-global state and underlying host-heap bookkeeping/rounding are outside
+this report, and complete runtime/prepared/Harness coverage remains outstanding.
+
+Queries read counters/capacity under the existing pool lock, without enumeration or
+allocation. Allocation-side arithmetic rejects multiplication/addition overflow before
+publication. Native allocation failure cleanup and owner/backing lifetime rules remain
+unchanged. Next: remaining prepared/runtime/shared metadata and trusted Harness coverage,
+lifetime/deduplication with prepaid lookup/enumeration before checked C+B+H+D admission.
+No full B, physical memory, Windows-execution or GPU qualification is claimed.
 ## Rounded host-pool extents (awaiting review, 2026-11-12)
 
 Continues [#307 review 5882509096](https://github.com/Human-Cognome-Project/human-cognome-project/pull/307#pullrequestreview-5882509096).

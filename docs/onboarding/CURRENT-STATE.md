@@ -1,5 +1,16 @@
 # Current implementation and work
 
+**Pool container metadata (awaiting review, 2026-11-12):** continues #308
+review5883275400 at10b3ed7f. Native map allocator requests and retained allocator
+object/vector storage are now reported separately; value/incremental payload remains
+a subset, never an extra charge. Actual node allocation requests replace guessed
+node overhead. Empty-map storage and reset-copy counter lifetime are explicit; global/
+heap overhead and full metadata coverage remain incomplete. Main e62924fd integrates
+qualified #306–#307; normal merge488a17bd preserves maintainer handoff and history.
+#308 remains provisional with native qualification pending. Next: remaining metadata,
+trusted Harness lifetime/coverage/deduplication/prepaid work, then checked C+B+H+D.
+No full B or GPU claim; held #75/#111/#123 remain unchanged.
+
 **Maintainer integration — 2026-11-12:** #306–#307 are accepted and integrated by the merge containing this record, preserving reviewed `88aa2cd0ce6360b2cc2d9d1f446294bb50203309`. #306 native 43305748693/smoke 43305748766 passed; #307 native 43310337611 passed all 12 jobs and smoke 43310337168 passed. Personally inspected #307's 119 passing regressions (30/30/30/29), including native_pool_test, allocation_record_test, prepared_backing_test and reservation_request_test; database job 131512684418 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#305; the original #302 initialization failure remains preserved. #308 rounded virtual mapping extents are provisionally source-accepted at `10b3ed7f` in review 5883275400; smoke passed, native qualification remains active. Contributor-local archives were not independently inspected. Older pending/next labels below are historical where they conflict.
 
 **Next bounded task:** remaining prepared/runtime/pool metadata on reviewed #308, then lifetime-valid required-family Harness coverage and canonical backing deduplication with prepaid lookup/enumeration work before checked C+B+H+D admission. Rounded mapping extents are not physical residency; shared chunks and contained requests are not disjoint charges. Preserve native authority and separate work gates; setup cost is acceptable for long-running focal models. No full B or GPU qualification is claimed. Projection-copy audit stays closed; #75/#111/#123 remain held.
