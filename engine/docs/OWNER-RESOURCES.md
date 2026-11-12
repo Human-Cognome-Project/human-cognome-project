@@ -2178,3 +2178,46 @@ objects, contributions and recipe pins, plus declaration identity/source/recipe
 copies, now stage allocating values in named locals and only then move them into
 rows. No budget assertion is relaxed. Focused declaration tests additionally
 sweep every byte/allocation-work boundary and exact retry for collection and copy.
+
+### Binding construction, staging and adoption capture (awaiting review)
+
+Owner adoption supplies the same PreparationWork meter through temporary binding
+validation and the retained coordinator/binding preparation. Bindings is a distinct
+setup phase, entered before these paths; declaration work resumes in Declarations
+between temporary validations. Later projection phases remain separately reported.
+
+Before reserving buffer backing, binding construction charges mass/handle/edge
+capacity. Packed boolean masks conservatively admit one byte per requested bit
+plus a rounding word before initialization, without equating logical work with
+physical allocation. The retained coordinator also admits its binding object,
+command/intrinsic, hierarchy-node/child/contribution and field-index reserves.
+Owner code charges the coordinator object before allocation.
+
+ExchangeMap setup constructors and reserve accept an optional meter. They admit
+outer slots, conservative relocation, each canonical nil UUID initialization,
+active/inactive nested path/address reservations, source identity copies and slot
+shrink teardown before those operations. Map reservation first charges traversal
+of projection/tool/group/trusted inventories. Every owner-created map reservation
+uses the same meter. Initial caller snapshot copying retains its separate accepted
+AdoptionInputBudget boundary; ordinary standalone map snapshots may omit the meter.
+
+Adoption passes that meter directly to stage and capture rather than creating a
+fresh unrestricted staging allowance or UINT64_MAX capture allowance. Setup stops
+unwind through binding construction to the owner adoption boundary. Capture's
+existing comparison, packed-mask assignment, source-edge validation and ordered
+participation accounting are shared with the operational wrapper. The operational
+wrapper still creates and reports its own CaptureWork limit; later owner staging,
+capture and command/matching budgets are unchanged. Standalone constructors and
+prepare wrappers remain explicitly unrestricted setup conveniences.
+
+Focused map controls sweep every setup refusal across construction, growth,
+inactive-slot copying/reservation and shrink, verify teardown and source identity,
+and require exact and one-short retry. The full owner sweep includes all eight
+incomplete phases and reports binding-phase boundaries; independent allocation
+failure controls, exact source binding and later operational rejection/retry
+remain active. See admission for final source pins and observed counts.
+
+This completes this scoped binding setup path, not combined owner-resource
+acceptance. Reconcile remaining fixed/domain/control-block overhead, caller and
+borrowed native resources and complete budget composition before advancing the
+remaining operation/control integration. Projection copy cleanup stays closed.

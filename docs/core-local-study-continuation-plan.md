@@ -6,6 +6,18 @@
 
 **Next bounded task:** ExchangeBindings constructor reservation, trusted/staged maps, map reservation, staging and capture under the shared owner setup meter. Preserve separate later operational staging/capture/matching budgets, exact refusal/retry, reclamation and unchanged caller/native state. Combined resource accounting and remaining operation/control integration follow. Additional setup work is acceptable when it benefits long-running focal models; lower setup totals are not an acceptance gate. Do not reopen projection copy cleanup or rerun accepted baselines merely to onboard.
 
+**Binding setup contribution (awaiting review, 2026-11-12):** continues from #294
+review 5876572990 at `32fe9928`, including current main `7bf08034` by normal merge
+`cdcf28e0`. The shared owner setup meter now covers binding/coordinator buffer
+reserves, map construction/reservation, staging and adoption capture under a
+Bindings phase. Later operational staging/capture/matching allowances remain
+separate; standalone unrestricted wrappers stay explicit. Expanded map/owner
+refusal controls passed with both builds and all 47 scoped CPU checks, without
+warnings. Source-pinned qualification is recorded in admission.
+Next after review: complete the remaining setup/resource inventory and combined
+caller/owner/borrowed accounting, then remaining operation/control integration.
+This is not complete owner-resource acceptance; projection copy cleanup stays closed.
+
 **Historical records below:** earlier pending, integrated and “next” statements are source-pinned history and are superseded by this disposition where they conflict. #75, #111 and #123 remain deliberately held/deferred. CPU acceptance does not qualify the full GPU path.
 
 

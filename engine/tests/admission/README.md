@@ -5378,3 +5378,85 @@ Final tested-to-head changes are five Markdown records only. Hosted qualificatio
 and review remain required, including the corrected combined head for the #293
 failure. Next: ExchangeBindings constructor/staging/capture under the shared setup
 allowance, then complete combined resource accounting and operation integration.
+
+### Binding setup admission qualification (2026-11-12)
+
+Tested source `803437be28971c9efcd80ded72c2eae3a05eecae`, continuing from #294
+`32fe9928cdbed11b5092724d81f3bfbff07f0b9d` under review 5876572990. Current main
+`7bf08034` updates the maintainer handoff while runtime integration remains through
+#289. Normal merge `cdcf28e0` includes those notes; conflicts were limited to the
+two status documents and retain the current maintainer disposition and prior
+contribution records. #290-#294 remain unmerged at inspection.
+
+Temporary declaration-validation bindings and the retained coordinator/binding
+now receive the owner's existing PreparationWork meter. Bindings is a distinct
+phase. Work admission precedes mass/handle/edge and packed-mask reserves, trusted/
+staged map copies, map inventory traversal, outer slot growth, nil UUID creation,
+nested active/inactive identity reservation/copy, and staging/capture. Retained
+coordinator command/hierarchy/field-index reserves are included before allocation.
+Packed masks conservatively charge a byte per requested bit plus a rounding word;
+these are logical work units, not measured physical bytes or elapsed time.
+
+The adoption path no longer resets staging to UINT64_MAX or supplies an independent
+unrestricted capture allowance. Shared capture logic throws setup refusal to owner
+adoption; the operational wrapper retains its separate bounded CaptureWork result.
+Existing source/pin/handle checks, exact participation, stale-generation rejection,
+matching budgets and later operational staging/capture/command limits are unchanged.
+Standalone construction/prepare and ordinary map snapshots remain explicitly
+unrestricted conveniences. The initial snapshot-copy gate remains separate.
+
+New focused map controls exercise construction, outer growth, inactive nested
+reservation, explicit-domain copying and slot shrink. Each map kind traverses
+44 refusal boundaries with complete reclamation, unchanged source identity and
+one-short/exact retry. Occurrence/field work totals are 2733/2703. The full owner
+setup sweep requires all eight incomplete phases, logs binding-phase refusals,
+checks native readiness/generation/tick preservation, complete C++ allocation
+teardown and exact/one-short retry. Existing independent byte/allocation failure
+and later operational preparation/commit/retry controls remain active.
+
+Final CPU results and archive follow below. No new standalone GCC projection run
+is claimed: this slice changes the native binding/coordinator path and its owner
+controls, not the standalone projection implementation. #294's hosted GNU 11.4
+projection correction remains separately qualified under job 131259756048.
+#294 smoke 43240639817 passed; native 43240639938 remains in progress at inspection.
+#290's maintainer-requested failed-job retry is separate; its initial compiler
+failure and unavailable logs remain historical, with no inferred root cause.
+No duplicate hosted retry, merge, GPU, live database or browser work was performed.
+
+All four owner configurations report these single/four-selection setup changes
+relative to the retained #294 evidence (not rerun):
+
+| Measurement | Single selection | Four selections |
+|---|---|---|
+| Setup work | 104737 -> 581709 | 287803 -> 1287811 |
+| Setup refusal boundaries | 3592 -> 7402 | 10115 -> 22443 |
+| Binding-phase refusal boundaries | 3810 | 12328 |
+
+Higher totals are expected because setup now admits previously unrestricted
+binding work; lowering them is not an acceptance requirement. Selected allocation
+work remains 420871/790383; selected live/peak remains 321185/321185 and
+392475/392475. Byte/work allocation boundaries remain 2759/3271 and 3706/5927.
+All 3272/5928 independent failure sites reclaim every block. Retained/peak stays
+321265/321265 and 392555/392555, capacity census 321153/392251, failure peaks
+321250/392540. Overlapping requested-resource reports must not be summed.
+
+Both native/warm builds and all 47 scoped CPU checks passed at the tested pin:
+20 exchange processes (five cases, workers 1/2, bulk/direct), 12 prepared CTests,
+nine supporting native handoff/snapshot tests and six warm CTests. No build or
+test warnings/errors. Shared-host Clang15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; accelerator backends disabled.
+Object layouts remain unchanged: study/structural input 288/280, projection 1304,
+UUID/ObjectKey/ToolRef 48/88/136, Tool/Parent/Geometry/Bundle 432/168/152/520,
+UUID payload 37 on this toolchain. No performance or GPU qualification is claimed.
+
+Verified archive `setup-evidence/binding-setup-budget-domain-803437be.tar.gz`;
+SHA256SUMS digest:
+
+    0edbcc0fe70d37e1305462ff9d1c70eb40dce4ea21d41e1e1e0ab1384c03b18c
+
+Raw machine-local artifacts have not been independently inspected remotely.
+Final tested-to-head changes are four Markdown records only. Hosted checks and
+review remain required. Next: finish the setup/resource inventory and combined
+caller/owner/borrowed accounting, then remaining operation/control integration.
+Domain/control-block overhead and combined resource acceptance are not claimed
+complete by this binding gate. The projection copy audit remains closed.
