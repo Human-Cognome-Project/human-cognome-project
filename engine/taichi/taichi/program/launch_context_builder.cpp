@@ -44,7 +44,8 @@ LaunchContextBuilder::PreparedBacking LaunchContextBuilder::prepared_backing(
 
 AllocationRecord LaunchContextBuilder::prepared_array_record(
     const Device &live_device, std::size_t argument) const {
-  if (!prepared || !prepared->usable || !prepared->backing_buffers_available)
+  if (!prepared || !prepared->usable || !prepared->backing_buffers_available ||
+      !prepared->backing_device_instance)
     return {};
   if (prepared->backing_device_instance != live_device.allocation_instance() ||
       argument >= array_bindings.size() || array_bindings[argument].rank < 0) {
@@ -447,9 +448,10 @@ void LaunchContextBuilder::set_arg_ndarray(const std::vector<int> &arg_id,
   if (arg_id.size() == 1) {
     array_bindings.at(arg_id[0]) = {arr.dtype, int(arr.shape.size()),
                                     arr.get_nelement(), {}};
-    if (kernel_->program && kernel_->program->get_compute_device())
+    if (originating_kernel_ && originating_kernel_->program &&
+        originating_kernel_->program->get_compute_device())
       array_bindings.at(arg_id[0]).backing =
-          arr.backing_record(*kernel_->program->get_compute_device());
+          arr.backing_record(*originating_kernel_->program->get_compute_device());
   }
 }
 
