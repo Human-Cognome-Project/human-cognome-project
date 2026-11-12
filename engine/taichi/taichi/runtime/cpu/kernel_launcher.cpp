@@ -31,6 +31,10 @@ KernelLauncher::prepare_llvm_kernel(Handle handle, LaunchContextBuilder &ctx) {
       throw std::invalid_argument("unsupported prepared CPU binding");
     ctx.set_ndarray_ptrs(key, reinterpret_cast<uint64>(ptr), 0);
   }
+  state->backing_device_instance = get_runtime_executor()->llvm_device()->allocation_instance();
+  state->backing_arg_bytes = ctx.arg_buffer_size;
+  state->backing_result_bytes = ctx.result_buffer_size;
+  state->backing_buffers_available = true;
   return state;
 }
 

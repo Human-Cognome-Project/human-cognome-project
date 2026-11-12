@@ -313,6 +313,10 @@ add_executable(owner_backing_test tests/owner_backing_test.cpp)
 target_link_libraries(owner_backing_test PRIVATE engine_support)
 target_compile_options(owner_backing_test PRIVATE -Wall -Wextra)
 add_test(NAME owner_backing_test COMMAND owner_backing_test)
+add_executable(prepared_backing_test tests/prepared_backing_test.cpp)
+target_link_libraries(prepared_backing_test PRIVATE engine_support)
+target_compile_options(prepared_backing_test PRIVATE -Wall -Wextra)
+add_test(NAME prepared_backing_test COMMAND prepared_backing_test)
 set_tests_properties(engine_smoke_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 
