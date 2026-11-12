@@ -11,10 +11,10 @@ struct OwnerPreparationResult {
   PreparationPhase phase{PreparationPhase::Staging};
   PreparationResult staging, capture, commands;
 };
-// Membership/declaration setup, spare projection and retained exposure pools.
+// Membership/declaration/binding setup, spare projection and retained exposure pools.
 // Initial projection copying is covered by AdoptionInputBudget;
-// binding/map construction and other constructor work remain separate.
-enum class ProjectionSetupPhase { Admission, Membership, Declarations, SpareInspection, SpareCopy, CommittedParents, SpareParents, Complete };
+// Combined borrowed-resource admission and domain overhead remain separate.
+enum class ProjectionSetupPhase { Admission, Membership, Declarations, Bindings, SpareInspection, SpareCopy, CommittedParents, SpareParents, Complete };
 struct ProjectionSetupResult {
   ProjectionSetupPhase phase{ProjectionSetupPhase::Admission};
   PreparationResult work;

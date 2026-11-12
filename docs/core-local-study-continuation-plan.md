@@ -1,5 +1,11 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer integration — 2026-11-12:** #295–#297 are accepted and integrated by the merge containing this record, preserving original commits through `272e160d56201fd1f93353c5ba22efd88f0ef69d`. #297 review [5878815959](https://github.com/Human-Cognome-Project/human-cognome-project/pull/297#pullrequestreview-5878815959) found no blocking source defect. Native 43252923816 passed all 12 jobs; smoke 43252923333 passed. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 131305209894 reports addressed_reads=24/private_reads=0. #295 native 43245334785/smoke 43245334673 and #296 native 43249326537/smoke 43249326530 also passed. Local archives remain contributor-reported, not independently inspected. This accepts binding setup, the accounting inventory and checked initial-map work prepayment, not complete owner-resource, GPU or performance qualification.
+
+**Next bounded task:** track actual domain bootstrap request bytes with an outer tracker whose lifetime safely covers domain/control-block destruction, and establish a trusted disjoint borrowed-resource ledger. Then enforce combined accounted-byte admission using those disjoint components and selected live requests; do not sum overlapping snapshot, retained, peak or cumulative-work counters. Preserve checked arithmetic, pre-allocation refusal, reclamation, native state and exact retry controls. Remaining operation/control integration follows. The projection copy audit is closed. Additional setup work remains acceptable for long-running focal models; reducing setup totals is not an acceptance gate. #75/#111/#123 remain deliberately held/deferred.
+
+**Historical handoff records below:** earlier pending, awaiting-review and next-task statements are source-pinned history, superseded by the disposition above.
+
 **Maintainer integration — 2026-11-12:** reviewed #290–#294 are integrated by the merge containing this record, preserving original commits through `32fe9928cdbed11b5092724d81f3bfbff07f0b9d`. #290's retry 43225419105 and smoke passed. #291/#292 native/smoke passed. Corrected #294 native 43240639938 passed all 12 jobs and smoke 43240639817 passed. Personally inspected #294 logs: 115 regression tests (29/29/29/28), and database job 131262194888 reports addressed_reads=24/private_reads=0. #293's original GCC 11 cleanup failure and #290's original unavailable-log failure remain historical; corrected/retried evidence does not relabel them.
 
 #295 remains provisionally source-accepted at `c118e6ef` under [review 5877025531](https://github.com/Human-Cognome-Project/human-cognome-project/pull/295#pullrequestreview-5877025531); its native qualification is still running. #296's documentation inventory at `c43de241` is source-accepted in [review 5877302279](https://github.com/Human-Cognome-Project/human-cognome-project/pull/296#pullrequestreview-5877302279); its smoke passed and native run is active. Neither is integrated here. This does not establish complete owner-resource, GPU or performance acceptance.
@@ -7,6 +13,42 @@
 **Next bounded task:** implement the reviewed work-component correction in #296: preserve the input byte census, replace only the two initial map work components with checked fresh-map demand, and prepay the projection copy once. Expose the breakdown and define the bounded fixed-construction policy explicitly. Extend existing zero/one-short/exact and overflow/refusal/reclamation/native-state/retry controls. Then establish domain bootstrap tracking and a trusted disjoint borrowed-resource ledger before enforcing combined accounted-byte admission. Do not sum overlapping snapshot, retained, peak and cumulative-work counters. Remaining operation/control integration follows.
 
 Additional setup work is acceptable where it benefits long-running focal models; lower setup totals are not an acceptance gate. The initial-projection copy audit is closed. #75/#111/#123 remain held/deferred. Earlier dated pending, integrated and “next” labels below are historical and superseded by this record where they conflict.
+
+**Map copy-work contribution (awaiting review, 2026-11-12):** implements #296
+review 5877302279's checked component replacement. Projection work is retained
+once; fresh occurrence/field map work is prepaid separately and exposed in the
+result. The byte census and selected request/allocation-work limits are unchanged.
+Fixed units explicitly cover bounded header/scalar/control initialization. Empty,
+unequal-input, overflow and pre-allocation refusal/retry controls accompany the
+change. Both builds, 47 scoped CPU checks and six standalone compiler CTests passed
+without warnings; see admission for source-pinned evidence. Main through #294 is
+included by normal merge `9acdd5fb`. Next: domain bootstrap tracking and a trusted
+disjoint borrowed ledger before combined admission; operation integration follows.
+
+**Binding setup contribution (awaiting review, 2026-11-12):** continues from #294
+review 5876572990 at `32fe9928`, including current main `7bf08034` by normal merge
+`cdcf28e0`. The shared owner setup meter now covers binding/coordinator buffer
+reserves, map construction/reservation, staging and adoption capture under a
+Bindings phase. Later operational staging/capture/matching allowances remain
+separate; standalone unrestricted wrappers stay explicit. Expanded map/owner
+refusal controls passed with both builds and all 47 scoped CPU checks, without
+warnings. Source-pinned qualification is recorded in admission.
+Next after review: complete the remaining setup/resource inventory and combined
+caller/owner/borrowed accounting, then remaining operation/control integration.
+This is not complete owner-resource acceptance; projection copy cleanup stays closed.
+
+**Accounting inventory contribution (awaiting review, 2026-11-12):**
+[The source audit](../engine/docs/ADOPTION-ACCOUNTING.md) maps all adoption operations after #295 and
+resolves the initial-map distinction: input prepayment covers one logical row copy,
+while the metered map constructor additionally counts reservation and nil-slot
+initialization. Selected allocations are already gated. The proposed next change
+replaces only map work components, retaining projection prepayment once and leaving
+the input byte census distinct. Fixed-construction policy, domain bootstrap tracking
+and a trusted disjoint borrowed-resource ledger must be explicit before a combined
+limit; the inventory specifies that finite implementation boundary. Runtime code is
+unchanged and accepted native baselines are not rerun for this documentation slice.
+
+**Historical records below:** earlier pending, integrated and “next” statements are source-pinned history and are superseded by this disposition where they conflict. #75, #111 and #123 remain deliberately held/deferred. CPU acceptance does not qualify the full GPU path.
 
 
 **Maintainer acceptance — 2026-11-12:** #285 and #286 are integrated into main at `087b6aff14d454c9ebafcda28c9e9243f596e4d2`, reviewed tip `49643f2a22bbb0076584e01d990a32ff7fe0acda`. Exact-head #286 native 43130677310 and smoke 43130677322 passed; #285 native 43121173964 and smoke 43121173792 also passed. All 12 #286 native jobs succeeded. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 130894721312 reports addressed_reads=24/private_reads=0. At that integration the active review queue was clear; #75, #111 and #123 remain deliberately held. Earlier provisional/pending labels below are historical and superseded by this acceptance. No GPU or performance qualification is implied.

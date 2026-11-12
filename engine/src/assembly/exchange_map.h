@@ -1,6 +1,7 @@
 #pragma once
 #include "assembly/letter_projection.h"
 #include "assembly/reservation_allocator.h"
+#include "assembly/preparation_work.h"
 #include <algorithm>
 
 namespace assembly::detail {
@@ -14,10 +15,11 @@ template<class T> class ExchangeMap {
   ExchangeMap() = default;
   explicit ExchangeMap(std::shared_ptr<ReservationDomain> domain)
       : domain_(std::move(domain)), slots_(ReservationAllocator<T>(domain_.get())) {}
-  ExchangeMap(const std::vector<T> &rows, std::shared_ptr<ReservationDomain> domain = {})
+  ExchangeMap(const std::vector<T> &rows, std::shared_ptr<ReservationDomain> domain = {}, PreparationWork *meter = nullptr)
       : ExchangeMap(std::move(domain)) {
-    resize_slots(rows.size());
+    resize_slots(rows.size(),meter);
     for (std::size_t i=0; i<rows.size(); ++i) {
+      if (meter) { meter->charge(sizeof(T)); meter->copy_key(map_key(rows[i])); }
       slots_[i]=rows[i];
     }
     size_=rows.size();
@@ -25,10 +27,14 @@ template<class T> class ExchangeMap {
   // Ordinary snapshots detach, including inactive paths. Explicit setup copies
   // attach before allocating nested capacity, never after detached copying.
   ExchangeMap(const ExchangeMap &other) : ExchangeMap(other,{}) {}
-  ExchangeMap(const ExchangeMap &other, std::shared_ptr<ReservationDomain> domain)
+  ExchangeMap(const ExchangeMap &other, std::shared_ptr<ReservationDomain> domain, PreparationWork *meter = nullptr)
       : ExchangeMap(std::move(domain)) {
-    resize_slots(other.slots_.size());
+    resize_slots(other.slots_.size(),meter);
     for (std::size_t i=0; i<slots_.size(); ++i) {
+      if (meter) {
+        meter->charge(sizeof(T)); meter->copy_key(map_key(other.slots_[i]));
+        meter->elements(nested(other.slots_[i]).capacity(),sizeof(nested(other.slots_[i])[0]));
+      }
       nested(slots_[i]).reserve(nested(other.slots_[i]).capacity());
       slots_[i]=other.slots_[i];
     }
@@ -42,10 +48,17 @@ template<class T> class ExchangeMap {
     }
     return *this;
   }
-  void reserve(std::size_t count, std::size_t extent) {
+  void reserve(std::size_t count, std::size_t extent, PreparationWork *meter = nullptr) {
     if (count < size_) throw warm::Error("exchange map reservation below live size");
-    resize_slots(count);
-    for (auto &row : slots_) nested(row).reserve(extent);
+    resize_slots(count,meter);
+    for (auto &row : slots_) {
+      if (meter) {
+        meter->charge(1);
+        if (extent > nested(row).capacity())
+          meter->elements(extent,sizeof(nested(row)[0]));
+      }
+      nested(row).reserve(extent);
+    }
   }
   auto begin() { return slots_.begin(); }
   auto begin() const { return slots_.begin(); }
@@ -80,14 +93,25 @@ template<class T> class ExchangeMap {
   }
   const auto &storage() const { return slots_; }
  private:
-  void resize_slots(std::size_t count) {
+  void resize_slots(std::size_t count, PreparationWork *meter) {
+    if (meter) meter->charge(1);
     if (count < slots_.size()) {
+      if (meter) for (std::size_t i=count; i<slots_.size(); ++i) {
+        meter->charge(sizeof(T)); meter->copy_key(map_key(slots_[i]));
+      }
       slots_.erase(slots_.begin()+count,slots_.end());
       return;
     }
+    if (meter && count > slots_.capacity()) {
+      meter->elements(count,sizeof(T));
+      for (const auto &row : slots_) meter->copy_key(map_key(row));
+    }
     slots_.reserve(count);
-    while (slots_.size() < count)
+    while (slots_.size() < count) {
+      // A slot initializes one canonical 36-character nil UUID plus terminator.
+      if (meter) meter->charge(sizeof(T)+37);
       slots_.push_back(make_map_slot(static_cast<T *>(nullptr),domain_));
+    }
   }
   static auto &nested(T &row) { return key_buffer(row); }
   static const auto &nested(const T &row) { return key_buffer(row); }

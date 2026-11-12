@@ -15,7 +15,7 @@ AdoptionInputResult ExchangeOwner::input_admission(const LetterProjection &proje
     inspection.charge(1);
     const auto map = [&](const auto &values, bool logical, const auto &uuid) {
       inspection.charge(1); inspection.elements(values.size(),1);
-      std::uint64_t bytes = sizeof(values);
+      std::uint64_t bytes = sizeof(values), payload = 0;
       input_elements(bytes,logical ? values.size() : values.capacity(),sizeof(values[0]),inspection);
       for (const auto &row : values) {
         inspection.charge(1);
@@ -25,23 +25,35 @@ AdoptionInputResult ExchangeOwner::input_admission(const LetterProjection &proje
         inspection.charge(1);
         const auto &key = key_buffer(row);
         input_elements(bytes,logical ? key.size() : key.capacity(),sizeof(key[0]),inspection);
+        if (logical) input_elements(payload,key.size(),sizeof(key[0]),inspection);
       }
-      return bytes;
+      const auto work = logical ? fresh_map_copy_work(values.size(),sizeof(values[0]),payload,inspection) : 0;
+      return std::make_pair(bytes,work);
     };
     const auto occurrence_uuid = [](const auto &row) -> const auto & { return row.occurrence.study; };
     const auto field_uuid = [](const auto &row) -> const auto & { return row.field.object.scope; };
     auto caller = projection.storage(&inspection,false).charged_bytes();
-    input_add(caller,map(rows,false,occurrence_uuid),inspection);
-    input_add(caller,map(fields,false,field_uuid),inspection);
-    auto snapshot = projection.storage(&inspection,true).charged_bytes();
-    input_add(snapshot,map(rows,true,occurrence_uuid),inspection);
-    input_add(snapshot,map(fields,true,field_uuid),inspection);
+    input_add(caller,map(rows,false,occurrence_uuid).first,inspection);
+    input_add(caller,map(fields,false,field_uuid).first,inspection);
+    const auto projection_work = projection.storage(&inspection,true).charged_bytes();
+    const auto row_charge = map(rows,true,occurrence_uuid);
+    const auto field_charge = map(fields,true,field_uuid);
+    auto snapshot = projection_work;
+    input_add(snapshot,row_charge.first,inspection);
+    input_add(snapshot,field_charge.first,inspection);
+    auto copy_work = projection_work;
+    input_add(copy_work,row_charge.second,inspection);
+    input_add(copy_work,field_charge.second,inspection);
     auto total = caller; input_add(total,snapshot,inspection);
     result.inspection = inspection.result();
     result.caller_bytes = caller; result.snapshot_bytes = snapshot; result.required_bytes = total;
+    result.projection_copy_work = projection_work;
+    result.occurrence_copy_work = row_charge.second;
+    result.field_copy_work = field_charge.second;
+    result.required_copy_work = copy_work;
     result.phase = AdoptionInputPhase::Copy;
     if (total > budget.bytes) { result.status = AdoptionInputStatus::ByteExhausted; return result; }
-    copy.charge(snapshot);
+    copy.charge(copy_work);
     result.copy = copy.result();
     result.phase = AdoptionInputPhase::Complete;
     return result;
@@ -66,6 +78,8 @@ ReservedUnique<ExchangeOwner> ExchangeOwner::adopt(field::Harness &h,
   result = input_admission(projection,rows,fields,budget);
   if (result.status != AdoptionInputStatus::Ok) return {};
   PreparationWork meter(projection_setup_work);
+  // Fixed admission covers bounded header/scalar/control initialization. Sized
+  // payload work and actual allocator requests have their separate gates.
   try { meter.charge(1); }
   catch (const PreparationStop &stop) { setup.work = stop.result; return {}; }
   // The domain and its own control block are separate overhead. Shared data
@@ -99,6 +113,8 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     : h_(h), projection_(reserve_unique<LetterProjection>(domain,[&](auto *p) {
         ::new (static_cast<void *>(p)) LetterProjection(projection,domain);
       })),
+      // Fresh map work was prepaid component-wise by input_admission. Passing
+      // the setup meter here would charge the same construction a second time.
       occurrences_(rows,domain), fields_(fields,domain),
       declarations_(SharedReservationAllocator<std::shared_ptr<const LetterExchangeContract>>(domain)),
       generation_(h.prepared_storage().generation) {
@@ -126,7 +142,10 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     meter.charge(sizeof(LetterExchangeContract));
     auto retained = std::allocate_shared<const LetterExchangeContract>(
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
-    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,domain);
+    setup.phase = ProjectionSetupPhase::Bindings;
+    meter.charge(sizeof(ExchangeBindings));
+    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,domain,&meter);
+    setup.phase = ProjectionSetupPhase::Declarations;
     const auto append_declaration = [&] {
       meter.charge(sizeof(declarations_[0]));
       if (declarations_.size() == declarations_.capacity())
@@ -150,13 +169,15 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
   projection_->reserve_exposure(meter);
   setup.phase = ProjectionSetupPhase::SpareParents;
   prospective_->reserve_exposure(meter);
+  setup.phase = ProjectionSetupPhase::Bindings;
+  meter.charge(sizeof(ExchangeCoordinator));
   plan_ = reserve_unique<ExchangeCoordinator>(domain,[&](auto *p) {
-    ::new (static_cast<void *>(p)) ExchangeCoordinator(h_,domain);
+    ::new (static_cast<void *>(p)) ExchangeCoordinator(h_,domain,&meter);
   });
   const auto &limits = h_.prepared_storage().capacity.limits();
-  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_);
-  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->bound_->occurrences_,plan_->bound_->fields_,&fields_);
-  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->next_,plan_->next_fields_,&fields_);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_,nullptr,&meter);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->bound_->occurrences_,plan_->bound_->fields_,&fields_,&meter);
+  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->next_,plan_->next_fields_,&fields_,&meter);
   completed_ = true;
 }
 

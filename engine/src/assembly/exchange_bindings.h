@@ -22,6 +22,8 @@ struct ExchangeFieldBinding {
   FieldKey field;
   engine::RecordHandle handle;
 };
+inline const auto &map_key(const OccurrenceBinding &v) { return v.occurrence; }
+inline const auto &map_key(const ExchangeFieldBinding &v) { return v.field.object; }
 // Construct nil UUID and empty nested storage with the domain already selected.
 inline OccurrenceBinding make_map_slot(OccurrenceBinding *, const std::shared_ptr<ReservationDomain> &domain) {
   return {{warm::Uuid(domain),{0,warm::OccurrencePath{SharedReservationAllocator<std::uint32_t>(domain)}}},{}};
@@ -43,17 +45,17 @@ inline std::size_t exchange_map_capacity(std::size_t live, std::size_t extra) {
 inline void reserve_exchange_maps(const LetterProjection &p, std::size_t particles,
     std::size_t fields, std::size_t batch, ExchangeMap<OccurrenceBinding> &rows,
     ExchangeMap<ExchangeFieldBinding> &groups,
-    const ExchangeMap<ExchangeFieldBinding> *trusted = nullptr) {
+    const ExchangeMap<ExchangeFieldBinding> *trusted = nullptr, PreparationWork *meter = nullptr) {
   std::size_t path = 0, address = 0;
-  for (const auto &o : p.occurrences()) path = std::max(path,o.key.source.path.size());
-  for (const auto &t : p.recipe().tools) address = std::max(address,t.ref.object.address.size());
-  for (const auto &g : groups) address = std::max(address,g.field.object.address.size());
+  for (const auto &o : p.occurrences()) { if (meter) meter->charge(1); path = std::max(path,o.key.source.path.size()); }
+  for (const auto &t : p.recipe().tools) { if (meter) meter->charge(1); address = std::max(address,t.ref.object.address.size()); }
+  for (const auto &g : groups) { if (meter) meter->charge(1); address = std::max(address,g.field.object.address.size()); }
   if (trusted) for (const auto &g : *trusted)
-    address = std::max(address,g.field.object.address.size());
+    { if (meter) meter->charge(1); address = std::max(address,g.field.object.address.size()); }
   // Candidate maps must describe over-capacity requests so ordinary native
   // preflight can return CapacityExhausted without changing committed state.
-  rows.reserve(exchange_map_capacity(particles,batch),path);
-  groups.reserve(exchange_map_capacity(fields,std::min(fields,batch)),address);
+  rows.reserve(exchange_map_capacity(particles,batch),path,meter);
+  groups.reserve(exchange_map_capacity(fields,std::min(fields,batch)),address,meter);
 }
 // Private preparation boundary. Initial identity bindings must come from the
 // trusted owner's committed admission results, never an exchange request.
@@ -64,7 +66,7 @@ class ExchangeBindings {
   friend class ExchangeOwner;
   friend struct assembly::testing::ExchangeBindingAccess;
   friend struct assembly::testing::ExchangeCoordinatorAccess;
-  explicit ExchangeBindings(field::Harness &, const std::shared_ptr<ReservationDomain> & = {});
+  explicit ExchangeBindings(field::Harness &, const std::shared_ptr<ReservationDomain> & = {}, PreparationWork * = nullptr);
   CaptureResult prepare(const LetterProjection &, std::shared_ptr<const LetterExchangeContract>,
                std::shared_ptr<const MembershipFields>,
                const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &,
@@ -72,12 +74,13 @@ class ExchangeBindings {
   void stage(std::shared_ptr<const LetterExchangeContract>, std::shared_ptr<const MembershipFields>,
              const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &, PreparationWork &);
   CaptureResult capture(const LetterProjection &, std::uint64_t capture_work);
+  CaptureResult capture(const LetterProjection &, PreparationWork &);
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
                    const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &);
   ExchangeBindings(field::Harness &, const LetterProjection &,
                    std::shared_ptr<const LetterExchangeContract>,
                    std::shared_ptr<const MembershipFields>,
-                   const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &, const std::shared_ptr<ReservationDomain> & = {});
+                   const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &, const std::shared_ptr<ReservationDomain> & = {}, PreparationWork * = nullptr);
   field::UpdateResult validate(std::uint64_t generation, std::uint64_t work) const;
   struct Edge {
     std::size_t row;

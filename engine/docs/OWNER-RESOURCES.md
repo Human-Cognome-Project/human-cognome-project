@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+**Current setup inventory (2026-11-12, awaiting review):**
+[Adoption accounting](ADOPTION-ACCOUNTING.md) maps every adoption operation to its
+current gates after #295, derives the initial-map snapshot/work overlap, and
+separates selected requests, domain overhead, caller capacity and borrowed native
+resources. Its proposed work-component replacement and combined-limit prerequisites
+supersede conflicting historical "next" or by-value snapshot descriptions below.
+No combined admission limit is implemented by that inventory.
+
 Accepted through #259 on 2026-11-10; [hosted acceptance](../tests/admission/README.md#maintainer-integrated-acceptance--247-through-259-2026-11-10)
 records the integrated stack. Remaining limits below are still open.
 
@@ -2178,3 +2186,64 @@ objects, contributions and recipe pins, plus declaration identity/source/recipe
 copies, now stage allocating values in named locals and only then move them into
 rows. No budget assertion is relaxed. Focused declaration tests additionally
 sweep every byte/allocation-work boundary and exact retry for collection and copy.
+
+### Binding construction, staging and adoption capture (awaiting review)
+
+Owner adoption supplies the same PreparationWork meter through temporary binding
+validation and the retained coordinator/binding preparation. Bindings is a distinct
+setup phase, entered before these paths; declaration work resumes in Declarations
+between temporary validations. Later projection phases remain separately reported.
+
+Before reserving buffer backing, binding construction charges mass/handle/edge
+capacity. Packed boolean masks conservatively admit one byte per requested bit
+plus a rounding word before initialization, without equating logical work with
+physical allocation. The retained coordinator also admits its binding object,
+command/intrinsic, hierarchy-node/child/contribution and field-index reserves.
+Owner code charges the coordinator object before allocation.
+
+ExchangeMap setup constructors and reserve accept an optional meter. They admit
+outer slots, conservative relocation, each canonical nil UUID initialization,
+active/inactive nested path/address reservations, source identity copies and slot
+shrink teardown before those operations. Map reservation first charges traversal
+of projection/tool/group/trusted inventories. Every owner-created map reservation
+uses the same meter. Initial caller snapshot copying retains its separate accepted
+AdoptionInputBudget boundary; ordinary standalone map snapshots may omit the meter.
+
+Adoption passes that meter directly to stage and capture rather than creating a
+fresh unrestricted staging allowance or UINT64_MAX capture allowance. Setup stops
+unwind through binding construction to the owner adoption boundary. Capture's
+existing comparison, packed-mask assignment, source-edge validation and ordered
+participation accounting are shared with the operational wrapper. The operational
+wrapper still creates and reports its own CaptureWork limit; later owner staging,
+capture and command/matching budgets are unchanged. Standalone constructors and
+prepare wrappers remain explicitly unrestricted setup conveniences.
+
+Focused map controls sweep every setup refusal across construction, growth,
+inactive-slot copying/reservation and shrink, verify teardown and source identity,
+and require exact and one-short retry. The full owner sweep includes all eight
+incomplete phases and reports binding-phase boundaries; independent allocation
+failure controls, exact source binding and later operational rejection/retry
+remain active. See admission for final source pins and observed counts.
+
+This completes this scoped binding setup path, not combined owner-resource
+acceptance. Reconcile remaining fixed/domain/control-block overhead, caller and
+borrowed native resources and complete budget composition before advancing the
+remaining operation/control integration. Projection copy cleanup stays closed.
+
+
+### Initial map copy-work replacement (awaiting review)
+
+Input admission now prepays logical projection copy work once plus checked fresh
+construction work for each initial map. The separate work components and total
+are exposed in AdoptionInputResult. Input byte census C+S and selected live/peak
+request / cumulative allocation-work limits are unchanged. The input gate remains
+allocation-free, returns no partial demand on inspection failure, and makes one
+copy-work reservation after the byte check. Initial map constructors do not charge
+the same prepaid work again to the owner setup meter.
+
+The [accounting record](ADOPTION-ACCOUNTING.md#checked-map-prepayment-implementation-awaiting-review)
+defines the fixed logical admission policy and exact formulas. Existing fixed units
+cover bounded header/scalar/control initialization; variable payload work remains
+separately metered. This is neither physical allocation accounting nor a fee for
+opaque allocator/driver work. Next: domain bootstrap request tracking and a trusted
+disjoint borrowed-resource ledger, then the combined accounted-byte limit.

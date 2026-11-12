@@ -19,16 +19,23 @@ bool current(engine::RecordHandle h, const std::vector<engine::RecordHandle> &ro
 }
 }  // namespace
 
-ExchangeBindings::ExchangeBindings(field::Harness &h, const std::shared_ptr<ReservationDomain> &domain)
+ExchangeBindings::ExchangeBindings(field::Harness &h, const std::shared_ptr<ReservationDomain> &domain, PreparationWork *meter)
     : h_(h), occurrences_(domain), fields_(domain), masses_(ReservationAllocator<std::uint64_t>(domain.get())),
       outgoing_(ReservationAllocator<engine::RecordHandle>(domain.get())), edges_(ReservationAllocator<Edge>(domain.get())),
       outgoing_rows_(ReservationAllocator<bool>(domain.get())), edge_rows_(ReservationAllocator<bool>(domain.get())) {
   const auto &s = h.prepared_storage();
   const auto &limits = s.capacity.limits();
+  if (meter) meter->elements(limits[field::Budget::Particles],sizeof(masses_[0]));
   masses_.reserve(limits[field::Budget::Particles]);
+  if (meter) meter->elements(limits[field::Budget::Particles],sizeof(outgoing_[0]));
   outgoing_.reserve(limits[field::Budget::Particles]);
+  if (meter) meter->elements(limits[field::Budget::Participation],sizeof(edges_[0]));
   edges_.reserve(limits[field::Budget::Participation]);
+  // Conservatively admit one byte per bit plus a rounding word before packed
+  // mask backing is allocated/initialized; do not depend on vector<bool> layout.
+  if (meter) { meter->elements(s.particle_headers.size(),1); meter->charge(sizeof(std::uintmax_t)); }
   outgoing_rows_.reserve(s.particle_headers.size());
+  if (meter) { meter->elements(limits[field::Budget::Participation],1); meter->charge(sizeof(std::uintmax_t)); }
   edge_rows_.reserve(limits[field::Budget::Participation]);
 }
 
@@ -43,18 +50,19 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &pr
 ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &projection,
     std::shared_ptr<const LetterExchangeContract> contract,
     std::shared_ptr<const MembershipFields> memberships, const std::vector<OccurrenceBinding> &occurrences,
-    const std::vector<ExchangeFieldBinding> &fields, const std::shared_ptr<ReservationDomain> &domain)
-    : ExchangeBindings(h,domain) {
+    const std::vector<ExchangeFieldBinding> &fields, const std::shared_ptr<ReservationDomain> &domain, PreparationWork *meter)
+    : ExchangeBindings(h,domain,meter) {
   const auto &limits = h.prepared_storage().capacity.limits();
-  const ExchangeMap<ExchangeFieldBinding> trusted(fields,domain);
-  reserve_exchange_maps(projection,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_,&trusted);
-  // Adoption is a separate setup operation; its work gate remains outstanding.
-  // Preserve the separate setup copies, but attach their outer stores to the
-  // same domain instead of making implicit untracked vector-to-map conversions.
-  const ExchangeMap<OccurrenceBinding> staged_rows(occurrences,domain);
-  const ExchangeMap<ExchangeFieldBinding> staged_fields(fields,domain);
-  need(prepare(projection, std::move(contract), std::move(memberships), staged_rows, staged_fields,
-               UINT64_MAX).status == CaptureStatus::Ok, "adoption capture work overflow");
+  PreparationWork standalone(UINT64_MAX); // Standalone adoption remains explicitly unrestricted.
+  auto &setup = meter ? *meter : standalone;
+  const ExchangeMap<ExchangeFieldBinding> trusted(fields,domain,&setup);
+  reserve_exchange_maps(projection,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_,&trusted,&setup);
+  const ExchangeMap<OccurrenceBinding> staged_rows(occurrences,domain,&setup);
+  const ExchangeMap<ExchangeFieldBinding> staged_fields(fields,domain,&setup);
+  stage(std::move(contract),std::move(memberships),staged_rows,staged_fields,setup);
+  // Setup refusal must unwind the constructor to the owner boundary, not become
+  // a fresh operational capture allowance or a swallowed partial result.
+  capture(projection,setup);
 }
 
 CaptureResult ExchangeBindings::prepare(const LetterProjection &projection,
@@ -62,7 +70,7 @@ CaptureResult ExchangeBindings::prepare(const LetterProjection &projection,
     std::shared_ptr<const MembershipFields> memberships,
     const ExchangeMap<OccurrenceBinding> &occurrences,
     const ExchangeMap<ExchangeFieldBinding> &fields, std::uint64_t capture_work) {
-  PreparationWork setup(UINT64_MAX); // Standalone/adoption setup gate remains separate.
+  PreparationWork setup(UINT64_MAX); // Standalone wrapper; owner adoption uses its shared meter.
   stage(std::move(contract),std::move(memberships),occurrences,fields,setup);
   return capture(projection,capture_work);
 }
@@ -87,9 +95,16 @@ void ExchangeBindings::stage(std::shared_ptr<const LetterExchangeContract> contr
 }
 
 CaptureResult ExchangeBindings::capture(const LetterProjection &projection, std::uint64_t allowance) {
-  valid_ = false;
   CaptureWork meter(allowance);
-  try {
+  try { return capture(projection,meter); }
+  catch (const CaptureStop &stop) {
+    valid_ = false;
+    return stop.result;
+  }
+}
+
+CaptureResult ExchangeBindings::capture(const LetterProjection &projection, PreparationWork &meter) {
+  valid_ = false;
   meter.charge(1); // Fixed capture admission; vector headers only before this.
   masses_.clear(); outgoing_.clear(); edges_.clear();
   const auto &s = h_.prepared_storage();
@@ -193,10 +208,6 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection, std:
   need(valid_,
        "exchange binding changed during preparation");
   return meter.result();
-  } catch (const CaptureStop &stop) {
-    valid_ = false;
-    return stop.result;
-  }
 }
 
 field::UpdateResult ExchangeBindings::validate(std::uint64_t expected, std::uint64_t work) const {

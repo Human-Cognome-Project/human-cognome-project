@@ -10,26 +10,36 @@ namespace {
 void need(bool ok, const char *message) { if (!ok) throw warm::Error(message); }
 }
 
-ExchangeCoordinator::ExchangeCoordinator(field::Harness &h, const std::shared_ptr<ReservationDomain> &domain)
-    : bound_(reserve_unique<ExchangeBindings>(domain,[&](auto *p) {
-        ::new (static_cast<void *>(p)) ExchangeBindings(h,domain);
-      })), commands_(ReservationAllocator<field::UpdateCommand>(domain.get())),
+ExchangeCoordinator::ExchangeCoordinator(field::Harness &h, const std::shared_ptr<ReservationDomain> &domain, PreparationWork *meter)
+    : bound_([&] {
+        if (meter) meter->charge(sizeof(ExchangeBindings));
+        return reserve_unique<ExchangeBindings>(domain,[&](auto *p) {
+          ::new (static_cast<void *>(p)) ExchangeBindings(h,domain,meter);
+        });
+      }()), commands_(ReservationAllocator<field::UpdateCommand>(domain.get())),
       intrinsics_(ReservationAllocator<field::PlacementIntrinsic>(domain.get())),
       next_(domain), next_fields_(domain),
       field_commands_(ReservationAllocator<int>(domain.get())), nodes_(ReservationAllocator<field::LiveRefreshNode>(domain.get())),
       children_(ReservationAllocator<int>(domain.get())), contributions_(ReservationAllocator<field::LiveRefreshContribution>(domain.get())) {
-  reserve(h);
+  reserve(h,meter);
 }
 
-void ExchangeCoordinator::reserve(const field::Harness &h) {
+void ExchangeCoordinator::reserve(const field::Harness &h, PreparationWork *meter) {
   const auto &limits = h.prepared_storage().capacity.limits();
+  if (meter) meter->elements(limits[field::Budget::Batch],sizeof(commands_[0]));
   commands_.reserve(limits[field::Budget::Batch]);
+  if (meter) meter->elements(limits[field::Budget::Batch],sizeof(intrinsics_[0]));
   intrinsics_.reserve(limits[field::Budget::Batch]);
+  if (meter) meter->elements(limits[field::Budget::CascadeNodes],sizeof(nodes_[0]));
   nodes_.reserve(limits[field::Budget::CascadeNodes]);
+  if (meter) meter->elements(limits[field::Budget::CascadeLinks],sizeof(children_[0]));
   children_.reserve(limits[field::Budget::CascadeLinks]);
+  if (meter) meter->elements(limits[field::Budget::CascadeReferences],sizeof(contributions_[0]));
   contributions_.reserve(limits[field::Budget::CascadeReferences]);
-  field_commands_.reserve(exchange_map_capacity(limits[field::Budget::Fields],
-      std::min(limits[field::Budget::Fields],limits[field::Budget::Batch])));
+  const auto count = exchange_map_capacity(limits[field::Budget::Fields],
+      std::min(limits[field::Budget::Fields],limits[field::Budget::Batch]));
+  if (meter) meter->elements(count,sizeof(field_commands_[0]));
+  field_commands_.reserve(count);
 }
 
 ExchangeCoordinator::ExchangeCoordinator(ReservedUnique<ExchangeBindings> bound,
