@@ -341,17 +341,16 @@ LetterProjection project_letters(const warm::Bundle &b) {
   for (const auto &[source_id, o] : ordered) {
     const auto &id = source_id.get();
     const auto &t = *tools.at(*o.definition);
-    const OccurrenceKey k{out.study_, id};
     const auto slot = b.recipe_version == 1 ? int(out.occurrences_.size()) : -1;
-    ProjectedOccurrence record{k,  t.ref, slot, o.node, o.active,
+    ProjectedOccurrence record{{out.study_, id}, t.ref, slot, o.node, o.active,
                                {}, {}};
+    const auto &k = record.key; // Stable local storage until final publication.
     if (const auto found = provenance.find(id); found != provenance.end()) {
       const auto &source = found->second;
       record.byte = ByteProvenance{{out.study_, {source.owner, {}}}, *source.character,
           source.character_ordinal, source.byte_ordinal};
     }
     if (o.complete_character) record.complete_character = *o.complete_character;
-    out.occurrences_.push_back(record);
     out.structural_input_.occurrences.push_back(
         {InputText(occurrence_text(k)), InputText(warm::key(*o.definition)), o.node});
     if (b.recipe_version == 1) {
@@ -366,6 +365,8 @@ LetterProjection project_letters(const warm::Bundle &b) {
                                 {GroupKind::ParentValue, p.target.object},
                                 p.ordinal,
                                 p.contribution});
+    // All record/key consumers are finished; no reference into the vector survives.
+    out.occurrences_.push_back(std::move(record));
   }
   for (const auto &s : b.selections) {
     Selection selection{InputText(occurrence_text_parts(out.study_, {s.entry, {}})),

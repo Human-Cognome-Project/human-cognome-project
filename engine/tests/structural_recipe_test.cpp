@@ -65,6 +65,21 @@ int main() {
                 (!complete || *published.complete_character == definition.parents.front().target),
             "complete character retains pinned reference even for inactive aggregates");
     }
+    std::size_t parent_index = 0;
+    for (const auto &published : p.occurrences()) {
+      if (!published.active) continue;
+      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      for (const auto &expected : definition.parents) {
+        check(parent_index < p.parents().size(), "all active parent rows are published");
+        const auto &parent = p.parents()[parent_index++];
+        check(parent.occurrence == published.key &&
+                  parent.field.kind == GroupKind::ParentValue &&
+                  parent.field.object == expected.target.object &&
+                  parent.ordinal == expected.ordinal && parent.count == expected.contribution,
+              "parent publication retains full occurrence/field/ordinal/count after source death");
+      }
+    }
+    check(parent_index == p.parents().size(), "no inactive or duplicate parent rows published");
     std::vector<warm::OccurrenceId> expected_ids;
     for (const auto &row : b.structural_occurrences) expected_ids.push_back(row.id);
     std::sort(expected_ids.begin(), expected_ids.end());
