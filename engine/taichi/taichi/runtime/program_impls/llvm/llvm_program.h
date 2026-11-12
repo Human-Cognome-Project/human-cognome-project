@@ -106,6 +106,14 @@ class LlvmProgramImpl : public ProgramImpl {
     return runtime_exec_->snode_root_backing_record(tree_id);
   }
 
+  ReservationLimits reservation_limits() const override {
+    return runtime_exec_->reservation_limits();
+  }
+  ReservationRequest reservation_request(ReservationKind kind, int node,
+      ReservationList list, uint64_t index) const override {
+    return runtime_exec_->reservation_request(kind, node, list, index);
+  }
+
   std::optional<std::size_t> snode_root_record_storage_bytes() const override {
     return runtime_exec_->snode_root_record_storage_bytes();
   }

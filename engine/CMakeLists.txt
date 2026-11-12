@@ -317,6 +317,10 @@ add_executable(prepared_backing_test tests/prepared_backing_test.cpp)
 target_link_libraries(prepared_backing_test PRIVATE engine_support)
 target_compile_options(prepared_backing_test PRIVATE -Wall -Wextra)
 add_test(NAME prepared_backing_test COMMAND prepared_backing_test)
+add_executable(reservation_request_test tests/reservation_request_test.cpp)
+target_link_libraries(reservation_request_test PRIVATE engine_support)
+target_compile_options(reservation_request_test PRIVATE -Wall -Wextra)
+add_test(NAME reservation_request_test COMMAND reservation_request_test)
 set_tests_properties(engine_smoke_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 

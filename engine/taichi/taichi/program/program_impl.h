@@ -9,6 +9,7 @@
 #include "taichi/program/kernel_profiler.h"
 #include "taichi/program/kernel_launcher.h"
 #include "taichi/rhi/device.h"
+#include "taichi/program/reservation_request.h"
 #include "taichi/aot/graph_data.h"
 #include "taichi/codegen/kernel_compiler.h"
 #include "taichi/compilation_manager/kernel_compilation_manager.h"
@@ -54,6 +55,13 @@ class ProgramImpl {
                                       uint64 *result_buffer_ptr) = 0;
 
   virtual void destroy_snode_tree(SNodeTree *snode_tree) = 0;
+
+  // Requires a live quiescent owner. No implicit full-capacity enumeration.
+  virtual ReservationLimits reservation_limits() const { return {}; }
+  virtual ReservationRequest reservation_request(ReservationKind kind, int node,
+      ReservationList list = ReservationList::Elements, uint64_t index = 0) const {
+    return {};
+  }
 
   // Root allocation only; this does not cover node/list pools or launches.
   // Inspection requires a live, quiescent Program/runtime owner.

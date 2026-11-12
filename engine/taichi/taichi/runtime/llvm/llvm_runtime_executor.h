@@ -12,6 +12,7 @@
 #include "taichi/runtime/llvm/llvm_context.h"
 #include "taichi/struct/snode_tree.h"
 #include "taichi/program/compile_config.h"
+#include "taichi/program/reservation_request.h"
 
 #include "taichi/system/threading.h"
 
@@ -53,6 +54,9 @@ class LlvmRuntimeExecutor {
                                              uint64 *result_buffer);
 
   void deallocate_memory_on_device(DeviceAllocation handle);
+  ReservationLimits reservation_limits() const;
+  ReservationRequest reservation_request(ReservationKind kind, int node,
+      ReservationList list, uint64_t index) const;
 
   AllocationRecord snode_root_backing_record(int tree_id) const {
     if (!snode_tree_buffer_manager_)
@@ -159,6 +163,8 @@ class LlvmRuntimeExecutor {
   std::unique_ptr<JITSession> jit_session_{nullptr};
   JITModule *runtime_jit_module_{nullptr};
   void *llvm_runtime_{nullptr};
+  using ReservationQuery = void (*)(void *, int, int, int, uint64_t, uint64_t *);
+  ReservationQuery reservation_query_{nullptr};
 
   std::unique_ptr<ThreadPool> thread_pool_{nullptr};
   std::shared_ptr<Device> device_{nullptr};
