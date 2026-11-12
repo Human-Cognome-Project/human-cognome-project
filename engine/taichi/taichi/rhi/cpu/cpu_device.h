@@ -82,11 +82,15 @@ class CpuDevice : public LlvmDevice {
     bool use_cached{false};
     bool live{false};
     bool imported{false};
+    AllocationRecordToken backing_owner;
   };
 
   AllocInfo get_alloc_info(const DeviceAllocation handle);
   AllocationRecord capture_allocation_record(DeviceAllocation) const override;
   AllocationRecord allocation_record(AllocationRecordToken) const override;
+  RhiResult import_owned_memory(AllocationRecordToken, uint64_t offset,
+                                uint64_t size, DeviceAllocation *out) override;
+  AllocationRecord allocation_backing_record(AllocationRecordToken) const override;
   AllocationRecordStorage allocation_record_storage() const override;
   void clear() override;
 

@@ -654,6 +654,18 @@ class RHI_DLL_EXPORT Device {
   virtual AllocationRecord allocation_record(AllocationRecordToken) const {
     return {};
   }
+  // Explicit owner provenance, never inferred from a later pointer match.
+  // Requires a live quiescent device/backing owner; does not extend lifetime.
+  virtual RhiResult import_owned_memory(AllocationRecordToken, uint64_t,
+                                        uint64_t, DeviceAllocation *out) {
+    if (out) *out = kDeviceNullAllocation;
+    return RhiResult::not_supported;
+  }
+  // Canonical live owned record for an owned allocation or a proven import.
+  // Raw imports and retired/unusable relationships cannot certify backing.
+  virtual AllocationRecord allocation_backing_record(AllocationRecordToken) const {
+    return {};
+  }
   virtual AllocationRecordStorage allocation_record_storage() const {
     return {};
   }
