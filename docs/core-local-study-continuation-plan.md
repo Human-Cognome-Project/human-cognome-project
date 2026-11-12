@@ -397,6 +397,19 @@ unmerged, with #288 smoke passed and native running at inspection. Remaining own
 occurrence-index keys and publication/setup costs precede membership callable/
 recursion, declaration/binding budgets and combined resources/operation integration.
 
+**Stable occurrence-key continuation (awaiting review, 2026-11-12):** #289 review
+5874861380 permits bounded continuation at `34db84f1`. Ordered-occurrence keys
+borrow IDs in source occurrence rows; provenance keys borrow selection part IDs.
+The comparator preserves value order and lookup across distinct equal objects.
+Synthesized aggregates are lookup arguments only in the changed ordered map;
+active/equivalence indexes still own their keys. V1/v2 source-death controls reverse
+input rows and verify published occurrence order. The local source comparison
+removes 26 path-sized allocations over 13 byte rows, with unchanged public layouts.
+See admission for qualification. Main remains `35814207`; #287–#289 are unmerged.
+Next: active/equivalence synthetic-key lifetime and publication/setup costs, then
+membership callable/recursion, declaration/binding budgets and combined resources/
+operation integration.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

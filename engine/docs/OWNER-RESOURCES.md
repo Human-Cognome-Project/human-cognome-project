@@ -2013,3 +2013,27 @@ before owner adoption and these results must not be attributed to its quotas.
 Remaining owned occurrence-index keys and publication/setup costs require separate
 audit. Membership callable/recursion and declaration/binding budgets follow before
 combined resources and remaining-operation integration.
+
+
+### Borrow stable occurrence-index keys (awaiting review)
+
+Following #289 review 5874861380, project_letters' ordered-occurrence map borrows
+OccurrenceIds from const input occurrence rows and its provenance map borrows IDs
+from const selection part rows. OccurrenceIdLess compares referenced values through
+the existing comparator and supports lookup with separate equal IDs. Both source
+tables remain stable throughout the call. The synthesized aggregate passed to
+ordered.at is a lookup argument only, never stored. Active/equivalence indexes
+still own their keys; their synthesized aggregate lifetime needs separate treatment.
+
+Published occurrence keys, provenance and input text remain independent. V1/v2
+source-death controls now reverse the actual source occurrence table before
+projection, then compare published IDs against sorted independent source copies.
+Existing exact definition/node, provenance, ordinal and legacy-state controls remain.
+The source-to-source v1 probe against #289 observes path-sized requests 197→171
+and allocation calls 2037→2011 for 13 byte paths. UUID-sized requests remain 743;
+public layouts are unchanged. Each path formerly copied into both temporary maps
+now stays in its stable source. This is not total-byte or performance evidence.
+
+Remaining active/equivalence indexes, independently owned publication copies and
+setup-work limits remain separate. Membership callable/recursion and declaration/
+binding budgets precede combined resources and remaining-operation integration.

@@ -5013,3 +5013,57 @@ was in progress at inspection; no duplicate retry or merge was made. No GPU, liv
 DB or browser work. Remaining occurrence-index keys and publication/setup costs
 precede membership callable/recursion, declaration/binding budgets, combined
 resources and remaining-operation integration.
+
+
+### Stable occurrence-index key qualification (2026-11-12)
+
+Tested `644373efc54c4d1e12461c23cea9d8afdfcaa65b`, continuing from #289 reviewed head
+`34db84f180eaa4b8e33cae313fb56e0962cc0a29` under review 5874861380 (no blocker,
+provisional continuation permitted). Main remains `35814207`; #287–#289 are unmerged.
+
+The ordered-occurrence map borrows IDs from const input occurrence rows. The
+byte-provenance map borrows IDs from const selection part rows. Both tables remain
+stable for the call. OccurrenceIdLess delegates to the existing value comparator;
+lookups compare values across distinct source objects. The aggregate passed to
+ordered.at is only a transient search key, never inserted. Active/equivalence indexes
+retain owned keys and their separate synthetic-key lifetime problem is deferred.
+Published occurrence keys, provenance, input text and recipe copies remain owned.
+
+V1/v2 source-death tests now reverse the actual projection source occurrence rows,
+destroy that source, then compare published IDs with independent source copies
+sorted by occurrence value. Existing complete definition/node, ordinal/provenance,
+state and v2 no-slot checks remain. Aggregate lookup uses a separately constructed
+ID; provenance lookup uses an occurrence-row ID distinct from the selection-part
+object stored as its key. These exercise value lookup rather than pointer identity.
+
+The source-to-source v1 probe against #289 covers 18 occurrences and 13 byte paths.
+Path-sized requests fall 197→171 and C++ new calls 2037→2011; UUID-sized requests
+remain 743. The script requires deltas 26/26/0, consistent with removing two copied
+paths per byte occurrence. Public layouts are unchanged (StudyInput 288,
+StructuralStudyInput 280, LetterProjection 1304; ObjectKey 88, ToolRef 136).
+Commands, sources, binaries and logs are retained. This is temporary-copy evidence,
+not a total-byte, physical-memory or performance claim.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/test/probe warnings or errors. Clang15/libstdc++,
+CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Owner metrics remain unchanged in all four CPU configurations: single/four selection
+live/peak 321185/392475, allocation work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555, census
+321153/392251. All 3271/5927 failure sites fully reclaim their blocks, with failure
+peaks 321250/392540. These overlapping reports must not be summed; initial
+projection occurs before adoption and its savings are outside the owner quota.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/projection-borrowed-occurrence-keys-domain-644373ef.tar.gz`;
+SHA256SUMS digest:
+
+    f728680cb034dbe60b7c5020d7da0e8703ea1459d33d7dd9392b626c6ae4d199
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. #289 smoke 43222858266 passed. Its native
+43222858150 summary reported queued, but inspected build/projection-values jobs
+passed and regression jobs were active. No duplicate retry or merge was made.
+No GPU, live DB or browser work. Remaining active/equivalence synthetic-key lifetime
+and publication/setup costs precede membership callable/recursion, declaration/
+binding budgets, combined resources and remaining-operation integration.
