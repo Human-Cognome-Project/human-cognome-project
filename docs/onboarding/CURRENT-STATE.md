@@ -8,7 +8,17 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 **Next bounded task:** track actual domain bootstrap request bytes with an outer tracker whose lifetime safely covers domain/control-block destruction, and establish a trusted disjoint borrowed-resource ledger. Then enforce combined accounted-byte admission using those disjoint components and selected live requests; do not sum overlapping snapshot, retained, peak or cumulative-work counters. Preserve checked arithmetic, pre-allocation refusal, reclamation, native state and exact retry controls. Remaining operation/control integration follows. The projection copy audit is closed. Additional setup work remains acceptable for long-running focal models; reducing setup totals is not an acceptance gate. #75/#111/#123 remain deliberately held/deferred.
 
-**Owner bootstrap integration (awaiting review, 2026-11-12):** continues from
+**Borrowed backing audit (awaiting review, 2026-11-12):** #299 review 5879484896
+accepts owner bootstrap provisionally and authorizes the trusted native B ledger.
+The source audit identifies missing common allocation extent/lifecycle queries,
+private SNode/node-pool and prepared-launch backing, and incomplete per-harness
+coverage. A focused CPU probe confirms alias overcount, cross-device numeric-ID
+collision and retained size metadata after release. See [borrowed resources](../../engine/docs/BORROWED-RESOURCES.md) for source pointers,
+explicit exclusions, validity requirements and the bounded native-hook sequence.
+No B ledger or combined gate is implemented by this audit. Next implement native
+request/lifecycle observation and owner backing exports before assembling trusted B;
+then enforce combined admission. #298/#299 remain open with native CI active.
+**Owner bootstrap integration (historical contribution, 2026-11-12):** continues from
 #298 review 5879152987 on `386be0a0`; #298 remains open while hosted qualification
 finishes. Owner admission now gates actual outer tracker/domain control-block
 requests and reports them separately from selected owner requests. Both bootstrap

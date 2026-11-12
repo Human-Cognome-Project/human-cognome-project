@@ -288,3 +288,14 @@ checks H+D against current owner-related C++ requests in the qualified fixtures.
 Do not add that census, input snapshot S or cumulative work to H+D. Borrowed native
 backing, allocator internals and physical residency are outside these request
 ledgers. Trusted B and combined C+B+H+D enforcement remain pending.
+
+## Borrowed backing observability — 2026-11-12 (awaiting review)
+
+[The native source audit](BORROWED-RESOURCES.md) follows #299 review 5879484896's
+explicit instruction to identify missing native request surfaces rather than use
+layout estimates. Common Device/LlvmDevice lacks a complete extent/live/incarnation
+query; the executor allocation map misses direct prepared-launch requests and can
+retain released Ndarray records. Tree roots, node/list pools and the owning Harness
+components need explicit coverage. Array views are not allocations. The audit
+records a passing focused CPU identity/alias/retirement probe and a finite native
+hook/owner-export sequence. It does not supply B or enable C+B+H+D admission.

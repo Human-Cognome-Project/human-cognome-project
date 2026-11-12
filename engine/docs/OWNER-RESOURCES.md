@@ -2257,3 +2257,12 @@ block; its lifetime extends through final selected weak release. The retained
 capacity census remains a different, overlapping surface and does not become a
 complete allocation ledger. Trusted borrowed backing and combined admission are
 still pending. Source-pinned native qualification is recorded in admission evidence.
+
+## Borrowed native ledger prerequisite — 2026-11-12 (awaiting review)
+
+[Borrowed backing observability](BORROWED-RESOURCES.md) names actual owners,
+missing native request/lifecycle surfaces, overlapping totals and identity/lifetime
+requirements for B. No complete B ledger is currently implemented. The native
+allocation and owner backing exports must precede a trusted Harness snapshot and
+combined admission. Backend-specific diagnostic results are not backend-independent
+model logic or GPU qualification.
