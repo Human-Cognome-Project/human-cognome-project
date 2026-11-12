@@ -18,6 +18,95 @@ DeviceAllocation allocate(Device &device, std::uint64_t bytes) {
 }
 int main() {
   try {
+    {
+      cpu::CpuDevice native, foreign;
+      Device &device = native;
+      const auto owned = allocate(device,64);
+      const auto owner = device.capture_allocation_record(owned);
+      DeviceAllocation alias;
+      require(device.import_owned_memory(owner.token,16,24,&alias) == RhiResult::success,
+              "proven owned import failed");
+      const auto registration = device.capture_allocation_record(alias);
+      require(registration.ownership == AllocationOwnership::Imported &&
+                  registration.extent_bytes == 24 && !registration.requested_bytes &&
+                  !(registration.token == owner.token), "import registration collapsed into owner");
+      allocation_observation::calls = 0;
+      allocation_observation::enabled = true;
+      const auto backing = device.allocation_backing_record(registration.token);
+      allocation_observation::enabled = false;
+      require(!allocation_observation::calls && backing.token == owner.token &&
+                  backing.extent_bytes == 64 && backing.status == AllocationRecordStatus::Live,
+              "backing query allocated or lost full owner extent");
+      void *mapped = nullptr;
+      require(device.map(alias,&mapped) == RhiResult::success &&
+                  mapped == static_cast<char *>(native.get_alloc_info(owned).ptr)+16,
+              "owned import mapped wrong offset");
+      const auto raw = native.import_memory(mapped,24);
+      require(device.allocation_backing_record(device.capture_allocation_record(raw).token).status ==
+                  AllocationRecordStatus::Unknown, "raw pointer match fabricated provenance");
+      DeviceAllocation rejected = owned;
+      require(device.import_owned_memory(owner.token,65,0,&rejected) == RhiResult::invalid_usage &&
+                  !rejected.device &&
+                  device.import_owned_memory(owner.token,1,UINT64_MAX,&rejected) == RhiResult::invalid_usage &&
+                  device.import_owned_memory(registration.token,0,1,&rejected) == RhiResult::invalid_usage &&
+                  foreign.import_owned_memory(owner.token,0,1,&rejected) == RhiResult::invalid_usage &&
+                  device.import_owned_memory(owner.token,0,1,nullptr) == RhiResult::invalid_usage,
+              "invalid/foreign/nested import accepted");
+      require(device.Device::import_owned_memory(owner.token,0,1,&rejected) == RhiResult::not_supported &&
+                  device.Device::allocation_backing_record(owner.token).status == AllocationRecordStatus::Unavailable,
+              "default backend claimed support");
+      DeviceAllocation empty;
+      require(device.import_owned_memory(owner.token,64,0,&empty) == RhiResult::success &&
+                  device.allocation_backing_record(device.capture_allocation_record(empty).token).token == owner.token,
+              "empty end view lost owner");
+      native.dealloc_memory(empty);
+      native.dealloc_memory(alias);
+      require(device.allocation_backing_record(registration.token).status == AllocationRecordStatus::Unknown &&
+                  device.allocation_backing_record(owner.token).status == AllocationRecordStatus::Live,
+              "import retirement freed owner or remained usable");
+      require(device.import_owned_memory(owner.token,0,64,&alias) == RhiResult::success,
+              "second owned import failed");
+      const auto second = device.capture_allocation_record(alias).token;
+      device.dealloc_memory(owned);
+      require(device.allocation_record(second).status == AllocationRecordStatus::Live &&
+                  device.allocation_backing_record(second).status == AllocationRecordStatus::Unknown &&
+                  device.import_owned_memory(owner.token,0,0,&rejected) == RhiResult::invalid_usage,
+              "retired backing still certified");
+      allocate(device,64);
+      require(device.allocation_backing_record(second).status == AllocationRecordStatus::Unknown,
+              "replacement allocation revived import provenance");
+      native.clear();
+      const auto zero = allocate(device,0);
+      const auto zero_owner = device.capture_allocation_record(zero).token;
+      require(device.import_owned_memory(zero_owner,0,0,&alias) == RhiResult::success &&
+                  device.allocation_backing_record(device.capture_allocation_record(alias).token).token == zero_owner &&
+                  device.allocation_backing_record(second).status == AllocationRecordStatus::Unknown,
+              "zero backing or reset epoch lost identity");
+      native.clear();
+    }
+    {
+      cpu::CpuDevice native;
+      auto owned = allocate(native,0);
+      const auto token = native.capture_allocation_record(owned).token;
+      std::size_t rows = 1;
+      const auto capacity = native.allocation_record_storage().record_capacity_bytes /
+                            sizeof(cpu::CpuDevice::AllocInfo);
+      while (rows < capacity) { allocate(native,0); ++rows; }
+      DeviceAllocation output = owned;
+      allocation_lifetime::begin(1);
+      bool failed = false;
+      try { native.import_owned_memory(token,0,0,&output); }
+      catch (const std::bad_alloc &) { failed = true; }
+      const auto counts = allocation_lifetime::end();
+      require(failed && counts.attempts == 1 && !counts.live && !output.device &&
+                  native.allocation_backing_record(token).status == AllocationRecordStatus::Live &&
+                  native.allocation_record_storage().record_capacity_bytes ==
+                      capacity*sizeof(cpu::CpuDevice::AllocInfo),
+              "failed import registration changed owner/output/metadata");
+      require(native.import_owned_memory(token,0,0,&output) == RhiResult::success &&
+                  output.alloc_id == rows, "import registration exact retry failed");
+      native.clear();
+    }
     // Zero payload isolates the first record-vector request from pool allocation.
     // Refusal cannot publish a live record or leave an allocation handle behind.
     {

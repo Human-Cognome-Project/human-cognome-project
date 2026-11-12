@@ -23,6 +23,7 @@
 #include <cstring>
 
 #include "taichi/inc/constants.h"
+#include "taichi/program/reservation_request.h"
 #include "taichi/inc/cuda_kernel_utils.inc.h"
 #include "taichi/math/arithmetic.h"
 
@@ -417,10 +418,10 @@ Data are organized in chunks, where each chunk is allocated on demand.
 extern "C" void grid_memfence();
 
 struct ListManager {
-  static constexpr std::size_t max_num_chunks = 128 * 1024;
+  static constexpr std::size_t max_num_chunks = taichi::lang::reservation_max_chunks;
   // On 64-bit targets: 2 KiB of roots and a lazy 4 KiB page per 512 chunks,
   // instead of a 1 MiB embedded directory in every manager.
-  static constexpr std::size_t chunks_per_page = 512;
+  static constexpr std::size_t chunks_per_page = taichi::lang::reservation_chunks_per_page;
   static constexpr std::size_t num_chunk_pages =
       max_num_chunks / chunks_per_page;
   Ptr *chunk_pages[num_chunk_pages]{};
@@ -616,6 +617,7 @@ struct LLVMRuntime {
   ListManager **element_lists;
   NodeManager **node_allocators;
   Ptr *ambient_elements;
+  uint64 *ambient_request_sizes;
   Ptr temporaries;
   RandState *rand_states;
 
@@ -795,6 +797,67 @@ void runtime_ListManager_get_num_active_chunks(LLVMRuntime *runtime,
                       list_manager->get_num_active_chunks());
 }
 
+// One fixed-depth lookup under a quiescent native owner. No scanning, allocation,
+// mutation, or host assumptions in the runtime-module implementation.
+void runtime_reservation_request(LLVMRuntime *runtime, int kind_value, int node,
+                                 int list_value, uint64 index, uint64 *out) {
+  using namespace taichi::lang;
+  out[0] = static_cast<uint64>(ReservationStatus::Invalid);
+  out[1] = out[2] = out[3] = 0;
+  const auto kind = static_cast<ReservationKind>(kind_value);
+  Ptr ptr = nullptr;
+  uint64 bytes = 0, alignment = 4096;
+  if (kind == ReservationKind::AmbientMetadata) {
+    if (node != -1 || list_value != 0 || index != 0) return;
+    ptr = reinterpret_cast<Ptr>(runtime->ambient_request_sizes);
+    bytes = sizeof(uint64) * static_cast<uint64>(runtime->snode_capacity);
+  } else {
+    if (node < 0 || node >= runtime->snode_capacity) return;
+    if (kind == ReservationKind::NodeManager || kind == ReservationKind::Ambient) {
+      if (list_value != 0 || index != 0) return;
+      if (kind == ReservationKind::NodeManager) {
+        ptr = reinterpret_cast<Ptr>(runtime->node_allocators[node]);
+        bytes = sizeof(NodeManager);
+      } else {
+        ptr = runtime->ambient_elements[node];
+        bytes = runtime->ambient_request_sizes[node];
+        alignment = 128;
+      }
+    } else {
+      if (kind != ReservationKind::ListObject && kind != ReservationKind::ListPage &&
+          kind != ReservationKind::ListChunk) return;
+      if (list_value < 0 || list_value > 3) return;
+      if ((kind == ReservationKind::ListObject && index != 0) ||
+          (kind == ReservationKind::ListPage && index >= ListManager::num_chunk_pages) ||
+          (kind == ReservationKind::ListChunk && index >= ListManager::max_num_chunks)) return;
+      ListManager *list = runtime->element_lists[node];
+      if (list_value != 0) {
+        auto *manager = runtime->node_allocators[node];
+        list = manager ? (list_value == 1 ? manager->free_list :
+                         list_value == 2 ? manager->recycled_list : manager->data_list) : nullptr;
+      }
+      if (list) {
+        if (kind == ReservationKind::ListObject) {
+          ptr = reinterpret_cast<Ptr>(list);
+          bytes = sizeof(ListManager);
+        } else if (kind == ReservationKind::ListPage) {
+          ptr = reinterpret_cast<Ptr>(list->chunk_pages[index]);
+          bytes = ListManager::chunks_per_page * sizeof(Ptr);
+        } else {
+          ptr = list->get_chunk(static_cast<int>(index));
+          bytes = list->max_num_elements_per_chunk * list->element_size;
+        }
+      }
+    }
+  }
+  out[0] = static_cast<uint64>(ptr ? ReservationStatus::Present : ReservationStatus::Absent);
+  if (ptr) {
+    out[1] = reinterpret_cast<uint64>(ptr);
+    out[2] = bytes;
+    out[3] = alignment;
+  }
+}
+
 RUNTIME_STRUCT_FIELD_ARRAY(LLVMRuntime, node_allocators);
 RUNTIME_STRUCT_FIELD_ARRAY(LLVMRuntime, element_lists);
 RUNTIME_STRUCT_FIELD(LLVMRuntime, total_requested_memory);
@@ -959,6 +1022,7 @@ void runtime_get_memory_requirements(Ptr result_buffer,
                            taichi_page_size);
   size +=
       3 * taichi::iroundup(i64(sizeof(Ptr)) * snode_capacity, taichi_page_size);
+  size += taichi::iroundup(i64(sizeof(uint64)) * snode_capacity, taichi_page_size);
 
   reinterpret_cast<i64 *>(result_buffer)[0] = size;
 }
@@ -1025,6 +1089,9 @@ void runtime_initialize(
   runtime->ambient_elements = (Ptr *)runtime->allocate_aligned(
       runtime->runtime_objects_chunk, sizeof(Ptr) * snode_capacity,
       taichi_page_size);
+  runtime->ambient_request_sizes = (uint64 *)runtime->allocate_aligned(
+      runtime->runtime_objects_chunk, sizeof(uint64) * snode_capacity,
+      taichi_page_size);
   for (int i = 0; i < snode_tree_capacity; ++i) {
     runtime->roots[i] = nullptr;
     runtime->root_mem_sizes[i] = 0;
@@ -1033,6 +1100,7 @@ void runtime_initialize(
     runtime->element_lists[i] = nullptr;
     runtime->node_allocators[i] = nullptr;
     runtime->ambient_elements[i] = nullptr;
+    runtime->ambient_request_sizes[i] = 0;
   }
 
   runtime->temporaries = (Ptr)runtime->allocate_aligned(
@@ -1126,6 +1194,7 @@ void runtime_allocate_ambient(LLVMRuntime *runtime,
   // collected.
   runtime->ambient_elements[snode_id] = runtime->allocate_aligned(
       runtime->runtime_memory_chunk, size, 128, true /*request*/);
+  runtime->ambient_request_sizes[snode_id] = size;
 }
 
 void mutex_lock_i32(Ptr mutex) {

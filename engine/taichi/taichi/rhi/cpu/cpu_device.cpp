@@ -44,6 +44,44 @@ AllocationRecordStorage CpuDevice::allocation_record_storage() const {
   return {true, sizeof(*this), allocations_.capacity() * sizeof(AllocInfo)};
 }
 
+AllocationRecord CpuDevice::allocation_backing_record(AllocationRecordToken token) const {
+  auto record = allocation_record(token);
+  if (record.status == AllocationRecordStatus::Unavailable) return record;
+  if (record.status == AllocationRecordStatus::Live) {
+    if (record.ownership == AllocationOwnership::Owned) return record;
+    const auto owner = allocation_record(allocations_[token.allocation].backing_owner);
+    if (owner.status == AllocationRecordStatus::Live &&
+        owner.ownership == AllocationOwnership::Owned) return owner;
+  }
+  AllocationRecord unknown;
+  unknown.status = AllocationRecordStatus::Unknown;
+  return unknown;
+}
+
+RhiResult CpuDevice::import_owned_memory(AllocationRecordToken token,
+                                        uint64_t offset, uint64_t size,
+                                        DeviceAllocation *out) {
+  if (!out) return RhiResult::invalid_usage;
+  *out = kDeviceNullAllocation;
+  const auto owner = allocation_record(token);
+  if (owner.status != AllocationRecordStatus::Live ||
+      owner.ownership != AllocationOwnership::Owned ||
+      offset > owner.extent_bytes || size > owner.extent_bytes - offset)
+    return RhiResult::invalid_usage;
+  // Copy before push_back: growth may invalidate the source row.
+  const auto source = allocations_[token.allocation];
+  AllocInfo info;
+  info.ptr = source.ptr ? static_cast<char *>(source.ptr) + offset : nullptr;
+  info.size = size;
+  info.live = true;
+  info.imported = true;
+  info.backing_owner = token;
+  const auto id = allocations_.size();
+  allocations_.push_back(info);  // Failure leaves the owner and output untouched.
+  *out = DeviceAllocation{this, id};
+  return RhiResult::success;
+}
+
 void CpuDevice::clear() {
   for (std::size_t i = 0; i < allocations_.size(); ++i)
     if (allocations_[i].live) dealloc_memory(DeviceAllocation{this, i});

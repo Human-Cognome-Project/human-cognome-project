@@ -60,6 +60,14 @@ Ndarray::Ndarray(Program *prog,
   }
   ndarray_alloc_ = prog->allocate_memory_on_device(nelement_ * element_size_,
                                                    prog->result_buffer);
+  if (ndarray_alloc_.device) {
+    try {
+      backing_record_ = ndarray_alloc_.device->capture_allocation_record(ndarray_alloc_);
+    } catch (...) {
+      ndarray_alloc_.device->dealloc_memory(ndarray_alloc_);
+      throw;
+    }
+  }
 }
 
 Ndarray::Ndarray(DeviceAllocation &devalloc,
@@ -77,6 +85,8 @@ Ndarray::Ndarray(DeviceAllocation &devalloc,
                                 std::size_t(1),
                                 std::multiplies<std::size_t>())),
       element_size_(data_type_size(dtype)) {
+  if (devalloc.device)
+    backing_record_ = devalloc.device->capture_allocation_record(devalloc);
   // When element_shape is specified but layout is not, default layout is AOS.
   auto element_shape = data_type_shape(dtype);
   if (!element_shape.empty() && layout == ExternalArrayLayout::kNull) {
@@ -133,6 +143,19 @@ intptr_t Ndarray::get_device_allocation_ptr_as_int() const {
 
 DeviceAllocation Ndarray::get_device_allocation() const {
   return ndarray_alloc_;
+}
+
+AllocationRecord Ndarray::backing_record(const Device &live_device) const {
+  if (ndarray_alloc_.device != &live_device ||
+      (backing_record_.status != AllocationRecordStatus::Unavailable &&
+       ndarray_alloc_.alloc_id != backing_record_.token.allocation)) {
+    AllocationRecord unknown;
+    unknown.status = AllocationRecordStatus::Unknown;
+    return unknown;
+  }
+  if (backing_record_.status == AllocationRecordStatus::Unavailable)
+    return {};
+  return live_device.allocation_record(backing_record_.token);
 }
 
 std::vector<int> Ndarray::get_element_shape() const {

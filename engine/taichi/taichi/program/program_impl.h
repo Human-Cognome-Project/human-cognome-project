@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 
 #include "taichi/aot/module_builder.h"
 #include "taichi/ir/statements.h"
@@ -8,6 +9,7 @@
 #include "taichi/program/kernel_profiler.h"
 #include "taichi/program/kernel_launcher.h"
 #include "taichi/rhi/device.h"
+#include "taichi/program/reservation_request.h"
 #include "taichi/aot/graph_data.h"
 #include "taichi/codegen/kernel_compiler.h"
 #include "taichi/compilation_manager/kernel_compilation_manager.h"
@@ -53,6 +55,25 @@ class ProgramImpl {
                                       uint64 *result_buffer_ptr) = 0;
 
   virtual void destroy_snode_tree(SNodeTree *snode_tree) = 0;
+
+  // Requires a live quiescent owner. No implicit full-capacity enumeration.
+  virtual ReservationLimits reservation_limits() const { return {}; }
+  virtual ReservationRequest reservation_request(ReservationKind kind, int node,
+      ReservationList list = ReservationList::Elements, uint64_t index = 0) const {
+    return {};
+  }
+
+  // Root allocation only; this does not cover node/list pools or launches.
+  // Inspection requires a live, quiescent Program/runtime owner.
+  virtual AllocationRecord snode_root_backing_record(int tree_id) {
+    return {};
+  }
+
+  // Incremental root-record metadata, once per Program, not once per tree.
+  // Nullopt means unavailable, not zero. Not a complete map-node census.
+  virtual std::optional<std::size_t> snode_root_record_storage_bytes() const {
+    return std::nullopt;
+  }
 
   virtual std::size_t get_snode_num_dynamically_allocated(
       SNode *snode,

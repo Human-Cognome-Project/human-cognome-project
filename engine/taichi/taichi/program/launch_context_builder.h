@@ -25,13 +25,41 @@ class LaunchContextBuilder {
     std::vector<Scalar> scalars;
     std::size_t device_bytes{0};
     std::size_t host_bytes{0};
+    // CPU prepared-buffer coverage only. Unsupported launchers leave false.
+    bool backing_buffers_available{false};
+    uint64_t backing_device_instance{0};
+    std::size_t backing_arg_bytes{0}, backing_result_bytes{0};
     virtual ~Prepared() = default;
   };
   struct ArrayBinding {
     DataType type{PrimitiveType::unknown};
     int rank{-1};
     std::size_t elements{0};
+    AllocationRecord backing;
   };
+  struct HostBackingView {
+    const void *data{nullptr};
+    std::size_t requested_bytes{0};
+  };
+  struct PreparedBacking {
+    bool buffers_available{false};
+    bool array_bindings_complete{false};
+    bool device_buffers_complete{false};
+    // Nested maps and backend metadata are not fully enumerated by this API.
+    bool host_metadata_complete{false};
+    HostBackingView arguments, results, runtime_context;
+    std::size_t context_object_bytes{0}, prepared_object_bytes{0};
+    std::size_t array_binding_capacity_bytes{0};
+    // Subset of array_binding_capacity_bytes, never an additional charge.
+    std::size_t incremental_record_capacity_bytes{0};
+  };
+
+  // Non-owning, synchronous views: caller keeps context/kernel/runtime/device
+  // alive and quiescent. Views do not certify identity after owner destruction.
+  // Imported/unknown/unavailable bindings prevent complete array coverage.
+  PreparedBacking prepared_backing(const Device &live_device) const;
+  AllocationRecord prepared_array_record(const Device &live_device,
+                                         std::size_t argument) const;
   enum class DevAllocType : int8_t {
     kNone = 0,
     kNdarray = 1,

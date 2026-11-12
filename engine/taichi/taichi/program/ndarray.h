@@ -61,6 +61,11 @@ class TI_DLL_EXPORT Ndarray {
   intptr_t get_data_ptr_as_int() const;
   intptr_t get_device_allocation_ptr_as_int() const;
   DeviceAllocation get_device_allocation() const;
+  // The caller supplies an independently known-live device. Construction from
+  // a legacy handle requires that handle to be current; later queries use the
+  // captured incarnation, never recapture a potentially reused numeric ID.
+  // Imported records remain unresolved registrations, not certified backing.
+  AllocationRecord backing_record(const Device &live_device) const;
   std::size_t get_element_size() const;
   std::size_t get_nelement() const;
   TypedConstant read(const std::vector<int> &I) const;
@@ -82,6 +87,7 @@ class TI_DLL_EXPORT Ndarray {
   std::vector<int> total_shape_;
 
   Program *prog_{nullptr};
+  AllocationRecord backing_record_;
 };
 
 }  // namespace taichi::lang

@@ -584,6 +584,7 @@ uint64_t *LlvmRuntimeExecutor::get_device_alloc_info_ptr(
 }
 
 void LlvmRuntimeExecutor::finalize() {
+  reservation_query_ = nullptr;
   profiler_ = nullptr;
   if (config_.arch == Arch::cuda || config_.arch == Arch::amdgpu) {
     preallocated_runtime_objects_allocs_.reset();
@@ -750,6 +751,10 @@ void LlvmRuntimeExecutor::materialize_runtime(KernelProfilerBase *profiler,
   TI_TRACE("LLVMRuntime initialized (excluding `root`)");
   llvm_runtime_ = fetch_result<void *>(taichi_result_buffer_ret_value_id,
                                        *result_buffer_ptr);
+  if (arch_is_cpu(config_.arch)) {
+    reservation_query_ = reinterpret_cast<ReservationQuery>(
+        runtime_jit->lookup_function("runtime_reservation_request"));
+  }
   TI_TRACE("LLVMRuntime pointer fetched");
 
   // Preallocate for runtime memory and update to LLVMRuntime
@@ -799,6 +804,29 @@ void LlvmRuntimeExecutor::destroy_snode_tree(SNodeTree *snode_tree) {
 
 Device *LlvmRuntimeExecutor::get_compute_device() {
   return device_.get();
+}
+
+ReservationLimits LlvmRuntimeExecutor::reservation_limits() const {
+  if (!reservation_query_ || !llvm_runtime_ || !device_->allocation_instance())
+    return {};
+  return {true, static_cast<uint64_t>(snode_capacity_), reservation_max_pages,
+          reservation_max_chunks, 1, sizeof(ReservationQuery) + sizeof(uint64_t *)};
+}
+
+ReservationRequest LlvmRuntimeExecutor::reservation_request(
+    ReservationKind kind, int node, ReservationList list, uint64_t index) const {
+  ReservationRequest result;
+  if (!reservation_limits().available)
+    return result;
+  uint64_t words[4]{};
+  reservation_query_(llvm_runtime_, static_cast<int>(kind), node,
+                     static_cast<int>(list), index, words);
+  result.status = static_cast<ReservationStatus>(words[0]);
+  result.runtime_instance = device_->allocation_instance();
+  result.address = static_cast<std::uintptr_t>(words[1]);
+  result.requested_bytes = words[2];
+  result.alignment = words[3];
+  return result;
 }
 
 LLVMRuntime *LlvmRuntimeExecutor::get_llvm_runtime() {

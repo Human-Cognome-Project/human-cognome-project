@@ -1,12 +1,69 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer integration — 2026-11-12:** #302–#305 are accepted and integrated by the merge containing this record, preserving reviewed `44c890b78c973be21a5b2e705ac79c334da3ae4e`. Corrected #304 native 43299289153 and smoke 43299289118 passed; #305 native 43302942903 passed all 12 jobs and smoke 43302942605 passed. Personally inspected 119 passing regression tests (30/30/30/29), including allocation_record_test, owner_backing_test, prepared_backing_test and reservation_request_test; database job 131487117070 reports addressed_reads=24/private_reads=0. The original #302 initialization failure remains preserved, not reclassified as green. Contributor-local archives were not independently inspected. #306 prepared canonical import adoption and #307 host-pool identity remain provisionally source-accepted, with native qualification pending; their smoke runs passed. This supersedes older pending/status labels below.
+
+**Next bounded task:** authoritative rounded extents and remaining prepared/runtime/pool metadata on the reviewed #307 stack, followed by trusted Harness required-family coverage, lifetime validity, canonical backing deduplication and prepaid lookup/enumeration work before checked C+B+H+D admission. Shared raw chunks and contained requests are not disjoint charges. Preserve independent work gates and native authority; setup cost is acceptable for long-running focal models. No complete B or GPU qualification is claimed. Projection-copy audit stays closed; #75/#111/#123 remain held.
+
+**Explicit owned-import backing (awaiting review, 2026-11-12):** continues #304
+review5881459672 at d40daac0. Common Device captures same-device Owned provenance at
+import creation and resolves canonical live backing with bounded indexed queries.
+Raw imports remain unresolved; registrations, backing ownership and lifetime remain
+distinct. Embedded metadata is included once in existing sizeof-based row capacity.
+Main e11525a0 is already in this stack. #304's source blocker is corrected, but
+#302–#304 integration still awaits corrected combined hosted qualification. Next:
+underlying pool identity, remaining prepared/runtime metadata and binding adoption,
+then a lifetime-valid work-metered Harness snapshot and combined C+B+H+D admission.
+No full B or GPU claim; held #75/#111/#123 and projection-copy closure are unchanged.
+
+**CTest qualification correction (awaiting review, 2026-11-12):** #304 review
+5881347735 blocks integration on missing runtime environment for three tests.
+#302 native run43287680849/job131433550369 failed owner_backing_test during
+initialization; its assertions were not reached. Earlier local runs inherited
+TI_LIB_DIR and did not detect the configuration omission. Corrected combined head
+e0cc9e72 adds owner_backing_test, prepared_backing_test and reservation_request_test
+to the existing explicit runtime environment/900-second timeout group. All three
+pass with TI_LIB_DIR unset in the parent shell, as does the combined nine-test
+backing/reservation subset. Original failures and earlier evidence remain preserved;
+#302 is not represented as green. The fix is carried at the combined #304 head,
+not by rerunning unchanged parents. Await corrected hosted qualification/review
+before integration; pool/alias/metadata work remains next.
+
+**Native reservation exports (awaiting review, 2026-11-12):** continues #303 review
+5880964608. Common ProgramImpl exposes bounded CPU node/list/ambient request views,
+with Present/Absent/Invalid/Unavailable states and explicit unresolved pool identity/
+rounded extents. Ambient request metadata is reported once per runtime; enumeration
+remains caller-metered work, not a hidden scan. Main e11525a0 (#301 integrated) is
+reconciled by normal merge b86533e5; #302/#303 remain provisional and unmerged.
+Next: pool/import alias resolution, remaining metadata and a trusted lifetime-valid,
+work-metered Harness snapshot before combined C+B+H+D. No full B or GPU claim.
+
 **Maintainer integration — 2026-11-12:** #301 common/CPU allocation records are accepted and integrated by the merge containing this record, preserving reviewed `63a46aab6db261d2b8ecf189d06999d87f2f2dd2`. Native 43282494612 passed all 12 jobs and smoke 43282494900 passed. Personally inspected 116 passing regression tests (29/29/29/29), including allocation_record_test, and database job 131415289289 with addressed_reads=24/private_reads=0. #302 array/root exports remain provisionally accepted at `aa48a2e4` (review 5880581671); #303 prepared CPU exports at `bb0dfd28` are provisionally accepted in [review 5880964608](https://github.com/Human-Cognome-Project/human-cognome-project/pull/303#pullrequestreview-5880964608). Both remain unmerged with native qualification active; their smoke checks passed. Contributor-local artifacts were not independently inspected. This does not establish full B, combined admission or GPU qualification.
 
 **Next bounded task:** native node/list/ambient request exports on reviewed #303, then remaining prepared metadata and imported-to-owner alias resolution. Preserve explicit required-family coverage and account retained metadata once at its actual owner. The trusted Harness snapshot must establish lifetime/backing validity, deduplicate actual backing rather than registrations, and meter input-sized enumeration/validation before checked C+B+H+D enforcement. Retain separate work gates and native authority; remaining operation/control integration follows. Projection-copy audit stays closed and additional setup cost is acceptable for long-running focal models. #75/#111/#123 remain deliberately held. Earlier pending/next labels below are historical where they conflict.
 
+**Prepared CPU backing exports (awaiting review, 2026-11-12):** continues #302
+review 5880581671. Common launch-context queries expose actual host buffers and
+captured array identities, with separate family coverage and explicit incomplete
+host metadata. Imports/external/raw bindings cannot certify complete owned backing.
+Records are embedded in existing binding rows and included by existing sizeof-based
+capacity accounting. Main 0e82ebe0 (#300 integrated) is reconciled by normal merge
+f0e1e4b8; #301/#302 remain provisionally accepted and unmerged. Next: node/list/ambient
+exports, remaining metadata and alias resolution, trusted Harness lifetime/coverage,
+then combined admission. No full B or GPU qualification is claimed.
+
 **Maintainer integration — 2026-11-12:** #300's borrowed-resource audit is accepted and integrated by the merge containing this record, preserving `e540a8712c176c06d2f5729da2aa6602d67ec4cb`. Native 43276619607 passed all 12 jobs; smoke 43276619735 passed. Personally inspected 115 passing regression tests (29/29/29/28) and database job 131388302021 with addressed_reads=24/private_reads=0. Main includes #299 owner bootstrap admission and now the [borrowed-resource audit](../engine/docs/BORROWED-RESOURCES.md). #301 CPU record interface remains provisionally accepted at `63a46aab` (review 5880096613), and #302 array/root exports at `aa48a2e4` in [review 5880581671](https://github.com/Human-Cognome-Project/human-cognome-project/pull/302#pullrequestreview-5880581671). Both remain unmerged with native qualification running; their smoke checks passed. Local archives remain contributor-reported, not independently inspected. Neither a complete B ledger nor combined admission is built.
 
 **Next bounded task:** prepared-invocation backing exports and node/list/ambient reservations on reviewed #302. Preserve explicit required-family coverage, owner lifetime and request/rounded extent distinctions. Resolve imported registrations to actual backing owners before deduplication; account runtime metadata once. Missing coverage or unresolved ownership keeps the complete ledger unavailable. Then assemble the trusted lifetime-valid Harness snapshot, enforce checked C+B+H+D with separate work gates and complete remaining operation/control integration. The projection-copy audit stays closed; additional setup cost is acceptable for long-running focal models. #75/#111/#123 remain deliberately held. Earlier pending and next-task labels below are historical where they conflict.
+
+**Array/root owner exports (awaiting review, 2026-11-12):** continues #301 review
+5880096613 with captured Ndarray identities and native tree-root exports through
+common ProgramImpl. Released/reset/foreign records remain explicit; imports are
+unresolved registrations, not certified backing. Incremental root-record metadata
+is reported once per runtime. Prepared invocation and node/list coverage remain
+unavailable; no complete B ledger or combined admission is claimed. Main b2eb86c7
+(#299 integrated) is reconciled by normal merge ca24735f; #300/#301 remain unmerged.
+Next: prepared invocation and node/list exports, alias resolution and trusted
+Harness coverage/lifetime, then combined admission. The projection-copy audit stays closed.
 
 **Maintainer integration — 2026-11-12:** #299 is accepted and integrated by the merge containing this record, preserving reviewed head `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Native 43274126767 passed all 12 jobs; smoke 43274126747 and warm 43274126853 passed. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 131379495998 reports addressed_reads=24/private_reads=0. #298 is already merged at `319f892a`. #300 audit is source-accepted at `e540a871` under review 5879635043 and #301 common/CPU allocation interface is provisionally accepted at `63a46aab` under [review 5880096613](https://github.com/Human-Cognome-Project/human-cognome-project/pull/301#pullrequestreview-5880096613); both remain unmerged with native qualification active. Local archives remain contributor-reported, not independently inspected. Main now includes owner bootstrap admission, not the pending native record interface or complete B ledger.
 
@@ -22,7 +79,26 @@
 
 **Next bounded task:** track actual domain bootstrap request bytes with an outer tracker whose lifetime safely covers domain/control-block destruction, and establish a trusted disjoint borrowed-resource ledger. Then enforce combined accounted-byte admission using those disjoint components and selected live requests; do not sum overlapping snapshot, retained, peak or cumulative-work counters. Preserve checked arithmetic, pre-allocation refusal, reclamation, native state and exact retry controls. Remaining operation/control integration follows. The projection copy audit is closed. Additional setup work remains acceptable for long-running focal models; reducing setup totals is not an acceptance gate. #75/#111/#123 remain deliberately held/deferred.
 
-**Owner bootstrap integration (awaiting review, 2026-11-12):** continues from
+**Native allocation records (awaiting review, 2026-11-12):** #300 review 5879635043
+accepts a CPU-first common native contract. This contribution adds explicit record
+status/ownership and separate original-request/extent fields, with device-instance
+and reset-epoch value tokens checked only through a known-live owner. CPU supplies
+the records and retained metadata; unsupported backends report Unavailable. Tests
+cover alias/import/retirement/reset/address reuse and registration-failure retry.
+See [native record contract](../engine/docs/BORROWED-RESOURCES.md#cpu-allocation-records-awaiting-review-2026-11-12). Main `9025c301` (#298 integrated) is reconciled by normal merge `2a919e22`;
+#299/#300 remain reviewed but unmerged. Next owner backing exports, trusted Harness
+coverage/lifetime, then combined admission; no complete B/GPU acceptance is claimed.
+**Borrowed backing audit (historical contribution, 2026-11-12):** #299 review 5879484896
+accepts owner bootstrap provisionally and authorizes the trusted native B ledger.
+The source audit identifies missing common allocation extent/lifecycle queries,
+private SNode/node-pool and prepared-launch backing, and incomplete per-harness
+coverage. A focused CPU probe confirms alias overcount, cross-device numeric-ID
+collision and retained size metadata after release. See [borrowed resources](../engine/docs/BORROWED-RESOURCES.md) for source pointers,
+explicit exclusions, validity requirements and the bounded native-hook sequence.
+No B ledger or combined gate is implemented by this audit. Next implement native
+request/lifecycle observation and owner backing exports before assembling trusted B;
+then enforce combined admission. #298/#299 remain open with native CI active.
+**Owner bootstrap integration (historical contribution, 2026-11-12):** continues from
 #298 review 5879152987 on `386be0a0`; #298 remains open while hosted qualification
 finishes. Owner admission now gates actual outer tracker/domain control-block
 requests and reports them separately from selected owner requests. Both bootstrap

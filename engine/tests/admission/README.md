@@ -5724,3 +5724,259 @@ Includes source/configuration/binary pins, commands, full corrected native/engin
 build logs, preserved interrupted-target history and all scoped result logs.
 Raw local artifacts have not been independently inspected remotely. The final
 publication changes only five Markdown files after the tested code pin.
+
+## Array/root native backing exports — 2026-11-12
+
+Continues #301 review 5880096613 on reviewed 63a46aab. Current main b2eb86c7
+integrates #299; normal merge ca24735f reconciles it into this stack. #300/#301
+remain source-accepted but unmerged while hosted native qualification continues.
+
+The common Ndarray export captures allocation identity at construction and inspects
+through a supplied known-live Device. Native LLVM tree roots capture their records
+at registration and expose them through common ProgramImpl. Equal-size allocations
+remain distinct, partial views report complete allocation extents, and imports remain
+unresolved registrations. Unknown/Retired/Unavailable are not accepted zero backing.
+Root record payload is reported once per runtime; embedded array records belong to
+the array object census. See the owning BORROWED-RESOURCES coverage table: prepared
+invocation and node/list families, complete host metadata and trusted Harness
+coverage/lifetime remain outstanding. No complete B or combined gate is implemented.
+
+Initial source 398e2238 completed the native static library build. Its intermediate
+engine build was intentionally interrupted before qualification to use the final
+metadata additions, common-program-accessor test correction and constructor cleanup.
+Both command/source/build histories are retained. The intermediate build is not a
+pass and the uncompiled accessor typo is not described as a successful test.
+
+Final source and scoped qualification results are recorded below. CPU/shared-host
+scope only: no GPU, database, browser or performance qualification is implied.
+
+Tested source: 6a741e4f6fc24e0f703825ba1d796bc48614ff83.
+Tracked Taichi tree: 0a23a7a8b587b2105abbf9d67f5435ad1320224a.
+The final native static library and engine rebuilt together successfully. All six
+focused CTests passed: owner_backing_test, allocation_record_test, engine_smoke_test
+and record_map_padded/direct/working_set. New owner controls cover partial views,
+foreign devices, unresolved imported aliases, independent import retirement,
+release/reset/reuse, owned-array destruction, distinct equal-sized roots,
+missing/destroyed roots, default unavailable coverage, allocation-free inspection
+and root metadata removal. CPU fixture observations: logical array request 28 bytes,
+root device request 4096 bytes after native page rounding, Ndarray object 224 bytes.
+These are scoped request/layout measurements, not physical residency or portable fees.
+
+The broader CPU matrix passed: 20 exchange processes (five cases across threads 1/2
+and bulk/direct-no-unroll), 12 prepared execution/update tests, nine supporting
+native tests and six warm recipe tests. Including the focused six, all 53 scoped
+checks passed. Tested source stayed clean. Completed builds had no compiler
+warnings/errors. One passing 2-direct-exchange_commit process reported a shared
+Taichi offline-cache lock warning while tests ran in parallel. The first archive
+verifier rejected that diagnostic; the final verifier requires and preserves that
+exact sole warning. No cache cleanup or test rerun was performed, and no source
+build/test failure occurred. Both verifier versions and the diagnostic are retained.
+
+Verified contributor-local archive: owner-backing-domain-6a741e4f.tar.gz.
+SHA256SUMS manifest: f9e058236bafcbc5cad8a4b9b54d24d3244c2483715c776318cd830582f9b57d.
+Archive SHA256: 68a576162397c51e7ca58c225870e5c9f25c60304e0a4da18b96b32b6b31ec8a.
+Includes source/configuration/compiler/binary pins, commands, complete final builds,
+intermediate build history and all scoped result logs. Raw local artifacts have not
+been independently inspected remotely. Final publication changes only four Markdown
+files after the tested source. At publication #300 native 43276619607 and smoke
+passed; #301 smoke passed and native 43282494612 remains active. No acceptance or
+merge is inferred from those statuses.
+
+## Prepared CPU backing exports — 2026-11-12
+
+Continues #302 review 5880581671 at reviewed aa48a2e4. Main 0e82ebe0 integrates the
+accepted #300 audit; normal merge f0e1e4b8 reconciles its handoff notes. Two Markdown
+conflicts were resolved preserving the maintainer disposition and scoped contribution
+history. #301/#302 remain provisionally source-accepted and unmerged.
+
+Common launch-context queries expose actual CPU prepared argument/result/owned
+RuntimeContext buffers, captured array records and separate family coverage. Array
+records originate from Ndarray at binding time rather than recapturing numeric IDs
+at inspection. External/raw rebinding clears the record; imports remain unresolved.
+The records are embedded in existing ArrayBinding rows, so the existing sizeof-based
+capacity accounting includes them. Incremental record bytes are a subset, not an
+additional charge. Full host metadata, other backend launch buffers and native
+node/list/ambient reservations remain incomplete/unavailable. No complete B ledger
+or combined admission is introduced. Returned views require a live quiescent native
+owner and do not extend lifetime across destruction or address reuse.
+
+Initial d906a73e failed native compilation because the new capture used CallableBase
+instead of the originating Kernel to access Program. Correction a380d5be uses the
+originating Kernel/Program, leaving originless contexts unavailable. The original
+source, commands and compiler diagnostic are retained; that failed build is not
+qualification. Corrected code also keeps exhausted device identity unavailable.
+
+Final tested source: a380d5be40468ec45962bea1989212722d145ff4.
+Tracked Taichi tree: 561a2dec0dbbd08f07354f3d1718de6cdd173b83.
+Qualification results and verified archive follow below. CPU/shared-host scope only;
+no GPU, database, browser or performance qualification is implied.
+
+Corrected native static and dependent engine builds passed. All eight focused CTests
+passed: prepared_backing_test, prepared_launch_test, owner_backing_test,
+allocation_record_test, engine_smoke_test and record_map_padded/direct/working_set.
+The new test covers full backing through alias views, distinct coverage flags,
+metadata capacities, foreign/scalar/out-of-range/default-unavailable queries,
+allocation-free inspection, prepared execution before/after context move, external
+rebinding, unresolved imports and independent import retirement, array destruction
+and unusable state. CPU fixture: argument request 40 bytes, result request zero with
+available coverage, incremental embedded record capacity 144 bytes (a subset of full
+binding-row capacity). No per-query allocation was observed. These are request/capacity
+measurements, not physical memory or universal fixed fees.
+
+The broader matrix passed: 20 exchange processes (five cases across threads 1/2 and
+bulk/direct-no-unroll), 12 prepared execution/update tests, nine supporting native
+tests and six warm recipe tests. Including the eight focused tests, all 55 scoped CPU
+checks passed. Corrected build and captured final runtime logs contain no warnings
+or errors; the tested source remained clean. The original compiler failure remains
+in the history directory rather than being relabeled as qualification.
+
+Verified contributor-local archive: prepared-backing-domain-a380d5be.tar.gz.
+SHA256SUMS manifest: c6d2344669bd6d5caf924fc1880fc3d886a086ce6a21c2fd17b2969d6ba29eb8.
+Archive SHA256: 7b9f2c561e81e8069d374662745f83accb0e0147dd8aa7c4eca0ad2d2e4f4324.
+Includes exact source/configuration/compiler/binary pins, commands, corrected builds,
+failed initial build history and all scoped results. Raw local artifacts have not
+been independently inspected remotely. Final publication differs from the tested
+pin only in four Markdown files. Documentation whitespace and 116 local file links
+passed. Parent hosted qualification was not duplicated; no acceptance or merge is
+inferred from local results.
+
+## Native node/list/ambient request exports — 2026-11-12
+
+Continues #303 review 5880964608 at reviewed bb0dfd28. Main e11525a0 integrates
+accepted #301; normal merge b86533e5 reconciles the handoff. #302/#303 remain
+provisionally accepted and unmerged. No acceptance is inferred from CI.
+
+Common ProgramImpl queries expose bounded CPU native request views for NodeManager,
+ambient storage, list objects, allocated directory pages and allocated chunks.
+Untouched slots are Absent; invalid selectors are Invalid; unsupported owner/backend
+states are Unavailable. Pool backing identity and rounded extents remain explicitly
+unresolved. These are current reachable requests, not allocation-history records,
+Device tokens, lifetime leases or a complete B ledger. Query through a known-live,
+quiescent owner with its pool intact. Tree removal retains these native requests even
+though its root allocation is released. See [the ownership contract](../../docs/BORROWED-RESOURCES.md).
+
+The ambient request-size table is retained and exported once per runtime. Its pointer
+and the cached query callback are embedded metadata subsets, not extra charges when
+whole owner objects are counted. Queries have fixed depth and allocate nothing;
+future Harness enumeration/validation must still be prepaid and metered. Imported
+alias resolution, underlying pool identity, remaining metadata and combined C+B+H+D
+admission remain outstanding.
+
+Tested source: 3832ed917b603ef938959c6bad93db7212231dd1.
+Tracked Taichi tree: 62b11a6811ec7e9fe51991cdff28a2499a4ad0fe.
+Full native static and engine builds passed. Nine focused tests passed, including
+reservation_request_test, prepared_backing_test, prepared_launch_test,
+owner_backing_test, allocation_record_test, engine_smoke_test and three record-map
+variants. The new fixture verifies statuses, selector bounds including UINT64_MAX,
+all four list roles, distinct addresses, first/repeated allocation-free queries,
+actual activation allocation deltas, stable repeated activation, retained requests
+after tree destruction and distinct runtime instances without querying dead owners.
+Fixture requests: ambient32, page4096, chunk524288, metadata1024 bytes. These are
+allocator requests on this fixture, not rounded/physical totals or universal fees.
+CPU/shared-host scope only; no GPU, database, browser or performance qualification.
+
+The broader matrix passed: 20 exchange processes (five cases across threads 1/2 and
+bulk/direct-no-unroll), 12 prepared execution/update tests, nine supporting native
+tests and six warm recipe tests. Including nine focused tests, all 56 scoped CPU
+checks passed. Full final build and captured runtime logs contain no warnings/errors;
+the tested source remained clean. There were no source build/test failures in this run.
+
+Verified contributor-local archive: native-reservation-domain-3832ed91.tar.gz.
+SHA256SUMS manifest: fd700d864c8c13316a02a17ccd70552df2a7e9ca3e3d0830a16fad7481134507.
+Archive SHA256: ae8fd2e9c93b99a4ce265223fe6df853f47029c3fd45c57d44cbc978be41d936.
+Includes source/configuration/compiler/binary pins, commands, complete builds and
+all scoped results. Raw artifacts have not been independently inspected remotely.
+Final publication differs from the tested pin only in four Markdown files. All 117
+local file links and whitespace checks passed. Parent #303 smoke 43292870875 passed;
+native 43292871002 remains active. No duplicate hosted run was requested and no
+acceptance or merge is inferred from these local results.
+
+### #304 review correction: explicit CTest runtime environment
+
+Review5881347735 identifies inherited configuration defects in #302/#303/#304.
+Hosted #302 native43287680849/job131433550369 failed owner_backing_test at
+runtime_lib_dir@43 before its assertions; the other28 shard tests passed (maintainer
+inspection). That failed attempt remains preserved and #302 is not green. Earlier
+local qualification sourced engine-env.sh, masking the absent CTest property.
+
+Corrected source e0cc9e72b1be9640fbb1becfc580744b093aa08d changes only CMake test
+properties from reviewed48d1a2b5. All three Runtime-using tests now share the existing
+TI_LIB_DIR environment and TIMEOUT900 group. Native tree remains
+62b11a6811ec7e9fe51991cdff28a2499a4ad0fe; no native implementation changes.
+CMake regenerated successfully; engine build reported no work needed. With the
+parent TI_LIB_DIR unset, verbose CTest confirms the explicit runtime path and
+900-second timeout for owner_backing_test, prepared_backing_test and
+reservation_request_test:3/3passed. The combined nine-test backing/reservation
+subset also passed with the variable unset. These nine include the three, so this
+is nine distinct tests, not12. Tested source stayed clean. CPU only, no GPU.
+The earlier56-check result remains scoped to its original source/environment;
+this focused correction does not relabel it as clean-parent-shell qualification.
+
+Evidence: runtime-ctest-fix-e0cc9e72.tar.gz, contributor-local, not independently
+inspected. Manifest SHA256 da0734563c111a389c182e272a4dd0df606d85a90442758e80aa3a5a832757d4.
+Archive SHA256 22ea2c02df67f12adeddc7b083019c0b6f8a15371c758d55e305c82f5381b56f.
+Contains commands, source/binary pins, generated CTest properties, build and verbose
+results. The final archive checksum command initially included a trailing CR and
+failed after successful tests/archive creation; a separate corrected checksum read
+succeeded without rerunning tests or changing evidence. No test failure occurred.
+Correction is carried at combined #304; unchanged parent runs are not retriggered.
+Hosted corrected qualification and review remain pending. Final documentation-only
+delta does not change tested code or configuration.
+
+## Explicit owned-import provenance — 2026-11-12
+
+Continues #304 review5881459672 at d40daac0: source/configuration blocker corrected,
+provisional source acceptance restored, integration still pending corrected combined
+hosted qualification. Main remains e11525a0 through #301 and is already an ancestor.
+The failed #302 run remains failed; unchanged parents are not rerun.
+
+Common Device import_owned_memory validates a same-device live Owned token and
+in-bounds range before capturing that owner in the imported registration. The separate
+allocation_backing_record query returns the live canonical owned token/full extent.
+Raw pointer imports remain unresolved, with no late address scan or pointer matching.
+Registration identity/liveness and backing identity/liveness remain separate.
+Unknown/default-unavailable paths cannot supply usable backing sizes. Existing
+map/transfer/launch APIs do not gain a lifetime lease or automatic use-after-owner
+protection; callers retain the live/quiescent owner obligation. See the scoped
+[ownership contract](../../docs/BORROWED-RESOURCES.md).
+
+The additional owner token is embedded in every existing CPU AllocInfo row, and the
+existing retained-capacity times sizeof(AllocInfo) report includes it once per device.
+No second registry or extra additive token charge. Query depth is bounded by two
+indexed validations; future input-sized enumeration still needs work accounting.
+This slice does not implement pool identity/rounded extents, raw-import resolution,
+prepared-binding adoption, remaining metadata or combined admission.
+
+Tested implementation source: d8c752ccb9407e8f2daf4e595aba2b7afc12f694.
+Tracked Taichi tree: 89ba8451f7446a2dc6a5175c03d50c05a517e25e.
+The extended allocation_record_test covers partial views/full owner backing,
+separate registration identity, exact mapped offset, allocation-free first query,
+raw matching-pointer refusal, invalid/overflow/foreign/nested/null-output inputs,
+default backend, zero/end views, independent import retirement, owner retirement,
+replacement/reset non-revival and failed registration with exact retry. Existing
+allocation-record coverage still exercises same-address device reconstruction.
+CPU/shared-host scope only; no GPU, database, browser or performance qualification.
+
+Full native static and dependent engine rebuilds passed without compiler warnings
+or errors. All56 scopedCPU checks passed:9focused,20exchange (five cases across
+threads1/2 and bulk/direct-no-unroll),12prepared execution/update,9supporting native,
+6warm recipe. Focused/prepared/supporting CTests ran with parent TI_LIB_DIR unset;
+direct exchange executables used the explicit engine environment. The standalone
+allocation-record fixture reports device_object_bytes96 and record_capacity_bytes384;
+these are fixture metadata sizes, not portable constants or physical memory totals.
+Tested source stayed clean. No source build/test failure occurred.
+
+Two passing exchange_commit cases (1-bulk and2-direct) emitted offline-cache lock
+warnings during concurrent runs. Both exact diagnostics remain in runtime-warnings.txt
+and the original logs. No cache cleanup or test rerun was performed. Build logs have
+no warnings/errors; runtime logs are not claimed warning-free.
+
+Verified contributor-local archive: owned-import-domain-d8c752cc.tar.gz.
+SHA256SUMS manifest: f1bda6862c6c7931d08255ee8267ca786d3c2bd696c0cf3ef9ee5f273a18a7be.
+Archive SHA256: 18224edddb59895bfbb1b4762e3e69a6d5e98b8e2f67bc6d503562da632947cc.
+Includes source/configuration/compiler/binary pins, exact commands, builds, scoped
+results and retained diagnostics. Raw artifacts have not been independently inspected
+remotely. Published head differs from tested source only in four Markdown files;
+118 local file links and whitespace checks passed. Parent #304 smoke43299289118
+passed; native43299289153 remains active at inspection. No duplicate qualification
+or self-merge. Local results do not replace authoritative hosted CI or acceptance.

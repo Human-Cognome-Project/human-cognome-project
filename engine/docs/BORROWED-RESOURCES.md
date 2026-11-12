@@ -7,6 +7,229 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Explicit owned imports (awaiting review, 2026-11-12)
+
+Continues [#304 review 5881459672](https://github.com/Human-Cognome-Project/human-cognome-project/pull/304#pullrequestreview-5881459672).
+Common Device now offers `import_owned_memory(owner_token, offset, size, out)` and
+`allocation_backing_record(registration_token)`, implemented for CPU. The new import
+path requires a currently live Owned token from the same device and an in-bounds
+range, then derives its pointer from that owner. It captures provenance at creation;
+it never scans registrations or infers ownership from a later pointer match.
+Raw `import_memory(ptr,size)` remains unchanged and unresolved, even if its address
+matches a current owned allocation. Existing raw imports are not retroactively
+upgraded. Cross-device imports and nested imported-owner tokens are unsupported by
+this bounded path; use the original owned token for multiple views.
+
+The import keeps its own Imported registration token and view extent, with zero
+owned request bytes. The separate backing query returns the original owner's live
+Owned token and full request/extent, allowing a future ledger to deduplicate by
+actual captured owner identity. Direct owned queries return themselves. A retired
+registration, retired owner, foreign/stale/invalid token or unresolved raw import
+returns Unknown without usable sizes; unsupported backends remain Unavailable.
+A zero-size view, including at the end of a nonzero allocation, still resolves to
+its actual owner; zero-size owned allocations retain their own identities.
+
+Known-live quiescent device/backing owners are required. This is not a lifetime lease
+or an automatic guard on existing map/transfer/launch APIs. An import does not keep
+its owner alive. Releasing an import never frees the backing; releasing the owner
+invalidates backing resolution while the import's registration may remain Live.
+The caller must not execute through such an import. Reset epochs and device-instance
+identities prevent old relationships reviving after allocation/device reuse. Pool
+reset while device resources are live remains outside the supported lifetime contract.
+
+The captured token is embedded in each existing CPU AllocInfo row, including owned,
+raw-import and retired rows. `allocation_record_storage()` already measures retained
+capacity times sizeof(AllocInfo), so it includes the added metadata once per device.
+Do not add the token payload a second time. Registration can grow that existing vector;
+its exception leaves the owner and output unchanged, and a retry can succeed. No
+separate registry is added. Query uses at most two indexed record validations and
+allocates nothing; it does not enumerate or establish a complete Harness snapshot.
+The caller must still meter input-sized enumeration and validation.
+
+This completes only explicit same-device owned-import provenance. Prepared contexts
+continue to treat Imported registrations as incomplete until their separate binding
+coverage path deliberately adopts and validates canonical backing. Underlying shared
+pool backing/rounded extents, general raw-import ownership, remaining prepared/runtime
+metadata, trusted Harness lifetime/coverage and combined C+B+H+D remain outstanding.
+No full B, other-backend support or GPU qualification is claimed.
+## Native reservation request exports (awaiting review, 2026-11-12)
+
+Continues [#303 review 5880964608](https://github.com/Human-Cognome-Project/human-cognome-project/pull/303#pullrequestreview-5880964608).
+Common ProgramImpl now exposes `reservation_limits()` and one indexed
+`reservation_request(kind, node, list, index)`. The LLVM CPU implementation queries
+its native runtime module, not a model-side backend cast or a logical capacity estimate.
+This supersedes the earlier unavailable node/list/ambient rows for current reachable
+CPU **request views only**. It is not a complete B ledger or combined admission gate.
+
+The query distinguishes Present, Absent, Invalid and Unavailable. Supported empty
+slots are Absent; out-of-range node/page/chunk/role selectors are Invalid; unsupported
+backends or unavailable owner state remain Unavailable. Only Present returns an
+address, exact allocator-request bytes and requested alignment. Native request views
+are distinct from Device allocation records: these reservations are pool suballocations,
+not independently registered Device allocations.
+
+| Request kind | Actual owner/request source |
+|---|---|
+| NodeManager | Runtime create request for the native manager object |
+| Ambient | Exact size passed to runtime_allocate_ambient, captured on successful allocation |
+| ListObject | Element/free/recycled/data ListManager create request |
+| ListPage | Only an allocated directory page; exact chunks_per_page × pointer-size request |
+| ListChunk | Only an allocated chunk; immutable element_size × elements_per_chunk used by its allocation call |
+| AmbientMetadata | The added size table once per runtime, selected with node=-1 and default role/index |
+
+No request is synthesized for untouched sparse capacity. List object sizes include
+embedded directory roots; separately allocated pages and chunks are separate requests.
+Node payload slots within a chunk are not additional backing requests. Equal-size
+list objects retain distinct addresses while the owner is alive. Ambient sizes are
+stored because they cannot safely be inferred from logical occupancy or an unrelated
+root record. Direct mutation/reinitialization of native owner internals is outside
+this query contract; the view covers currently reachable requests, not an allocation
+history registry.
+
+**Coverage and lifetime:** requested bytes are known, but rounded extents and underlying
+pool backing identity remain explicitly unavailable (`rounded_extent_available=false`,
+`backing_identity_complete=false`). Never add the shared pool reservation and these
+suballocations as disjoint resources. HostMemoryPool's alignment gaps/raw chunks and
+imported-to-owner alias resolution remain separate work. The runtime-instance value
+associates a view with its live CPU owner; neither it nor an address is a durable backing
+token or lifetime lease. Query only through a known-live quiescent Program/runtime with
+its pool intact, never through a dead owner or after externally resetting its pool.
+Tree destruction frees its root but retains node/list/ambient requests in this runtime;
+queries correctly keep those retained requests visible. They disappear with runtime/pool
+teardown, not merely with a logical tree removal.
+
+**Work and metadata:** every query performs one fixed-depth lookup; it never enumerates
+all nodes/pages/chunks. Limits expose configured node capacity and shared directory
+bounds with one logical query-work unit. The future trusted Harness must prepay and
+meter its input-sized traversal/validation, restrict enumeration to owned resources,
+and reject insufficient coverage before combined enforcement. This API itself does not
+implement that admission gate. The CPU callback is resolved once at runtime materialization
+and cleared on finalization, so inspection performs no JIT symbol lookup or heap allocation.
+
+The new ambient-size table requests sizeof(uint64) × node_capacity bytes once per
+runtime, including unused slots; AmbientMetadata exports its address/request. Native
+preallocation requirements include the table on all LLVM architectures. The table pointer
+and cached CPU callback pointer are reported as incremental embedded owner bytes, a subset
+of runtime/executor object storage, not an extra charge when those whole objects are counted.
+No per-node request registry or per-query storage is allocated. Shared JIT/compiler state
+and the full existing runtime metadata census are not claimed by this incremental report.
+
+Next: resolve underlying pool backing and imported aliases, finish remaining prepared/
+runtime metadata, then assemble the lifetime-valid, work-metered Harness snapshot and
+checked disjoint C+B+H+D admission. Other backend exports and GPU execution remain unqualified.
+
+## Prepared CPU buffer exports (awaiting review, 2026-11-12)
+
+Continues [#302 review 5880581671](https://github.com/Human-Cognome-Project/human-cognome-project/pull/302#pullrequestreview-5880581671).
+This slice adds common `LaunchContextBuilder::prepared_backing(live_device)` and
+`prepared_array_record(live_device, argument)` queries, implemented for CPU prepared
+invocations. Unsupported/unprepared/unusable states do not report available coverage.
+It supersedes the prepared-invocation row of the earlier owner-export table below
+for these CPU surfaces only; no complete B ledger or combined admission is built.
+
+The CPU owner exports actual argument/result allocation pointers and their validated
+request sizes, its owned RuntimeContext request, and separate context/prepared object
+sizes. A zero-sized result allocation is an available zero request, not unavailable
+coverage. CPU preparation owns no separate device launch buffers, so that family is
+explicitly complete and empty. Other launchers leave this coverage unavailable;
+this change does not infer CUDA ownership from byte estimates or qualify GPU execution.
+
+Array identities are captured from Ndarray at binding time into existing ArrayBinding
+rows. Queries use those tokens through the independently known-live supplied Device;
+they never recapture a potentially reused numeric ID or follow a saved device pointer.
+Partial views retain full allocation extent and same-allocation aliases retain equal
+tokens. Scalar and out-of-range arguments, foreign devices, retired allocations and
+unavailable records remain distinct. Imported records remain unresolved registrations:
+even a live import prevents complete array coverage until the real backing owner is
+resolved. External/raw bindings are unavailable rather than silently counted as zero.
+Rebinding through external/raw APIs clears the prior captured record.
+
+These are synchronous, non-owning views. Keep the context, its Kernel/Program/runtime
+and supplied Device alive and quiescent while inspecting. Returned host pointers do
+not extend lifetime or certify identity across destruction/address reuse. Context move
+transfers the buffers and records; the moved-from context reports unavailable. Frozen
+contexts may change scalars through the supported setters; direct edits to public
+native internals are outside this owner contract. The future trusted Harness snapshot
+must enforce lifetime and reject caller-authored evidence; these records are not
+security capabilities or a serialized authority.
+
+Required-family coverage remains separate:
+
+| Family | Coverage in this slice |
+|---|---|
+| CPU argument/result/owned RuntimeContext buffers | Actual pointers and validated request extents under live-owner precondition |
+| CPU separate device launch buffers | Complete empty family |
+| Bound arrays | Complete only when every captured array resolves Live and Owned; aliases still need deduplication |
+| Full prepared host metadata | Explicitly incomplete; nested maps, scalar backing and other metadata are not a complete census here |
+| Other backend launch buffers | Unavailable |
+| Node/list/ambient reservations | Still unavailable through the owner-export interface |
+
+The added AllocationRecord is embedded in each existing ArrayBinding row. Reported
+`array_binding_capacity_bytes` includes it, and existing prepared_bytes/reserve math
+already uses sizeof(ArrayBinding). `incremental_record_capacity_bytes` is a subset
+for review, never an extra charge to add to that full capacity. No additional record
+vector or allocation site is introduced. The new Prepared fields belong to its object
+size, charged once with that object; neither object sizes nor buffer extents may be
+added again through overlapping owner totals. The full metadata flag stays false.
+Runtime-owned metadata remains a once-per-runtime charge, not a per-Harness/tree fee.
+
+Next: node/list/ambient request exports, remaining prepared host/backend metadata,
+imported-to-owner alias resolution and a trusted lifetime-valid Harness snapshot,
+then checked disjoint C+B+H+D admission with the separate work gates retained.
+
+## Array and root owner exports (awaiting review, 2026-11-12)
+
+Continues [#301 review 5880096613](https://github.com/Human-Cognome-Project/human-cognome-project/pull/301#pullrequestreview-5880096613).
+This first owner-export slice exposes actual array and tree-root records; it does
+not assemble a Harness ledger or enable combined admission.
+
+`Ndarray::backing_record(live_device)` retains the record identity captured when
+the array is constructed. The caller must independently keep the supplied Device
+alive and inspect under exclusive/quiescent access. Borrowed constructors require
+a current handle at construction. Queries use the captured token, so release is
+Retired and reset/reuse is Unknown rather than recapturing a new allocation at the
+same ID. A supplied foreign device is Unknown without dereferencing the saved
+handle's device pointer. Array shape does not determine backing extent: partial
+views return the same full allocation record. Imports remain Imported registrations;
+the export does not infer an underlying owner from pointer equality or count an
+import extent as disjoint backing. Mutating public legacy handles is not a supported
+way to rebind a captured owner record; construct a new view instead.
+
+`ProgramImpl::snode_root_backing_record(tree_id)` delegates to the LLVM native tree
+buffer manager. It captures the device record when registering the root, and queries
+that token through the live runtime. Missing/destroyed roots are Unknown; unsupported
+program implementations default to Unavailable. Destroying a root removes its export,
+while an independently retained value token reports Retired on the still-live CPU
+device. Equal-size roots remain distinct. Duplicate registration refuses replacement;
+failed map registration releases the acquired device allocation before rethrowing.
+The exported request is the actual request passed to the device after native root
+page rounding, not the logical field payload and not OS residency.
+
+Required-family coverage remains explicit:
+
+| Family | Current export coverage | Complete ledger consequence |
+|---|---|---|
+| Ndarray backing | Captured common allocation record; CPU live owned records observable | Imported/Unknown/Retired/Unavailable records cannot certify disjoint live backing |
+| SNode root | Native LLVM owner export; CPU record implementation | Root alone does not cover sparse reservations |
+| Node/list/ambient reservations | Unavailable through these exports | Complete ledger must remain unavailable |
+| Prepared invocation backing and bindings | Not exported by this slice | Complete ledger must remain unavailable |
+| Harness host objects/capacities and nested owner enumeration | Pending owning snapshot policy | Complete ledger must remain unavailable |
+
+Metadata policy: each Ndarray embeds one AllocationRecord, included once in its
+object size, never added again when an enclosing object census includes it. The
+existing root map embeds one record per live entry. The optional
+`ProgramImpl::snode_root_record_storage_bytes()` reports this incremental record
+payload once per Program/runtime, not once per tree or Harness. Zero means a supported
+empty record map; nullopt means unavailable. It excludes pre-existing map nodes,
+allocator overhead and root payload. Erased root entries retain no record payload.
+This incremental report is not a complete native metadata census; the future ledger
+must reconcile the existing map/device storage and shared-runtime ownership without
+double counting. Queries add no per-call heap or registry storage.
+
+Next: prepared invocation owners and node/list reservations, imported-to-owner alias
+resolution, then the trusted lifetime-valid Harness snapshot and checked C+B+H+D.
+No HCP model backend casts, new execution authority or GPU qualification are added.
+
 ## CPU allocation records (awaiting review, 2026-11-12)
 
 #300 review 5879635043 accepts the CPU-first native interface slice. The current

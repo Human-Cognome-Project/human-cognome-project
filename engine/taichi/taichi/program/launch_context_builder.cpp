@@ -4,11 +4,60 @@
 #undef TI_RUNTIME_HOST
 #include "fp16.h"
 #include "taichi/program/kernel.h"
+#include "taichi/program/program.h"
 #include <cstring>
 #include <limits>
 #include <stdexcept>
 
 namespace taichi::lang {
+
+LaunchContextBuilder::PreparedBacking LaunchContextBuilder::prepared_backing(
+    const Device &live_device) const {
+  PreparedBacking result;
+  if (!prepared || !prepared->usable || !prepared->backing_buffers_available ||
+      !prepared->backing_device_instance ||
+      prepared->backing_device_instance != live_device.allocation_instance() ||
+      prepared->backing_arg_bytes != arg_buffer_size ||
+      prepared->backing_result_bytes != result_buffer_size)
+    return result;
+  result.buffers_available = true;
+  result.device_buffers_complete = true;  // CPU owns no separate device buffers.
+  result.array_bindings_complete = true;
+  for (std::size_t i = 0; i < array_bindings.size(); ++i) {
+    if (array_bindings[i].rank < 0)
+      continue;
+    const auto record = prepared_array_record(live_device, i);
+    if (record.status != AllocationRecordStatus::Live ||
+        record.ownership != AllocationOwnership::Owned)
+      result.array_bindings_complete = false;
+  }
+  result.arguments = {arg_buffer_.get(), prepared->backing_arg_bytes};
+  result.results = {result_buffer_.get(), prepared->backing_result_bytes};
+  if (owned_ctx_)
+    result.runtime_context = {owned_ctx_.get(), sizeof(RuntimeContext)};
+  result.context_object_bytes = sizeof(LaunchContextBuilder);
+  result.prepared_object_bytes = sizeof(Prepared);
+  result.array_binding_capacity_bytes = array_bindings.capacity() * sizeof(ArrayBinding);
+  result.incremental_record_capacity_bytes = array_bindings.capacity() * sizeof(AllocationRecord);
+  return result;
+}
+
+AllocationRecord LaunchContextBuilder::prepared_array_record(
+    const Device &live_device, std::size_t argument) const {
+  if (!prepared || !prepared->usable || !prepared->backing_buffers_available ||
+      !prepared->backing_device_instance)
+    return {};
+  if (prepared->backing_device_instance != live_device.allocation_instance() ||
+      argument >= array_bindings.size() || array_bindings[argument].rank < 0) {
+    AllocationRecord unknown;
+    unknown.status = AllocationRecordStatus::Unknown;
+    return unknown;
+  }
+  const auto &record = array_bindings[argument].backing;
+  if (record.status == AllocationRecordStatus::Unavailable)
+    return {};
+  return live_device.allocation_record(record.token);
+}
 
 namespace {
 template <typename T>
@@ -291,6 +340,7 @@ void LaunchContextBuilder::set_arg_external_array_with_shape(
                     ->as<PointerType>()
                     ->get_pointee_type();
     auto &binding = array_bindings.at(arg_id[0]);
+    binding.backing = {};
     binding.type = type;
     binding.rank = int(shape.size());
     const auto bytes = data_type_size(binding.type);
@@ -395,9 +445,14 @@ void LaunchContextBuilder::set_arg_ndarray(const std::vector<int> &arg_id,
   TI_ASSERT_INFO(arr.shape.size() <= taichi_max_num_indices,
                  "External array cannot have > {max_num_indices} indices");
   set_arg_ndarray_impl(arg_id, ptr, arr.shape);
-  if (arg_id.size() == 1)
+  if (arg_id.size() == 1) {
     array_bindings.at(arg_id[0]) = {arr.dtype, int(arr.shape.size()),
-                                    arr.get_nelement()};
+                                    arr.get_nelement(), {}};
+    if (originating_kernel_ && originating_kernel_->program &&
+        originating_kernel_->program->get_compute_device())
+      array_bindings.at(arg_id[0]).backing =
+          arr.backing_record(*originating_kernel_->program->get_compute_device());
+  }
 }
 
 void LaunchContextBuilder::set_arg_argpack(const std::vector<int> &arg_id,
@@ -462,6 +517,8 @@ void LaunchContextBuilder::set_arg_ndarray_impl(const std::vector<int> &arg_id,
                                                 intptr_t devalloc_ptr_grad) {
   if (prepared)
     throw std::logic_error("cannot rebind a prepared array");
+  if (arg_id.size() == 1)
+    array_bindings.at(arg_id[0]).backing = {};
   // Set array ptr
   array_ptrs[concatenate_vector<int>(
       arg_id, {TypeFactory::DATA_PTR_POS_IN_NDARRAY})] = (void *)devalloc_ptr;
