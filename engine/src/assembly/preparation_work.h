@@ -32,6 +32,9 @@ class PreparationWork {
     payload(o.scope); elements(o.address.size(),sizeof(codec::AddressElement));
   }
   void payload(const warm::ToolRef &r) { payload(r.object); payload(r.revision); }
+  void payload(const warm::OccurrenceId &id) {
+    elements(id.path.size(),sizeof(std::uint32_t));
+  }
   void payload(const OccurrenceKey &k) {
     payload(k.study); elements(k.source.path.size(),sizeof(std::uint32_t));
   }

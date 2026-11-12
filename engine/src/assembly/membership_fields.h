@@ -32,7 +32,11 @@ class MembershipFields {
   MembershipFields(const warm::Uuid &study, const warm::BundleRef &recipe,
       const std::shared_ptr<detail::ReservationDomain> &domain)
       : study_(study,domain),
-        recipe_{warm::Uuid(recipe.selection,domain),warm::Uuid(recipe.revision,domain)},
+        recipe_([&] {
+          auto selection = warm::Uuid(recipe.selection,domain);
+          auto revision = warm::Uuid(recipe.revision,domain);
+          return warm::BundleRef{std::move(selection),std::move(revision)};
+        }()),
         contributions_(detail::SharedReservationAllocator<MembershipContribution>(domain)) {}
   friend MembershipFields membership_fields(const LetterProjection &);
   friend class detail::ExchangeOwner;
@@ -41,7 +45,7 @@ class MembershipFields {
   friend struct testing::ExchangeOwnerAccess;
   static MembershipFields collect(const LetterProjection &, bool alternatives);
   static MembershipFields collect(const LetterProjection &, bool alternatives,
-      const std::shared_ptr<detail::ReservationDomain> &);
+      const std::shared_ptr<detail::ReservationDomain> &, detail::PreparationWork * = nullptr);
   warm::Uuid study_;
   warm::BundleRef recipe_;
   bool alternatives_{};

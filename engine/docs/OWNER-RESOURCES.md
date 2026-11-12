@@ -2013,3 +2013,168 @@ before owner adoption and these results must not be attributed to its quotas.
 Remaining owned occurrence-index keys and publication/setup costs require separate
 audit. Membership callable/recursion and declaration/binding budgets follow before
 combined resources and remaining-operation integration.
+
+
+### Borrow stable occurrence-index keys (awaiting review)
+
+Following #289 review 5874861380, project_letters' ordered-occurrence map borrows
+OccurrenceIds from const input occurrence rows and its provenance map borrows IDs
+from const selection part rows. OccurrenceIdLess compares referenced values through
+the existing comparator and supports lookup with separate equal IDs. Both source
+tables remain stable throughout the call. The synthesized aggregate passed to
+ordered.at is a lookup argument only, never stored. Active/equivalence indexes
+still own their keys; their synthesized aggregate lifetime needs separate treatment.
+
+Published occurrence keys, provenance and input text remain independent. V1/v2
+source-death controls now reverse the actual source occurrence table before
+projection, then compare published IDs against sorted independent source copies.
+Existing exact definition/node, provenance, ordinal and legacy-state controls remain.
+The source-to-source v1 probe against #289 observes path-sized requests 197→171
+and allocation calls 2037→2011 for 13 byte paths. UUID-sized requests remain 743;
+public layouts are unchanged. Each path formerly copied into both temporary maps
+now stays in its stable source. This is not total-byte or performance evidence.
+
+Remaining active/equivalence indexes, independently owned publication copies and
+setup-work limits remain separate. Membership callable/recursion and declaration/
+binding budgets precede combined resources and remaining-operation integration.
+
+
+### Consolidate active/equivalence metadata (awaiting review)
+
+Following #290 review 5875081581, OccurrenceSource owns an activity flag and borrows
+an optional complete-character ToolRef from the stable source tool table. Both are
+initialized for every legacy/structural row. Selection processing resolves aggregate
+and part IDs through the existing ordered map by value, then updates that metadata.
+No reference to the synthesized aggregate is retained. Complete-character metadata
+is attached for a single-parent letter regardless of activity, preserving inactive
+aggregates. Publication copies the full pinned reference into owned optional output.
+The temporary active set and equivalence map are removed; provenance is unchanged.
+
+Source-death tests cover exact activity and complete-character presence/full revision
+in v1/v2, mixed exposures, shuffled input, repeated/multibyte characters, inactive
+aggregates and empty byte equivalence. Existing deterministic slots, v1 state,
+v2 no-slot and malformed/revision controls remain active.
+
+On Clang15/libstdc++, sizeof(OccurrenceSource) grows 24→32 and the actual libstdc++
+ordered-node type grows 64→72. The local source probe retains originals and separate
+sizeof-instrumented copies. Across 18 occurrences this adds 144 requested node bytes.
+Aggregate exposure removes 8 calls, mixed exposure 28 (including 12 copied paths).
+Observed cumulative requested bytes decrease 181845→181325 and 191597→190341,
+respectively. This includes all observed ordinary C++ new requests during the call;
+it is not retained/peak memory, allocator overhead, all allocation APIs or timing.
+Public layouts and owner accounting are unchanged; projection runs before adoption.
+
+Publication audit boundary: local ProjectedOccurrence record copying and reusable
+OccurrenceKey staging warrant one bounded audit. Definition/Selection staging moves
+already; recipe and published identities must remain owned. Do not extend this into
+another unbounded index cleanup. Membership callable/recursion and declaration/
+binding setup budgets remain before combined resources/operation integration.
+
+
+### Publication staging and initial-projection audit boundary (awaiting review)
+
+Following #291 review 5875329810, ProjectedOccurrence constructs its owned
+OccurrenceKey directly. Input text and parent rows read a const reference to that
+local key; activity is consumed before publication. The fully consumed record then
+moves into occurrences_. Nothing reads the moved-from record or holds a reference
+into that vector across reallocation. Source lifetime, deterministic slots/order,
+pinned references and independently owned outputs remain unchanged. V1/v2 source-
+death tests now verify every active parent's occurrence, field, ordinal and count,
+plus exact row count, alongside existing full occurrence/provenance/state controls.
+
+The source-to-source 18-occurrence/13-byte comparison removes 177 ordinary C++ new
+calls in aggregate and mixed exposure modes: 117 UUID-sized requests, 26 path-sized
+requests and 34 address copies. Cumulative requested bytes decrease by 5047 in each
+case. Public layouts and ordered metadata/node sizes (32/72) are unchanged. These
+are request observations, not retained/peak memory, allocator overhead or performance.
+Initial projection remains outside owner adoption and does not change its quota.
+
+This ends the bounded initial-projection copy cleanup. Definition/Selection staging
+already moves; recipe, occurrence/provenance, parent and v1/v2 input stores retain
+independent ownership. Do not turn those outputs into views or reopen the temporary
+indexes without a separate concrete need. Next: MembershipFields::collect's recursive
+std::function follow storage and traversal/stack work, then declaration/binding
+construction budgets, combined resource accounting and operation/control integration.
+Existing graph allocation domains do not complete the owner setup gate.
+
+
+### Bounded membership traversal (awaiting review)
+
+MembershipFields::collect replaces recursive type-erased std::function with local
+nonrecursive lambdas and an explicit DFS frame vector using SharedReservationAllocator.
+Frames retain stable tool/state/reached pointers, child position and pending ancestor
+set. A child visit can reallocate the vector, so the parent is reacquired by index;
+no frame reference survives growth. Every active frame represents a distinct visiting
+tool: cycle detection rejects repeats and frame depth cannot exceed tool inventory.
+Domain byte/allocation-work gates admit frame backing before allocation, including
+coexisting old/new backing during vector growth. Native call-stack depth is constant.
+
+A PreparationWork meter covers catalogue key copying, payload-aware map/set
+comparisons, visits, pinned equality even on memoized visits, pending ancestor
+insertion, owner lookup, contribution publication and conservative frame/output
+relocation work. Nested contribution payload relocation is prepaid even when the
+implementation can move it. These logical units are not elapsed-time/allocator-
+metadata guarantees. Existing map/set/address/UUID/contribution domains stay attached;
+comparators borrow the meter only inside the call, and no metered container escapes.
+
+Owner adoption passes the existing setup allowance and reports Membership refusal
+before later projection phases. The caller's projection and borrowed native state
+remain untouched; stack, graph and partial output unwind on work/allocation stops.
+Standalone helpers and standalone ExchangeBindings keep an unrestricted work
+allowance and are not promoted to owner admission. Domain/control-block overhead,
+declaration/binding construction work and combined borrowed-resource accounting
+remain separate.
+
+Controls cover every work/allocation boundary and exact retries in a mixed diamond
+fixture, pin validation on an already memoized node, cycles, 192-level frame growth,
+repeated terminal deduplication and sorted output. Existing active/alternatives,
+revision, source lifetime and owner failure sweeps remain active. The owner work
+phase sweep includes Membership. The initial deep fixture's private dependency
+escape is preserved; correcting its public test identities does not change runtime
+code. See admission for resulting metrics and evidence.
+
+Next: declaration/binding constructor work budgets, then combined resources and
+operation/control integration. Initial-projection cleanup remains closed; this
+membership gate does not establish complete owner setup admission.
+
+
+### Declaration collection and copying work (awaiting review)
+
+LetterExchangeContract::collect accepts the owner setup meter. Selection scans
+charge scalar comparisons; occurrence scans precharge both path payloads and tool
+scans precharge full pinned references before equality. The current exposure lookup
+is conservatively prepaid for all selections and performed once. Owner/recipe,
+source/parent and leaf copies are charged before their domain-backed allocations.
+Each source/leaf append admits fixed storage plus conservative existing-row nested
+payload relocation if the vector can grow. Exact mass and match_work_ semantics,
+source/leaf order and independently owned identities remain unchanged.
+
+The owner reports Declarations phase, prepays its selection/exposure scan and
+aggregate key, and passes the meter through forward collection and reverse copying.
+Reverse-copy helpers admit vector storage and every nested identity/parent payload.
+Shared declaration objects and declaration-table growth receive fixed/relocation
+work charges before publication. Existing byte/allocation-work domains continue to
+control allocations independently. Work units are conservative logical work, not
+elapsed time or physical memory. Standalone wrappers retain unrestricted allowance;
+private standalone copy helpers may omit the meter. Later matches() work is separate.
+
+Focused tests sweep all collection and reverse-copy work boundaries for aggregate
+and parts declarations, compare every ordered source/parent/leaf and pinned revision,
+and require one-short refusal, complete domain teardown and exact retry. Existing
+source-death, malformed/revision, exact mass and independent allocation-failure
+controls remain. The owner phase sweep includes Declarations and preserves caller/
+native authority across refusal. See admission for actual counts and qualification.
+
+Remaining: ExchangeBindings reservation/trusted/staged-map construction, staging
+and capture under the shared setup meter; owner-path unrestricted setup allowances
+are not covered here. Then combined resources and operation/control integration.
+Membership/declaration gates do not establish complete owner setup admission.
+
+GCC 11 refusal cleanup also requires each allocated identity to have an explicit
+local owner before constructing nested aggregates or constructor recipe members.
+The hosted #293 projection-values failure exposed leaked partial allocations on
+that compiler; Clang 15 and GCC 13 did not reproduce it. Membership catalogue
+objects, contributions and recipe pins, plus declaration identity/source/recipe
+copies, now stage allocating values in named locals and only then move them into
+rows. No budget assertion is relaxed. Focused declaration tests additionally
+sweep every byte/allocation-work boundary and exact retry for collection and copy.

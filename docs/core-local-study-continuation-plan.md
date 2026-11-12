@@ -1,17 +1,17 @@
 # Core continuation after local CUDA corrections
 
-**Current maintainer disposition — 2026-11-12:** runtime integration remains through #289 at `a4de248e`; main's subsequent `7bf08034` contains handoff documentation only. #290–#295 remain unmerged. #295 is provisionally source-accepted at `c118e6efea6902a3996af126e67840f5c4e7da1a` in [review 5877025531](https://github.com/Human-Cognome-Project/human-cognome-project/pull/295#pullrequestreview-5877025531), extending the reviewed membership/declaration setup scopes with binding/coordinator construction and adoption capture. This is not complete combined owner-resource acceptance.
+**Maintainer integration — 2026-11-12:** reviewed #290–#294 are integrated by the merge containing this record, preserving original commits through `32fe9928cdbed11b5092724d81f3bfbff07f0b9d`. #290's retry 43225419105 and smoke passed. #291/#292 native/smoke passed. Corrected #294 native 43240639938 passed all 12 jobs and smoke 43240639817 passed. Personally inspected #294 logs: 115 regression tests (29/29/29/28), and database job 131262194888 reports addressed_reads=24/private_reads=0. #293's original GCC 11 cleanup failure and #290's original unavailable-log failure remain historical; corrected/retried evidence does not relabel them.
 
-#291/#292 native and smoke runs passed. #290 retry 43225419105 still has compiler (1, direct) running; its other listed jobs passed. The original failed attempt and unavailable log remain preserved without an inferred root cause. #294 native 43240639938 has all four compiler modes plus projection/build/database passed; regression shards remain running. #295 smoke 43245334673 passed; native 43245334785 has projection/build/database passed with remaining jobs running. Pending checks are not integration acceptance. #294's corrected hosted GCC 11.4 projection evidence remains recorded in review 5876572990.
+#295 remains provisionally source-accepted at `c118e6ef` under [review 5877025531](https://github.com/Human-Cognome-Project/human-cognome-project/pull/295#pullrequestreview-5877025531); its native qualification is still running. #296's documentation inventory at `c43de241` is source-accepted in [review 5877302279](https://github.com/Human-Cognome-Project/human-cognome-project/pull/296#pullrequestreview-5877302279); its smoke passed and native run is active. Neither is integrated here. This does not establish complete owner-resource, GPU or performance acceptance.
 
-**Next bounded task:** close the setup-accounting inventory under [#295 review 5877025531](https://github.com/Human-Cognome-Project/human-cognome-project/pull/295#pullrequestreview-5877025531), then implement combined resource admission. Map initial owner map construction, logical snapshot prepayment, fixed object construction and domain/control-block overhead to their actual gates; identify uncovered work and overlapping charges explicitly. Distinguish caller/owner/borrowed simultaneous live resources, cumulative allocation work and retained capacity. Preserve overflow/refusal, reclamation, unchanged caller/native state and exact retry. Remaining operation/control integration follows. Additional setup work is acceptable when it benefits long-running focal models; lower totals are not an acceptance gate. Projection copy cleanup stays closed.
+**Next bounded task:** implement the reviewed work-component correction in #296: preserve the input byte census, replace only the two initial map work components with checked fresh-map demand, and prepay the projection copy once. Expose the breakdown and define the bounded fixed-construction policy explicitly. Extend existing zero/one-short/exact and overflow/refusal/reclamation/native-state/retry controls. Then establish domain bootstrap tracking and a trusted disjoint borrowed-resource ledger before enforcing combined accounted-byte admission. Do not sum overlapping snapshot, retained, peak and cumulative-work counters. Remaining operation/control integration follows.
 
-**Historical records below:** earlier pending, integrated and “next” statements are source-pinned history and are superseded by this disposition where they conflict. #75, #111 and #123 remain deliberately held/deferred. CPU acceptance does not qualify the full GPU path.
+Additional setup work is acceptable where it benefits long-running focal models; lower setup totals are not an acceptance gate. The initial-projection copy audit is closed. #75/#111/#123 remain held/deferred. Earlier dated pending, integrated and “next” labels below are historical and superseded by this record where they conflict.
 
 
 **Maintainer acceptance — 2026-11-12:** #285 and #286 are integrated into main at `087b6aff14d454c9ebafcda28c9e9243f596e4d2`, reviewed tip `49643f2a22bbb0076584e01d990a32ff7fe0acda`. Exact-head #286 native 43130677310 and smoke 43130677322 passed; #285 native 43121173964 and smoke 43121173792 also passed. All 12 #286 native jobs succeeded. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 130894721312 reports addressed_reads=24/private_reads=0. At that integration the active review queue was clear; #75, #111 and #123 remain deliberately held. Earlier provisional/pending labels below are historical and superseded by this acceptance. No GPU or performance qualification is implied.
 
-**Earlier next task (superseded):** initial occurrence-index/publication cleanup is closed by provisionally reviewed #292. Follow the current binding setup task above.
+**Earlier next task (superseded):** declaration and binding setup now have scoped source reviews through #295. Follow the current #296 accounting task above.
 
 
 **Maintainer integration — 2026-11-11:** Reviewed #275–#277 and #279–#284 are integrated into main at `5beeb2cacf28c75cbecef385a0de1e877154bbc0`, preserving original commits through reviewed tip `09bafe48869ddf239e6e245d766c0c0e41a43364`. #279's fresh native 43115507493, viewport 43115507480 and smoke 43115507510 succeeded; #280–#284 completed their applicable hosted checks, including #284 native 43116769390 and smoke 43116769371. Original failed and stuck queued attempts remain historical, not relabeled. Earlier pending/integration labels below are superseded by this record. #285 is provisionally source-accepted at `7105c22e866af7c3cf5c1b2e452a8bf8bef643f8` (review 5866915489), targets main and awaits native qualification; its smoke passed. Next: initial tool/occurrence indexes and publication/setup costs, then membership callable/recursion, declaration/binding budgets, combined resource accounting and operation integration. No blanket GPU or performance acceptance.
@@ -405,6 +405,107 @@ for source-pinned qualification and limits. Main remains `35814207`; #287/#288 a
 unmerged, with #288 smoke passed and native running at inspection. Remaining owned
 occurrence-index keys and publication/setup costs precede membership callable/
 recursion, declaration/binding budgets and combined resources/operation integration.
+
+**Stable occurrence-key continuation (awaiting review, 2026-11-12):** #289 review
+5874861380 permits bounded continuation at `34db84f1`. Ordered-occurrence keys
+borrow IDs in source occurrence rows; provenance keys borrow selection part IDs.
+The comparator preserves value order and lookup across distinct equal objects.
+Synthesized aggregates are lookup arguments only in the changed ordered map;
+active/equivalence indexes still own their keys. V1/v2 source-death controls reverse
+input rows and verify published occurrence order. The local source comparison
+removes 26 path-sized allocations over 13 byte rows, with unchanged public layouts.
+See admission for qualification. Main remains `35814207`; #287–#289 are unmerged.
+Next: active/equivalence synthetic-key lifetime and publication/setup costs, then
+membership callable/recursion, declaration/binding budgets and combined resources/
+operation integration.
+
+**Selection-metadata continuation (awaiting review, 2026-11-12):** #290 review
+5875081581 directs consolidation into the existing ordered metadata. Each row starts
+inactive with no complete-character pointer; selection processing resolves aggregate/
+part IDs by value, sets activity and attaches the stable single-parent ToolRef even
+for inactive aggregates. Publication copies it into owned optional output. The
+active/equivalence containers are removed; provenance remains unchanged. Local
+source comparison records 8/28 fewer calls for aggregate/mixed exposures, while
+ordered nodes grow 64→72 bytes. See admission for complete qualification and limits.
+
+The remaining initial-publication audit is bounded: inspect the local
+ProjectedOccurrence record copied into occurrences_ and the reusable OccurrenceKey
+k; distinguish redundant staging copies from independently owned output identities.
+Definition/Selection staging already moves. Retained recipe_, structural input,
+legacy handoff and parent records have independent ownership requirements and must
+not silently become views. Stop expanding initial-projection cleanup once this
+boundary is explicit. Then membership callable/recursion and declaration/binding
+setup budgets precede combined resources and operation/control integration;
+projection allocation reductions do not complete the owner setup gate.
+
+**Publication-copy boundary (awaiting review, 2026-11-12):** #291 review 5875329810
+permits continuation at `f340c720` and confirms #287/#288 integrated at `b234514d`.
+Normal merge `7cb31173` includes main without changing the tree. The occurrence
+record constructs its owned key directly; a const reference to that local key serves
+input text and parent construction before the completed record moves into output.
+No moved-from read or output-vector reference crosses reallocation. V1/v2 source-
+death tests check every parent key, field, ordinal and count. Source comparisons
+remove 177 calls in both exposure modes; public and ordered-node layouts are unchanged.
+See admission for qualification. #289–#291 remain unmerged; review/hosted checks apply.
+
+**Initial-projection audit stop:** Definition and Selection staging already moves;
+occurrence staging now moves after all consumers. Recipe, occurrence/provenance,
+parent and v1/v2 public inputs require independent ownership; those stores and
+remaining temporary lookup machinery are not reopened as a new cleanup sequence.
+The next concrete owner-setup task is MembershipFields::collect's type-erased
+recursive follow callable and traversal/stack budget. Preserve pinned-reference
+checks, cycle detection, memoized reached sets, diamonds/repeated references and
+exact contribution ordering/ownership. Its existing allocation domains are not a
+complete traversal/setup limit. Then finish declaration/binding construction budgets,
+combined resources and remaining-operation/control integration. Do not label these
+initial-projection allocation reductions as completion of the owner setup gate.
+
+**Bounded membership traversal (awaiting review, 2026-11-12):** #292 review
+5875540117 authorizes callable storage and traversal limits together. Accepted main
+`a4de248e` through #289 is included by normal merge `7be5b888`, with no file delta.
+MembershipFields::collect now uses explicit DFS frames allocated through the existing
+domain, bounded by tool inventory and the domain's byte/allocation-work allowance.
+Owner adoption supplies its PreparationWork meter and reports a Membership phase.
+Comparisons charge key payloads first; visits, memoized pin validation, insertion,
+ancestor merging, owner lookup and output/relocation work are admitted before execution.
+Cycle/memoization state and deterministic target order are retained. Standalone
+collection and standalone bindings retain unrestricted work allowances; their paths
+are not claimed as owner admission. Existing allocation domains remain attached.
+
+Focused tests sweep all work and allocation refusal boundaries, teardown and exact
+retry, check stale memoized pins/cycles, and traverse a 192-level chain with repeated
+terminal reachability. The initial deep fixture used invalid private dependencies;
+that failure is preserved and only fixture identities were corrected. The owner
+setup sweep now covers Membership alongside the existing phases. See admission
+for source pins, actual resource changes and qualification; this is not a timing or
+physical-memory guarantee. Next: declaration collection and ExchangeBindings setup
+work, then combined accounting and operation/control integration. The projection
+copy audit remains closed and the complete owner setup gate remains outstanding.
+
+**Declaration setup admission (awaiting review, 2026-11-12):** #293 review 5875958258
+permits this bounded continuation. LetterExchangeContract::collect receives the
+owner's setup meter, admitting scalar selection scans, occurrence-path/tool-reference
+comparisons, source/parent/leaf copies, growth/relocation and match-work accumulation.
+Exposure lookup is conservatively prepaid for the full selection count, and its
+current owner-local value is reused. Reverse declaration copying and retained
+declaration-table publication are metered as well. Declarations is a distinct owner
+setup phase. Standalone collection/copies remain unrestricted and existing later
+matches/capture allowances are not repurposed. See admission for qualification.
+
+The declaration continuation also repairs #293 hosted projection-values job
+131239777540 (native run 43234968384): GCC 11 exposed partial-allocation cleanup
+failures hidden by the local Clang build. Named lifetime owners now precede nested
+aggregate publication. Initial failure evidence is retained, and standalone GCC 11
+and GCC 13 checks accompany the combined native CPU qualification. See admission
+for final pins/results; this correction does not reopen the projection copy audit.
+
+Next concrete slice: ExchangeBindings construction (buffer reservation, trusted/staged
+maps and reserve_exchange_maps), then stage/capture under the shared owner setup
+allowance. Replace owner-path UINT64_MAX gaps while keeping separately budgeted
+operational capture and matching behavior intact. Exact refusal, cleanup, retry and
+unchanged caller/native state controls remain mandatory. Declaration and membership
+admission are scoped gates, not complete constructor or combined-resource acceptance.
+Projection cleanup remains closed; operation/control integration follows the budgets.
 
 ## A. Coherent source/hierarchy refresh
 

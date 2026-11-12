@@ -1259,7 +1259,7 @@ void owner_projection_setup(Fixture &f, const assembly::LetterProjection &projec
             "projection setup did not finish its explicit work gate");
   }
   std::uint64_t allowance = 0, boundaries = 0;
-  std::array<bool,5> phases{};
+  std::array<bool,static_cast<std::size_t>(ProjectionSetupPhase::Complete)> phases{};
   while (allowance < full.work.charged) {
     ProjectionSetupResult stopped;
     A::begin();

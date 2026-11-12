@@ -12,6 +12,12 @@ namespace {
 void need(bool condition, const char *message) {
   if (!condition) throw warm::Error(message);
 }
+struct OccurrenceIdLess {
+  using is_transparent = void;
+  bool operator()(const warm::OccurrenceId &a, const warm::OccurrenceId &b) const {
+    return a < b;
+  }
+};
 struct ToolKeyLess {
   using is_transparent = void;
   bool operator()(const warm::ObjectKey &a, const warm::ObjectKey &b) const {
@@ -265,22 +271,25 @@ LetterProjection project_letters(const warm::Bundle &b) {
   out.recipe_ = b;
   for (const auto &s : b.selections) out.exposures_.push_back(s.exposure);
   const auto tools = index(b);
-  // The ordered key already owns the occurrence id. Borrow its definition from
-  // the stable input row; publication below still copies independent identities.
+  // Borrow occurrence IDs and definitions from stable input rows; publication
+  // below still copies independent identities.
   struct OccurrenceSource {
     const warm::ObjectKey *definition;
     int node;
+    bool active;
     const warm::Occurrence *initial; // Legacy state only; null for structural input.
+    const warm::ToolRef *complete_character;
   };
-  std::map<warm::OccurrenceId, OccurrenceSource> ordered;
+  std::map<std::reference_wrapper<const warm::OccurrenceId>, OccurrenceSource,
+           OccurrenceIdLess> ordered;
   // Borrow stable input definition keys; value ordering still deduplicates them.
   std::set<std::reference_wrapper<const warm::ObjectKey>, ToolKeyLess> used;
   for (const auto &o : b.occurrences) {
-    ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node, &o});
+    ordered.emplace(std::cref(o.id), OccurrenceSource{&o.definition, o.node, false, &o, nullptr});
     used.insert(std::cref(o.definition));
   }
   for (const auto &o : b.structural_occurrences) {
-    ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node, nullptr});
+    ordered.emplace(std::cref(o.id), OccurrenceSource{&o.definition, o.node, false, nullptr, nullptr});
     used.insert(std::cref(o.definition));
   }
   // Temporary lookup metadata borrows only from the stable source tool table.
@@ -290,27 +299,28 @@ LetterProjection project_letters(const warm::Bundle &b) {
     const warm::ToolRef *character;
     std::uint32_t character_ordinal, byte_ordinal;
   };
-  std::map<warm::OccurrenceId, ProvenanceSource> provenance;
-  std::map<warm::OccurrenceId, const warm::ToolRef *> equivalent;
-  std::set<warm::OccurrenceId> active;
+  std::map<std::reference_wrapper<const warm::OccurrenceId>, ProvenanceSource,
+           OccurrenceIdLess> provenance;
   for (const auto &s : b.selections) {
     const warm::OccurrenceId aggregate{s.entry, {}};
-    const auto &letter = *tools.at(*ordered.at(aggregate).definition);
+    auto &aggregate_source = ordered.at(std::cref(aggregate));
+    const auto &letter = *tools.at(*aggregate_source.definition);
     const auto expanded = expand(tools, letter);
     if (letter.parents.size() == 1)
-      equivalent.emplace(aggregate, &letter.parents[0].target);
+      aggregate_source.complete_character = &letter.parents[0].target;
     for (std::size_t i = 0; i < expanded.size(); ++i) {
       const auto &v = expanded[i];
       need(s.parts[i] == warm::OccurrenceId{s.entry, {v.path.begin(),v.path.end()}},
            "invalid persisted byte path");
       provenance.emplace(
-          s.parts[i],
+          std::cref(s.parts[i]),
           ProvenanceSource{s.entry, v.character, v.path[0], v.path[1]});
     }
     if (s.exposure == warm::Exposure::Aggregate)
-      active.insert(aggregate);
+      aggregate_source.active = true;
     else
-      active.insert(s.parts.begin(), s.parts.end());
+      for (const auto &part : s.parts)
+        ordered.at(std::cref(part)).active = true;
   }
   if (b.recipe_version == 1)
     out.input_.capacity = int(ordered.size());
@@ -328,19 +338,19 @@ LetterProjection project_letters(const warm::Bundle &b) {
           {InputText(warm::key(p.target.object)), p.ordinal, p.contribution});
     out.structural_input_.definitions.push_back(std::move(d));
   }
-  for (const auto &[id, o] : ordered) {
+  for (const auto &[source_id, o] : ordered) {
+    const auto &id = source_id.get();
     const auto &t = *tools.at(*o.definition);
-    const OccurrenceKey k{out.study_, id};
     const auto slot = b.recipe_version == 1 ? int(out.occurrences_.size()) : -1;
-    ProjectedOccurrence record{k,  t.ref, slot, o.node, active.count(id) != 0,
+    ProjectedOccurrence record{{out.study_, id}, t.ref, slot, o.node, o.active,
                                {}, {}};
+    const auto &k = record.key; // Stable local storage until final publication.
     if (const auto found = provenance.find(id); found != provenance.end()) {
       const auto &source = found->second;
       record.byte = ByteProvenance{{out.study_, {source.owner, {}}}, *source.character,
           source.character_ordinal, source.byte_ordinal};
     }
-    if (equivalent.count(id)) record.complete_character = *equivalent.at(id);
-    out.occurrences_.push_back(record);
+    if (o.complete_character) record.complete_character = *o.complete_character;
     out.structural_input_.occurrences.push_back(
         {InputText(occurrence_text(k)), InputText(warm::key(*o.definition)), o.node});
     if (b.recipe_version == 1) {
@@ -355,6 +365,8 @@ LetterProjection project_letters(const warm::Bundle &b) {
                                 {GroupKind::ParentValue, p.target.object},
                                 p.ordinal,
                                 p.contribution});
+    // All record/key consumers are finished; no reference into the vector survives.
+    out.occurrences_.push_back(std::move(record));
   }
   for (const auto &s : b.selections) {
     Selection selection{InputText(occurrence_text_parts(out.study_, {s.entry, {}})),

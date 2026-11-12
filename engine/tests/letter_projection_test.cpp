@@ -57,9 +57,46 @@ int main() {
     }
     // Published identities must outlive the source of borrowed expansion refs.
     auto p = [&] {
-      const auto source = b;
+      auto source = b;
+      std::reverse(source.occurrences.begin(), source.occurrences.end());
       return project_letters(source);
     }();
+    for (const auto &published : p.occurrences()) {
+      const auto selection = std::find_if(b.selections.begin(), b.selections.end(),
+          [&](const auto &s) { return s.entry == published.key.source.entry; });
+      check(selection != b.selections.end(), "published occurrence has a selection");
+      const bool aggregate = published.key.source.path.empty();
+      check(published.active == (aggregate ==
+                (selection->exposure == warm::Exposure::Aggregate)),
+            "source-death publication retains exact aggregate/parts activity");
+      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      const bool complete = aggregate && definition.parents.size() == 1;
+      check(bool(published.complete_character) == complete &&
+                (!complete || *published.complete_character == definition.parents.front().target),
+            "complete character retains pinned reference even for inactive aggregates");
+    }
+    std::size_t parent_index = 0;
+    for (const auto &published : p.occurrences()) {
+      if (!published.active) continue;
+      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      for (const auto &expected : definition.parents) {
+        check(parent_index < p.parents().size(), "all active parent rows are published");
+        const auto &parent = p.parents()[parent_index++];
+        check(parent.occurrence == published.key &&
+                  parent.field.kind == GroupKind::ParentValue &&
+                  parent.field.object == expected.target.object &&
+                  parent.ordinal == expected.ordinal && parent.count == expected.contribution,
+              "parent publication retains full occurrence/field/ordinal/count after source death");
+      }
+    }
+    check(parent_index == p.parents().size(), "no inactive or duplicate parent rows published");
+    std::vector<warm::OccurrenceId> expected_ids;
+    for (const auto &row : b.occurrences) expected_ids.push_back(row.id);
+    std::sort(expected_ids.begin(), expected_ids.end());
+    std::vector<warm::OccurrenceId> published_ids;
+    for (const auto &row : p.occurrences()) published_ids.push_back(row.key.source);
+    check(published_ids == expected_ids,
+          "published occurrence order is by value after shuffled source death");
     for (const auto &published : p.occurrences()) {
       const auto source = std::find_if(b.occurrences.begin(), b.occurrences.end(),
           [&](const auto &row) { return row.id == published.key.source; });
@@ -174,7 +211,25 @@ int main() {
         f.request(f.english, 0, warm::Exposure::Aggregate)};
     b = normalize_letters(f.base, both);
     b.contacts = {{{0, {}}, {UINT64_MAX, {0, 0}}}};
-    p = project_letters(b);
+    p = [&] {
+      auto source = b;
+      std::reverse(source.occurrences.begin(), source.occurrences.end());
+      return project_letters(source);
+    }();
+    for (const auto &published : p.occurrences()) {
+      const auto selection = std::find_if(b.selections.begin(), b.selections.end(),
+          [&](const auto &s) { return s.entry == published.key.source.entry; });
+      check(selection != b.selections.end(), "published occurrence has a selection");
+      const bool aggregate = published.key.source.path.empty();
+      check(published.active == (aggregate ==
+                (selection->exposure == warm::Exposure::Aggregate)),
+            "source-death publication retains exact aggregate/parts activity");
+      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      const bool complete = aggregate && definition.parents.size() == 1;
+      check(bool(published.complete_character) == complete &&
+                (!complete || *published.complete_character == definition.parents.front().target),
+            "complete character retains pinned reference even for inactive aggregates");
+    }
     check(p.occurrences().size() == 4 && p.parents().size() == 3 &&
               std::count_if(p.occurrences().begin(), p.occurrences().end(),
                             [](const auto &o) { return o.active; }) == 2,

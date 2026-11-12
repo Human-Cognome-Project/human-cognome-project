@@ -105,22 +105,37 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
   need(h.ready() && projection_->recipe().recipe_version == 2 &&
        !projection_->recipe().selections.empty(), "owner requires a ready structural execution");
   need(fields_.size() == h.prepared_storage().live.fields, "owner field inventory is incomplete");
+  setup.phase = ProjectionSetupPhase::Membership;
   memberships_ = std::allocate_shared<const MembershipFields>(
-      SharedReservationAllocator<MembershipFields>(domain),MembershipFields::collect(*projection_,true,domain));
+      SharedReservationAllocator<MembershipFields>(domain),MembershipFields::collect(*projection_,true,domain,&meter));
   // Validate each active logical occurrence's exact participation at adoption.
   // Initial identity/layout associations still come from trusted admission claims.
+  setup.phase = ProjectionSetupPhase::Declarations;
   for (const auto &selection : projection_->recipe().selections) {
+    meter.charge(1);
+    meter.elements(projection_->recipe().selections.size(),1);
     const auto target = projection_->exposure(selection.entry) == warm::Exposure::Aggregate
         ? warm::Exposure::Parts : warm::Exposure::Aggregate;
+    meter.copy_key(projection_->study());
     auto forward = LetterExchangeContract::collect(*projection_,
-        {warm::Uuid(projection_->study(),domain), {selection.entry,{}}}, target,domain);
-    auto reverse = LetterExchangeContract(forward,domain);
+        {warm::Uuid(projection_->study(),domain), {selection.entry,{}}}, target,domain,&meter);
+    meter.charge(sizeof(LetterExchangeContract));
+    auto reverse = LetterExchangeContract(forward,domain,&meter);
     std::swap(reverse.from_, reverse.to_);
     reverse.outgoing_.swap(reverse.incoming_);
+    meter.charge(sizeof(LetterExchangeContract));
     auto retained = std::allocate_shared<const LetterExchangeContract>(
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
     ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,domain);
+    const auto append_declaration = [&] {
+      meter.charge(sizeof(declarations_[0]));
+      if (declarations_.size() == declarations_.capacity())
+        meter.elements(declarations_.size(),sizeof(declarations_[0]));
+    };
+    append_declaration();
     declarations_.push_back(std::move(retained));
+    append_declaration();
+    meter.charge(sizeof(LetterExchangeContract));
     declarations_.push_back(std::allocate_shared<const LetterExchangeContract>(
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(reverse)));
   }

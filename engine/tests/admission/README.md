@@ -5013,3 +5013,368 @@ was in progress at inspection; no duplicate retry or merge was made. No GPU, liv
 DB or browser work. Remaining occurrence-index keys and publication/setup costs
 precede membership callable/recursion, declaration/binding budgets, combined
 resources and remaining-operation integration.
+
+
+### Stable occurrence-index key qualification (2026-11-12)
+
+Tested `644373efc54c4d1e12461c23cea9d8afdfcaa65b`, continuing from #289 reviewed head
+`34db84f180eaa4b8e33cae313fb56e0962cc0a29` under review 5874861380 (no blocker,
+provisional continuation permitted). Main remains `35814207`; #287–#289 are unmerged.
+
+The ordered-occurrence map borrows IDs from const input occurrence rows. The
+byte-provenance map borrows IDs from const selection part rows. Both tables remain
+stable for the call. OccurrenceIdLess delegates to the existing value comparator;
+lookups compare values across distinct source objects. The aggregate passed to
+ordered.at is only a transient search key, never inserted. Active/equivalence indexes
+retain owned keys and their separate synthetic-key lifetime problem is deferred.
+Published occurrence keys, provenance, input text and recipe copies remain owned.
+
+V1/v2 source-death tests now reverse the actual projection source occurrence rows,
+destroy that source, then compare published IDs with independent source copies
+sorted by occurrence value. Existing complete definition/node, ordinal/provenance,
+state and v2 no-slot checks remain. Aggregate lookup uses a separately constructed
+ID; provenance lookup uses an occurrence-row ID distinct from the selection-part
+object stored as its key. These exercise value lookup rather than pointer identity.
+
+The source-to-source v1 probe against #289 covers 18 occurrences and 13 byte paths.
+Path-sized requests fall 197→171 and C++ new calls 2037→2011; UUID-sized requests
+remain 743. The script requires deltas 26/26/0, consistent with removing two copied
+paths per byte occurrence. Public layouts are unchanged (StudyInput 288,
+StructuralStudyInput 280, LetterProjection 1304; ObjectKey 88, ToolRef 136).
+Commands, sources, binaries and logs are retained. This is temporary-copy evidence,
+not a total-byte, physical-memory or performance claim.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/test/probe warnings or errors. Clang15/libstdc++,
+CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Owner metrics remain unchanged in all four CPU configurations: single/four selection
+live/peak 321185/392475, allocation work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555, census
+321153/392251. All 3271/5927 failure sites fully reclaim their blocks, with failure
+peaks 321250/392540. These overlapping reports must not be summed; initial
+projection occurs before adoption and its savings are outside the owner quota.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/projection-borrowed-occurrence-keys-domain-644373ef.tar.gz`;
+SHA256SUMS digest:
+
+    f728680cb034dbe60b7c5020d7da0e8703ea1459d33d7dd9392b626c6ae4d199
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. #289 smoke 43222858266 passed. Its native
+43222858150 summary reported queued, but inspected build/projection-values jobs
+passed and regression jobs were active. No duplicate retry or merge was made.
+No GPU, live DB or browser work. Remaining active/equivalence synthetic-key lifetime
+and publication/setup costs precede membership callable/recursion, declaration/
+binding budgets, combined resources and remaining-operation integration.
+
+
+### Selection metadata consolidation qualification (2026-11-12)
+
+Tested `d1c61a5eab9164c1b9db54209a601c8d961090dc`, continuing from #290 reviewed head
+`070f5a6c523fcdbc3e627dad6691f74eeb6e489a` under review 5875081581 (no blocker,
+provisional continuation permitted). Main remains `35814207`; #287–#290 are unmerged.
+
+OccurrenceSource now contains an initialized activity flag and optional borrowed
+complete-character pointer. Selection processing resolves aggregate/part values in
+the ordered map, sets activity and attaches the source single-parent ToolRef even
+for inactive aggregates. No synthesized key is stored. Publication copies the pinned
+reference into owned output; the provenance map is unchanged. The separate active
+set and equivalence map are removed. V1/v2 source-death controls verify exact
+Aggregate/Parts activity and complete-reference presence/revision, including shuffled
+mixed input, inactive aggregates and bytes. Existing repeated/multibyte, ordering,
+v1 initial-state, v2 no-slot and malformed/revision controls remain active.
+
+The focused v1 source comparison against #290 measures 18 occurrences, 13 byte paths
+and three complete-character aggregates in both exposure cases:
+
+| Observation | Aggregate prior/current | Mixed prior/current |
+|---|---|---|
+| Active occurrences / active byte paths | 5/0 in both | 13/12 in both |
+| C++ new calls | 2011 / 2003 | 2124 / 2096 |
+| Path-sized requests | 171 / 171 | 218 / 206 |
+| UUID-sized requests | 743 / 743 | 775 / 775 |
+| Cumulative requested bytes | 181845 / 181325 | 191597 / 190341 |
+
+The script requires removed calls = active rows + equivalent rows + active byte
+paths, removed path requests = active byte paths, and unchanged UUID counts.
+Probe-only sizeof instrumentation records metadata 24→32 and actual libstdc++
+ordered-node type 64→72, adding 144 requested node bytes across 18 rows. Original
+and instrumented sources, commands, binaries and logs are retained. The observed
+cumulative byte differences (520/1256) include this growth; they are not retained/
+peak memory, allocator overhead, other allocation APIs or performance evidence.
+Public layouts remain unchanged. No probe failure or diagnostic was observed.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/probe errors or product test failures.
+Two Taichi cache-lock warnings occurred after the final PASS in the one-worker bulk
+and direct exchange_commit logs. Both are preserved; verification permits exactly
+those two inspected post-PASS diagnostics and rejects other warnings/errors. No
+cache cleanup or test rerun was used to erase them. Clang15/libstdc++, CPU/x64,
+Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Owner metrics remain unchanged across all four configurations: single/four selection
+live/peak 321185/392475, work 420751/790263, byte/work boundaries 2761/3269 and
+3707/5925, retained/peak 321265/321265 and 392555/392555, census 321153/392251.
+All 3271/5927 failure sites fully reclaim blocks; failure peaks 321250/392540.
+These overlapping reports must not be summed; initial projection precedes adoption.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/projection-selection-metadata-domain-d1c61a5e.tar.gz`;
+SHA256SUMS digest:
+
+    28fcd7ab7c80dceb7b653d268eb4e37f67fcec6b6bcf5843e5f600ad7d4fdb6e
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. #290 smoke 43225419276 passed and native
+43225419105 was running at review; no duplicate retry or merge was made. No GPU,
+live DB or browser work.
+
+Next bounded audit: local ProjectedOccurrence record copying and OccurrenceKey
+staging versus necessary owned outputs. Definition/Selection staging already moves;
+retained recipe and public input/parent/identity stores remain owned. Stop initial
+projection cleanup at that explicit boundary, then proceed to membership callable/
+recursion and declaration/binding setup budgets, combined resources and operation/
+control integration. This contribution does not complete the owner setup gate.
+
+
+### Publication staging qualification and audit stop (2026-11-12)
+
+Tested `c55398a0c88b3bc3f753a9598bc139ef26547977`, continuing from #291 reviewed head
+`f340c720e9ea99428576613fd53ef7676cf87bdf` under review 5875329810. Accepted main
+`b234514df310f0f1dedebb3f8a2110a73b884f37` (through #288) is included by normal merge
+`7cb3117329626318f0caff7d199c95a52ec13430`, which changed no files relative to #291.
+Live PR state confirms #287/#288 merged; #289–#291 remain unmerged.
+
+The local ProjectedOccurrence constructs its owned key directly. A const reference
+to that local key serves all text and parent consumers; record.active is read before
+the completed record moves into occurrences_. No moved-from reads or output-vector
+references cross reallocation. Output recipe, keys, full references, provenance,
+parent values and v1/v2 input remain independently owned. New v1/v2 source-death
+checks verify every active parent's full occurrence and field, ordinal and count,
+plus no missing/extra rows. Existing shuffled/mixed exposure, repeated/multibyte,
+pinned references, slots, v1 initial-state and v2 no-slot controls remain active.
+
+The v1 comparison against #291 covers 18 occurrences, 13 byte alternatives and three
+complete-character aggregates in both exposure modes:
+
+| Observation | Aggregate prior/current | Mixed prior/current |
+|---|---|---|
+| C++ new calls | 2003 / 1826 | 2096 / 1919 |
+| UUID-sized requests | 743 / 626 | 775 / 658 |
+| Path-sized requests | 171 / 145 | 206 / 180 |
+| Cumulative requested bytes | 181325 / 176278 | 190341 / 185294 |
+
+Required deltas are 177 calls, 117 UUID requests and 26 path requests in each mode.
+Source inspection accounts for 4 UUID copies per occurrence, 3 per byte and 2 per
+complete-character reference, plus 34 address and 26 path copies. Request totals
+include all observed ordinary C++ new calls during projection; they are not retained/
+peak memory, allocator overhead, other allocation APIs or performance evidence.
+Public layouts and metadata/node sizes (32/72) are unchanged. Original sources,
+probe-only sizeof-instrumented copies, commands, binaries and logs are retained.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/test/probe warnings or errors. Clang15/libstdc++,
+CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Owner metrics remain unchanged across all four configurations: single/four selection
+live/peak 321185/392475, work 420751/790263, byte/work boundaries 2761/3269 and
+3707/5925, retained/peak 321265/321265 and 392555/392555, census 321153/392251.
+All 3271/5927 failure sites fully reclaim blocks; failure peaks 321250/392540.
+These overlapping reports must not be summed; initial projection precedes adoption.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/projection-publication-move-domain-c55398a0.tar.gz`;
+SHA256SUMS digest:
+
+    9158b079b30951cbe046b5fbcb9518ba1e309d2b0a3d8d020e7bd8e6fc0eb08d
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. #291 smoke 43228339158 passed and native
+43228339116 was running at review. No duplicate retry or merge of pending slices.
+No GPU, live DB or browser work.
+
+The bounded initial-projection copy audit stops here. Definition/Selection staging
+already moves; retained recipe, identity/provenance, parent and v1/v2 input remain
+owned. Next: MembershipFields::collect recursive follow callable storage and
+traversal/stack work, preserving pinned references, cycles, memoized diamonds and
+exact contribution ordering/ownership. Declaration/binding setup budgets, combined
+resources and remaining operation/control integration follow. Initial-projection
+savings do not establish a complete owner setup gate.
+
+
+### Membership traversal setup qualification (2026-11-12)
+
+Tested `8d1e1802faa84e855677d7efcf5b0ff4483d0e81`, continuing from #292 reviewed head
+`ced6c2d891b5c8d0497bfd9d10e3edc1a473e8f1` under review 5875540117. Accepted main
+`a4de248e18d07284198c2a963af4ee458b629ffb` through #289 is included by normal merge
+`7be5b888c735284b26fefd4cad492dbcddef1879` with no file delta relative to #292.
+#290–#292 remain unmerged; the initial-projection copy audit remains closed.
+
+Membership collection uses nonrecursive local lambdas and domain-charged explicit
+DFS frames. Frame depth cannot exceed the input tool inventory; allocation-work
+and live-byte admission bound backing growth, including old/new buffers. Child
+visits may grow the vector, so parent frames are reacquired by index. Tool/state/
+reached pointers refer to stable source/map nodes. Pins are validated on every visit,
+including memoized visits. Visiting-state cycle rejection, deduplicated diamond
+ancestors, ordered contributions and active-only/alternatives behavior remain intact.
+
+PreparationWork charges before catalogue copies, key-payload comparisons, visits,
+pinned equality, ancestor insertions, owner lookup, output construction and
+conservative frame/contribution relocation (including nested output payloads).
+Owner adoption passes its existing setup allowance and reports Membership phase
+refusals through the established unwind boundary. The phase sweep now covers all
+six incomplete phases. Standalone collection/ExchangeBindings use an unrestricted
+logical-work allowance; they are not claimed as owner admission. Domain overhead,
+declaration/binding constructor work and combined borrowed accounting remain open.
+
+The focused mixed-diamond test records 56744 work units, 3151 work-refusal boundaries
+and 17967 peak domain bytes. Every work and allocation boundary refuses and releases
+all blocks; exact allowance retries reproduce ordered full-reference contributions.
+It checks one-short work refusal, stale pins on memoized nodes, cycles and a 192-level
+public chain with repeated terminal reachability, deterministic order and complete
+teardown. Existing 32 exposure combinations, revision and ownership controls remain.
+The focused executable passes 3793 checks; it is also part of the supporting suite.
+
+Initial tested `2438647a91f7a22d445d0116c917fffb93e62f19` passed both builds and its
+budget/retry tests, then the deep-chain fixture failed with private dependency escape
+before collection. The fixture improperly connected a public letter to independently
+scoped private groups. Only test identities changed to a separate public address
+range at final tested source. The original source, binary and logs are preserved in
+`setup-evidence/membership-traversal-budget-initial-2438647a.tar.gz`, manifest:
+
+    ed3e112124fe1718a18acc399b8003417d28b982014330dd5c3f34eb88bc59f7
+
+All four CPU modes report these single/four-selection owner changes compared with
+the retained #292 evidence (not rerun):
+
+| Observation | Single selection | Four selections |
+|---|---|---|
+| Setup work | 58925 → 85804 | 150127 → 211363 |
+| Setup refusal boundaries | 1556 → 3072 | 4628 → 7904 |
+| Selected allocation work | 420751 → 420871 | 790263 → 790383 |
+| Selected byte/work boundaries | 2761/3269 → 2759/3271 | 3707/5925 → 3706/5927 |
+| Independent failure sites | 3271 → 3272 | 5927 → 5928 |
+
+All failure sites reclaim every block. Selected live/peak remain 321185/392475;
+retained/peak remain 321265/321265 and 392555/392555; census 321153/392251 and
+failure peaks 321250/392540 remain unchanged. Allocation-work growth includes the
+new charged frame backing; fewer implicit callable allocations is not a total-memory
+claim. These overlapping reports must not be summed. Work units are logical admitted
+operations/payload, not elapsed time or all allocator overhead. Public projection
+layouts remain unchanged (StudyInput288, StructuralStudyInput280, LetterProjection1304).
+
+Both builds and all 47 scoped CPU checks passed on the corrected source: 20 exchange
+processes (five cases, workers1/2, bulk/direct), 12 prepared checks, nine supporting
+native handoff/snapshot checks and six warm CTests. No corrected-head build/test
+warnings or errors. Clang15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. The focused run above is
+also included in the supporting suite, not counted as a new distinct suite.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/membership-traversal-budget-domain-8d1e1802.tar.gz`;
+SHA256SUMS digest:
+
+    089fe2f0d085b9207ab5e861e47b807aae406ff0383e511876cd164dd85dd218
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. #292 smoke 43230769945 passed and native
+43230770028 is in progress at inspection; no duplicate retry or merge of pending
+slices. No GPU, live DB or browser work.
+
+Next: declaration collection and ExchangeBindings constructor work budgets, then
+combined resources and operation/control integration. This contribution bounds the
+membership portion of owner setup, not the complete owner constructor.
+
+### Declaration setup admission and GCC 11 cleanup (2026-11-12)
+
+Tested source `a867c98b27bfba55226c8820a053b890d6b58018`, continuing from #293
+`b0f2f289071def1b6f65e69fba56549cfc59d0db` under review 5875958258. Accepted main
+remains `a4de248e18d07284198c2a963af4ee458b629ffb` through #289, already included
+in this stack. #290-#293 remain unmerged at inspection; no acceptance is inferred
+from local tests. Initial-projection copy cleanup remains closed.
+
+Declaration collection now receives the owner's shared PreparationWork meter and
+reports a distinct Declarations phase. Selection, occurrence and tool searches,
+identity comparisons/copies, source/parent/leaf accumulation, vector growth and
+conservative payload relocation are admitted before execution. Reverse copying
+and shared declaration publication use the same meter. Exact pinned identities,
+ordered contributions, mass and later matches() allowance remain unchanged.
+Standalone declarations remain unrestricted. ExchangeBindings construction,
+staging and capture still need their own setup-meter integration.
+
+The four-owner focused fixture covers aggregate and parts declarations, including
+repeated leaves and maximum entry ID. It compares every ordered source, parent,
+leaf, revision, mass and matching allowance after source destruction. Collection
+and reverse copying each sweep every work, live-byte and allocation-work refusal,
+require full domain reclamation, then retry with exact allowances; one-short work
+also refuses. All 4012 structural checks pass. Collection work/refusal-boundary
+pairs by owner are 7445/276, 7156/218, 35116/1009 and 25008/819; reverse-copy pairs
+are 2214/49, 2214/49, 8446/157 and 7016/132. Owner phase checks cover all seven
+incomplete setup phases and retain caller/native state on refusal.
+
+#### Hosted failure and correction
+
+#293 smoke 43234968370 passed, but native run 43234968384's projection-values job
+131239777540 failed under Ubuntu 22.04/GCC 11.4: 232 membership cleanup assertions
+failed. It is not a qualified parent merely because its Clang/native build passed.
+The local GCC 11.5 standalone build reproduced the same 232 failures and exposed
+a declaration work-refusal cleanup failure at initial source
+`10df7d7b458f0290ba1d818d961c0efabcb68eca`. Local GCC 13.3 and Clang 15 passed that
+source. This compiler-dependent failure remains preserved, not relabeled.
+
+Allocating nested aggregate expressions did not unwind every earlier identity
+allocation under GCC 11. The correction gives each copied scope/address/revision,
+recipe pin and source payload its own local owner before assembling rows with
+moves. Membership contributions also have an explicit local lifetime before
+vector insertion. No failure assertion or work/allocation limit was relaxed.
+The membership sweep now passes all 3793 checks on GCC 11.5 and GCC 13.3, with
+work=56744, boundaries=3151 and peak domain bytes=17967 on each compiler.
+
+Both standalone compiler configurations pass all three CTests at the final pin;
+the focused membership/declaration reruns provide detailed counts and are not
+counted as additional distinct suites. New LOCAL-CI guidance includes GCC 11
+alongside the newer compiler. These Ubuntu 24.04 local results do not replace the
+hosted Ubuntu 22.04 job. Verified standalone archive:
+`setup-evidence/declaration-standalone-a867c98b.tar.gz`, SHA256SUMS digest:
+
+    74c16f8ad2f722a583cb3033cf66e14d156680b22f5086591bf14c50c89dc82a
+
+The archive includes failed GCC 11 and passing GCC 13 logs from the initial pin.
+Its final packaging command first failed because of a Windows line ending; the
+verified evidence was subsequently archived without rerunning or relabeling tests.
+The initial Clang 47-check pass is separately retained in
+`setup-evidence/declaration-setup-budget-domain-10df7d7b.tar.gz`, manifest:
+
+    f7d46838d0af9b08a0477b74e4496dd6b2dfd0922703ead7ca06ee8a7d237cdc
+
+Final native CPU qualification results follow below. Raw local artifacts have
+not been independently inspected remotely. No GPU, live database or browser work;
+all measurements are on a shared host and are not performance qualification.
+
+All four completed owner modes report single/four-selection setup work
+85804/211363 -> 104737/287803 and refusal boundaries 3072/7904 -> 3592/10115.
+Selected allocation work stays 420871/790383; selected live/peak stays
+321185/321185 and 392475/392475. Byte/work boundaries stay 2759/3271 and 3706/5927.
+Independent failure sites remain 3272/5928 with zero surviving blocks; retained/
+peak remain 321265/321265 and 392555/392555, capacity census 321153/392251 and
+failure peaks 321250/392540. These overlapping requested-resource observations
+must not be summed or interpreted as physical memory or timing guarantees.
+
+Both final builds and all 47 scoped CPU checks passed: 20 exchange processes
+(five cases, workers 1/2, bulk/direct), 12 prepared checks, nine native supporting
+checks and six warm CTests. The six standalone compiler CTests above are additional.
+Clang15/libstdc++, CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`;
+accelerator backends disabled. One offline-cache lock warning appears after the
+successful matrix result in `1-bulk-exchange_commit.log`; the verifier checks its
+location/count and rejects any other warning/error. No build warnings occurred.
+The warning and raw logs remain intact. Layouts are unchanged: study/structural
+input 288/280, projection 1304, UUID/ObjectKey/ToolRef 48/88/136, Tool/Parent/
+Geometry/Bundle 432/168/152/520, UUID payload 37 bytes on this toolchain.
+
+Verified final archive:
+`setup-evidence/declaration-setup-budget-domain-a867c98b.tar.gz`, SHA256SUMS:
+
+    4390daafb8e2364c2c113da94eb905baf695df3f9d75f4323e05a493fd89546f
+
+Final tested-to-head changes are five Markdown records only. Hosted qualification
+and review remain required, including the corrected combined head for the #293
+failure. Next: ExchangeBindings constructor/staging/capture under the shared setup
+allowance, then complete combined resource accounting and operation integration.
