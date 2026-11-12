@@ -367,6 +367,15 @@ value comparator; separately copied lookup keys and duplicate source orders are
 checked. Initial occurrence indexes/publication setup and membership callable/
 recursion plus declaration/binding budgets remain before combined operations.
 
+**Occurrence-index value continuation (awaiting review, 2026-11-12):** starts from
+main `35814207` after accepted integration through #286. The ordered index keeps
+its owned key but replaces duplicated StructuralOccurrence identity values with
+stable source definition references and node metadata. Both recipe-version source-
+death tests check complete published definitions/revisions and nodes. Owned index
+keys, legacy/used-definition lookups and publication/setup costs remain separate,
+followed by membership callable/recursion and declaration/binding budgets before
+combined resources/operations. No prior accepted baseline is rerun merely to onboard.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

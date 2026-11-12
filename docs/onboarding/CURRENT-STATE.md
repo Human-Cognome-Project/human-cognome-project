@@ -6,8 +6,16 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 **Maintainer acceptance — 2026-11-12:** #285 and #286 are integrated into main at `087b6aff14d454c9ebafcda28c9e9243f596e4d2`, reviewed tip `49643f2a22bbb0076584e01d990a32ff7fe0acda`. Exact-head #286 native 43130677310 and smoke 43130677322 passed; #285 native 43121173964 and smoke 43121173792 also passed. All 12 #286 native jobs succeeded. Personally inspected regression logs total 115 passing tests (29/29/29/28); database job 130894721312 reports addressed_reads=24/private_reads=0. The active review queue is clear; #75, #111 and #123 remain deliberately held. Earlier provisional/pending labels below are historical and superseded by this acceptance. No GPU or performance qualification is implied.
 
-**Next bounded task:** start from current main and audit initial occurrence indexes in `project_letters` and their publication/setup costs. Preserve value ordering, duplicate/revision rejection, source stability, exact provenance and independent published outputs; distinguish removable temporary copies from necessary owned publication storage. Keep the implementation bounded with source-death and independent allocation evidence. Membership callable/recursion, declaration/binding setup budgets, combined resource accounting and remaining operation/control integration follow. Do not repeat accepted baseline tests merely to onboard.
-
+**Active occurrence-index contribution (2026-11-12):** starts from accepted main
+`35814207`. Ordered lookup values borrow stable definition keys and retain node
+metadata, eliminating their duplicated occurrence IDs while keeping owned map keys
+and independent published identities. Both recipe versions check exact source-death
+definitions and nodes. Both builds and all 47 scoped CPU checks passed without
+warnings; a corrected helper-baseline failure is preserved. Details are in the
+admission record; hosted checks
+and review remain required. Next: remaining occurrence/legacy/used-definition index
+storage and publication/setup costs, then membership callable/recursion and
+declaration/binding budgets before combined resources and operation integration.
 
 **Active tool-index contribution (2026-11-11):** continues from source-accepted
 #285 `7105c22e` under review 5866915489, with accepted main `c2c168b3` included by

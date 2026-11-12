@@ -1944,3 +1944,24 @@ operation integration. Deliberately independent outputs must remain independent.
 
 **Next bounded task:** start from current main and audit initial occurrence indexes in `project_letters` and their publication/setup costs. Preserve value ordering, duplicate/revision rejection, source stability, exact provenance and independent published outputs; distinguish removable temporary copies from necessary owned publication storage. Keep the implementation bounded with source-death and independent allocation evidence. Membership callable/recursion, declaration/binding setup budgets, combined resource accounting and remaining operation/control integration follow. Do not repeat accepted baseline tests merely to onboard.
 
+
+### Ordered occurrence lookup values (awaiting review)
+
+Starting from accepted main `35814207`, project_letters' ordered index keeps its
+owned OccurrenceId key but no longer duplicates that ID inside a StructuralOccurrence
+value. Its value now holds the node and a const ObjectKey pointer into the original
+legacy/structural input row. That input remains const and stable throughout projection.
+The value is private temporary metadata; published keys, definitions and text remain
+independently owned. Ordering, duplicate/revision validation and the retained recipe
+copy are unchanged. This does not borrow map keys or remove publication storage.
+
+Both recipe-version source-death tests now verify every published occurrence's full
+definition reference/revision and node against the original normalized input. A
+focused initial-projection comparison against main observes 773→755 37-byte requests
+and 223→210 8-byte requests for 18 occurrences, 13 with byte paths: one temporary
+scope copy per row and one redundant path copy per byte row removed. Size-filtered
+observations support the source change, not total allocation or performance claims.
+
+Remaining owned occurrence-index keys, the legacy lookup, used-definition keys and
+publication copies/setup require separate audit. Membership callable/recursion and
+declaration/binding budgets follow before combined resource/operation integration.

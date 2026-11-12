@@ -4856,3 +4856,58 @@ still pending. Initial occurrence indexes/publication setup are the next scope.
 
 **Next bounded task:** start from current main and audit initial occurrence indexes in `project_letters` and their publication/setup costs. Preserve value ordering, duplicate/revision rejection, source stability, exact provenance and independent published outputs; distinguish removable temporary copies from necessary owned publication storage. Keep the implementation bounded with source-death and independent allocation evidence. Membership callable/recursion, declaration/binding setup budgets, combined resource accounting and remaining operation/control integration follow. Do not repeat accepted baseline tests merely to onboard.
 
+
+### Ordered occurrence-value qualification (2026-11-12)
+
+Tested `ca10e9ed8b50db66a9d4d7fb8de8dc6ac6160095`, based directly on accepted main
+`35814207e736506812bb2a5aec57a387cbc5b4ba`. #285/#286 were integrated at
+`087b6aff14d454c9ebafcda28c9e9243f596e4d2`; the maintainer records all 12 #286 native
+jobs passed, 115 inspected regression tests and database addressed_reads=24/
+private_reads=0. Those are prior accepted evidence, not rerun for onboarding.
+
+The ordered index retains its owned OccurrenceId key but stores only a borrowed
+source definition pointer and node as value. It no longer duplicates the ID/path
+or owns another ObjectKey inside a temporary StructuralOccurrence. Both legacy and
+structural input rows remain const/stable until consumption; all published keys,
+definitions, revisions, text and recipe copies retain independent ownership.
+Iteration order and existing duplicate/revision validation are unchanged.
+
+Both recipe-version tests now compare every published occurrence's full ToolRef and
+node to the normalized input after the actual projection source copy dies. Existing
+provenance, byte order, exact mass, stale/duplicate and owner lifetime/refusal/retry
+controls remain active. The new checks short-circuit before dereferencing a missing
+source row.
+
+A size-filtered source-to-source project_letters probe over 18 occurrences (13 byte
+paths) observes main/current UUID-sized requests 773/755 and path-sized requests
+223/210. The script requires deltas 18 and 13 respectively. Output still allocates;
+these observations are not total backing, physical-memory or performance evidence.
+An initial helper retained a stale #284 source pin and compared 840/755 UUID-sized
+requests, failing the expected delta. That helper/source/binaries/logs are preserved
+with initial- prefixes. Correcting the helper baseline to current main passes;
+product code/builds were unchanged and no product test failed. The corrected and
+initial commands/results are both archived.
+
+Owner metrics stay unchanged across four CPU configurations: single/four selection
+selected live/peak 321185/392475, work 420751/790263, byte/work boundaries
+2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251 and 3271/5927 failure sites fully reclaimed. These overlapping
+reports must not be summed and cannot establish initial-projection savings.
+
+Remaining owned occurrence keys, legacy/used-definition lookups and publication/
+setup costs remain separate, followed by membership callable/recursion and declaration/
+binding budgets before combined resources and operations. No GPU, live DB or browser.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/test/probe warnings or product test failures;
+the initial helper comparison failure is separately preserved above. Clang15/
+libstdc++, CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/projection-occurrence-index-domain-ca10e9ed.tar.gz`; manifest digest:
+
+    47b3bce6b2c632395ced430c42521af146ec0ba1d7ada3def6183a61a53d3ef9
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required for this new contribution. There is no
+pending predecessor implementation PR; this branch targets current main directly.
