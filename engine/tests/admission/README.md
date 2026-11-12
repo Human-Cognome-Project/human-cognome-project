@@ -4962,3 +4962,54 @@ and review remain required. Parent #287 smoke 43218258474 passed; native 4321825
 reported queued in its summary at recheck, but its jobs showed successful build,
 projection-values and database plus running/queued matrix jobs. This is active
 qualification, not the former no-job queue failure; no retry or merge was made.
+
+
+### Used-definition lookup qualification (2026-11-12)
+
+Tested `dfcd04f47182ac8b4ef5762ec522b5aa2467bdc4`, continuing from #288 reviewed head
+`8772552d523f7b3239ef53705f1a630da2536817` under review 5874675639 (no blocker,
+provisional continuation permitted). Main remains `35814207`; #287/#288 are unmerged.
+
+The temporary used-definition set borrows const ObjectKeys from stable input
+occurrence rows. The existing ToolKeyLess comparator compares values, preserving
+ordering and deduplication across distinct source objects. No loop-local synthetic
+key is borrowed. Source validation, revision rejection and independently owned
+published definition text, geometry and parent records remain unchanged.
+
+Both recipe versions project from a local source copy that is then destroyed.
+New controls compare bound definition IDs against an independent std::set of encoded
+source keys, checking exact unique membership and order. Existing full reference,
+revision, provenance, numerical-state and v2 no-slot controls remain active.
+
+A source-to-source v1 projection probe against #288 uses 18 occurrences, 13 byte
+alternatives and 12 distinct definitions. UUID-sized requests fall 755→743; C++ new
+calls fall 2061→2037; path-sized requests remain 197. The script requires one fewer
+UUID-sized request per distinct definition, unchanged path counts and fewer total
+calls. This supports the temporary-copy removal, not total-byte, physical-memory
+or performance claims. Commands, both sources, binaries and results are retained.
+Public layouts are unchanged: StudyInput 288, StructuralStudyInput 280,
+LetterProjection 1304, Uuid 48, ObjectKey 88, ToolRef 136, Tool 432, Parent 168,
+Geometry 152 and Bundle 520 on this toolchain; UUID payload is 37 bytes.
+
+Owner metrics are unchanged across all four CPU configurations: single/four
+selection live/peak 321185/392475, allocation work 420751/790263, byte/work
+boundaries 2761/3269 and 3707/5925, retained/peak 321265/321265 and 392555/392555,
+census 321153/392251. All 3271/5927 failure sites reclaim every block; failure peaks
+are 321250/392540. These overlapping reports must not be summed. Initial projection
+occurs before adoption, so its savings are not a change to the selected owner quota.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/test/probe warnings or errors. Clang15/libstdc++,
+CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/projection-used-definitions-domain-dfcd04f4.tar.gz`; manifest digest:
+
+    4a6718968f304d9732e27552d00669b0da029890d66da3ff1ba299d4e9adc930
+
+Raw artifacts have not been independently inspected remotely. Hosted qualification
+and review remain required. #288 smoke 43220088002 passed and native 43220088562
+was in progress at inspection; no duplicate retry or merge was made. No GPU, live
+DB or browser work. Remaining occurrence-index keys and publication/setup costs
+precede membership callable/recursion, declaration/binding budgets, combined
+resources and remaining-operation integration.

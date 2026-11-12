@@ -72,6 +72,15 @@ int main() {
       binding_nodes.push_back({reinterpret_cast<const taichi::lang::SNode *>(1),
           node.parent, static_cast<assembly::ScaleRole>(node.role)});
     const auto bound = p.bind(binding_nodes);
+    std::set<std::string> expected_definitions;
+    for (const auto &row : b.occurrences)
+      expected_definitions.insert(warm::key(row.definition));
+    std::vector<std::string> published_definitions;
+    for (const auto &definition : bound.definitions)
+      published_definitions.emplace_back(definition.id);
+    check(published_definitions == std::vector<std::string>(
+              expected_definitions.begin(), expected_definitions.end()),
+          "definitions survive source death with exact value deduplication and encoded order");
     check(bound.occurrences.size() == b.occurrences.size(),
           "legacy handoff retains all initial-state rows");
     for (const auto &source : b.occurrences) {

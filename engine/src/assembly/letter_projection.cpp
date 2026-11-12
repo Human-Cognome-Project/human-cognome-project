@@ -273,14 +273,15 @@ LetterProjection project_letters(const warm::Bundle &b) {
     const warm::Occurrence *initial; // Legacy state only; null for structural input.
   };
   std::map<warm::OccurrenceId, OccurrenceSource> ordered;
-  std::set<warm::ObjectKey> used;
+  // Borrow stable input definition keys; value ordering still deduplicates them.
+  std::set<std::reference_wrapper<const warm::ObjectKey>, ToolKeyLess> used;
   for (const auto &o : b.occurrences) {
     ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node, &o});
-    used.insert(o.definition);
+    used.insert(std::cref(o.definition));
   }
   for (const auto &o : b.structural_occurrences) {
     ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node, nullptr});
-    used.insert(o.definition);
+    used.insert(std::cref(o.definition));
   }
   // Temporary lookup metadata borrows only from the stable source tool table.
   // Published records below construct independent identity values.
@@ -313,7 +314,8 @@ LetterProjection project_letters(const warm::Bundle &b) {
   }
   if (b.recipe_version == 1)
     out.input_.capacity = int(ordered.size());
-  for (const auto &id : used) {
+  for (const auto &source : used) {
+    const auto &id = source.get();
     const auto &t = *tools.at(id);
     const auto &g =
         *std::find_if(b.geometry.begin(), b.geometry.end(),

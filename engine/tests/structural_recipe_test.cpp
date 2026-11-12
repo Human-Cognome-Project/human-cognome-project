@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <set>
 
 #include "assembly/membership_fields.h"
 #include "assembly/exchange_contract.h"
@@ -66,6 +67,15 @@ int main() {
       nodes.push_back({reinterpret_cast<const taichi::lang::SNode *>(1),
                        n.parent, static_cast<assembly::ScaleRole>(n.role)});
     auto input = membership_fields(p).bind_structure(p, nodes);
+    std::set<std::string> expected_definitions;
+    for (const auto &row : b.structural_occurrences)
+      expected_definitions.insert(warm::key(row.definition));
+    std::vector<std::string> published_definitions;
+    for (const auto &definition : input.definitions)
+      published_definitions.emplace_back(definition.id);
+    check(published_definitions == std::vector<std::string>(
+              expected_definitions.begin(), expected_definitions.end()),
+          "definitions survive source death with exact value deduplication and encoded order");
     check(input.occurrences.size() == 15 && input.selections.size() == 4 &&
               input.focal_fields.size() == 1 && input.nodes.size() == 2,
           "structural handoff retains definitions, selection, focus and roles");
