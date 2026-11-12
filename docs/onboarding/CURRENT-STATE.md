@@ -1,5 +1,15 @@
 # Current implementation and work
 
+**Rounded host-pool extents (awaiting review, 2026-11-12):** continues #307
+review5882509096 at88aa2cd0. Native setup captures OS page size; checked rounding is
+passed to the OS and retained separately from raw request sizes. Live pool records
+report virtual rounded extents; request/view bounds remain unchanged, so padding does
+not enlarge valid views. Added metadata is included once by existing sizeof reports.
+Main a139c21b integrates qualified #302–#305; normal merge ba723dd0 reconciles the
+handoff without discarding prior contribution history. #306/#307 native and smoke
+runs now pass; maintainer integration remains pending. Next: remaining metadata, Harness lifetime/
+coverage/deduplication/work, then checked C+B+H+D. Linux CPU scope; no full B/GPU claim.
+
 **Maintainer integration — 2026-11-12:** #302–#305 are accepted and integrated by the merge containing this record, preserving reviewed `44c890b78c973be21a5b2e705ac79c334da3ae4e`. Corrected #304 native 43299289153 and smoke 43299289118 passed; #305 native 43302942903 passed all 12 jobs and smoke 43302942605 passed. Personally inspected 119 passing regression tests (30/30/30/29), including allocation_record_test, owner_backing_test, prepared_backing_test and reservation_request_test; database job 131487117070 reports addressed_reads=24/private_reads=0. The original #302 initialization failure remains preserved, not reclassified as green. Contributor-local archives were not independently inspected. #306 prepared canonical import adoption and #307 host-pool identity remain provisionally source-accepted, with native qualification pending; their smoke runs passed. This supersedes older pending/status labels below.
 
 **Next bounded task:** authoritative rounded extents and remaining prepared/runtime/pool metadata on the reviewed #307 stack, followed by trusted Harness required-family coverage, lifetime validity, canonical backing deduplication and prepaid lookup/enumeration work before checked C+B+H+D admission. Shared raw chunks and contained requests are not disjoint charges. Preserve independent work gates and native authority; setup cost is acceptable for long-running focal models. No complete B or GPU qualification is claimed. Projection-copy audit stays closed; #75/#111/#123 remain held.

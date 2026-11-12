@@ -7,6 +7,49 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Rounded host-pool extents (awaiting review, 2026-11-12)
+
+Continues [#307 review 5882509096](https://github.com/Human-Cognome-Project/human-cognome-project/pull/307#pullrequestreview-5882509096).
+Native host-pool setup captures the OS page size using sysconf(_SC_PAGESIZE) on Unix
+or GetSystemInfo on Windows. Unknown/zero page size fails setup rather than inventing
+an extent. Before each raw mapping, checked remainder/padding arithmetic rounds its
+nonzero request to that page size, rejecting overflow before an OS call or accounting
+publication. The allocator passes the rounded length to mmap/VirtualAlloc and stores
+it in the successful allocation record. Cleanup and Unix unmapping use that retained
+length; Windows releases the whole mapping with MEM_RELEASE as before.
+
+This follows the ordinary-page mapping contracts in the
+[Linux mmap reference](https://man7.org/linux/man-pages/man2/mmap.2.html) and
+[Windows VirtualAlloc reference](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc).
+The value is the successfully allocated virtual mapping extent for this native path,
+not physical residency, a huge-page measurement or a promise of available RAM.
+The Windows branch is source-level implementation; this contribution's execution
+qualification remains Linux/WSL CPU only, with native Windows/GPU runs outstanding.
+
+Live PoolBackingRecord queries now set rounded_extent_available and return the retained
+rounded_extent_bytes. Raw request bytes remain separate and unchanged. Containment,
+UnifiedAllocator chunk tails, Device allocation records and prepared registration
+bounds still use original request sizes; OS padding never enlarges a valid request or
+view. ReservationRequest still does not report an independent rounded extent for a
+pool suballocation; callers use the separate underlying pool record. Unknown,
+Unavailable and Absent records do not fabricate usable rounded coverage.
+
+Pool statistics.reserved_bytes retains its existing sum of raw request sizes; it is
+not silently redefined as rounded bytes. Future backing accounting must use one live
+canonical pool token/extent per shared raw allocation, never add its suballocation
+requests again. No Harness aggregation/deduplication or physical-memory total is built.
+
+The retained rounded length adds one size_t per raw map value; the captured page size
+adds one pool field. Existing whole-object and sizeof-based map payload reports include
+both once per pool. Incremental record payload remains the cumulative delta from the
+original size-only map, including identity and rounded-length fields, a subset rather
+than an additional charge. Full pool/allocator/map-node/global metadata remains
+incomplete. Queries read stored lengths without OS calls or allocations; setup and
+allocation work is outside the lookup path, whose logarithmic cost still needs metering.
+
+Next: remaining prepared/runtime/pool metadata, then lifetime-valid required-family
+Harness coverage and canonical backing deduplication with prepaid lookup/enumeration
+before checked C+B+H+D admission. No complete B or GPU qualification is claimed.
 ## Native host-pool backing identity (awaiting review, 2026-11-12)
 
 Continues [#306 review 5881942652](https://github.com/Human-Cognome-Project/human-cognome-project/pull/306#pullrequestreview-5881942652).
