@@ -23,9 +23,17 @@ class SNodeTreeBufferManager {
 
   void destroy(SNodeTree *snode_tree);
 
+  // Root only: node/list reservations are separate, still uncovered families.
+  // The manager/runtime must be alive and quiescent for inspection.
+  AllocationRecord root_backing_record(int snode_tree_id) const;
+
  private:
   LlvmRuntimeExecutor *runtime_exec_;
-  std::map<int, DeviceAllocation> snode_tree_id_to_device_alloc_;
+  struct RootBacking {
+    DeviceAllocation allocation;
+    AllocationRecord record;
+  };
+  std::map<int, RootBacking> snode_tree_id_to_device_alloc_;
 };
 
 }  // namespace taichi::lang

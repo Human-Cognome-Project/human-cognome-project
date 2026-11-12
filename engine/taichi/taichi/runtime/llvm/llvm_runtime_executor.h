@@ -53,6 +53,12 @@ class LlvmRuntimeExecutor {
 
   void deallocate_memory_on_device(DeviceAllocation handle);
 
+  AllocationRecord snode_root_backing_record(int tree_id) const {
+    if (!snode_tree_buffer_manager_)
+      return {};
+    return snode_tree_buffer_manager_->root_backing_record(tree_id);
+  }
+
   void check_runtime_error(uint64 *result_buffer);
 
   uint64_t *get_device_alloc_info_ptr(const DeviceAllocation &alloc);

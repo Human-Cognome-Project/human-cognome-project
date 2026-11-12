@@ -54,6 +54,12 @@ class ProgramImpl {
 
   virtual void destroy_snode_tree(SNodeTree *snode_tree) = 0;
 
+  // Root allocation only; this does not cover node/list pools or launches.
+  // Inspection requires a live, quiescent Program/runtime owner.
+  virtual AllocationRecord snode_root_backing_record(int tree_id) {
+    return {};
+  }
+
   virtual std::size_t get_snode_num_dynamically_allocated(
       SNode *snode,
       uint64 *result_buffer) = 0;
