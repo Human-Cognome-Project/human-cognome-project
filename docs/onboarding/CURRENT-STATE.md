@@ -8,6 +8,15 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 **Next bounded task:** track actual domain bootstrap request bytes with an outer tracker whose lifetime safely covers domain/control-block destruction, and establish a trusted disjoint borrowed-resource ledger. Then enforce combined accounted-byte admission using those disjoint components and selected live requests; do not sum overlapping snapshot, retained, peak or cumulative-work counters. Preserve checked arithmetic, pre-allocation refusal, reclamation, native state and exact retry controls. Remaining operation/control integration follows. The projection copy audit is closed. Additional setup work remains acceptable for long-running focal models; reducing setup totals is not an acceptance gate. #75/#111/#123 remain deliberately held/deferred.
 
+**Bootstrap tracker prerequisite (awaiting review, 2026-11-12):** a new shared
+native helper accounts for its own outer allocation and the actual rebound
+reservation-domain/control-block request, with lifetime through the final weak
+release. It keeps bootstrap and selected requests disjoint. See
+[shared support](../../common/README.md#domain-bootstrap-tracker-awaiting-review) for the contract and standalone refusal/unwind/lifetime coverage.
+This contribution starts from integrated main `f20acbb8`; owner adoption still
+uses its existing factory. Next wire the helper into owner admission with native
+unchanged-state/retry evidence, establish the trusted borrowed-resource ledger,
+then enforce combined accounted bytes. No complete owner-resource claim is made.
 **Historical handoff records below:** earlier pending, awaiting-review and next-task statements are source-pinned history, superseded by the disposition above.
 
 **Maintainer integration — 2026-11-12:** reviewed #290–#294 are integrated by the merge containing this record, preserving original commits through `32fe9928cdbed11b5092724d81f3bfbff07f0b9d`. #290's retry 43225419105 and smoke passed. #291/#292 native/smoke passed. Corrected #294 native 43240639938 passed all 12 jobs and smoke 43240639817 passed. Personally inspected #294 logs: 115 regression tests (29/29/29/28), and database job 131262194888 reports addressed_reads=24/private_reads=0. #293's original GCC 11 cleanup failure and #290's original unavailable-log failure remain historical; corrected/retried evidence does not relabel them.

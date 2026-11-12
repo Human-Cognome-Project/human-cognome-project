@@ -242,3 +242,16 @@ The archive contains source/binary/commands/results and both failed probe link
 attempts. Raw machine-local artifacts have not been independently inspected
 remotely. Documentation links and whitespace were checked; no accepted baseline
 or hosted native run was duplicated for this source audit.
+
+## Bootstrap tracker prerequisite — 2026-11-12 (awaiting review)
+
+The new [shared bootstrap helper](../../common/README.md#domain-bootstrap-tracker-awaiting-review)
+implements actual request tracking for its own outer storage and rebound domain
+control block. Intrusive outer handles avoid introducing another untracked shared
+control block. Shared allocators keep the tracker alive through weak references;
+request work remains prepaid through allocator/constructor failure. It supplies a
+separate H ledger; the selected domain remains D. This does not change owner
+adoption yet, establish B, or enforce C+B+H+D. Owner integration and native refusal,
+unchanged-state/retry controls are next, followed by the trusted disjoint borrowed
+ledger and combined policy. No accepted native baseline is rerun for this isolated
+helper; standalone compiler qualification is recorded in the admission evidence.
