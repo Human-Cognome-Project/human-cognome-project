@@ -1,3 +1,4 @@
+#define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
 #include "taichi/rhi/cpu/cpu_device.h"
 #include "taichi/program/ndarray.h"
@@ -17,6 +18,26 @@ DeviceAllocation allocate(Device &device, std::uint64_t bytes) {
 }
 int main() {
   try {
+    // Zero payload isolates the first record-vector request from pool allocation.
+    // Refusal cannot publish a live record or leave an allocation handle behind.
+    {
+      cpu::CpuDevice failure;
+      DeviceAllocation unpublished;
+      Device::AllocParams zero_params;
+      allocation_lifetime::begin(1);
+      bool failed = false;
+      try { failure.allocate_memory(zero_params,&unpublished); }
+      catch (const std::bad_alloc &) { failed = true; }
+      const auto counts = allocation_lifetime::end();
+      require(failed && counts.attempts == 1 && !counts.live && !unpublished.device &&
+                  !failure.allocation_record_storage().record_capacity_bytes &&
+                  failure.capture_allocation_record({&failure,0}).status == AllocationRecordStatus::Unknown,
+              "failed record registration published identity or retained storage");
+      auto retry = allocate(failure,0);
+      require(failure.capture_allocation_record(retry).status == AllocationRecordStatus::Live,
+              "record registration exact retry failed");
+      failure.clear();
+    }
     cpu::CpuDevice cpu, foreign;
     Device &device = cpu;
     auto a = allocate(device,64);
