@@ -270,17 +270,16 @@ LetterProjection project_letters(const warm::Bundle &b) {
   struct OccurrenceSource {
     const warm::ObjectKey *definition;
     int node;
+    const warm::Occurrence *initial; // Legacy state only; null for structural input.
   };
   std::map<warm::OccurrenceId, OccurrenceSource> ordered;
-  std::map<warm::OccurrenceId, const warm::Occurrence *> legacy;
   std::set<warm::ObjectKey> used;
   for (const auto &o : b.occurrences) {
-    ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node});
-    legacy.emplace(o.id, &o);
+    ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node, &o});
     used.insert(o.definition);
   }
   for (const auto &o : b.structural_occurrences) {
-    ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node});
+    ordered.emplace(o.id, OccurrenceSource{&o.definition, o.node, nullptr});
     used.insert(o.definition);
   }
   // Temporary lookup metadata borrows only from the stable source tool table.
@@ -343,7 +342,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
     out.structural_input_.occurrences.push_back(
         {InputText(occurrence_text(k)), InputText(warm::key(*o.definition)), o.node});
     if (b.recipe_version == 1) {
-      const auto &initial = *legacy.at(id);
+      const auto &initial = *o.initial;
       out.input_.occurrences.push_back(
           {InputText(occurrence_text(k)), InputText(warm::key(*o.definition)), slot, o.node,
            point(initial.position), point(initial.velocity)});
