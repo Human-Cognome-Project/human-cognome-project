@@ -72,6 +72,15 @@ int main() {
     require(retired.status == AllocationRecordStatus::Retired && retired.requested_bytes == 64 &&
                 retired.extent_bytes == 64,"retirement lost original request extent");
 
+    // Imported aliases must not free the original owner's backing.
+    const auto owned_pointer = cpu.get_alloc_info(distinct).ptr;
+    const auto imported_alias = cpu.import_memory(owned_pointer,64);
+    require(device.capture_allocation_record(imported_alias).ownership == AllocationOwnership::Imported,
+            "imported alias claimed backing ownership");
+    cpu.dealloc_memory(imported_alias);
+    require(cpu.get_alloc_info(distinct).ptr == owned_pointer &&
+                device.capture_allocation_record(distinct).status == AllocationRecordStatus::Live,
+            "imported alias release retired the backing owner");
     int imported[4]{17,19,23,29};
     const auto imported_handle = cpu.import_memory(imported,sizeof(imported));
     const auto import_record = device.capture_allocation_record(imported_handle);
@@ -103,6 +112,12 @@ int main() {
                 current.requested_bytes == 13 && current.extent_bytes == 13 &&
                 device.allocation_record(record.token).status == AllocationRecordStatus::Unknown,
             "reset/reuse revived an old token");
+    auto invalid = current.token;
+    invalid.allocation = UINT64_MAX;
+    const auto unknown = device.allocation_record(invalid);
+    require(unknown.status == AllocationRecordStatus::Unknown && !unknown.requested_bytes &&
+                !unknown.extent_bytes && unknown.ownership == AllocationOwnership::Unknown,
+            "invalid token supplied a usable extent");
     require(device.Device::allocation_record(current.token).status == AllocationRecordStatus::Unavailable &&
                 !device.Device::allocation_record_storage().available,
             "unsupported backend default fabricated zero coverage");
