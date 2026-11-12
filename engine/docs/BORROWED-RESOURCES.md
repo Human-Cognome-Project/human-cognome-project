@@ -7,6 +7,51 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Explicit owned imports (awaiting review, 2026-11-12)
+
+Continues [#304 review 5881459672](https://github.com/Human-Cognome-Project/human-cognome-project/pull/304#pullrequestreview-5881459672).
+Common Device now offers `import_owned_memory(owner_token, offset, size, out)` and
+`allocation_backing_record(registration_token)`, implemented for CPU. The new import
+path requires a currently live Owned token from the same device and an in-bounds
+range, then derives its pointer from that owner. It captures provenance at creation;
+it never scans registrations or infers ownership from a later pointer match.
+Raw `import_memory(ptr,size)` remains unchanged and unresolved, even if its address
+matches a current owned allocation. Existing raw imports are not retroactively
+upgraded. Cross-device imports and nested imported-owner tokens are unsupported by
+this bounded path; use the original owned token for multiple views.
+
+The import keeps its own Imported registration token and view extent, with zero
+owned request bytes. The separate backing query returns the original owner's live
+Owned token and full request/extent, allowing a future ledger to deduplicate by
+actual captured owner identity. Direct owned queries return themselves. A retired
+registration, retired owner, foreign/stale/invalid token or unresolved raw import
+returns Unknown without usable sizes; unsupported backends remain Unavailable.
+A zero-size view, including at the end of a nonzero allocation, still resolves to
+its actual owner; zero-size owned allocations retain their own identities.
+
+Known-live quiescent device/backing owners are required. This is not a lifetime lease
+or an automatic guard on existing map/transfer/launch APIs. An import does not keep
+its owner alive. Releasing an import never frees the backing; releasing the owner
+invalidates backing resolution while the import's registration may remain Live.
+The caller must not execute through such an import. Reset epochs and device-instance
+identities prevent old relationships reviving after allocation/device reuse. Pool
+reset while device resources are live remains outside the supported lifetime contract.
+
+The captured token is embedded in each existing CPU AllocInfo row, including owned,
+raw-import and retired rows. `allocation_record_storage()` already measures retained
+capacity times sizeof(AllocInfo), so it includes the added metadata once per device.
+Do not add the token payload a second time. Registration can grow that existing vector;
+its exception leaves the owner and output unchanged, and a retry can succeed. No
+separate registry is added. Query uses at most two indexed record validations and
+allocates nothing; it does not enumerate or establish a complete Harness snapshot.
+The caller must still meter input-sized enumeration and validation.
+
+This completes only explicit same-device owned-import provenance. Prepared contexts
+continue to treat Imported registrations as incomplete until their separate binding
+coverage path deliberately adopts and validates canonical backing. Underlying shared
+pool backing/rounded extents, general raw-import ownership, remaining prepared/runtime
+metadata, trusted Harness lifetime/coverage and combined C+B+H+D remain outstanding.
+No full B, other-backend support or GPU qualification is claimed.
 ## Native reservation request exports (awaiting review, 2026-11-12)
 
 Continues [#303 review 5880964608](https://github.com/Human-Cognome-Project/human-cognome-project/pull/303#pullrequestreview-5880964608).

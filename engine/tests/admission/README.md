@@ -5922,3 +5922,61 @@ succeeded without rerunning tests or changing evidence. No test failure occurred
 Correction is carried at combined #304; unchanged parent runs are not retriggered.
 Hosted corrected qualification and review remain pending. Final documentation-only
 delta does not change tested code or configuration.
+
+## Explicit owned-import provenance — 2026-11-12
+
+Continues #304 review5881459672 at d40daac0: source/configuration blocker corrected,
+provisional source acceptance restored, integration still pending corrected combined
+hosted qualification. Main remains e11525a0 through #301 and is already an ancestor.
+The failed #302 run remains failed; unchanged parents are not rerun.
+
+Common Device import_owned_memory validates a same-device live Owned token and
+in-bounds range before capturing that owner in the imported registration. The separate
+allocation_backing_record query returns the live canonical owned token/full extent.
+Raw pointer imports remain unresolved, with no late address scan or pointer matching.
+Registration identity/liveness and backing identity/liveness remain separate.
+Unknown/default-unavailable paths cannot supply usable backing sizes. Existing
+map/transfer/launch APIs do not gain a lifetime lease or automatic use-after-owner
+protection; callers retain the live/quiescent owner obligation. See the scoped
+[ownership contract](../../docs/BORROWED-RESOURCES.md).
+
+The additional owner token is embedded in every existing CPU AllocInfo row, and the
+existing retained-capacity times sizeof(AllocInfo) report includes it once per device.
+No second registry or extra additive token charge. Query depth is bounded by two
+indexed validations; future input-sized enumeration still needs work accounting.
+This slice does not implement pool identity/rounded extents, raw-import resolution,
+prepared-binding adoption, remaining metadata or combined admission.
+
+Tested implementation source: d8c752ccb9407e8f2daf4e595aba2b7afc12f694.
+Tracked Taichi tree: 89ba8451f7446a2dc6a5175c03d50c05a517e25e.
+The extended allocation_record_test covers partial views/full owner backing,
+separate registration identity, exact mapped offset, allocation-free first query,
+raw matching-pointer refusal, invalid/overflow/foreign/nested/null-output inputs,
+default backend, zero/end views, independent import retirement, owner retirement,
+replacement/reset non-revival and failed registration with exact retry. Existing
+allocation-record coverage still exercises same-address device reconstruction.
+CPU/shared-host scope only; no GPU, database, browser or performance qualification.
+
+Full native static and dependent engine rebuilds passed without compiler warnings
+or errors. All56 scopedCPU checks passed:9focused,20exchange (five cases across
+threads1/2 and bulk/direct-no-unroll),12prepared execution/update,9supporting native,
+6warm recipe. Focused/prepared/supporting CTests ran with parent TI_LIB_DIR unset;
+direct exchange executables used the explicit engine environment. The standalone
+allocation-record fixture reports device_object_bytes96 and record_capacity_bytes384;
+these are fixture metadata sizes, not portable constants or physical memory totals.
+Tested source stayed clean. No source build/test failure occurred.
+
+Two passing exchange_commit cases (1-bulk and2-direct) emitted offline-cache lock
+warnings during concurrent runs. Both exact diagnostics remain in runtime-warnings.txt
+and the original logs. No cache cleanup or test rerun was performed. Build logs have
+no warnings/errors; runtime logs are not claimed warning-free.
+
+Verified contributor-local archive: owned-import-domain-d8c752cc.tar.gz.
+SHA256SUMS manifest: f1bda6862c6c7931d08255ee8267ca786d3c2bd696c0cf3ef9ee5f273a18a7be.
+Archive SHA256: 18224edddb59895bfbb1b4762e3e69a6d5e98b8e2f67bc6d503562da632947cc.
+Includes source/configuration/compiler/binary pins, exact commands, builds, scoped
+results and retained diagnostics. Raw artifacts have not been independently inspected
+remotely. Published head differs from tested source only in four Markdown files;
+118 local file links and whitespace checks passed. Parent #304 smoke43299289118
+passed; native43299289153 remains active at inspection. No duplicate qualification
+or self-merge. Local results do not replace authoritative hosted CI or acceptance.

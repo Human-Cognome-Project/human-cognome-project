@@ -1,5 +1,16 @@
 # Core continuation after local CUDA corrections
 
+**Explicit owned-import backing (awaiting review, 2026-11-12):** continues #304
+review5881459672 at d40daac0. Common Device captures same-device Owned provenance at
+import creation and resolves canonical live backing with bounded indexed queries.
+Raw imports remain unresolved; registrations, backing ownership and lifetime remain
+distinct. Embedded metadata is included once in existing sizeof-based row capacity.
+Main e11525a0 is already in this stack. #304's source blocker is corrected, but
+#302–#304 integration still awaits corrected combined hosted qualification. Next:
+underlying pool identity, remaining prepared/runtime metadata and binding adoption,
+then a lifetime-valid work-metered Harness snapshot and combined C+B+H+D admission.
+No full B or GPU claim; held #75/#111/#123 and projection-copy closure are unchanged.
+
 **CTest qualification correction (awaiting review, 2026-11-12):** #304 review
 5881347735 blocks integration on missing runtime environment for three tests.
 #302 native run43287680849/job131433550369 failed owner_backing_test during
