@@ -60,7 +60,14 @@ Ndarray::Ndarray(Program *prog,
   }
   ndarray_alloc_ = prog->allocate_memory_on_device(nelement_ * element_size_,
                                                    prog->result_buffer);
-  backing_record_ = ndarray_alloc_.device->capture_allocation_record(ndarray_alloc_);
+  if (ndarray_alloc_.device) {
+    try {
+      backing_record_ = ndarray_alloc_.device->capture_allocation_record(ndarray_alloc_);
+    } catch (...) {
+      ndarray_alloc_.device->dealloc_memory(ndarray_alloc_);
+      throw;
+    }
+  }
 }
 
 Ndarray::Ndarray(DeviceAllocation &devalloc,
