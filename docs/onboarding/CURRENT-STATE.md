@@ -1,5 +1,15 @@
 # Current implementation and work
 
+**Prepared host metadata (awaiting review, 2026-11-12):** continues reviewed #309
+6b3180b5/review5883627408. Reports prepared scalar capacity and binding-map key
+capacities/value payload via a separate entry-budgeted inspection. Refusal precedes
+traversal; exact retry is allocation-free. Node/bucket request storage remains
+unmeasured, so full host metadata/B coverage remains incomplete. Main cee73d53's
+qualified #308 integration is included through normal merge992d54a0; #309 remains
+provisional pending native qualification. Next: remaining prepared/runtime/shared
+metadata, trusted Harness lifetime/required-family coverage/deduplication and prepaid
+work before combined C+B+H+D. No GPU/Windows execution claim; held items unchanged.
+
 **Maintainer integration — 2026-11-12:** #308 rounded host-pool virtual extents are accepted and integrated by the merge containing this record, preserving reviewed `10b3ed7f6f0401148716311cfe0181e0d75362d9`. Native 43321294234 passed all 12 jobs; smoke 43321294253 passed. Personally inspected 119 passing regressions (30/30/30/29), including native_pool_test, allocation_record_test, prepared_backing_test and reservation_request_test; database job 131549865939 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#307. #309 pool container metadata is provisionally source-accepted at `6b3180b5`; smoke 43328681937 passed and native 43328682126 remains active. Local archives were not independently inspected; historical failures remain preserved. Older status/next labels below are historical where they conflict.
 
 **Next bounded task:** remaining prepared/runtime/shared metadata on reviewed #309, then trusted lifetime-valid required-family Harness coverage and canonical backing deduplication with prepaid lookup/enumeration before checked C+B+H+D admission. Retained requested storage is distinct from transient peak, heap rounding and physical residency. Preserve native authority and separate work gates; setup cost remains acceptable for long-running focal models. No full B or GPU qualification; projection-copy audit stays closed and #75/#111/#123 remain held.

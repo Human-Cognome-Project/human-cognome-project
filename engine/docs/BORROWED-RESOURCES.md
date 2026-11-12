@@ -7,6 +7,44 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Prepared host metadata (awaiting review, 2026-11-12)
+
+Continues [#309 review 5883627408](https://github.com/Human-Cognome-Project/human-cognome-project/pull/309#pullrequestreview-5883627408).
+PreparedBacking now reports scalars.capacity()*sizeof(Prepared::Scalar), including
+unused slots. The vector control object is already included in prepared_object_bytes;
+the capacity buffer is separate. This does not change prepared_bytes(), reserve policy
+or execution behavior.
+
+The separate prepared_host_metadata(live_device, entry_budget) inspection covers the
+four context binding maps: runtime sizes, allocation types, array pointers and argpack
+pointers. It reports each map's entry count, bucket count, value payload and the sum of
+owned key-vector capacities in bytes. Key element buffers are separate from map value
+payload, whose vector control object is embedded in each value. Different map keys
+own distinct buffers even when they contain equal argument paths.
+
+Four constant-time size observations and checked addition establish required_entries
+before any traversal. A smaller budget returns unavailable with zero visited_entries;
+an exact-budget retry visits each entry once without copying, hashing keys, following
+bound pointers or allocating. Each visit reads capacity in constant time; it never
+walks the key elements. Multiplication and accumulated key-byte arithmetic are checked.
+Overflow returns unavailable/overflow; partial fields must not be accepted as a ledger.
+The entry budget covers this inspection only, not prior setup, allocation, native
+backing lookups, synchronization or later Harness work.
+
+Bucket count is diagnostic, not bucket allocation bytes. Map value payload is a subset
+of still-unmeasured node allocation storage, not a complete node-size estimate or an
+additional charge once actual map requests become available. Empty maps may retain
+buckets. complete and host_metadata_complete remain false: node/bucket storage,
+shared runtime/compiler metadata and host-heap internals remain outside this export.
+No physical-memory or full B claim is made.
+
+The same prepared-buffer availability guard rejects unsupported, unprepared, unusable,
+foreign-device and moved-from contexts. Caller must keep context/kernel/runtime/device
+alive and quiescent; returned values are synchronous observations, not durable identity
+or a lifetime lease. A future trusted Harness must deduplicate contexts and native
+backing under its exclusive boundary and prepay all other required enumeration/lookup.
+No new model-side backend casts or retained metadata fields are introduced.
+
 ## Pool container metadata (awaiting review, 2026-11-12)
 
 Continues [#308 review 5883275400](https://github.com/Human-Cognome-Project/human-cognome-project/pull/308#pullrequestreview-5883275400).
