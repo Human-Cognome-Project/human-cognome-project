@@ -8,7 +8,17 @@ Read when selecting work, reviewing acceptance or asking what is built. For the 
 
 **Next bounded task:** track actual domain bootstrap request bytes with an outer tracker whose lifetime safely covers domain/control-block destruction, and establish a trusted disjoint borrowed-resource ledger. Then enforce combined accounted-byte admission using those disjoint components and selected live requests; do not sum overlapping snapshot, retained, peak or cumulative-work counters. Preserve checked arithmetic, pre-allocation refusal, reclamation, native state and exact retry controls. Remaining operation/control integration follows. The projection copy audit is closed. Additional setup work remains acceptable for long-running focal models; reducing setup totals is not an acceptance gate. #75/#111/#123 remain deliberately held/deferred.
 
-**Bootstrap tracker prerequisite (awaiting review, 2026-11-12):** a new shared
+**Owner bootstrap integration (awaiting review, 2026-11-12):** continues from
+#298 review 5879152987 on `386be0a0`; #298 remains open while hosted qualification
+finishes. Owner admission now gates actual outer tracker/domain control-block
+requests and reports them separately from selected owner requests. Both bootstrap
+boundaries precede owner construction/native mutation. Later constructor refusals
+and allocation exceptions release bootstrap storage while preserving prepaid work;
+selected weak references retain the tracker through final release. See [adoption accounting](../../engine/docs/ADOPTION-ACCOUNTING.md#owner-bootstrap-integration-awaiting-review).
+Next: the trusted disjoint borrowed-resource ledger, then combined accounted-byte
+admission and remaining operation/control integration. Both builds and all 47 scoped CPU checks passed without warnings; this new
+integration evidence is recorded separately from the accepted helper evidence.
+**Bootstrap tracker prerequisite (historical contribution, 2026-11-12):** a new shared
 native helper accounts for its own outer allocation and the actual rebound
 reservation-domain/control-block request, with lifetime through the final weak
 release. It keeps bootstrap and selected requests disjoint. See

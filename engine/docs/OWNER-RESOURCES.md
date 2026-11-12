@@ -2247,3 +2247,13 @@ cover bounded header/scalar/control initialization; variable payload work remain
 separately metered. This is neither physical allocation accounting nor a fee for
 opaque allocator/driver work. Next: domain bootstrap request tracking and a trusted
 disjoint borrowed-resource ledger, then the combined accounted-byte limit.
+
+## Owner bootstrap request gate — 2026-11-12 (awaiting review)
+
+[The adoption contract](ADOPTION-ACCOUNTING.md#owner-bootstrap-integration-awaiting-review)
+now defines separate bootstrap H demand/refusal and selected D demand/refusal.
+Bootstrap includes the outer tracker's own request and the measured domain/control
+block; its lifetime extends through final selected weak release. The retained
+capacity census remains a different, overlapping surface and does not become a
+complete allocation ledger. Trusted borrowed backing and combined admission are
+still pending. Source-pinned native qualification is recorded in admission evidence.
