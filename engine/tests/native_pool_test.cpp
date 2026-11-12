@@ -56,8 +56,6 @@ int main() {
         empty_storage.allocator_chunk_capacity_bytes ||
         first_storage.allocator_object_bytes != sizeof(taichi::lang::UnifiedAllocator) ||
         first_storage.record_allocation_bytes < first_storage.record_payload_bytes ||
-        first_new_bytes != first_storage.record_allocation_bytes - empty_storage.record_allocation_bytes +
-                               first_storage.allocator_chunk_capacity_bytes ||
         first_storage.pool_instance != empty_storage.pool_instance)
       throw std::runtime_error("pool container storage disagrees with actual allocation requests");
     const auto full = pool.statistics();
@@ -179,6 +177,23 @@ int main() {
         !retained_storage.allocator_chunk_capacity_bytes ||
         retained_storage.metadata_complete)
       throw std::runtime_error("empty pool lost retained allocator storage or claimed complete metadata");
+    pool.reset();
+    const auto before_witness = pool.backing_storage();
+    allocation_observation::bytes = 0;
+    allocation_observation::enabled = true;
+    allocation_lifetime::begin();
+    void *witness_mapping = pool.allocate(17,page,true);
+    const auto witness = allocation_lifetime::end();
+    allocation_observation::enabled = false;
+    const auto after_witness = pool.backing_storage();
+    const auto retained_requests = after_witness.record_allocation_bytes - before_witness.record_allocation_bytes +
+                                   after_witness.allocator_chunk_capacity_bytes;
+    if (before_witness.allocator_chunk_capacity_bytes || witness.live != retained_requests)
+      throw std::runtime_error("retained pool metadata disagrees with live allocation witness");
+    std::cout << "witness_cumulative_bytes=" << allocation_observation::bytes.load()
+              << " witness_live_bytes=" << witness.live
+              << " retained_metadata_requests=" << retained_requests << '\n';
+    pool.release(17,witness_mapping);
     std::cout << "first_map_request_bytes=" << first_storage.record_allocation_bytes
               << " first_chunk_capacity_bytes=" << first_storage.allocator_chunk_capacity_bytes
               << " allocator_object_bytes=" << first_storage.allocator_object_bytes << '\n';
