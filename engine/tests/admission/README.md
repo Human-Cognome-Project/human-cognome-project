@@ -5199,3 +5199,86 @@ traversal/stack work, preserving pinned references, cycles, memoized diamonds an
 exact contribution ordering/ownership. Declaration/binding setup budgets, combined
 resources and remaining operation/control integration follow. Initial-projection
 savings do not establish a complete owner setup gate.
+
+
+### Membership traversal setup qualification (2026-11-12)
+
+Tested `8d1e1802faa84e855677d7efcf5b0ff4483d0e81`, continuing from #292 reviewed head
+`ced6c2d891b5c8d0497bfd9d10e3edc1a473e8f1` under review 5875540117. Accepted main
+`a4de248e18d07284198c2a963af4ee458b629ffb` through #289 is included by normal merge
+`7be5b888c735284b26fefd4cad492dbcddef1879` with no file delta relative to #292.
+#290–#292 remain unmerged; the initial-projection copy audit remains closed.
+
+Membership collection uses nonrecursive local lambdas and domain-charged explicit
+DFS frames. Frame depth cannot exceed the input tool inventory; allocation-work
+and live-byte admission bound backing growth, including old/new buffers. Child
+visits may grow the vector, so parent frames are reacquired by index. Tool/state/
+reached pointers refer to stable source/map nodes. Pins are validated on every visit,
+including memoized visits. Visiting-state cycle rejection, deduplicated diamond
+ancestors, ordered contributions and active-only/alternatives behavior remain intact.
+
+PreparationWork charges before catalogue copies, key-payload comparisons, visits,
+pinned equality, ancestor insertions, owner lookup, output construction and
+conservative frame/contribution relocation (including nested output payloads).
+Owner adoption passes its existing setup allowance and reports Membership phase
+refusals through the established unwind boundary. The phase sweep now covers all
+six incomplete phases. Standalone collection/ExchangeBindings use an unrestricted
+logical-work allowance; they are not claimed as owner admission. Domain overhead,
+declaration/binding constructor work and combined borrowed accounting remain open.
+
+The focused mixed-diamond test records 56744 work units, 3151 work-refusal boundaries
+and 17967 peak domain bytes. Every work and allocation boundary refuses and releases
+all blocks; exact allowance retries reproduce ordered full-reference contributions.
+It checks one-short work refusal, stale pins on memoized nodes, cycles and a 192-level
+public chain with repeated terminal reachability, deterministic order and complete
+teardown. Existing 32 exposure combinations, revision and ownership controls remain.
+The focused executable passes 3793 checks; it is also part of the supporting suite.
+
+Initial tested `2438647a91f7a22d445d0116c917fffb93e62f19` passed both builds and its
+budget/retry tests, then the deep-chain fixture failed with private dependency escape
+before collection. The fixture improperly connected a public letter to independently
+scoped private groups. Only test identities changed to a separate public address
+range at final tested source. The original source, binary and logs are preserved in
+`setup-evidence/membership-traversal-budget-initial-2438647a.tar.gz`, manifest:
+
+    ed3e112124fe1718a18acc399b8003417d28b982014330dd5c3f34eb88bc59f7
+
+All four CPU modes report these single/four-selection owner changes compared with
+the retained #292 evidence (not rerun):
+
+| Observation | Single selection | Four selections |
+|---|---|---|
+| Setup work | 58925 → 85804 | 150127 → 211363 |
+| Setup refusal boundaries | 1556 → 3072 | 4628 → 7904 |
+| Selected allocation work | 420751 → 420871 | 790263 → 790383 |
+| Selected byte/work boundaries | 2761/3269 → 2759/3271 | 3707/5925 → 3706/5927 |
+| Independent failure sites | 3271 → 3272 | 5927 → 5928 |
+
+All failure sites reclaim every block. Selected live/peak remain 321185/392475;
+retained/peak remain 321265/321265 and 392555/392555; census 321153/392251 and
+failure peaks 321250/392540 remain unchanged. Allocation-work growth includes the
+new charged frame backing; fewer implicit callable allocations is not a total-memory
+claim. These overlapping reports must not be summed. Work units are logical admitted
+operations/payload, not elapsed time or all allocator overhead. Public projection
+layouts remain unchanged (StudyInput288, StructuralStudyInput280, LetterProjection1304).
+
+Both builds and all 47 scoped CPU checks passed on the corrected source: 20 exchange
+processes (five cases, workers1/2, bulk/direct), 12 prepared checks, nine supporting
+native handoff/snapshot checks and six warm CTests. No corrected-head build/test
+warnings or errors. Clang15/libstdc++, CPU/x64, Taichi
+`5ba579a8a11255b7a258cde93801070956d81d57`; shared host. The focused run above is
+also included in the supporting suite, not counted as a new distinct suite.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/membership-traversal-budget-domain-8d1e1802.tar.gz`;
+SHA256SUMS digest:
+
+    089fe2f0d085b9207ab5e861e47b807aae406ff0383e511876cd164dd85dd218
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. #292 smoke 43230769945 passed and native
+43230770028 is in progress at inspection; no duplicate retry or merge of pending
+slices. No GPU, live DB or browser work.
+
+Next: declaration collection and ExchangeBindings constructor work budgets, then
+combined resources and operation/control integration. This contribution bounds the
+membership portion of owner setup, not the complete owner constructor.

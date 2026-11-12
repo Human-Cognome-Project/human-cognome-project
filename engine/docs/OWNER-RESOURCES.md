@@ -2096,3 +2096,43 @@ indexes without a separate concrete need. Next: MembershipFields::collect's recu
 std::function follow storage and traversal/stack work, then declaration/binding
 construction budgets, combined resource accounting and operation/control integration.
 Existing graph allocation domains do not complete the owner setup gate.
+
+
+### Bounded membership traversal (awaiting review)
+
+MembershipFields::collect replaces recursive type-erased std::function with local
+nonrecursive lambdas and an explicit DFS frame vector using SharedReservationAllocator.
+Frames retain stable tool/state/reached pointers, child position and pending ancestor
+set. A child visit can reallocate the vector, so the parent is reacquired by index;
+no frame reference survives growth. Every active frame represents a distinct visiting
+tool: cycle detection rejects repeats and frame depth cannot exceed tool inventory.
+Domain byte/allocation-work gates admit frame backing before allocation, including
+coexisting old/new backing during vector growth. Native call-stack depth is constant.
+
+A PreparationWork meter covers catalogue key copying, payload-aware map/set
+comparisons, visits, pinned equality even on memoized visits, pending ancestor
+insertion, owner lookup, contribution publication and conservative frame/output
+relocation work. Nested contribution payload relocation is prepaid even when the
+implementation can move it. These logical units are not elapsed-time/allocator-
+metadata guarantees. Existing map/set/address/UUID/contribution domains stay attached;
+comparators borrow the meter only inside the call, and no metered container escapes.
+
+Owner adoption passes the existing setup allowance and reports Membership refusal
+before later projection phases. The caller's projection and borrowed native state
+remain untouched; stack, graph and partial output unwind on work/allocation stops.
+Standalone helpers and standalone ExchangeBindings keep an unrestricted work
+allowance and are not promoted to owner admission. Domain/control-block overhead,
+declaration/binding construction work and combined borrowed-resource accounting
+remain separate.
+
+Controls cover every work/allocation boundary and exact retries in a mixed diamond
+fixture, pin validation on an already memoized node, cycles, 192-level frame growth,
+repeated terminal deduplication and sorted output. Existing active/alternatives,
+revision, source lifetime and owner failure sweeps remain active. The owner work
+phase sweep includes Membership. The initial deep fixture's private dependency
+escape is preserved; correcting its public test identities does not change runtime
+code. See admission for resulting metrics and evidence.
+
+Next: declaration/binding constructor work budgets, then combined resources and
+operation/control integration. Initial-projection cleanup remains closed; this
+membership gate does not establish complete owner setup admission.

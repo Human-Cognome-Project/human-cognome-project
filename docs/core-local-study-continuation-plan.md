@@ -451,6 +451,28 @@ complete traversal/setup limit. Then finish declaration/binding construction bud
 combined resources and remaining-operation/control integration. Do not label these
 initial-projection allocation reductions as completion of the owner setup gate.
 
+**Bounded membership traversal (awaiting review, 2026-11-12):** #292 review
+5875540117 authorizes callable storage and traversal limits together. Accepted main
+`a4de248e` through #289 is included by normal merge `7be5b888`, with no file delta.
+MembershipFields::collect now uses explicit DFS frames allocated through the existing
+domain, bounded by tool inventory and the domain's byte/allocation-work allowance.
+Owner adoption supplies its PreparationWork meter and reports a Membership phase.
+Comparisons charge key payloads first; visits, memoized pin validation, insertion,
+ancestor merging, owner lookup and output/relocation work are admitted before execution.
+Cycle/memoization state and deterministic target order are retained. Standalone
+collection and standalone bindings retain unrestricted work allowances; their paths
+are not claimed as owner admission. Existing allocation domains remain attached.
+
+Focused tests sweep all work and allocation refusal boundaries, teardown and exact
+retry, check stale memoized pins/cycles, and traverse a 192-level chain with repeated
+terminal reachability. The initial deep fixture used invalid private dependencies;
+that failure is preserved and only fixture identities were corrected. The owner
+setup sweep now covers Membership alongside the existing phases. See admission
+for source pins, actual resource changes and qualification; this is not a timing or
+physical-memory guarantee. Next: declaration collection and ExchangeBindings setup
+work, then combined accounting and operation/control integration. The projection
+copy audit remains closed and the complete owner setup gate remains outstanding.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in
