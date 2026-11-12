@@ -5548,3 +5548,53 @@ qualification. #296 smoke 43249326530 passed; native 43249326537 remains running
 No duplicate hosted retry or merge was initiated. Hosted checks and review remain
 required for this contribution. Next: domain bootstrap request tracking and the
 trusted disjoint borrowed ledger, then bounded combined accounted-byte admission.
+
+## Self-accounted bootstrap tracker prerequisite — 2026-11-12
+
+Continues #297 review 5878815959 from integrated main
+`f20acbb844d28d4d6721cb11248d057f44750af2`. Tested source:
+`5d753d867798516493f092f5b37ff6e8633c9ba5`. Subsequent changes in this contribution
+are documentation only. [Shared support](../../../common/README.md#domain-bootstrap-tracker-awaiting-review)
+defines the lifetime/accounting contract and remaining integration boundary.
+
+The new helper prepays its own outer tracker request and uses an allocator rebound
+by `allocate_shared` to measure the actual domain/control-block request. Intrusive
+handles prevent recursive unaccounted tracker control blocks. Bootstrap H and
+selected D are separate ledgers. `ExchangeOwner::adopt` is unchanged and does not
+use this helper yet; no combined owner-resource enforcement is claimed.
+
+Local Ubuntu/WSL, x64 CPU-only, shared personal host:
+
+- GCC 11, GCC 13 and Clang 15 standalone builds passed without warnings/errors.
+- Four CTests passed for each compiler (12 total): letter projection, membership,
+  structural recipe and the new bootstrap reservation controls. New test compiles
+  with `-Wall -Wextra -Werror` and is included by the existing hosted standalone job.
+- Independently observed C++ allocation requests equal tracker reports: outer
+  tracker 72 bytes, outer plus domain/control block 160 bytes on these toolchains.
+  These are measured layouts, not portable fixed budget constants.
+- Zero/one-short/exact byte and work budgets cover both allocation boundaries;
+  refusal performs zero underlying allocation attempts. Fresh exact retry succeeds.
+- Domain weak references retain the charged control block; selected shared/weak
+  objects retain domain and tracker after external handles disappear. Final weak
+  release leaves zero blocks/live bytes, without a lifetime cycle.
+- Each of the two actual bootstrap allocation failures is injected independently;
+  acquired blocks unwind and prepaid request work is retained. Constructor failure,
+  aligned rebound allocation, checked product/sum overflow and handle self-move
+  controls pass. Selected and bootstrap observed request sums are disjoint.
+
+Verified local archive `setup-evidence/bootstrap-reservations-5d753d86.tar.gz`;
+SHA256SUMS manifest digest:
+
+    3e706d77983b6fe37464a7eb3eb5f54d99205c303f254af2eea8aae7c7bbab9b
+
+The archive retains commands, source pin, compiler versions, build/test logs and
+binary hashes. This is contributor-local evidence, not independently inspected
+remote evidence. No source build or test failure occurred. An inspection-only WSL
+shell quoting error after successful qualification was corrected; it did not rerun
+or alter tests. No native model/CPU matrix, GPU, PostgreSQL, browser or performance
+qualification was run. The already accepted #297 baseline was not repeated.
+
+Next: integrate the helper at the owner adoption boundary and add native refusal,
+unchanged-state/retry witnesses, then the trusted disjoint borrowed-resource ledger
+and combined accounted-byte policy. H does not cover allocator metadata, physical
+residency, process allocations or borrowed runtime backing.
