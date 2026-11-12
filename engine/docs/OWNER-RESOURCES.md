@@ -1891,3 +1891,48 @@ budgets remain open before combined resources and operation integration.
 
 **Maintainer integration — 2026-11-11:** Reviewed #275–#277 and #279–#284 are integrated into main at `5beeb2cacf28c75cbecef385a0de1e877154bbc0`, preserving original commits through reviewed tip `09bafe48869ddf239e6e245d766c0c0e41a43364`. #279's fresh native 43115507493, viewport 43115507480 and smoke 43115507510 succeeded; #280–#284 completed their applicable hosted checks, including #284 native 43116769390 and smoke 43116769371. Original failed and stuck queued attempts remain historical, not relabeled. Earlier pending/integration labels below are superseded by this record. #285 is provisionally source-accepted at `7105c22e866af7c3cf5c1b2e452a8bf8bef643f8` (review 5866915489), targets main and awaits native qualification; its smoke passed. Next: initial tool/occurrence indexes and publication/setup costs, then membership callable/recursion, declaration/binding budgets, combined resource accounting and operation integration. No blanket GPU or performance acceptance.
 
+
+### Temporary provenance/equivalence lookups (awaiting review)
+
+Following #284 review 5866703067, initial projection's provenance lookup stores
+only owner entry/ordinals and a borrowed character ToolRef. Its equivalence lookup
+also borrows the pinned ToolRef. Both point into the input bundle's stable tool/
+parent tables, not into short-lived expansion rows. project_letters takes that
+bundle by const reference and never mutates it. When each published occurrence is
+constructed, provenance/equivalence become independent owned identities again.
+No pointer escapes. Lookup key ownership, ordering and the published record copy
+remain unchanged; this is not a broad conversion of retained maps to borrowed data.
+
+The source-death test now checks complete pinned character/equivalence references
+against the original input after the projection's actual source copy is destroyed.
+Repeated/multibyte characters, distinct letter entries and unknown equivalence
+remain covered. A source-to-source initial-projection probe counts 840 versus 795
+37-byte requests for five letters: 13 provenance rows lose three temporary UUID
+copies each, and three equivalence entries lose two each (45 requests removed).
+The observer is size-filtered, not a general allocation or performance proof.
+Published output and owner-adoption accounting remain independent of that temporary
+reduction. Initial tool/occurrence indexes, retained publication copies and their
+setup costs require separate treatment; membership callable/recursion and declaration/
+binding setup budgets remain open before combined resources/operations.
+
+### Borrowed keys in the initial tool index (awaiting review)
+
+Following #285 review 5866915489, the local normalization/projection Tools index
+stores reference_wrapper<const ObjectKey> keys alongside its existing const Tool
+pointers. Both refer into the same stable source tool table. Neither normalization
+consumer changes tools/parents and project_letters takes its bundle const. The
+index is destroyed before the source; moving the normalization result does not
+make index destruction inspect the borrowed keys. No index or reference escapes.
+
+ToolKeyLess delegates to the existing ObjectKey value comparator, including its
+validation and ordering. Transparent find and at continue matching by value;
+a separately copied lookup key resolves the same source Tool. Duplicate identity
+and inconsistent revision rejection are unchanged. Normalization duplicate tests
+cover both source orders; source-death projection tests still check independently
+owned published values. A source-to-source index probe observes zero 37-byte UUID
+requests over 22 tools, versus 22 in prior source. Map nodes still allocate;
+this is not a zero-allocation or complete setup-budget claim.
+
+Remaining initial occurrence indexes, publication copies/setup costs, membership
+callable/recursion and declaration/binding budgets precede combined resources and
+operation integration. Deliberately independent outputs must remain independent.

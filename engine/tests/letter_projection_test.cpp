@@ -92,6 +92,12 @@ int main() {
     std::set<std::string> ids;
     for (std::size_t i = 0; i < p.occurrences().size(); ++i) {
       const auto &o = p.occurrences()[i];
+      const auto request = std::find_if(requests.begin(), requests.end(),
+          [&](const auto &r) { return r.entry == o.key.source.entry; });
+      check(request != requests.end(), "projected provenance has a source request");
+      const auto &letter = b.tools.at(f.tools.at(request->letter.object));
+      if (o.complete_character)
+        equivalence &= *o.complete_character == letter.parents.front().target;
       slots &= o.slot == int(i) && ids.insert(occurrence_text(o.key)).second;
       if (o.key.source.path.empty())
         equivalence &= bool(o.complete_character) ==
@@ -100,7 +106,8 @@ int main() {
         provenance &= o.byte->owner ==
                           OccurrenceKey{p.study(), {o.key.source.entry, {}}} &&
                       o.byte->character_ordinal == o.key.source.path[0] &&
-                      o.byte->byte_ordinal == o.key.source.path[1];
+                      o.byte->byte_ordinal == o.key.source.path[1] &&
+                      o.byte->character == letter.parents.at(o.key.source.path[0]).target;
         if (o.key.source.entry == 4) {
           dutch_bytes.push_back(
               std::string(*b.tools.at(f.tools.at(o.definition.object)).notation));
@@ -292,6 +299,13 @@ int main() {
         "duplicate request entry rejected");
     rejects([&] { normalize_letters(b, {r}); },
             "normalization cannot silently replace an existing recipe");
+    auto duplicate_definitions = f.base;
+    duplicate_definitions.tools.push_back(duplicate_definitions.tools.front());
+    rejects([&] { normalize_letters(duplicate_definitions, {r}); },
+            "temporary tool index rejects duplicate identity during normalization");
+    std::reverse(duplicate_definitions.tools.begin(), duplicate_definitions.tools.end());
+    rejects([&] { normalize_letters(duplicate_definitions, {r}); },
+            "duplicate identity rejection does not depend on source ordering");
     r.letter.revision = new_uuid();
     rejects([&] { normalize_letters(f.base, {r}); },
             "stale requested letter revision rejected");

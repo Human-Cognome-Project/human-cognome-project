@@ -2,6 +2,7 @@
 #include "assembly/preparation_work.h"
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 #include <map>
 #include <set>
@@ -11,11 +12,20 @@ namespace {
 void need(bool condition, const char *message) {
   if (!condition) throw warm::Error(message);
 }
-using Tools = std::map<warm::ObjectKey, const warm::Tool *>;
+struct ToolKeyLess {
+  using is_transparent = void;
+  bool operator()(const warm::ObjectKey &a, const warm::ObjectKey &b) const {
+    return a < b;
+  }
+};
+// The index is local to normalization/projection; neither mutates source tools.
+// Keys borrow the same stable objects as the mapped Tool pointers.
+using Tools = std::map<std::reference_wrapper<const warm::ObjectKey>,
+                       const warm::Tool *, ToolKeyLess>;
 Tools index(const warm::Bundle &b) {
   Tools tools;
   for (const auto &t : b.tools)
-    need(tools.emplace(t.ref.object, &t).second,
+    need(tools.emplace(std::cref(t.ref.object), &t).second,
          "duplicate definition identity");
   return tools;
 }
@@ -268,23 +278,29 @@ LetterProjection project_letters(const warm::Bundle &b) {
     ordered.emplace(o.id, o);
     used.insert(o.definition);
   }
-  std::map<warm::OccurrenceId, ByteProvenance> provenance;
-  std::map<warm::OccurrenceId, warm::ToolRef> equivalent;
+  // Temporary lookup metadata borrows only from the stable source tool table.
+  // Published records below construct independent identity values.
+  struct ProvenanceSource {
+    std::uint64_t owner;
+    const warm::ToolRef *character;
+    std::uint32_t character_ordinal, byte_ordinal;
+  };
+  std::map<warm::OccurrenceId, ProvenanceSource> provenance;
+  std::map<warm::OccurrenceId, const warm::ToolRef *> equivalent;
   std::set<warm::OccurrenceId> active;
   for (const auto &s : b.selections) {
     const warm::OccurrenceId aggregate{s.entry, {}};
     const auto &letter = *tools.at(ordered.at(aggregate).definition);
     const auto expanded = expand(tools, letter);
     if (letter.parents.size() == 1)
-      equivalent.emplace(aggregate, letter.parents[0].target);
+      equivalent.emplace(aggregate, &letter.parents[0].target);
     for (std::size_t i = 0; i < expanded.size(); ++i) {
       const auto &v = expanded[i];
       need(s.parts[i] == warm::OccurrenceId{s.entry, {v.path.begin(),v.path.end()}},
            "invalid persisted byte path");
       provenance.emplace(
           s.parts[i],
-          ByteProvenance{
-              {out.study_, aggregate}, *v.character, v.path[0], v.path[1]});
+          ProvenanceSource{s.entry, v.character, v.path[0], v.path[1]});
     }
     if (s.exposure == warm::Exposure::Aggregate)
       active.insert(aggregate);
@@ -312,8 +328,12 @@ LetterProjection project_letters(const warm::Bundle &b) {
     const auto slot = b.recipe_version == 1 ? int(out.occurrences_.size()) : -1;
     ProjectedOccurrence record{k,  t.ref, slot, o.node, active.count(id) != 0,
                                {}, {}};
-    if (provenance.count(id)) record.byte = provenance.at(id);
-    if (equivalent.count(id)) record.complete_character = equivalent.at(id);
+    if (const auto found = provenance.find(id); found != provenance.end()) {
+      const auto &source = found->second;
+      record.byte = ByteProvenance{{out.study_, {source.owner, {}}}, *source.character,
+          source.character_ordinal, source.byte_ordinal};
+    }
+    if (equivalent.count(id)) record.complete_character = *equivalent.at(id);
     out.occurrences_.push_back(record);
     out.structural_input_.occurrences.push_back(
         {InputText(occurrence_text(k)), InputText(warm::key(o.definition)), o.node});
