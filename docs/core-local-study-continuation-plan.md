@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Native reservation exports (awaiting review, 2026-11-12):** continues #303 review
+5880964608. Common ProgramImpl exposes bounded CPU node/list/ambient request views,
+with Present/Absent/Invalid/Unavailable states and explicit unresolved pool identity/
+rounded extents. Ambient request metadata is reported once per runtime; enumeration
+remains caller-metered work, not a hidden scan. Main e11525a0 (#301 integrated) is
+reconciled by normal merge b86533e5; #302/#303 remain provisional and unmerged.
+Next: pool/import alias resolution, remaining metadata and a trusted lifetime-valid,
+work-metered Harness snapshot before combined C+B+H+D. No full B or GPU claim.
+
 **Maintainer integration — 2026-11-12:** #301 common/CPU allocation records are accepted and integrated by the merge containing this record, preserving reviewed `63a46aab6db261d2b8ecf189d06999d87f2f2dd2`. Native 43282494612 passed all 12 jobs and smoke 43282494900 passed. Personally inspected 116 passing regression tests (29/29/29/29), including allocation_record_test, and database job 131415289289 with addressed_reads=24/private_reads=0. #302 array/root exports remain provisionally accepted at `aa48a2e4` (review 5880581671); #303 prepared CPU exports at `bb0dfd28` are provisionally accepted in [review 5880964608](https://github.com/Human-Cognome-Project/human-cognome-project/pull/303#pullrequestreview-5880964608). Both remain unmerged with native qualification active; their smoke checks passed. Contributor-local artifacts were not independently inspected. This does not establish full B, combined admission or GPU qualification.
 
 **Next bounded task:** native node/list/ambient request exports on reviewed #303, then remaining prepared metadata and imported-to-owner alias resolution. Preserve explicit required-family coverage and account retained metadata once at its actual owner. The trusted Harness snapshot must establish lifetime/backing validity, deduplicate actual backing rather than registrations, and meter input-sized enumeration/validation before checked C+B+H+D enforcement. Retain separate work gates and native authority; remaining operation/control integration follows. Projection-copy audit stays closed and additional setup cost is acceptable for long-running focal models. #75/#111/#123 remain deliberately held. Earlier pending/next labels below are historical where they conflict.

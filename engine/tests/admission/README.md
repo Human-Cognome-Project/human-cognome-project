@@ -5839,3 +5839,54 @@ been independently inspected remotely. Final publication differs from the tested
 pin only in four Markdown files. Documentation whitespace and 116 local file links
 passed. Parent hosted qualification was not duplicated; no acceptance or merge is
 inferred from local results.
+
+## Native node/list/ambient request exports — 2026-11-12
+
+Continues #303 review 5880964608 at reviewed bb0dfd28. Main e11525a0 integrates
+accepted #301; normal merge b86533e5 reconciles the handoff. #302/#303 remain
+provisionally accepted and unmerged. No acceptance is inferred from CI.
+
+Common ProgramImpl queries expose bounded CPU native request views for NodeManager,
+ambient storage, list objects, allocated directory pages and allocated chunks.
+Untouched slots are Absent; invalid selectors are Invalid; unsupported owner/backend
+states are Unavailable. Pool backing identity and rounded extents remain explicitly
+unresolved. These are current reachable requests, not allocation-history records,
+Device tokens, lifetime leases or a complete B ledger. Query through a known-live,
+quiescent owner with its pool intact. Tree removal retains these native requests even
+though its root allocation is released. See [the ownership contract](../../docs/BORROWED-RESOURCES.md).
+
+The ambient request-size table is retained and exported once per runtime. Its pointer
+and the cached query callback are embedded metadata subsets, not extra charges when
+whole owner objects are counted. Queries have fixed depth and allocate nothing;
+future Harness enumeration/validation must still be prepaid and metered. Imported
+alias resolution, underlying pool identity, remaining metadata and combined C+B+H+D
+admission remain outstanding.
+
+Tested source: 3832ed917b603ef938959c6bad93db7212231dd1.
+Tracked Taichi tree: 62b11a6811ec7e9fe51991cdff28a2499a4ad0fe.
+Full native static and engine builds passed. Nine focused tests passed, including
+reservation_request_test, prepared_backing_test, prepared_launch_test,
+owner_backing_test, allocation_record_test, engine_smoke_test and three record-map
+variants. The new fixture verifies statuses, selector bounds including UINT64_MAX,
+all four list roles, distinct addresses, first/repeated allocation-free queries,
+actual activation allocation deltas, stable repeated activation, retained requests
+after tree destruction and distinct runtime instances without querying dead owners.
+Fixture requests: ambient32, page4096, chunk524288, metadata1024 bytes. These are
+allocator requests on this fixture, not rounded/physical totals or universal fees.
+CPU/shared-host scope only; no GPU, database, browser or performance qualification.
+
+The broader matrix passed: 20 exchange processes (five cases across threads 1/2 and
+bulk/direct-no-unroll), 12 prepared execution/update tests, nine supporting native
+tests and six warm recipe tests. Including nine focused tests, all 56 scoped CPU
+checks passed. Full final build and captured runtime logs contain no warnings/errors;
+the tested source remained clean. There were no source build/test failures in this run.
+
+Verified contributor-local archive: native-reservation-domain-3832ed91.tar.gz.
+SHA256SUMS manifest: fd700d864c8c13316a02a17ccd70552df2a7e9ca3e3d0830a16fad7481134507.
+Archive SHA256: ae8fd2e9c93b99a4ce265223fe6df853f47029c3fd45c57d44cbc978be41d936.
+Includes source/configuration/compiler/binary pins, commands, complete builds and
+all scoped results. Raw artifacts have not been independently inspected remotely.
+Final publication differs from the tested pin only in four Markdown files. All 117
+local file links and whitespace checks passed. Parent #303 smoke 43292870875 passed;
+native 43292871002 remains active. No duplicate hosted run was requested and no
+acceptance or merge is inferred from these local results.

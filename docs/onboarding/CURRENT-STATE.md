@@ -1,5 +1,14 @@
 # Current implementation and work
 
+**Native reservation exports (awaiting review, 2026-11-12):** continues #303 review
+5880964608. Common ProgramImpl exposes bounded CPU node/list/ambient request views,
+with Present/Absent/Invalid/Unavailable states and explicit unresolved pool identity/
+rounded extents. Ambient request metadata is reported once per runtime; enumeration
+remains caller-metered work, not a hidden scan. Main e11525a0 (#301 integrated) is
+reconciled by normal merge b86533e5; #302/#303 remain provisional and unmerged.
+Next: pool/import alias resolution, remaining metadata and a trusted lifetime-valid,
+work-metered Harness snapshot before combined C+B+H+D. No full B or GPU claim.
+
 **Prepared CPU backing exports (awaiting review, 2026-11-12):** continues #302
 review 5880581671. Common launch-context queries expose actual host buffers and
 captured array identities, with separate family coverage and explicit incomplete

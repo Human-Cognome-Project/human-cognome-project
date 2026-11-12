@@ -7,6 +7,72 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Native reservation request exports (awaiting review, 2026-11-12)
+
+Continues [#303 review 5880964608](https://github.com/Human-Cognome-Project/human-cognome-project/pull/303#pullrequestreview-5880964608).
+Common ProgramImpl now exposes `reservation_limits()` and one indexed
+`reservation_request(kind, node, list, index)`. The LLVM CPU implementation queries
+its native runtime module, not a model-side backend cast or a logical capacity estimate.
+This supersedes the earlier unavailable node/list/ambient rows for current reachable
+CPU **request views only**. It is not a complete B ledger or combined admission gate.
+
+The query distinguishes Present, Absent, Invalid and Unavailable. Supported empty
+slots are Absent; out-of-range node/page/chunk/role selectors are Invalid; unsupported
+backends or unavailable owner state remain Unavailable. Only Present returns an
+address, exact allocator-request bytes and requested alignment. Native request views
+are distinct from Device allocation records: these reservations are pool suballocations,
+not independently registered Device allocations.
+
+| Request kind | Actual owner/request source |
+|---|---|
+| NodeManager | Runtime create request for the native manager object |
+| Ambient | Exact size passed to runtime_allocate_ambient, captured on successful allocation |
+| ListObject | Element/free/recycled/data ListManager create request |
+| ListPage | Only an allocated directory page; exact chunks_per_page × pointer-size request |
+| ListChunk | Only an allocated chunk; immutable element_size × elements_per_chunk used by its allocation call |
+| AmbientMetadata | The added size table once per runtime, selected with node=-1 and default role/index |
+
+No request is synthesized for untouched sparse capacity. List object sizes include
+embedded directory roots; separately allocated pages and chunks are separate requests.
+Node payload slots within a chunk are not additional backing requests. Equal-size
+list objects retain distinct addresses while the owner is alive. Ambient sizes are
+stored because they cannot safely be inferred from logical occupancy or an unrelated
+root record. Direct mutation/reinitialization of native owner internals is outside
+this query contract; the view covers currently reachable requests, not an allocation
+history registry.
+
+**Coverage and lifetime:** requested bytes are known, but rounded extents and underlying
+pool backing identity remain explicitly unavailable (`rounded_extent_available=false`,
+`backing_identity_complete=false`). Never add the shared pool reservation and these
+suballocations as disjoint resources. HostMemoryPool's alignment gaps/raw chunks and
+imported-to-owner alias resolution remain separate work. The runtime-instance value
+associates a view with its live CPU owner; neither it nor an address is a durable backing
+token or lifetime lease. Query only through a known-live quiescent Program/runtime with
+its pool intact, never through a dead owner or after externally resetting its pool.
+Tree destruction frees its root but retains node/list/ambient requests in this runtime;
+queries correctly keep those retained requests visible. They disappear with runtime/pool
+teardown, not merely with a logical tree removal.
+
+**Work and metadata:** every query performs one fixed-depth lookup; it never enumerates
+all nodes/pages/chunks. Limits expose configured node capacity and shared directory
+bounds with one logical query-work unit. The future trusted Harness must prepay and
+meter its input-sized traversal/validation, restrict enumeration to owned resources,
+and reject insufficient coverage before combined enforcement. This API itself does not
+implement that admission gate. The CPU callback is resolved once at runtime materialization
+and cleared on finalization, so inspection performs no JIT symbol lookup or heap allocation.
+
+The new ambient-size table requests sizeof(uint64) × node_capacity bytes once per
+runtime, including unused slots; AmbientMetadata exports its address/request. Native
+preallocation requirements include the table on all LLVM architectures. The table pointer
+and cached CPU callback pointer are reported as incremental embedded owner bytes, a subset
+of runtime/executor object storage, not an extra charge when those whole objects are counted.
+No per-node request registry or per-query storage is allocated. Shared JIT/compiler state
+and the full existing runtime metadata census are not claimed by this incremental report.
+
+Next: resolve underlying pool backing and imported aliases, finish remaining prepared/
+runtime metadata, then assemble the lifetime-valid, work-metered Harness snapshot and
+checked disjoint C+B+H+D admission. Other backend exports and GPU execution remain unqualified.
+
 ## Prepared CPU buffer exports (awaiting review, 2026-11-12)
 
 Continues [#302 review 5880581671](https://github.com/Human-Cognome-Project/human-cognome-project/pull/302#pullrequestreview-5880581671).
