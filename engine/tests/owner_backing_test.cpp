@@ -68,7 +68,7 @@ void native_owners() {
   settings.cpu_threads = 1;
   engine::Runtime runtime(settings);
   auto &program = runtime.program();
-  auto &impl = *program.prog_impl;
+  auto &impl = *program.get_program_impl();
   auto &device = *impl.get_compute_device();
   require(impl.snode_root_record_storage_bytes() == 0 &&
               !impl.ProgramImpl::snode_root_record_storage_bytes(),
