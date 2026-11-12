@@ -1,5 +1,9 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer integration — 2026-11-12:** #306–#307 are accepted and integrated by the merge containing this record, preserving reviewed `88aa2cd0ce6360b2cc2d9d1f446294bb50203309`. #306 native 43305748693/smoke 43305748766 passed; #307 native 43310337611 passed all 12 jobs and smoke 43310337168 passed. Personally inspected #307's 119 passing regressions (30/30/30/29), including native_pool_test, allocation_record_test, prepared_backing_test and reservation_request_test; database job 131512684418 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#305; the original #302 initialization failure remains preserved. #308 rounded virtual mapping extents are provisionally source-accepted at `10b3ed7f` in review 5883275400; smoke passed, native qualification remains active. Contributor-local archives were not independently inspected. Older pending/next labels below are historical where they conflict.
+
+**Next bounded task:** remaining prepared/runtime/pool metadata on reviewed #308, then lifetime-valid required-family Harness coverage and canonical backing deduplication with prepaid lookup/enumeration work before checked C+B+H+D admission. Rounded mapping extents are not physical residency; shared chunks and contained requests are not disjoint charges. Preserve native authority and separate work gates; setup cost is acceptable for long-running focal models. No full B or GPU qualification is claimed. Projection-copy audit stays closed; #75/#111/#123 remain held.
+
 **Rounded host-pool extents (awaiting review, 2026-11-12):** continues #307
 review5882509096 at88aa2cd0. Native setup captures OS page size; checked rounding is
 passed to the OS and retained separately from raw request sizes. Live pool records
