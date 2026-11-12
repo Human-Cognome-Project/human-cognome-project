@@ -5,8 +5,21 @@
 
 #include "assembly/membership_fields.h"
 #include "assembly/exchange_contract.h"
+#include "assembly/preparation_work.h"
 #include "letter_projection_fixture.h"
 
+namespace assembly::testing {
+struct ExchangeContractAccess {
+  static auto collect(const LetterProjection &p, const OccurrenceKey &owner, warm::Exposure target,
+      const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork &work) {
+    return LetterExchangeContract::collect(p,owner,target,domain,&work);
+  }
+  static auto copy(const LetterExchangeContract &c,
+      const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork &work) {
+    return LetterExchangeContract(c,domain,&work);
+  }
+};
+}
 namespace {
 using namespace letter_fixture;
 int checks = 0;
@@ -24,6 +37,73 @@ void rejects(F run, const char *label) {
     return;
   }
   throw warm::Error(label);
+}
+void bounded_declaration(const LetterProjection &p, const OccurrenceKey &owner,
+                         warm::Exposure target) {
+  using namespace assembly::detail;
+  using Access = assembly::testing::ExchangeContractAccess;
+  const auto expected = declare_letter_exchange(p,owner,target);
+  const auto exact = [&](const LetterExchangeContract &actual) {
+    if (!(actual.owner() == expected.owner()) || actual.recipe().selection != expected.recipe().selection ||
+        actual.recipe().revision != expected.recipe().revision || actual.from() != expected.from() ||
+        actual.to() != expected.to() || actual.mass() != expected.mass() ||
+        actual.match_work() != expected.match_work() || actual.leaves().size() != expected.leaves().size()) return false;
+    const auto rows = [](const auto &a, const auto &b) {
+      if (a.size() != b.size()) return false;
+      for (std::size_t i=0; i<a.size(); ++i) {
+        if (!(a[i].occurrence == b[i].occurrence) || !(a[i].definition == b[i].definition) ||
+            a[i].mass != b[i].mass || a[i].node != b[i].node || a[i].parents.size() != b[i].parents.size()) return false;
+        for (std::size_t j=0; j<a[i].parents.size(); ++j) {
+          const auto &x=a[i].parents[j], &y=b[i].parents[j];
+          if (!(x.target == y.target) || x.ordinal != y.ordinal ||
+              x.contribution != y.contribution || x.stored_mass != y.stored_mass) return false;
+        }
+      }
+      return true;
+    };
+    if (!rows(actual.outgoing(),expected.outgoing()) || !rows(actual.incoming(),expected.incoming())) return false;
+    for (std::size_t i=0; i<actual.leaves().size(); ++i) {
+      const auto &a=actual.leaves()[i], &b=expected.leaves()[i];
+      if (a.character != b.character || a.byte != b.byte || a.nibble != b.nibble ||
+          !(a.definition == b.definition) || a.count != b.count) return false;
+    }
+    return true;
+  };
+  for (const bool copying : {false,true}) {
+    const auto run = [&](const auto &domain, auto &work) {
+      return copying ? Access::copy(expected,domain,work) : Access::collect(p,owner,target,domain,work);
+    };
+    auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    PreparationWork full(UINT64_MAX);
+    { check(exact(run(domain,full)), "budgeted declaration preserves every ordered pinned source and leaf"); }
+    check(!domain->result().live_bytes, "declaration output teardown releases its domain");
+    const auto required=full.result().charged;
+    std::uint64_t limit=0, boundaries=0;
+    while (limit < required) {
+      auto denied=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+      PreparationWork work(limit);
+      bool stopped=false;
+      try { run(denied,work); }
+      catch (const PreparationStop &stop) {
+        stopped=stop.result.status == PreparationStatus::WorkExhausted &&
+            stop.result.charged <= limit && stop.result.next_required > limit && stop.result.next_required <= required;
+        limit=stop.result.next_required;
+      }
+      check(stopped && !denied->result().live_bytes,
+            "every declaration work boundary refuses and reclaims all partial storage");
+      ++boundaries;
+    }
+    PreparationWork short_work(required-1);
+    bool stopped=false;
+    try { run(domain,short_work); } catch (const PreparationStop &) { stopped=true; }
+    check(stopped && !domain->result().live_bytes, "one-short declaration work refuses and tears down");
+    PreparationWork exact_work(required);
+    { check(exact(run(domain,exact_work)) && exact_work.result().charged == required,
+            "exact declaration work retry retains independent values and order"); }
+    check(!domain->result().live_bytes, "declaration retry releases all storage");
+    std::cout << "declaration_setup,entry=" << owner.source.entry << ",copy=" << copying
+              << ",work=" << required << ",boundaries=" << boundaries << " PASS\n";
+  }
 }
 }  // namespace
 
@@ -198,6 +278,7 @@ int main() {
       const bool aggregate = entry == max_entry || entry == 7;
       const auto target = aggregate ? warm::Exposure::Parts : warm::Exposure::Aggregate;
       const OccurrenceKey owner{p.study(), {entry, {}}};
+      bounded_declaration(p,owner,target);
       const auto contract = declare_letter_exchange(p, owner, target);
       auto outgoing = contract.outgoing(), incoming = contract.incoming();
       const auto matches = [&] {

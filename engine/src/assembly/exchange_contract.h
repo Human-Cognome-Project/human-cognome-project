@@ -4,6 +4,7 @@
 
 namespace assembly {
 namespace detail { class ExchangeOwner; }
+namespace testing { struct ExchangeContractAccess; }
 // Structural source descriptors only. No positions, velocities or native slots.
 struct ExchangeSource {
   OccurrenceKey occurrence;
@@ -39,11 +40,13 @@ class LetterExchangeContract {
  private:
   friend class detail::ExchangeOwner;
   friend struct testing::ExchangeOwnerAccess;
+  friend struct testing::ExchangeContractAccess;
   LetterExchangeContract(const OccurrenceKey &, const warm::BundleRef &,
-      const std::shared_ptr<detail::ReservationDomain> &);
-  LetterExchangeContract(const LetterExchangeContract &, const std::shared_ptr<detail::ReservationDomain> &);
+      const std::shared_ptr<detail::ReservationDomain> &, detail::PreparationWork * = nullptr);
+  LetterExchangeContract(const LetterExchangeContract &, const std::shared_ptr<detail::ReservationDomain> &,
+      detail::PreparationWork * = nullptr);
   static LetterExchangeContract collect(const LetterProjection &, const OccurrenceKey &,
-      warm::Exposure, const std::shared_ptr<detail::ReservationDomain> &);
+      warm::Exposure, const std::shared_ptr<detail::ReservationDomain> &, detail::PreparationWork * = nullptr);
   friend LetterExchangeContract declare_letter_exchange(
       const LetterProjection &, const OccurrenceKey &, warm::Exposure);
   OccurrenceKey owner_;
