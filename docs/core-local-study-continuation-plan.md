@@ -429,6 +429,28 @@ boundary is explicit. Then membership callable/recursion and declaration/binding
 setup budgets precede combined resources and operation/control integration;
 projection allocation reductions do not complete the owner setup gate.
 
+**Publication-copy boundary (awaiting review, 2026-11-12):** #291 review 5875329810
+permits continuation at `f340c720` and confirms #287/#288 integrated at `b234514d`.
+Normal merge `7cb31173` includes main without changing the tree. The occurrence
+record constructs its owned key directly; a const reference to that local key serves
+input text and parent construction before the completed record moves into output.
+No moved-from read or output-vector reference crosses reallocation. V1/v2 source-
+death tests check every parent key, field, ordinal and count. Source comparisons
+remove 177 calls in both exposure modes; public and ordered-node layouts are unchanged.
+See admission for qualification. #289–#291 remain unmerged; review/hosted checks apply.
+
+**Initial-projection audit stop:** Definition and Selection staging already moves;
+occurrence staging now moves after all consumers. Recipe, occurrence/provenance,
+parent and v1/v2 public inputs require independent ownership; those stores and
+remaining temporary lookup machinery are not reopened as a new cleanup sequence.
+The next concrete owner-setup task is MembershipFields::collect's type-erased
+recursive follow callable and traversal/stack budget. Preserve pinned-reference
+checks, cycle detection, memoized reached sets, diamonds/repeated references and
+exact contribution ordering/ownership. Its existing allocation domains are not a
+complete traversal/setup limit. Then finish declaration/binding construction budgets,
+combined resources and remaining-operation/control integration. Do not label these
+initial-projection allocation reductions as completion of the owner setup gate.
+
 ## A. Coherent source/hierarchy refresh
 
 The [C3-2 implementation plan](live-hierarchy-refresh-plan.md) is accepted in

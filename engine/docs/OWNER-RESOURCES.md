@@ -2069,3 +2069,30 @@ OccurrenceKey staging warrant one bounded audit. Definition/Selection staging mo
 already; recipe and published identities must remain owned. Do not extend this into
 another unbounded index cleanup. Membership callable/recursion and declaration/
 binding setup budgets remain before combined resources/operation integration.
+
+
+### Publication staging and initial-projection audit boundary (awaiting review)
+
+Following #291 review 5875329810, ProjectedOccurrence constructs its owned
+OccurrenceKey directly. Input text and parent rows read a const reference to that
+local key; activity is consumed before publication. The fully consumed record then
+moves into occurrences_. Nothing reads the moved-from record or holds a reference
+into that vector across reallocation. Source lifetime, deterministic slots/order,
+pinned references and independently owned outputs remain unchanged. V1/v2 source-
+death tests now verify every active parent's occurrence, field, ordinal and count,
+plus exact row count, alongside existing full occurrence/provenance/state controls.
+
+The source-to-source 18-occurrence/13-byte comparison removes 177 ordinary C++ new
+calls in aggregate and mixed exposure modes: 117 UUID-sized requests, 26 path-sized
+requests and 34 address copies. Cumulative requested bytes decrease by 5047 in each
+case. Public layouts and ordered metadata/node sizes (32/72) are unchanged. These
+are request observations, not retained/peak memory, allocator overhead or performance.
+Initial projection remains outside owner adoption and does not change its quota.
+
+This ends the bounded initial-projection copy cleanup. Definition/Selection staging
+already moves; recipe, occurrence/provenance, parent and v1/v2 input stores retain
+independent ownership. Do not turn those outputs into views or reopen the temporary
+indexes without a separate concrete need. Next: MembershipFields::collect's recursive
+std::function follow storage and traversal/stack work, then declaration/binding
+construction budgets, combined resource accounting and operation/control integration.
+Existing graph allocation domains do not complete the owner setup gate.

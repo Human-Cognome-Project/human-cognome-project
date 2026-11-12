@@ -5135,3 +5135,67 @@ retained recipe and public input/parent/identity stores remain owned. Stop initi
 projection cleanup at that explicit boundary, then proceed to membership callable/
 recursion and declaration/binding setup budgets, combined resources and operation/
 control integration. This contribution does not complete the owner setup gate.
+
+
+### Publication staging qualification and audit stop (2026-11-12)
+
+Tested `c55398a0c88b3bc3f753a9598bc139ef26547977`, continuing from #291 reviewed head
+`f340c720e9ea99428576613fd53ef7676cf87bdf` under review 5875329810. Accepted main
+`b234514df310f0f1dedebb3f8a2110a73b884f37` (through #288) is included by normal merge
+`7cb3117329626318f0caff7d199c95a52ec13430`, which changed no files relative to #291.
+Live PR state confirms #287/#288 merged; #289–#291 remain unmerged.
+
+The local ProjectedOccurrence constructs its owned key directly. A const reference
+to that local key serves all text and parent consumers; record.active is read before
+the completed record moves into occurrences_. No moved-from reads or output-vector
+references cross reallocation. Output recipe, keys, full references, provenance,
+parent values and v1/v2 input remain independently owned. New v1/v2 source-death
+checks verify every active parent's full occurrence and field, ordinal and count,
+plus no missing/extra rows. Existing shuffled/mixed exposure, repeated/multibyte,
+pinned references, slots, v1 initial-state and v2 no-slot controls remain active.
+
+The v1 comparison against #291 covers 18 occurrences, 13 byte alternatives and three
+complete-character aggregates in both exposure modes:
+
+| Observation | Aggregate prior/current | Mixed prior/current |
+|---|---|---|
+| C++ new calls | 2003 / 1826 | 2096 / 1919 |
+| UUID-sized requests | 743 / 626 | 775 / 658 |
+| Path-sized requests | 171 / 145 | 206 / 180 |
+| Cumulative requested bytes | 181325 / 176278 | 190341 / 185294 |
+
+Required deltas are 177 calls, 117 UUID requests and 26 path requests in each mode.
+Source inspection accounts for 4 UUID copies per occurrence, 3 per byte and 2 per
+complete-character reference, plus 34 address and 26 path copies. Request totals
+include all observed ordinary C++ new calls during projection; they are not retained/
+peak memory, allocator overhead, other allocation APIs or performance evidence.
+Public layouts and metadata/node sizes (32/72) are unchanged. Original sources,
+probe-only sizeof-instrumented copies, commands, binaries and logs are retained.
+
+Both builds and all 47 scoped CPU checks passed: 20 exchange processes (five cases,
+workers 1/2, bulk/direct), 12 prepared checks, nine supporting native handoff/snapshot
+checks and six warm CTests. No build/test/probe warnings or errors. Clang15/libstdc++,
+CPU/x64, Taichi `5ba579a8a11255b7a258cde93801070956d81d57`; shared host.
+Owner metrics remain unchanged across all four configurations: single/four selection
+live/peak 321185/392475, work 420751/790263, byte/work boundaries 2761/3269 and
+3707/5925, retained/peak 321265/321265 and 392555/392555, census 321153/392251.
+All 3271/5927 failure sites fully reclaim blocks; failure peaks 321250/392540.
+These overlapping reports must not be summed; initial projection precedes adoption.
+Final tested-to-head changes are four Markdown records. Verified archive:
+`setup-evidence/projection-publication-move-domain-c55398a0.tar.gz`;
+SHA256SUMS digest:
+
+    9158b079b30951cbe046b5fbcb9518ba1e309d2b0a3d8d020e7bd8e6fc0eb08d
+
+Raw local artifacts have not been independently inspected remotely. Hosted
+qualification and review remain required. #291 smoke 43228339158 passed and native
+43228339116 was running at review. No duplicate retry or merge of pending slices.
+No GPU, live DB or browser work.
+
+The bounded initial-projection copy audit stops here. Definition/Selection staging
+already moves; retained recipe, identity/provenance, parent and v1/v2 input remain
+owned. Next: MembershipFields::collect recursive follow callable storage and
+traversal/stack work, preserving pinned references, cycles, memoized diamonds and
+exact contribution ordering/ownership. Declaration/binding setup budgets, combined
+resources and remaining operation/control integration follow. Initial-projection
+savings do not establish a complete owner setup gate.
