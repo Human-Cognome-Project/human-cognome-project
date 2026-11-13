@@ -4,8 +4,20 @@
 namespace taichi::lang {
 enum class ReservationStatus : int { Unavailable, Absent, Present, Invalid };
 enum class ReservationKind : int {
-  NodeManager, Ambient, AmbientMetadata, ListObject, ListPage, ListChunk
+  NodeManager, Ambient, AmbientMetadata, ListObject, ListPage, ListChunk,
+  RuntimeObject, RootPointers, RootSizes, ElementListPointers,
+  NodeAllocatorPointers, AmbientPointers, Temporaries, RandomStates, RuntimeResult
 };
+// Global selectors use node=-1, Elements, index=0. AmbientMetadata is the
+// existing request, not a second alias to charge alongside it.
+inline constexpr ReservationKind runtime_global_reservations[] = {
+    ReservationKind::RuntimeObject, ReservationKind::RootPointers,
+    ReservationKind::RootSizes, ReservationKind::ElementListPointers,
+    ReservationKind::NodeAllocatorPointers, ReservationKind::AmbientPointers,
+    ReservationKind::AmbientMetadata, ReservationKind::Temporaries,
+    ReservationKind::RandomStates, ReservationKind::RuntimeResult};
+constexpr std::uint64_t reservation_global_requests =
+    sizeof(runtime_global_reservations) / sizeof(runtime_global_reservations[0]);
 enum class ReservationList : int { Elements, Free, Recycled, Data };
 constexpr std::uint64_t reservation_max_chunks = 128 * 1024;
 constexpr std::uint64_t reservation_chunks_per_page = 512;
@@ -30,5 +42,6 @@ struct ReservationLimits {
   // Added pointer fields, subset of enclosing runtime/executor object sizes.
   // AmbientMetadata exposes the separate table request once per runtime.
   std::uint64_t incremental_owner_bytes{0};
+  std::uint64_t global_requests{0};
 };
 }  // namespace taichi::lang
