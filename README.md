@@ -4,6 +4,8 @@
 
 The Human Cognome Project is an open-source experimental architecture for digital intelligence built around explicit structure, field dynamics, and auditable data rather than a monolithic statistical model.
 
+A useful starting comparison is Minecraft: a relatively small set of primitive building elements can produce complex structures through composition. HCP follows that compositional principle, with stable structures recorded as reusable elements for general use in further compositions. This is the intended model; the [current state](docs/onboarding/CURRENT-STATE.md) distinguishes implemented capabilities from remaining work.
+
 The September repository reconciliation is complete, and a subsequent recovery pass restored the native C++ engine workspace that had remained local. See [REORGANIZATION.md](REORGANIZATION.md) for the provenance and recovery map.
 
 ## Start here
