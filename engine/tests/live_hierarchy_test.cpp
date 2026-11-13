@@ -3004,6 +3004,15 @@ int main(int argc, char **argv) {
       });
     if (wants("response_validity"))
       run("response_validity", [&] { response_validity(r, path); });
+    if (only == "intent_lifecycle") {
+      run("intent_refresh", [&] { refresh_basics(r, path); });
+      run("intent_dirty_count", [&] { refresh_dirty_and_counts(r, path); });
+      run("intent_rebase", [&] { coordinate_rebase(r, path); });
+      run("intent_reuse", [&] {
+        refresh_occurrence_reuse(r, path, 4);
+        refresh_occurrence_reuse(r, path, 70);
+      });
+    }
     if (only == "response_lifecycle") {
       run("response_refresh", [&] { refresh_basics(r, path); });
       run("response_rebase", [&] { coordinate_rebase(r, path); });

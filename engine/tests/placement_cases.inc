@@ -1272,6 +1272,7 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     const auto generation = f.h.prepared_storage().generation;
     const auto ticks = f.h.prepared_storage().completed_ticks;
     const auto anchor = f.h.frame_anchor();
+    const auto intent_before_rebase = intent_reference(f);
     const auto responses_before_rebase = response_snapshot(f);
     const FrameAnchor delta{134217728., -16., 8.};
     PlacementAccess::disabled_rebase(f.h, delta);
@@ -1323,6 +1324,23 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     require(result.status == UpdateStatus::Ok && result.generation == generation + 1 &&
                 ticks == f.h.prepared_storage().completed_ticks && backing.same_backing(metrics.sample()),
             "rebase failed atomic generation/backing checks");
+    const auto intent_after_rebase = intent_reference(f);
+    require(!intent_current(f, intent_before_rebase, .5) &&
+                intent_current(f, intent_after_rebase, .5),
+            "rebased candidate metadata or copied-report freshness mismatch");
+    for (std::size_t body = 0; body < intent_after_rebase.capacity; ++body) {
+      for (int col = 0; col < 10; ++col) {
+        const auto at = col*intent_after_rebase.capacity+body;
+        require(intent_after_rebase.values[at] == intent_before_rebase.values[at],
+                "rebase changed invariant candidate components");
+      }
+      for (int axis = 0; axis < 3; ++axis) {
+        const auto at = (10+axis)*intent_after_rebase.capacity+body;
+        near(intent_after_rebase.values[at], intent_before_rebase.values[at] -
+                 (intent_before_rebase.values[body] == 1 ? delta[axis] : 0),
+             "candidate operative-frame translation mismatch");
+      }
+    }
     const auto responses_after_rebase = response_snapshot(f);
     response_identity_equal(responses_before_rebase, responses_after_rebase);
     require(responses_after_rebase.generation == generation + 1 &&
@@ -1388,6 +1406,10 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     require(stale, "rebase retained stale observation");
     require(PlacementAccess::rebase(f.h, {-delta[0], -delta[1], -delta[2]}).status == UpdateStatus::Ok,
             "inverse exact rebase rejected");
+    const auto inverse_intent = intent_reference(f);
+    require(!intent_current(f, intent_before_rebase, .5) &&
+                inverse_intent.values == intent_before_rebase.values,
+            "inverse rebase revived stale candidate or changed restored values");
     f.h.inspect_prepared();
     const auto restored = f.h.inspect_live_hierarchy();
     require(f.h.frame_anchor() == anchor && f.h.particles64() == bodies && f.h.groups64() == groups &&

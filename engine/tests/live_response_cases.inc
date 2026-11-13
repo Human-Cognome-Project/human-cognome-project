@@ -166,6 +166,71 @@ void response_range(engine::Runtime &r, HostPath path) {
   require(restored.values == baseline.values, "range fixture failed to restore source state");
   std::cout << "response_range,controls=" << controls << ",local_and_inherited=1 PASS\n";
 }
+// Same-owner test consumer only, not a production lease/freshness API.
+bool intent_current(Fixture &f, const LiveIntentInspection &v, double gravity) {
+  return f.h.ready() && v.status == CascadeStatus::Ok && v.gravity == gravity &&
+      v.generation == f.h.prepared_storage().generation &&
+      v.completed_ticks == f.h.prepared_storage().completed_ticks &&
+      v.frame_anchor == f.h.frame_anchor();
+}
+LiveIntentInspection intent_snapshot(Fixture &f, double gravity, std::uint64_t work = UINT64_MAX) {
+  const auto before = state_hash(f);
+  const LiveIntentInspection *view = nullptr;
+  no_new([&] { view = &f.h.inspect_live_intent(gravity, work); });
+  const auto v = *view;
+  require(v.status == CascadeStatus::Ok && v.work_used == v.work_required &&
+              v.work_required == 2 + 2*v.responses + 14*v.capacity &&
+              v.readback_bytes == 13*v.capacity*sizeof(double) &&
+              v.generation == f.h.prepared_storage().generation &&
+              v.completed_ticks == f.h.prepared_storage().completed_ticks &&
+              v.frame_anchor == f.h.frame_anchor() &&
+              (v.gravity == gravity || (std::isnan(v.gravity) && std::isnan(gravity))),
+          "intent metadata/accounting mismatch");
+  require(state_hash(f) == before, "intent inspection changed model state");
+  for (double x : v.values) require(std::isfinite(x), "nonfinite candidate escaped masking");
+  return v;
+}
+// Independent host arithmetic over extracted current sources; handles valid
+// coincidence/absence as well as supported rows, but is not an invalid-range oracle.
+LiveIntentInspection intent_reference(Fixture &f, double gravity = .5) {
+  const auto source = response_snapshot(f);
+  const auto v = intent_snapshot(f, gravity);
+  for (std::size_t body = 0; body < v.capacity; ++body) {
+    long double sum = 0;
+    int coincident = 0;
+    std::array<long double, 3> force{}, position{};
+    for (std::size_t row = 0; row < source.responses; ++row) {
+      if (source.identities[row] != int(body)) continue;
+      const auto R = source.capacity;
+      require(source.values[9*R+row] == 1, "reference received invalid extraction");
+      for (int k = 0; k < 3; ++k) position[k] = source.values[(3+k)*R+row];
+      if (!source.values[8*R+row] || gravity == 0) continue;
+      long double d2 = 0;
+      for (int k = 0; k < 3; ++k) {
+        const long double d = source.values[k*R+row]; d2 += d*d;
+      }
+      if (d2 == 0) { ++coincident; continue; }
+      const long double coupling = gravity * static_cast<long double>(source.values[6*R+row]) *
+          source.fractions[row] / source.fractions[R+row] * source.values[7*R+row];
+      const auto alpha = coupling / (d2 * std::sqrt(d2));
+      sum += alpha;
+      for (int k = 0; k < 3; ++k) force[k] += alpha * source.values[k*R+row];
+    }
+    const int status = coincident ? 2 : (sum > 0 ? 1 : 0);
+    near(v.values[body], status, "intent status/reference mismatch");
+    near(v.values[v.capacity+body], 1, "supported-domain field unavailable");
+    near(v.values[2*v.capacity+body], double(sum), "coefficient sum mismatch");
+    near(v.values[3*v.capacity+body], coincident, "coincidence count mismatch");
+    for (int k = 0; k < 3; ++k) {
+      near(v.values[(4+k)*v.capacity+body], double(force[k]), "candidate force mismatch");
+      near(v.values[(7+k)*v.capacity+body], status == 1 ? double(force[k]/sum) : 0,
+           "relative candidate mismatch");
+      near(v.values[(10+k)*v.capacity+body], status == 1 ? double(position[k]+force[k]/sum) : 0,
+           "operative candidate mismatch");
+    }
+  }
+  return v;
+}
 void intent_observation(engine::Runtime &r, HostPath path) {
   Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
             {1, 1, 1}, {1, 1, 2}, {0, 2, 5}, 52, 52, false, true);
@@ -187,62 +252,15 @@ void intent_observation(engine::Runtime &r, HostPath path) {
             "one-short intent budget accepted");
   });
   require(state_hash(f) == hash, "short intent query changed model state");
-  const auto snapshot = [&](double gravity) {
-    const auto before = state_hash(f);
-    const LiveIntentInspection *view = nullptr;
-    no_new([&] { view = &f.h.inspect_live_intent(gravity, need); });
-    const auto v = *view;
-    require(v.status == CascadeStatus::Ok && v.work_used == need &&
-                v.work_required == 2 + 2*v.responses + 14*v.capacity &&
-                v.readback_bytes == 13*v.capacity*sizeof(double) &&
-                v.generation == f.h.prepared_storage().generation &&
-                v.completed_ticks == f.h.prepared_storage().completed_ticks &&
-                v.frame_anchor == f.h.frame_anchor(), "intent metadata/accounting mismatch");
-    require(state_hash(f) == before, "intent inspection changed model state");
-    for (double x : v.values) require(std::isfinite(x), "nonfinite candidate escaped masking");
-    return v;
-  };
-  const auto reference = [&](double gravity) {
-    const auto source = response_snapshot(f);
-    const auto v = snapshot(gravity);
-    for (std::size_t body = 0; body < v.capacity; ++body) {
-      long double sum = 0;
-      std::array<long double, 3> force{}, position{};
-      for (std::size_t row = 0; row < source.responses; ++row) {
-        if (source.identities[row] != int(body)) continue;
-        const auto R = source.capacity;
-        for (int k = 0; k < 3; ++k) position[k] = source.values[(3+k)*R+row];
-        if (!source.values[8*R+row] || gravity == 0) continue;
-        long double d2 = 0;
-        for (int k = 0; k < 3; ++k) {
-          const long double d = source.values[k*R+row]; d2 += d*d;
-        }
-        require(d2 > 0, "reference fixture unexpectedly coincident");
-        const long double coupling = gravity * static_cast<long double>(source.values[6*R+row]) *
-            source.fractions[row] / source.fractions[R+row] * source.values[7*R+row];
-        const auto alpha = coupling / (d2 * std::sqrt(d2));
-        sum += alpha;
-        for (int k = 0; k < 3; ++k) force[k] += alpha * source.values[k*R+row];
-      }
-      near(v.values[body], sum > 0 ? 1 : 0, "intent status/reference mismatch");
-      near(v.values[2*v.capacity+body], double(sum), "coefficient sum mismatch");
-      for (int k = 0; k < 3; ++k) {
-        near(v.values[(4+k)*v.capacity+body], double(force[k]), "candidate force mismatch");
-        near(v.values[(7+k)*v.capacity+body], sum > 0 ? double(force[k]/sum) : 0,
-             "relative candidate mismatch");
-        near(v.values[(10+k)*v.capacity+body], sum > 0 ? double(position[k]+force[k]/sum) : 0,
-             "operative candidate mismatch");
-      }
-    }
-  };
-  reference(.5); reference(0);
+  intent_snapshot(f, .5, need);
+  intent_reference(f, .5); intent_reference(f, 0);
   Parameters64 p; p.dt = .01; p.gravity = .1; p.contact_stiffness = .3;
   f.h.tick64(p);
-  reference(.5);
+  intent_reference(f, .5);
   const int body = f.in.particle_rows[0].record;
   for (double invalid : {-1., std::numeric_limits<double>::infinity(),
                           std::numeric_limits<double>::quiet_NaN()}) {
-    const auto v = snapshot(invalid);
+    const auto v = intent_snapshot(f, invalid);
     const auto &headers = f.h.prepared_storage().particle_headers;
     for (std::size_t row = 0; row < v.capacity; ++row)
       require(v.values[row] == (headers[row].record >= 0 ? 3 : 0),
@@ -250,14 +268,14 @@ void intent_observation(engine::Runtime &r, HostPath path) {
   }
   const auto tree = f.h.inspect_live_hierarchy();
   PreparedFixtureAccess::inject_value64(f.h, kPosX, body, selected(tree, tree.order[0])[0]);
-  auto coincidence = snapshot(.5);
+  auto coincidence = intent_snapshot(f, .5);
   require(coincidence.values[body] == 2 && coincidence.values[coincidence.capacity+body] == 1 &&
               coincidence.values[3*coincidence.capacity+body] == 1,
           "coincidence status or gated-force availability lost");
   for (int col = 7; col < 13; ++col)
     require(coincidence.values[col*coincidence.capacity+body] == 0, "unresolved candidate not masked");
   PreparedFixtureAccess::inject_value64(f.h, kMass, body, -1);
-  const auto unsupported = snapshot(.5);
+  const auto unsupported = intent_snapshot(f, .5);
   require(unsupported.values[body] == 3 && unsupported.values[unsupported.capacity+body] == 0,
           "unsupported input did not override coincidence");
   std::cout << "live_intent,work=" << need << ",readback=" << unsupported.readback_bytes
