@@ -708,8 +708,12 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path) {
   prepared_test::Metrics metrics(runtime, PreparedFixtureAccess::nodes(f.h));
   const auto backing = metrics.sample();
   engine::RecordHandle old;
+  int response_reuses = 0, stale_snapshots = 0;
   for (int round = 0; round < 32; ++round) {
+    const auto before_tick_responses = response_snapshot(f);
     no_new([&] { f.h.tick64(p); });
+    require(!response_current(f, before_tick_responses), "copied response survived a tick as current");
+    ++stale_snapshots;
     f.h.inspect_prepared();
     auto bodies = f.h.particles64(), motion = f.h.prepared_storage().motion64(),
          speed = f.h.determined64();
@@ -747,6 +751,26 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path) {
     commands.push_back(contact);
     refresh_ok(refresh_apply(f, add, commands));
     const auto added = f.h.prepared_storage().resolved[0];
+    const auto added_responses = response_snapshot(f);
+    require(response_current(f, added_responses) && !response_current(f, initial_responses) &&
+                added_responses.responses == initial_responses.responses + 2,
+            "response insertion generation or count mismatch");
+    int added_rows = 0;
+    for (std::size_t row = 0; row < added_responses.responses; ++row)
+      if (added_responses.identities[row] == added.record) {
+        ++added_rows;
+        require(added_responses.fractions[row] == D &&
+                    added_responses.fractions[added_responses.capacity + row] == D &&
+                    added_responses.values[9 * added_responses.capacity + row] == 1,
+                "inserted response ratio or extraction invalid");
+      }
+    require(added_rows == 2, "new occurrence lacks local/inherited response pair");
+    if (old.context) {
+      require(old.record == added.record && old.incarnation != added.incarnation &&
+                  !detail::same_handle(old, f.h.prepared_storage().particle_headers[old.record]),
+              "reused row did not distinguish old occurrence identity");
+      ++response_reuses;
+    }
     f.h.inspect_prepared();
     require(
         f.h.particle64(kPosX, added.record) ==
@@ -791,11 +815,22 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path) {
     retire.first = UpdateRef::existing(added);
     commands.push_back(retire);
     refresh_ok(refresh_apply(f, remove, commands));
+    const auto retired_responses = response_snapshot(f);
+    require(response_current(f, retired_responses) && !response_current(f, added_responses),
+            "retired copied snapshot accepted as current");
+    ++stale_snapshots;
+    response_identity_equal(initial_responses, retired_responses);
+    for (std::size_t row = 0; row < retired_responses.responses; ++row)
+      require(retired_responses.identities[row] != added.record,
+              "retired occurrence retained a live response");
     refresh_survivors(f, bodies, motion, speed, survivors);
     old = added;
     require(f.h.present_particles() == 3,
             "retirement changed another occurrence");
   }
+  require(response_reuses == 31 && stale_snapshots == 64, "reuse/stale controls incomplete");
+  std::cout << "response_reuse,slot_reuses=" << response_reuses
+            << ",stale_copies=" << stale_snapshots << " PASS\n";
   const auto after = metrics.sample();
   backing.print("refresh_reuse_before");
   after.print("refresh_reuse_after");
