@@ -306,3 +306,21 @@ archive SHA256:
 `236bc7435a9b1772d96c892b0da59d6ae3338abc6de1ffb2137c6d69f147d55c`.
 Raw local evidence has not been independently reviewed remotely. No production
 build, model tick, native trajectory, GPU or database work was run for this slice.
+
+### Domain follow-up qualification — 2026-11-13
+
+Tested source `f2ff939cfdb4d28a13c5785740c7f8ff5be9fca8`: Clang15 C++17 Release,
+strict warnings as errors, standalone CTest1/1 and direct execution PASS. Both
+intent_domain and prior intent_reference case groups pass. Configuration/build
+logs are warning-free. Seventy local file links in the three changed documents
+and whitespace checks passed. Publication after the test pin is Markdown-only.
+Reproduce with the standalone commands above; the native workflow still does
+not run this reference. No native Taichi, model, GPU or database execution.
+
+Local archive `intent-domain-f2ff939c.tar.gz` retains commands, source/compiler/
+binary pins and full logs. Manifest SHA256:
+`8cfd85d54e8c5be4379cc5e1519f0ce3e2f3cb66d2f51bbfdfb39140612217bf`;
+archive SHA256:
+`6bb17e05f9447394932b8fae816caea5f93e50c96427446a43cd45f050f554a1`.
+Raw local evidence is not independently reviewed remotely. The earlier #326
+qualification above remains evidence of its own source revision.
