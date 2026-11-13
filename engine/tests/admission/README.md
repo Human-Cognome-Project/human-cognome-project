@@ -6733,3 +6733,39 @@ Archive SHA256:f6602e6445582124dbfcb02a0d49eb4a7fb898c7009f7379043524b7965ae1a1.
 Source/configuration/compiler/binary pins, commands and complete results/diagnostics
 are retained. Raw artifacts not independently inspected remotely. Hosted qualification
 and maintainer acceptance remain separate; no duplicate parent run/self-merge.
+
+## ArgPack host wrapper storage — 2026-11-13
+
+Read323review5894203678 atc6036aeb: bounded source acceptance/no blockers; continue native
+ownership/ABI/provenance/string coverage, retaining a later audit for existing Taichi
+functionality. Fetched main4f5d273c qualified through321 and merged9ce30c94 preserving both
+handoffs. Open322/323 and held75/111/123 checked; no duplicate parent run/self-merge.
+
+ArgPack::host_storage exports actual wrapper identity/size without allocation, dereference,
+backend queries or retained layout changes. Embedded type/device/Program handles are
+subsets, not extra charges. Type/backing and aggregate/full coverage remain unavailable.
+[Contract](../../docs/BORROWED-RESOURCES.md#argpack-host-wrapper-storage-awaiting-review-2026-11-13).
+
+Tested source:089cdbb770ef4e6e155e94b49d0dbd4176386748.
+Tracked Taichi tree:8b31651be07d8bad0b2a6a261369e8690b9c3b53.
+New one/two-worker fixtures create two Program-owned packs sharing a nonempty named type,
+check separate wrapper identities/allocation-free queries, populated registry requests,
+immediate CPU erasure preserving the second wrapper and retained empty bucket requests.
+No erased pointer queries. Pending-use/deferred deletion, nested packs, shared type storage,
+GPU/native Windows/database/browser/performance and full-B coverage remain unqualified.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. New ArgPack controls and
+existing39deque failure controls pass. This ABI reports wrapper32/populated registry152/
+retained-empty registry104 bytes with both worker counts; not portable constants or full
+pack storage. No source build/test failures; captured build/runtime logs have no warnings
+or errors. CTests parent TI_LIB_DIR unset, direct executables explicitly configured.
+Tested WSL source is clean at the recorded pin.
+
+Final publication changes only six Markdown files;209local file links/whitespace passed.
+Contributor-local archive:argpack-host-domain-089cdbb7.tar.gz.
+Manifest SHA256:676a32b8ad49e5b5ee247342e59164b56d57385a44b4b4833370c6c4415616e1.
+Archive SHA256:e27355bf8707dd1dd6bad176f2b9bd5e606ce90d73114daa7c7ccfd8775ea783.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics are
+retained. Raw local artifacts not independently reviewed remotely. Hosted qualification
+and maintainer acceptance remain separate; no self-merge or duplicate parent run.

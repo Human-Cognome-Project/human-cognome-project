@@ -1,5 +1,13 @@
 # Program ownership and accounting scope
 
+**ArgPack host follow-up (awaiting review, 2026-11-13):** the
+[native wrapper report](BORROWED-RESOURCES.md#argpack-host-wrapper-storage-awaiting-review-2026-11-13)
+adds object identity/size and a populated-registry CPU fixture. Shared type metadata and
+device backing remain unavailable; present packs cannot be treated as absent optional
+storage. Native guarded deletion is unchanged; only immediate CPU erasure is qualified.
+Aggregate pointee/full coverage remains false. After the current accounting work, retain
+the review-requested audit for functionality already supplied by Taichi.
+
 **SNode host follow-up (awaiting review, 2026-11-13):** the
 [per-object tree/node reports](BORROWED-RESOURCES.md#snode-tree-and-node-host-storage-awaiting-review-2026-11-13)
 add tree/root identities, object sizes and checked child/offset vector capacities without

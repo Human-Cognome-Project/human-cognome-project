@@ -7,6 +7,45 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## ArgPack host wrapper storage (awaiting review, 2026-11-13)
+
+Continues [#323 review 5894203678](https://github.com/Human-Cognome-Project/human-cognome-project/pull/323#pullrequestreview-5894203678).
+The native [ArgPack report](../taichi/taichi/program/argpack.h) and
+[query](../taichi/taichi/program/argpack.cpp) expose the actual live wrapper identity and
+sizeof(ArgPack). This wrapper has no owned host vectors or strings. Its DeviceAllocation,
+DataType and Program pointer representations are embedded object subsets, not additional
+charges. The query performs fixed reads, without dereferencing those handles, calling a
+factory, inspecting a backend, allocating or changing native ownership/layout/execution.
+
+Shared ArgPackType storage, member names/layout metadata and device backing are separate
+and uninspected: type_storage_available, backing_storage_available and complete remain
+false. A nonempty registry is not an absent optional family; Program's aggregate pointee
+flag remains false. No compiler/type exclusion or full optional-family coverage follows
+from this wrapper report. No size sum/product is computed. Object size is not proof of a
+separate allocation; a containing owner's storage must not be charged again.
+
+Two Program-owned wrappers can share one canonical type while remaining separate objects
+and allocations. Registry node/bucket requests cover pointer/unique_ptr rows, not their
+wrapper pointees. Deduplicate actual object identity separately from shared type/backing
+identity. Pointer observations require live, quiescent objects and confer no lifetime lease.
+Program::delete_argpack retains its native used_in_kernel guard: deletion may be deferred
+on a backend with pending usage. After actual erase the pointer is invalid. This query
+neither bypasses that guard nor certifies backing lifetime or allocation extent.
+
+The [fixture](../tests/owner_backing_test.cpp) creates two packs with the same nonempty
+named type under one/two CPU workers, observes separate wrapper identities and populated
+registry requests, checks allocation-free wrapper queries, erases one without disturbing
+the other, then verifies retained empty bucket requests. It never queries an erased pack.
+This qualifies the immediate-erasure CPU path, not deferred deletion, pending launches,
+GPU behavior, nested argpack pointers, shared-type storage or whole-Program coverage.
+The existing native allocation/deallocation and registry request mechanisms are unchanged.
+
+Remaining nested owners, mixed ABI/provenance/string coverage and separately prepaid
+traversal/validation still precede trusted aggregation. Compiler exclusions remain
+conditional; full B and combined admission remain unaccepted. Preserve the #323 follow-up:
+after completing the current work, audit earlier implementation for functionality already
+provided by Taichi; do not divert this bounded slice into replacement or optimization.
+
 ## SNode tree and node host storage (awaiting review, 2026-11-13)
 
 Continues [#322 review 5893720324](https://github.com/Human-Cognome-Project/human-cognome-project/pull/322#pullrequestreview-5893720324).
