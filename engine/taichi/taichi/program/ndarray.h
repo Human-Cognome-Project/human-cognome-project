@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include <vector>
 
 #include "taichi/inc/constants.h"
@@ -12,6 +13,17 @@ namespace taichi::lang {
 
 class Program;
 class NdarrayRwAccessorsBank;
+
+// Host wrapper storage, separate from device backing and shared type ownership.
+// Requires a live quiescent Ndarray; identity is not a lifetime lease.
+struct NdarrayStorage {
+  bool available{false}, overflow{false}, complete{false};
+  bool debug_storage_available{false};
+  const void *owner{nullptr};
+  std::size_t object_bytes{0};
+  std::size_t shape_entries{0}, shape_capacity_bytes{0};
+  std::size_t total_shape_entries{0}, total_shape_capacity_bytes{0};
+};
 
 class TI_DLL_EXPORT Ndarray {
  public:
@@ -66,6 +78,7 @@ class TI_DLL_EXPORT Ndarray {
   // captured incarnation, never recapture a potentially reused numeric ID.
   // Imported records remain unresolved registrations, not certified backing.
   AllocationRecord backing_record(const Device &live_device) const;
+  NdarrayStorage host_storage() const;
   std::size_t get_element_size() const;
   std::size_t get_nelement() const;
   TypedConstant read(const std::vector<int> &I) const;

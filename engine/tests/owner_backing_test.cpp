@@ -100,12 +100,46 @@ void array_views() {
   auto allocation = allocate(device, 64);
   Ndarray full(allocation, PrimitiveType::i32, {16});
   Ndarray part(allocation, PrimitiveType::i32, {4});
+  Ndarray tensor(allocation, PrimitiveType::i32, {2}, {2, 2}, ExternalArrayLayout::kAOS);
+  Ndarray scalar(allocation, PrimitiveType::i32, {}, ExternalArrayLayout::kNull,
+                 DebugInfo(std::string(96, 'd')));
+  const auto full_storage = full.host_storage();
+  const auto part_storage = part.host_storage();
+  const auto tensor_storage = tensor.host_storage();
+  const auto scalar_storage = scalar.host_storage();
+  require(scalar_storage.available && !scalar_storage.shape_entries &&
+              !scalar_storage.total_shape_entries &&
+              !scalar_storage.debug_storage_available && !scalar_storage.complete,
+          "zero-rank storage or nonempty debug information falsely claimed complete coverage");
+  require(full_storage.available && !full_storage.overflow && !full_storage.complete &&
+              !full_storage.debug_storage_available &&
+              full_storage.owner == &full && part_storage.owner == &part &&
+              full_storage.owner != part_storage.owner &&
+              full_storage.object_bytes == sizeof(Ndarray) &&
+              full_storage.shape_entries == 1 && full_storage.total_shape_entries == 1 &&
+              full_storage.shape_capacity_bytes >= sizeof(int) &&
+              full_storage.total_shape_capacity_bytes >= sizeof(int) &&
+              tensor_storage.shape_entries == 1 && tensor_storage.total_shape_entries == 3 &&
+              tensor_storage.total_shape_capacity_bytes >= 3 * sizeof(int),
+          "Ndarray host storage lost owner identity, nested shape capacity or coverage boundary");
+  full.shape.reserve(19);
+  allocation_lifetime::begin();
+  const auto grown_storage = full.host_storage();
+  const auto host_query_counts = allocation_lifetime::end();
+  require(!host_query_counts.attempts && grown_storage.owner == full_storage.owner &&
+              grown_storage.shape_entries == full_storage.shape_entries &&
+              grown_storage.shape_capacity_bytes >= 19 * sizeof(int) &&
+              grown_storage.total_shape_capacity_bytes == full_storage.total_shape_capacity_bytes &&
+              part.host_storage().shape_capacity_bytes == part_storage.shape_capacity_bytes,
+          "Ndarray host inspection allocated or conflated separate shape buffers");
   const auto original = full.backing_record(device);
   require(original.status == AllocationRecordStatus::Live &&
               original.requested_bytes == 64 &&
               part.backing_record(device).token == original.token &&
               part.backing_record(device).extent_bytes == 64,
           "view shape replaced actual backing extent or identity");
+  require(tensor.backing_record(device).token == original.token,
+          "tensor wrapper changed shared backing identity");
   require(full.backing_record(foreign).status == AllocationRecordStatus::Unknown,
           "foreign owner accepted");
   auto imported = device.import_memory(device.get_alloc_info(allocation).ptr, 64);
@@ -123,6 +157,9 @@ void array_views() {
   device.dealloc_memory(allocation);
   require(full.backing_record(device).status == AllocationRecordStatus::Retired,
           "array did not expose retirement");
+  require(full.host_storage().owner == grown_storage.owner &&
+              full.host_storage().shape_capacity_bytes == grown_storage.shape_capacity_bytes,
+          "retired backing incorrectly retired live wrapper metadata");
   device.clear();
   auto reused = allocate(device, 64);
   require(reused.alloc_id == allocation.alloc_id &&
@@ -335,6 +372,12 @@ void native_owners(int workers) {
   program.destroy_snode_tree(replacement);
   auto *registered_a = program.create_ndarray(PrimitiveType::i32, {7});
   auto *registered_b = program.create_ndarray(PrimitiveType::i32, {7});
+  const auto owned_wrapper = registered_a->host_storage();
+  require(owned_wrapper.owner == registered_a && owned_wrapper.available &&
+              !owned_wrapper.complete && owned_wrapper.object_bytes == sizeof(Ndarray) &&
+              owned_wrapper.shape_entries == 1 && owned_wrapper.total_shape_entries == 1 &&
+              owned_wrapper.owner != registered_b->host_storage().owner,
+          "Program-owned wrappers lost distinct host identities");
   const auto registered = program.lifecycle_storage();
   require(registered.ndarray_registry.entries == 2 &&
               registered.ndarray_registry.allocation_domain == nm.allocation_domain &&
