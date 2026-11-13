@@ -1,5 +1,7 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer acceptance — #329, 2026-11-13:** corrected source `24b0227938b734cead8cec49d04163b8f4044391` accepted in review 5898430428 and merged at `c567a13db6b5c9008ce54c0d48996b14202dd2fd`. Smoke and all 12 native jobs passed. Personally inspected logs confirm all four live-response tests and 125 regression passes (32/31/31/31), database addressed_reads=24/private_reads=0. The observer's 32 arguments and sixth live context are now prepaid. #330 `cf0a965a2f0c6896f02b11858a86a710ecd8376f` has bounded source acceptance in review 5898902458; smoke passed and native CI remains pending. Next: retirement/reuse and stale-consumer coverage, range/subtraction controls, integrated candidate reduction and many-tick dt/Q observations. Changing intent and continued motion remain valid. Production braking/activity are unchanged. Prior pending-review notes below are historical where they conflict.
+
 **PR #329 correction (awaiting re-review):** review 5897775574 identified a missing
 prepaid binding allowance. The live-enabled reservation now includes the response
 observer's 32 arguments and sixth context, including CUDA arithmetic; live-disabled
