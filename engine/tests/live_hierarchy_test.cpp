@@ -1824,7 +1824,8 @@ void response_observation(engine::Runtime &r, HostPath path) {
       std::cout << "response_identity,row=" << row << ",body=" << body << ",child=" << child << ",parent=" << parent << ",kind=" << kind << '\n';
       require(identities.insert({body, child, parent, kind}).second,
               "fixture response identity duplicated");
-      require(body >= 0 && body < 3 && child >= 0 && child < 2 &&
+      require((body == f.in.particle_rows[0].record || body == f.in.particle_rows[1].record ||
+                   body == f.in.particle_rows[2].record) && child >= 0 && child < 2 &&
                   (kind == 0 || kind == 1), "invalid response identity");
       const auto c = selected(hierarchy, child), p = selected(hierarchy, parent);
       for (int k = 0; k < 3; ++k) {
