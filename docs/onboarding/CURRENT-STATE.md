@@ -1,5 +1,7 @@
 # Current implementation and work
 
+**Maintainer acceptance — #327/#328, 2026-11-13:** domain reference and native packet diagnostic accepted and merged through `2e89d4b908d3d8c35b33afbf5081b20ce589c9da`; #328 review 5897445910. Both PRs' hosted workflows passed. Personally inspected #328 logs confirm both intent_native cases and 121 regression passes (31/30/30/30), database addressed_reads=24/private_reads=0. This qualifies supplied-packet diagnostics only; production braking/activity remain unchanged. Next under #324: live-owner extraction and resource/work accounting, canonical/frame/rebase/validity fixtures, followed by many-tick dt/Q comparisons. Changing intent and continued motion are legitimate states, not failures to converge. A persistent intent centre is an observable signal, not a universal requirement. Unresolved exact coincidence is a formula-validity state distinct from a supported moving intent. No stability classifier or new sleep gate is authorized. Storage PRs #322/#323/#325 and the later Taichi-reuse audit remain separate. Earlier pending-review/qualification notes below are historical where they conflict.
+
 **Native intent packet diagnostic (awaiting review, 2026-11-13):** follows #327
 review5896078321. A bounded test-owned Taichi f64 probe observes coefficient intent,
 gated field force and contact force separately, with complete packet validation and
