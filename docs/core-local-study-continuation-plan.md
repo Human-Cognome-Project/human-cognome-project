@@ -1,5 +1,9 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer handoff — 2026-11-13:** #312 is accepted and merged at `176d964a4e1084faa6d470a94bf41a04aad42e57`, preserving reviewed `9d459141c854e923e5eefd6bac776713cd5bb08d`. Native run 43415723155 passed all 12 jobs; smoke 43415723848 passed. Personally inspected regression logs show 119 passes (30/30/30/29), and database evidence reports addressed_reads=24/private_reads=0. Main is qualified through #312. #313–#315 have bounded source acceptance and passing smoke; their native CI remains pending. #315 review 5890749492 accepts inspection of the existing launcher registry, with incomplete coverage and separate potentially-inline name capacity. Contributor-local raw archives have not been independently inspected. Held #75/#111/#123 remain unchanged. Earlier status paragraphs below are historical where they conflict.
+
+**Current direction:** reuse Taichi's existing optimized compilation, registration, dispatch and thread machinery. Inspect those facilities before adding any remaining Program/thread ownership integration. Ownership visibility does not authorize a parallel scheduler, compiler or thread-specific execution mechanism. New machinery requires a demonstrated missing function. Resolve string accounting and compiler/JIT scope before trusted required-family/lifetime aggregation, canonical/domain deduplication and prepaid work for C+B+H+D. Full B and combined admission are not yet accepted.
+
 **Runtime bookkeeping tables (awaiting review, 2026-11-13):** starts from main
 c5645a28 after qualified #309–#311 integration. Common ProgramImpl inspection now
 reports executor/root-manager objects and actual retained storage for three allocation
