@@ -1802,12 +1802,13 @@ void response_binding_reservation() {
     const auto baseline = 157 * arg + 22 * context;
     const auto prior_live = baseline + 140 * arg + 5 * context;
     const auto observation = 32 * arg + context;
+    const auto candidate = 6 * arg + context;
     require(disabled == baseline, "live-disabled binding reserve changed");
-    require(enabled == prior_live + observation,
+    require(enabled == prior_live + observation + candidate,
             "response context missing from prepaid binding reserve");
     std::cout << "response_binding_reserve,cuda_arithmetic=" << cuda
               << ",disabled=" << disabled << ",enabled=" << enabled
-              << ",observation_allowance=" << observation << '\n';
+              << ",candidate_allowance=" << candidate << ",observation_allowance=" << observation << '\n';
   }
 }
 
@@ -1934,7 +1935,7 @@ void basic(engine::Runtime &r, HostPath path) {
             << ",node=" << sizeof(CascadeNode)
             << ",source_row=" << sizeof(CascadeSourceRow)
             << ",ndarray_wrapper=" << sizeof(taichi::lang::Ndarray)
-            << ",owned_live_ndarrays=17,compiled_kernel_wrapper="
+            << ",owned_live_ndarrays=18,compiled_kernel_wrapper="
             << sizeof(engine::CompiledKernel) << '\n';
   Parameters64 p;
   p.gravity = 1;
@@ -2992,6 +2993,8 @@ int main(int argc, char **argv) {
       run("refresh_capture", [&] { refresh_capture(r, path); });
 #endif
     }
+    if (wants("intent_observation"))
+      run("intent_observation", [&] { intent_observation(r, path); });
     if (wants("response_range"))
       run("response_range", [&] { response_range(r, path); });
     if (only == "response_reuse")

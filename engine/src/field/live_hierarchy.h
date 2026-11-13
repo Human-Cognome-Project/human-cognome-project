@@ -41,6 +41,20 @@ struct LiveResponseInspection {
   // Exact participating numerator and denominator, not rounded float shares.
   std::vector<std::uint64_t> fractions;
 };
+// Diagnostic candidate, borrowed until the next synchronized Harness operation.
+// Columns use body-record slots; absent slots have status Absent (0).
+struct LiveIntentInspection {
+  CascadeStatus status{CascadeStatus::Unready};
+  BudgetFailure failure{};
+  std::uint64_t generation{}, completed_ticks{}, capacity{}, responses{},
+      work_required{}, work_used{}, readback_bytes{};
+  double gravity{};
+  std::array<double, 3> frame_anchor{};
+  // 13 columns: status (0 absent/1 supported/2 coincidence/3 unsupported),
+  // field availability, coefficient sum, coincidence count, force XYZ,
+  // relative candidate XYZ, operative-frame candidate XYZ. Contacts excluded.
+  std::vector<double> values;
+};
 // Existing fields use CascadeNode::field. A pending owner instead names a
 // DefineField command and leaves field empty. No future native handle is
 // guessed.
@@ -84,6 +98,7 @@ class LiveHierarchy {
   void poll(double, double contact_stiffness);
   const LiveHierarchyInspection &inspect();
   const LiveResponseInspection &inspect_responses(std::uint64_t work_limit);
+  const LiveIntentInspection &inspect_intent(double gravity, std::uint64_t work_limit);
   std::size_t binding_bytes() const;
   const taichi::lang::Ndarray &leaf_fields() const;
   UpdateStatus prepare_refresh(const LiveRefreshSpec &,
