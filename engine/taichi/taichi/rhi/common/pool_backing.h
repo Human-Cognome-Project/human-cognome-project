@@ -23,5 +23,9 @@ struct PoolBackingStorage {
   std::uint64_t pool_instance{0}, pool_object_bytes{0}, record_payload_bytes{0};
   // Subset of record_payload_bytes, not an additional charge.
   std::uint64_t incremental_record_payload_bytes{0};
+  // Record payload above is a subset of actual map allocation requests below.
+  bool record_storage_available{false}, allocator_storage_available{false};
+  std::uint64_t record_allocation_bytes{0};
+  std::uint64_t allocator_object_bytes{0}, allocator_chunk_capacity_bytes{0};
 };
 }  // namespace taichi::lang

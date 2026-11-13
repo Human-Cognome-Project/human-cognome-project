@@ -6143,3 +6143,53 @@ Includes source/configuration/compiler/binary pins, commands, complete build/res
 and preserved diagnostics. Raw artifacts have not been independently inspected remotely.
 Final publication differs from tested source only in four Markdown files;121local
 file links and whitespace checks passed. No self-merge or duplicate hosted run.
+
+## Native pool container metadata — 2026-11-12
+
+Continues #308 review5883275400 at10b3ed7f. Main e62924fd integrates qualified
+#306–#307; normal merge488a17bd resolves two Markdown conflicts preserving maintainer
+integration and contribution history. Maintainer inspected119 passing #307 regressions
+and database addressed_reads24/private_reads0. #308 remains source-accepted with native
+qualification pending. No unchanged-parent rerun or duplicate hosted qualification.
+
+A native rebinding allocator counts successful live raw-map allocation requests,
+including implementation node storage; failed requests do not advance the counter.
+The counter outlives map/rebound copies and stays under pool synchronization. Map value
+payload remains a subset. The report separately exposes UnifiedAllocator object bytes
+and retained chunk-vector capacity, once per shared pool identity. Empty-map library
+storage is preserved rather than presumed zero. Reset's temporary map copies share
+counter lifetime; this is retained-state reporting, not transient-peak prepayment.
+Full metadata_complete remains false; global/host-heap overhead and complete runtime/
+prepared/Harness coverage are still outside scope. See [the contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:9a249a7db484eb260c4bd10ed49740123313ce6e.
+Tracked Taichi tree:d24296773894d995459abf44e1b3a72c8c8a4bb1.
+Native pool tests compare retained map/vector growth with live C++ allocation bytes,
+check actual-node payload inclusion, allocator object size, map release with retained
+vector capacity, reset/copy cleanup, failed registration/exact retry and arithmetic
+overflow refusal. Existing allocation-free query, identity, rounding and owner/request
+bridge tests remain in scope. CPU/Linux/WSL shared-host qualification only; no GPU,
+native Windows execution, database, browser or performance qualification is implied.
+
+Initial source4d3d81fa and diagnostic sourcec3adc4d6 both built successfully but
+failed native_pool_test (9/10 focused checks passed each): the test incorrectly
+equated cumulative C++ allocation bytes267 with retained map64+vector32 bytes.
+The correction uses a live-allocation witness, without changing production code:
+the final witness observes cumulative261/live96/reported retained96 bytes.
+Allocator object24 bytes already existed before that observation. Node payload32
+is included in the map64 request, not added again. These are fixture observations,
+not portable hard-coded sizes. Both failed runs, pins, commands and logs are retained
+under the final archive's history directory and are not relabelled as passes.
+Corrected native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. Focused/prepared/
+supporting CTests ran with parent TI_LIB_DIR unset; direct executables used the explicit
+runtime environment. Corrected build and captured runtime logs contain no warnings/
+errors. Tested WSL source is clean. Final publication differs only in four Markdown
+files;122local file links and whitespace checks passed.
+
+Contributor-local archive:pool-metadata-domain-9a249a7d.tar.gz.
+Manifest SHA256:191a37e868e11cb56fc8ffb6828aa580dc4f5d9a579afb92839989434dae2d59.
+Archive SHA256:111c48a710e7d388205da6e18effc1b4a9d1ff36ca12eda2aec4fbd0b5870952.
+Includes source/configuration/compiler/binary pins, commands, complete results and
+both failed observations. Raw artifacts have not been independently inspected remotely.
+Hosted qualification and maintainer acceptance remain separate; no self-merge.

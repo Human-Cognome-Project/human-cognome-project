@@ -1,8 +1,23 @@
 # Current implementation and work
 
+**Maintainer integration — 2026-11-12:** #309 pool container metadata is accepted and integrated by the merge containing this record, preserving reviewed `6b3180b542e1628b13284923e6f98a0f3e3e9f1b`. Native 43328682126 passed all 12 jobs; smoke 43328681937 passed. Personally inspected 119 passing regressions (30/30/30/29), including native_pool_test; database job 131574683251 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#308. #310 budgeted prepared metadata and #311 shared map allocation domains remain provisionally source-accepted, with smoke passed and native qualification active. Local archives were not independently inspected; historical failures remain preserved. Older pending/next labels below are historical where they conflict.
+
+**Next bounded task:** remaining runtime/shared metadata on reviewed #311, then trusted lifetime-valid required-family Harness coverage and canonical backing/domain deduplication with prepaid enumeration/lookup before checked C+B+H+D admission. Shared allocator domains require quiescence across aliases and one charge per domain. Preserve retained-versus-peak distinctions, native authority and independent work gates; setup cost is acceptable for long-running focal models. No full B or GPU qualification; projection-copy audit stays closed and #75/#111/#123 remain held.
+
 **Maintainer integration — 2026-11-12:** #308 rounded host-pool virtual extents are accepted and integrated by the merge containing this record, preserving reviewed `10b3ed7f6f0401148716311cfe0181e0d75362d9`. Native 43321294234 passed all 12 jobs; smoke 43321294253 passed. Personally inspected 119 passing regressions (30/30/30/29), including native_pool_test, allocation_record_test, prepared_backing_test and reservation_request_test; database job 131549865939 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#307. #309 pool container metadata is provisionally source-accepted at `6b3180b5`; smoke 43328681937 passed and native 43328682126 remains active. Local archives were not independently inspected; historical failures remain preserved. Older status/next labels below are historical where they conflict.
 
 **Next bounded task:** remaining prepared/runtime/shared metadata on reviewed #309, then trusted lifetime-valid required-family Harness coverage and canonical backing deduplication with prepaid lookup/enumeration before checked C+B+H+D admission. Retained requested storage is distinct from transient peak, heap rounding and physical residency. Preserve native authority and separate work gates; setup cost remains acceptable for long-running focal models. No full B or GPU qualification; projection-copy audit stays closed and #75/#111/#123 remain held.
+
+**Pool container metadata (awaiting review, 2026-11-12):** continues #308
+review5883275400 at10b3ed7f. Native map allocator requests and retained allocator
+object/vector storage are now reported separately; value/incremental payload remains
+a subset, never an extra charge. Actual node allocation requests replace guessed
+node overhead. Empty-map storage and reset-copy counter lifetime are explicit; global/
+heap overhead and full metadata coverage remain incomplete. Main e62924fd integrates
+qualified #306–#307; normal merge488a17bd preserves maintainer handoff and history.
+#308 remains provisional with native qualification pending. Next: remaining metadata,
+trusted Harness lifetime/coverage/deduplication/prepaid work, then checked C+B+H+D.
+No full B or GPU claim; held #75/#111/#123 remain unchanged.
 
 **Maintainer integration — 2026-11-12:** #306–#307 are accepted and integrated by the merge containing this record, preserving reviewed `88aa2cd0ce6360b2cc2d9d1f446294bb50203309`. #306 native 43305748693/smoke 43305748766 passed; #307 native 43310337611 passed all 12 jobs and smoke 43310337168 passed. Personally inspected #307's 119 passing regressions (30/30/30/29), including native_pool_test, allocation_record_test, prepared_backing_test and reservation_request_test; database job 131512684418 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#305; the original #302 initialization failure remains preserved. #308 rounded virtual mapping extents are provisionally source-accepted at `10b3ed7f` in review 5883275400; smoke passed, native qualification remains active. Contributor-local archives were not independently inspected. Older pending/next labels below are historical where they conflict.
 

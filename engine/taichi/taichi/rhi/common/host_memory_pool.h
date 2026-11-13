@@ -4,6 +4,7 @@
 #include "taichi/rhi/device.h"
 #include "taichi/rhi/common/memory_pool_stats.h"
 #include "taichi/rhi/common/pool_backing.h"
+#include "taichi/rhi/common/request_counting_allocator.h"
 #include <mutex>
 #include <vector>
 #include <memory>
@@ -48,7 +49,11 @@ class TI_DLL_EXPORT HostMemoryPool {
     std::uint64_t identity;
     std::size_t rounded_bytes;
   };
-  std::map<std::uintptr_t, RawChunk> raw_memory_chunks_;
+  using RawPayload = std::pair<const std::uintptr_t, RawChunk>;
+  using RawAllocator = RequestCountingAllocator<RawPayload>;
+  // Declared first so it outlives the map and all of its rebound allocators.
+  std::size_t record_allocation_bytes_{0};
+  std::map<std::uintptr_t, RawChunk, std::less<std::uintptr_t>, RawAllocator> raw_memory_chunks_;
   const std::uint64_t pool_instance_;
   const std::size_t os_page_size_;
 

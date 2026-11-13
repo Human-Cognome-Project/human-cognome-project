@@ -47,7 +47,8 @@ void release_raw_mapping(void *ptr, std::size_t bytes) {
 }
 
 HostMemoryPool::HostMemoryPool()
-    : pool_instance_(next_pool_identity()), os_page_size_(system_page_size()) {
+    : raw_memory_chunks_(std::less<std::uintptr_t>{}, RawAllocator(record_allocation_bytes_)),
+      pool_instance_(next_pool_identity()), os_page_size_(system_page_size()) {
   allocator_ = std::unique_ptr<UnifiedAllocator>(new UnifiedAllocator());
 
   TI_TRACE("Memory pool created. Default buffer size per allocator = {} MB",
@@ -130,7 +131,10 @@ PoolBackingStorage HostMemoryPool::backing_storage() {
   using Payload = decltype(raw_memory_chunks_)::value_type;
   return {bool(pool_instance_), false, pool_instance_, sizeof(*this),
           raw_memory_chunks_.size() * sizeof(Payload),
-          raw_memory_chunks_.size() * (sizeof(Payload) - sizeof(OldPayload))};
+          raw_memory_chunks_.size() * (sizeof(Payload) - sizeof(OldPayload)),
+          true, bool(allocator_), record_allocation_bytes_,
+          allocator_ ? sizeof(UnifiedAllocator) : 0,
+          allocator_ ? allocator_->chunks_.capacity() * sizeof(UnifiedAllocator::MemoryChunk) : 0};
 }
 
 void HostMemoryPool::release(std::size_t size, void *ptr) {
