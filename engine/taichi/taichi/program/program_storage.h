@@ -19,6 +19,7 @@ struct ProgramStorage {
   std::size_t object_bytes{0};
   ProgramVectorStorage kernels, functions, trees, textures;
   RuntimeMapStorage function_registry, ndarray_registry, argpack_registry;
+  RuntimeContainerStorage free_ids;
   // All Program maps: field-expression and accessor maps remain uncovered.
   bool map_storage_available{false};
   bool free_id_storage_available{false};

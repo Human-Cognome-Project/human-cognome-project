@@ -18,6 +18,7 @@
 #include "taichi/program/argpack.h"
 #include "taichi/program/program_impl.h"
 #include "taichi/program/program_storage.h"
+#include "taichi/program/program_free_ids.h"
 #include "taichi/rhi/common/shared_request_counting_allocator.h"
 #include "taichi/program/callable.h"
 #include "taichi/program/function.h"
@@ -337,7 +338,7 @@ class TI_DLL_EXPORT Program {
   SNodeRwAccessorsBank snode_rw_accessors_bank_;
 
   std::vector<std::unique_ptr<SNodeTree>> snode_trees_;
-  std::stack<int> free_snode_tree_ids_;
+  ProgramFreeIdStack free_snode_tree_ids_;
 
   std::vector<std::unique_ptr<Function>> functions_;
   template <typename Key, typename Value>

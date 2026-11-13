@@ -11,6 +11,8 @@ struct RuntimeMapStorage {
   // Subset of allocation_request_bytes, never an extra charge.
   std::size_t value_payload_bytes{0};
 };
+// The same request/domain fields also describe allocator-aware sequences.
+using RuntimeContainerStorage = RuntimeMapStorage;
 
 struct RuntimeThreadStorage {
   bool available{false}, present{false}, overflow{false}, complete{false};
@@ -30,11 +32,11 @@ struct RuntimeBookkeeping {
   RuntimeThreadStorage thread_pool;
 };
 
-template <typename Map>
-RuntimeMapStorage runtime_map_storage(const Map &map) {
-  RuntimeMapStorage result;
+template <typename Container>
+RuntimeContainerStorage runtime_container_storage(const Container &map) {
+  RuntimeContainerStorage result;
   result.entries = map.size();
-  if (map.size() > std::numeric_limits<std::size_t>::max() / sizeof(typename Map::value_type)) {
+  if (map.size() > std::numeric_limits<std::size_t>::max() / sizeof(typename Container::value_type)) {
     result.overflow = true;
     return result;
   }
@@ -44,7 +46,11 @@ RuntimeMapStorage runtime_map_storage(const Map &map) {
   result.allocation_request_bytes = domain->live_bytes;
   result.counter_object_bytes = sizeof(*domain);
   result.counter_control_block_bytes = domain->control_block_bytes;
-  result.value_payload_bytes = map.size() * sizeof(typename Map::value_type);
+  result.value_payload_bytes = map.size() * sizeof(typename Container::value_type);
   return result;
+}
+template <typename Map>
+RuntimeMapStorage runtime_map_storage(const Map &map) {
+  return runtime_container_storage(map);
 }
 }  // namespace taichi::lang

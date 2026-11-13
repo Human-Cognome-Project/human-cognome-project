@@ -31,6 +31,56 @@ void vector_limits() {
               empty.capacity_bytes >= 7 * sizeof(int),
           "empty vector lost retained capacity");
 }
+void free_id_requests() {
+  allocation_lifetime::begin();
+  std::size_t attempts = 0;
+  {
+    ProgramFreeIdStack ids;
+    const auto empty = ids.storage();
+    const auto accounted = [](const RuntimeContainerStorage &s) {
+      return s.allocation_request_bytes + s.counter_object_bytes + s.counter_control_block_bytes;
+    };
+    require(empty.available && !empty.overflow && !empty.entries &&
+                empty.allocation_domain && accounted(empty) == allocation_lifetime::counts.live,
+            "empty free-ID deque requests differ from independent allocation witness");
+    for (int i = 0; i < 4096; ++i) ids.push(i);
+    const auto before_query = allocation_lifetime::counts.attempts;
+    const auto grown = ids.storage();
+    require(allocation_lifetime::counts.attempts == before_query &&
+                grown.entries == 4096 && grown.value_payload_bytes == 4096 * sizeof(int) &&
+                grown.allocation_domain == empty.allocation_domain &&
+                grown.allocation_request_bytes > empty.allocation_request_bytes &&
+                accounted(grown) == allocation_lifetime::counts.live,
+            "grown free-ID deque omitted rebound requests or inspection allocated");
+    for (int i = 4095; i >= 0; --i) {
+      require(ids.top() == i, "free-ID accounting changed LIFO order");
+      ids.pop();
+    }
+    const auto cleared = ids.storage();
+    require(!cleared.entries && !cleared.value_payload_bytes &&
+                cleared.allocation_request_bytes &&
+                cleared.allocation_domain == empty.allocation_domain &&
+                accounted(cleared) == allocation_lifetime::counts.live,
+            "empty free-ID deque lost retained block/map requests");
+    attempts = allocation_lifetime::counts.attempts;
+  }
+  const auto destroyed = allocation_lifetime::end();
+  require(!destroyed.live && !destroyed.blocks, "free-ID allocator domain leaked at teardown");
+  for (std::size_t fail = 1; fail <= attempts; ++fail) {
+    allocation_lifetime::begin(fail);
+    bool refused = false;
+    try {
+      ProgramFreeIdStack ids;
+      for (int i = 0; i < 4096; ++i) ids.push(i);
+    } catch (const std::bad_alloc &) {
+      refused = true;
+    }
+    const auto result = allocation_lifetime::end();
+    require(refused && !result.live && !result.blocks,
+            "free-ID constructor/growth failure leaked requests");
+  }
+  std::cout << "free_id_failure_controls=" << attempts << '\n';
+}
 DeviceAllocation allocate(Device &device, std::size_t bytes) {
   Device::AllocParams params;
   params.size = bytes;
@@ -100,7 +150,8 @@ void native_owners(int workers) {
               program_empty.trees.available && !program_empty.trees.slots &&
               program_empty.textures.available && !program_empty.textures.slots &&
               !program_empty.map_storage_available &&
-              !program_empty.free_id_storage_available &&
+              program_empty.free_id_storage_available &&
+              program_empty.free_ids.available && !program_empty.free_ids.entries &&
               !program_empty.pointee_storage_available,
           "Program empty coverage confused unavailable families with zero storage");
   require(impl.launch_registry_storage().status == LaunchMetadataStatus::Absent,
@@ -228,6 +279,9 @@ void native_owners(int workers) {
   program.destroy_snode_tree(second);
   const auto program_retired = program.lifecycle_storage();
   require(program_retired.trees.slots == 2 &&
+              program_retired.free_ids.entries == 2 &&
+              program_retired.free_ids.value_payload_bytes == 2 * sizeof(int) &&
+              program_retired.free_ids.allocation_domain == program_empty.free_ids.allocation_domain &&
               program_retired.trees.capacity_bytes == program_roots.trees.capacity_bytes &&
               !program_retired.complete && !program_retired.pointee_storage_available,
           "retired backing erased retained Program slots or implied pointee coverage");
@@ -258,6 +312,8 @@ void native_owners(int workers) {
   const auto reused = program.lifecycle_storage();
   const auto replacement_backing = impl.snode_root_backing_record(replacement->id());
   require(replacement->id() == second_id &&
+              reused.free_ids.entries == 1 &&
+              reused.free_ids.allocation_domain == program_empty.free_ids.allocation_domain &&
               reused.owner == program_roots.owner && reused.trees.slots == 2 &&
               reused.trees.capacity_bytes == program_roots.trees.capacity_bytes &&
               replacement_backing.status == AllocationRecordStatus::Live &&
@@ -303,6 +359,7 @@ void native_owners(int workers) {
 int main() {
   try {
     vector_limits();
+    free_id_requests();
     array_views();
     native_owners(1);
     native_owners(2);
