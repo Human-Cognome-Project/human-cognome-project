@@ -178,6 +178,85 @@ capacity accounting. Reuse native arrays/reductions and traversal, with budgeted
 inspection. Do not add an unaccounted side registry. Preserve cumulative Q,
 accepted displacement-derived velocity and discarded tails; no residue carry.
 
+## Domain and exact-coincidence comparison follow-up
+
+Proposed diagnostic policy following [#326 review 5895998111](https://github.com/Human-Cognome-Project/human-cognome-project/pull/326#pullrequestreview-5895998111):
+keep the candidate's supported domain finite, positive-attraction and noncoincident.
+Zero coupling contributes nothing; negative/nonfinite input is unsupported, not absent.
+For an eligible coincident source, report a distinct unresolved-coincidence status
+and do not consume a candidate target. The existing physical force gate stays intact.
+This resolves the *diagnostic interface* choice without pretending to settle the
+production model's exact-coincidence law. All fields of an unresolved comparison
+result are unusable as numerical authority; its partial accumulation is not a force
+report. A separate comparison computes gated force from all separated sources.
+
+The new independent fixtures explicitly reject NaN and infinities in either operand
+of near(), including equal infinities, and in contribution inputs. They also assert
+the documented angled coupling target (16/9,1/9). The tolerance remains a reference
+comparison tolerance only. This finite-case fixture is not a general overflow-safe
+implementation of the candidate; native intermediate-range validation remains required.
+
+### Why a silent coincidence fallback is not equivalent
+
+Take recipient x=0, one source displacement epsilon with coupling 1 and another at
+1 with coupling 1. For epsilon=+/-1/q, q in {2,4,16,256}, the independent expectations are:
+
+```
+F = +/-q^2 + 1
+I-x = (+/-q^2 + 1)/(q^3 + 1)
+```
+
+Both one-sided candidate targets tend to zero; forces diverge with opposite signs.
+At exact coincidence the native gate removes the first force, leaving F=1.
+Two possible extensions now disagree:
+
+| Exact policy | Candidate target | Cost |
+|---|---|---|
+| Limiting coincident target | x=0 | Cannot retain F=sum(alpha)*(I-x) with finite coefficient and gated F=1 |
+| Omit coincident term | x+1 | Preserves the separated-force factorization but jumps from the near limit |
+| Explicit unresolved status | no authoritative target | Requires a later model choice; diagnostic observation remains honest |
+
+Recommend the explicit status for the next diagnostic step. No finite continuous
+extension can simultaneously retain the near-limit target, exact gated force and
+finite-coefficient factorization in this example. This does not prove that no other
+intent construction is possible. The production decision remains open for review.
+A lone coincident source and no sources both have zero gated force, but only the
+first has coincident-source evidence. Noncoincident cancellation remains a third,
+fully valid case with I=x. Preserve all three distinctions in future native reports.
+
+### Motion changes intent even with fixed sources
+
+With equal couplings and fixed sources at -1 and +1, x=0 gives I=0. Moving the
+body to x=1/2 produces displacements -3/2 and +1/2, coefficients 8/27 and 8,
+force 32/9, and relative intent 3/7: absolute I=13/14. This is an independently
+checked sample of target drift, not a trajectory or an orbit. A fixed inherited
+parent-child displacement of +2 similarly gives virtual target 12 for body 10
+and 13 for body 11. A stable inherited displacement is not a stable spatial intent.
+Future trajectory output must expose both recipient-relative displacement and
+absolute intent in a consistent operative frame, with its frame anchor.
+
+### Contact/domain recommendation
+
+Retain field intent and contact force as separate diagnostic quantities. Naively
+inserting a repulsive contact as a negative centroid coefficient can give a zero
+normalizer with nonzero total force: alpha values +1 and -1 at displacements 1
+and 2 give denominator 0, force -1. That is not cancellation of physical force.
+Keep contact response in integration; do not invent a contact target or silently
+exclude negative field coupling as if no field existed. This supports contact
+exclusion as a diagnostic proposal, not final acceptance of a production brake.
+
+### Next native slice and remaining evidence
+
+The next implementation should expose bounded native candidate diagnostics with
+explicit supported/absent/unresolved/unsupported validity, coincident-source
+observation, gated force and separately identified contact force. It must use the
+existing native owner and Taichi calculation path, account added storage/work, and
+leave production braking unchanged until the remaining choices and trajectory
+comparisons are reviewed. Do not use an unresolved target to change activity.
+Native equal-force/different-intent wake behavior, canonical repeated paths,
+rebasing, dt/Q sweeps and many-tick trajectory evidence remain unexecuted. The
+reference motion samples above do not satisfy those gates. #324 remains open.
+
 ## Evidence and next review boundary
 
 [intent_reference.cpp](../tests/intent_reference.cpp) is a standalone C++17
@@ -227,3 +306,21 @@ archive SHA256:
 `236bc7435a9b1772d96c892b0da59d6ae3338abc6de1ffb2137c6d69f147d55c`.
 Raw local evidence has not been independently reviewed remotely. No production
 build, model tick, native trajectory, GPU or database work was run for this slice.
+
+### Domain follow-up qualification — 2026-11-13
+
+Tested source `f2ff939cfdb4d28a13c5785740c7f8ff5be9fca8`: Clang15 C++17 Release,
+strict warnings as errors, standalone CTest1/1 and direct execution PASS. Both
+intent_domain and prior intent_reference case groups pass. Configuration/build
+logs are warning-free. Seventy local file links in the three changed documents
+and whitespace checks passed. Publication after the test pin is Markdown-only.
+Reproduce with the standalone commands above; the native workflow still does
+not run this reference. No native Taichi, model, GPU or database execution.
+
+Local archive `intent-domain-f2ff939c.tar.gz` retains commands, source/compiler/
+binary pins and full logs. Manifest SHA256:
+`8cfd85d54e8c5be4379cc5e1519f0ce3e2f3cb66d2f51bbfdfb39140612217bf`;
+archive SHA256:
+`6bb17e05f9447394932b8fae816caea5f93e50c96427446a43cd45f050f554a1`.
+Raw local evidence is not independently reviewed remotely. The earlier #326
+qualification above remains evidence of its own source revision.

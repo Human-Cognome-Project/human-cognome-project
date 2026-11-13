@@ -2,6 +2,7 @@
 // No production helper is reused. Compile standalone as C++17.
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 
@@ -20,7 +21,9 @@ Result compare(const std::vector<Pull> &pulls) {
   V a{}, b{}, c{};
   R wa = 0, wb = 0, wc = 0;
   for (const auto &p : pulls) {
-    if (p.coupling < 0) throw std::runtime_error("attractive-domain fixture required");
+    if (!std::isfinite(p.coupling) || !std::isfinite(p.displacement.x) ||
+        !std::isfinite(p.displacement.y) || p.coupling < 0)
+      throw std::runtime_error("finite attractive-domain fixture required");
     if (p.coupling == 0) continue;
     R d = norm(p.displacement);
     // Proposed formula has no defined zero-distance coefficient. Do not call
@@ -42,15 +45,91 @@ Result compare(const std::vector<Pull> &pulls) {
 }
 void near(R a, R b) {
   // Reference comparison tolerance only, never a model coincidence threshold.
-  if (std::abs(a - b) > 1e-15L * (1 + std::abs(b)))
+  if (!std::isfinite(a) || !std::isfinite(b) ||
+      std::abs(a - b) > 1e-15L * (1 + std::abs(b)))
     throw std::runtime_error("independent expected value mismatch");
 }
 void require(bool b) { if (!b) throw std::runtime_error("status mismatch"); }
 R attenuation(R ratio) { return std::exp(-ratio * ratio * ratio * ratio); }
+template <typename F> void rejects(F f) {
+  bool rejected = false;
+  try { f(); } catch (const std::runtime_error &) { rejected = true; }
+  require(rejected);
+}
+
+// Explicit alternatives for comparison only. Neither selects a production law.
+struct CoincidenceComparison {
+  V gated_force{}, limiting_target{}, omitted_target{};
+  bool omitted_valid{false};
+  std::size_t coincident_sources{0};
+};
+CoincidenceComparison coincidence(const std::vector<Pull> &pulls) {
+  CoincidenceComparison out;
+  std::vector<Pull> separated;
+  for (const auto &p : pulls) {
+    if (p.coupling > 0 && norm(p.displacement) == 0)
+      ++out.coincident_sources;
+    else
+      separated.push_back(p);
+  }
+  const auto r = compare(separated);
+  out.gated_force = r.force;
+  out.omitted_valid = r.status == Status::Valid;
+  out.omitted_target = r.coefficient;
+  // Local origin is the recipient x; a limiting coincident target is x.
+  out.limiting_target = out.coincident_sources ? V{} : r.coefficient;
+  return out;
+}
+
+void domain_comparisons() {
+  const R nan = std::numeric_limits<R>::quiet_NaN();
+  const R inf = std::numeric_limits<R>::infinity();
+  for (R bad : {nan, inf, -inf}) {
+    rejects([&] { near(bad, 0); });
+    rejects([&] { near(0, bad); });
+    rejects([&] { near(bad, bad); });
+    rejects([&] { compare({{{1, 0}, bad}}); });
+    rejects([&] { compare({{{bad, 0}, 1}}); });
+    rejects([&] { compare({{{0, bad}, 1}}); });
+  }
+  rejects([] { compare({{{1, 0}, -1}}); });
+  const auto mixed = coincidence({{{0, 0}, 1}, {{1, 0}, 1}});
+  require(mixed.coincident_sources == 1 && mixed.omitted_valid);
+  near(mixed.gated_force.x, 1); near(mixed.limiting_target.x, 0);
+  near(mixed.omitted_target.x, 1);
+  const auto alone = coincidence({{{0, 0}, 1}});
+  require(alone.coincident_sources == 1 && !alone.omitted_valid);
+  near(alone.gated_force.x, 0);
+  const auto absent = coincidence({});
+  require(!absent.coincident_sources && !absent.omitted_valid);
+  // Exact rational expectations on both sides, not a softened distance gate.
+  for (int n : {1, 2, 4, 8}) {
+    R q = std::ldexp(1.0L, n);
+    for (R sign : {-1.0L, 1.0L}) {
+      auto r = compare({{{sign / q, 0}, 1}, {{1, 0}, 1}});
+      near(r.force.x, sign * q * q + 1);
+      near(r.coefficient.x, (sign * q * q + 1) / (q * q * q + 1));
+    }
+  }
+  // Fixed material sources can have a changing coefficient-weighted intent.
+  const auto initial = compare({{{-1, 0}, 1}, {{1, 0}, 1}});
+  const auto moved = compare({{{-1.5L, 0}, 1}, {{0.5L, 0}, 1}});
+  near(initial.coefficient.x, 0);
+  near(0.5L + moved.coefficient.x, 13.0L / 14);
+  // Inherited displacement is fixed, but its virtual target follows the body.
+  near((V{10, 0} + V{2, 0}).x, 12);
+  near((V{11, 0} + V{2, 0}).x, 13);
+  // Contact cannot be inserted as a negative centroid coefficient safely:
+  // attraction alpha=1, contact alpha=-1 gives zero denominator, nonzero force.
+  R signed_denominator = 1 - 1, total_force = 1 - 2;
+  near(signed_denominator, 0); near(total_force, -1);
+  std::cout << "intent_domain PASS: nonfinite signed coincidence-limits moving-intent inherited-drift contact\n";
+}
 }
 
 int main() {
   try {
+    domain_comparisons();
     const auto single = compare({{{2, 0}, 8}});
     near(single.force.x, 2); near(single.coefficient.x, 2);
     near(single.magnitude.x, 2); near(single.coupling.x, 2);
@@ -61,6 +140,7 @@ int main() {
     near(angled.force.x, 2); near(angled.force.y, 1);
     near(angled.coefficient.x, 1); near(angled.coefficient.y, 0.5L);
     near(angled.magnitude.x, 4.0L / 3); near(angled.magnitude.y, 1.0L / 3);
+    near(angled.coupling.x, 16.0L / 9); near(angled.coupling.y, 1.0L / 9);
     // Magnitude-weighted target is not generally parallel to the net force.
     near(angled.force.x * angled.coefficient.y - angled.force.y * angled.coefficient.x, 0);
     near(angled.force.x * angled.magnitude.y - angled.force.y * angled.magnitude.x, -2.0L / 3);
