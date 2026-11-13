@@ -7,6 +7,50 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Program registry requests (awaiting review, 2026-11-13)
+
+Continues [#318 review 5891877028](https://github.com/Human-Cognome-Project/human-cognome-project/pull/318#pullrequestreview-5891877028).
+The existing Program function, ndarray and argpack registries now use the reviewed
+SharedRequestCountingAllocator. Program::lifecycle_storage exports each through the
+existing runtime_map_storage helper: entries, live allocator requests, domain identity,
+counter-object and observed control-block request bytes, and value-payload subset.
+Native registry ownership and lookup/insert/erase behavior remain authoritative; no
+parallel registry or compiler/scheduler machinery is added.
+
+Rebound allocator requests cover nodes and buckets, including buckets retained after
+erasing the last entry. Domain identity remains stable during those operations. Each
+registry has its own domain; equal entry counts/sizes do not imply aliasing. Counter
+objects/control blocks are separate requests and count once per domain, not per row.
+The value-payload field is contained in allocator requests, never an additional charge.
+The allocator adds retained counter/control-block requests and larger embedded allocator
+state; the exported Program object size reflects that change. This is instrumentation,
+not a claim of unchanged object layout or allocation trace.
+
+Function rows borrow Function pointees already owned by the function vector; ndarray
+and argpack rows own their respective wrappers. These pointees and their backing are
+not included in node/bucket bytes. FunctionKey string objects lie within the row payload,
+but any external string buffer is not captured by the map allocator. The existing
+string-contract gap remains; no name-length heuristic or compiler exclusion is applied.
+
+The three reports independently distinguish available empty storage from unavailable
+coverage and preserve checked payload arithmetic. map_storage_available intentionally
+remains false because field-expression and accessor maps are not yet covered. The
+free-ID deque and all pointee families remain unavailable, and complete stays false.
+A successful report is not a whole-Program census or live-backing registry.
+
+Queries read fixed metadata without enumeration, allocation, copies or lazy creation.
+Keep Program and its domains alive and quiescent; identities are not lifetime leases.
+Existing shared allocator ownership handles rebound allocators and destruction. Reuse
+its established failure/control-block controls rather than introducing another counter
+mechanism. New Program-construction failure injection is not added in this slice.
+
+CPU one/two-worker fixtures cover independent supported-empty domains, populated function
+and ndarray maps, allocation-free reads and decreasing row requests with retained empty
+buckets. Argpack coverage is an empty-owner fixture only. No nested/string/pointee/full-B,
+GPU or native-Windows qualification is claimed. Next: field/accessor maps and free-ID
+request observation, then nested ownership and mixed ABI/string coverage under the
+[Program scope](PROGRAM-ACCOUNTING-SCOPE.md). Compiler exclusion remains conditional.
+
 ## Program lifecycle object and vectors (awaiting review, 2026-11-13)
 
 Continues [#317 review 5891422350](https://github.com/Human-Cognome-Project/human-cognome-project/pull/317#pullrequestreview-5891422350),

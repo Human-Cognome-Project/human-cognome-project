@@ -6533,3 +6533,44 @@ Archive SHA256:d63c1f37caacfef5f901a1f77b6f978545c7d29381aca3d2ff84743c41942993.
 Source/configuration/compiler/binary pins, commands and full results/diagnostics retained.
 Raw artifacts have not been independently inspected remotely. Hosted qualification and
 maintainer acceptance remain separate; no duplicate parent run or self-merge.
+
+## Program registry requests — 2026-11-13
+
+Read318review5891877028 at7b1242be: bounded source acceptance; continue native map/free-ID
+accounting, preserve allocator domains and retained-empty evidence. Fetched/merged main
+ed9c153d through qualified315 in50e52d5d; checked open316–318 and held75/111/123.
+No duplicate parent qualification or self-merge.
+
+Program function/ndarray/argpack registries reuse SharedRequestCountingAllocator and
+runtime_map_storage. Entries/live node-bucket requests/domain/counter/control-block and
+payload subset are explicit; pointer pointees and external key strings are separate.
+Instrumentation adds counter allocations and embedded allocator size; native registry
+semantics remain unchanged. Field/accessor maps and free-ID/pointee coverage remain
+unavailable, aggregate map/full flags false. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:1a680a9c954d90091b53343b9a46d70853994723.
+Tracked Taichi tree:58ad485efe887c0ed16c90085f4842b7938e0fa9.
+Expanded owner_backing_test covers one/two-worker runtimes, independent empty registry
+domains/counter requests, populated function/ndarray rows, allocation-free reads,
+decreasing node requests during erasure and retained buckets after the last array row.
+Argpack coverage is empty-owner only. Existing shared-allocator failure/rebind controls
+remain in the focused suite; new Program-constructor failure injection is not added.
+CPU/Linux/WSL shared host only; no GPU/native Windows/database/browser/performance claim.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. Both worker fixtures
+report160function-registry request bytes,152two-array request bytes and104retained-empty
+array-registry request bytes. Program object is912bytes on this build, reflecting the
+three embedded shared allocators; observations are not portable constants. Existing
+backing/thread/vector controls remain passing. No source build/test failures; compiler
+build logs warning-free. One passing2-bulk-exchange_commit emitted a cache-lock warning;
+preserved without cleanup/rerun. CTests used parent TI_LIB_DIR unset; direct executables
+used explicit runtime setup. Tested WSL source remains clean at the recorded pin.
+
+Final publication changes only six Markdown files;183local file links/whitespace passed.
+Contributor-local archive:program-registry-domain-1a680a9c.tar.gz.
+Manifest SHA256:182dc8ea29891200a7a71648cd12a40e877224816cb37ba498a756ea1ffcbee6.
+Archive SHA256:50af7f4602d0eda2cc0f023fdeb6ae05198d4b223d9f0b63559b7c1fa63caf32.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics
+are retained. Raw artifacts not independently inspected remotely. Hosted qualification
+and maintainer acceptance remain separate; no duplicate parent run/self-merge.

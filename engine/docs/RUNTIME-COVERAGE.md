@@ -1,5 +1,13 @@
 # Runtime coverage and the combined-admission boundary
 
+**Program registry follow-up (awaiting review, 2026-11-13):** the
+[three-registry request export](BORROWED-RESOURCES.md#program-registry-requests-awaiting-review-2026-11-13)
+reuses native shared counting allocators for Program function/ndarray/argpack maps.
+Node/bucket requests and counter/control-block storage are separate from pointees and
+external key strings. Field/accessor maps, free-ID storage and nested ownership remain
+unavailable; aggregate map/full coverage remains false. Earlier audit/export descriptions
+below are pinned history where superseded. Compiler exclusion remains conditional.
+
 **Program vector implementation (awaiting review, 2026-11-13):** following #317
 review5891422350, native Program::lifecycle_storage now reports its object and four
 lifecycle vector capacities at the actual owner, without factories or execution changes.
