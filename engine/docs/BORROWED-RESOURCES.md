@@ -7,6 +7,49 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## SNode tree and node host storage (awaiting review, 2026-11-13)
+
+Continues [#322 review 5893720324](https://github.com/Human-Cognome-Project/human-cognome-project/pull/322#pullrequestreview-5893720324).
+The native [reports](../taichi/taichi/ir/snode_storage.h),
+[node query](../taichi/taichi/ir/snode.cpp) and
+[tree query](../taichi/taichi/struct/snode_tree.cpp) expose existing host metadata.
+SNodeTree reports its object identity/size and root pointer identity without dereferencing
+it. SNode reports its own identity/size, child-vector slot count/capacity and index-offset
+entry count/capacity. Neither query walks children, resolves parents, asks a backend,
+creates a map, copies strings or changes native ownership, layout or execution.
+
+Object bytes include embedded vector/string controls, fixed extractor/index arrays,
+type/value representations and pointer fields. These are subsets, not extra charges.
+Child-vector elements are unique_ptr slots, not child objects. Offset and child buffers
+are separate accounted capacities, not allocator requests or physical memory. Both
+capacity products are checked before availability; overflow leaves unavailable capacity
+with overflow set. No unchecked combined total is exported. sizeof does not establish
+separate allocation: callers must establish containment before charging an object.
+
+Strings, gradient-provider objects, child pointees and shared types remain unqualified.
+string_storage_available, gradient_storage_available and complete stay false even with
+nonempty strings. The tree's complete flag stays false. Program's aggregate pointee flag
+is unchanged. An available local report is not complete graph or backing coverage.
+
+Queries require live, quiescent objects. Pointer identities are synchronous observations,
+not lifetime leases or allocation tokens. Program can retire backend tree backing while
+retaining the host tree/root in its vector; slot reuse can later destroy those objects.
+Do not inspect stale pointers after replacement or teardown. Existing backing records
+remain authoritative for backend lifetime; this query never recaptures that lifetime.
+
+The [fixtures](../tests/owner_backing_test.cpp) cover distinct native tree/root identities,
+root/dense/place objects, nonempty strings, empty leaf children, child reserve growth,
+nonempty offset reserve and retained empty offset capacity, allocation-free queries and
+retained host metadata after backing retirement with one/two CPU workers. They do not
+query destroyed objects. Capacity overflow is source-reviewed, not exercised with an
+impossible-sized real vector. Gradient-provider storage is not qualified by this fixture.
+
+These are fixed-work per-object queries; enumeration, traversal, identity validation and
+deduplication still require separately prepaid work. No graph inventory or aggregate
+ledger is added. Remaining nested owners and mixed ABI/provenance/string coverage precede
+trusted aggregation under the [Program scope](PROGRAM-ACCOUNTING-SCOPE.md). Compiler
+exclusions remain conditional; full B and combined admission remain unaccepted.
+
 ## Ndarray host wrapper storage (awaiting review, 2026-11-13)
 
 Continues [#321 review 5893130922](https://github.com/Human-Cognome-Project/human-cognome-project/pull/321#pullrequestreview-5893130922).

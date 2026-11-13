@@ -1,5 +1,13 @@
 # Program ownership and accounting scope
 
+**SNode host follow-up (awaiting review, 2026-11-13):** the
+[per-object tree/node reports](BORROWED-RESOURCES.md#snode-tree-and-node-host-storage-awaiting-review-2026-11-13)
+add tree/root identities, object sizes and checked child/offset vector capacities without
+walking the graph. Host objects can outlive backend backing; slot replacement ends their
+lifetime. Strings, gradient providers, nested/shared pointees and aggregate coverage remain
+incomplete. Traversal/validation/deduplication still require prepaid work. Earlier audit
+entries remain pinned history; compiler exclusions remain conditional.
+
 **Ndarray host follow-up (awaiting review, 2026-11-13):** the
 [native wrapper report](BORROWED-RESOURCES.md#ndarray-host-wrapper-storage-awaiting-review-2026-11-13)
 adds object identity/size and shape/total-shape vector capacities at the existing Ndarray

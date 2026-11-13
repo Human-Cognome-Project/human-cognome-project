@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**SNode tree/node host storage (awaiting review, 2026-11-13):** follows #322
+review5893720324 and integrates main 4a147cf6, qualified through #320. Native per-object
+queries report tree/root identities, object sizes and checked child/offset capacities;
+no graph traversal or backend queries. Strings, gradient providers, shared/nested pointees
+and aggregate coverage stay incomplete. Next: remaining nested owners and mixed ABI/
+provenance/string coverage before trusted aggregation and prepaid traversal. Compiler
+exclusions remain conditional; full B unaccepted. #321/#322 await integration; held
+#75/#111/#123 unchanged. Earlier pending descriptions below are historical.
+
 **Maintainer integration — 2026-11-13:** #319–#320 are accepted and integrated by this merge, preserving reviewed `4c7b7beeda7d3e39fe8ab07ed019f7d3b3e2047b`. Native runs 43439246063 and 43442561844 passed all 12 jobs each; both smoke workflows passed. Personally inspected #320 regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #320. #321–#322 have bounded source acceptance and passing smoke; native qualification remains pending. #322 review 5893720324 accepts Ndarray host object/shape-capacity inspection, separate from backing identity and with debug/shared-type coverage incomplete. Next: remaining nested owners and mixed ABI/provenance/string coverage before trusted required-family/lifetime aggregation, canonical/domain deduplication and prepaid work. Reuse Taichi compilation, dispatch and thread machinery. Compiler exclusions remain conditional; full B and combined admission remain unaccepted. Held #75/#111/#123 remain unchanged. Earlier status paragraphs below are historical where they conflict.
 
 **Ndarray host wrapper storage (awaiting review, 2026-11-13):** follows #321
