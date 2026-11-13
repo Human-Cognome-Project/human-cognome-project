@@ -1,8 +1,32 @@
 # Current implementation and work
 
+**Maintainer integration and morning handoff — 2026-11-13:** #310–#311 are accepted and integrated by the merge containing this record, preserving reviewed `ec463bdfddbb17d5f78b5cca6fd395e92e565846`. #310 native 43332423596 passed all 12 jobs and smoke 43332423712 passed; #311 native 43337937696 passed all 12 jobs and smoke 43337938428 passed. Personally inspected #311's 119 passing regressions (30/30/30/29), including expanded prepared_backing_test; database job 131603715402 reports addressed_reads=24/private_reads=0. Main is qualified through #311. No active contribution remains awaiting review/integration; only deliberately held #75/#111/#123 remain open. Historical failures remain preserved; contributor-local archives were not independently inspected. No unchanged CI rerun was requested. Earlier pending/next labels below are historical where they conflict.
+
+**Next bounded task for the contributing agent:** start from current main, retaining the qualified #311 implementation. Complete the remaining native runtime/shared metadata surfaces and explicitly enumerate any remaining coverage exclusions. Then construct the trusted lifetime-valid required-family Harness snapshot, deduplicating canonical backing and shared allocator domains with prepaid enumeration/lookup before checked C+B+H+D admission. Keep one charge per shared domain under domain-wide quiescence; map payload is a subset of map requests, and key buffers remain separate. Preserve retained-versus-peak distinctions, native authority and independent work gates. Additional setup cost is acceptable for long-running focal models. Full B and combined admission remain unfinished; GPU/native-Windows execution qualification is not implied. Projection-copy audit stays closed; #75/#111/#123 remain held.
+
 **Maintainer integration — 2026-11-12:** #309 pool container metadata is accepted and integrated by the merge containing this record, preserving reviewed `6b3180b542e1628b13284923e6f98a0f3e3e9f1b`. Native 43328682126 passed all 12 jobs; smoke 43328681937 passed. Personally inspected 119 passing regressions (30/30/30/29), including native_pool_test; database job 131574683251 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#308. #310 budgeted prepared metadata and #311 shared map allocation domains remain provisionally source-accepted, with smoke passed and native qualification active. Local archives were not independently inspected; historical failures remain preserved. Older pending/next labels below are historical where they conflict.
 
 **Next bounded task:** remaining runtime/shared metadata on reviewed #311, then trusted lifetime-valid required-family Harness coverage and canonical backing/domain deduplication with prepaid enumeration/lookup before checked C+B+H+D admission. Shared allocator domains require quiescence across aliases and one charge per domain. Preserve retained-versus-peak distinctions, native authority and independent work gates; setup cost is acceptable for long-running focal models. No full B or GPU qualification; projection-copy audit stays closed and #75/#111/#123 remain held.
+
+**Prepared map requests (awaiting review, 2026-11-12):** continues reviewed #310
+75025c10/review5883920961. Four binding maps now report actual retained node/bucket
+allocation requests and their stable shared counter/control-block requests. Map value
+payload remains a subset; key buffers are separate. Moves/allocator copies can share
+a domain, so domain lifetime/deduplication is explicit; ordinary container copies get
+independent domains. Existing inspection preflight remains. Main cee73d53 is already
+included through #308; #309/#310 remain provisional pending hosted integration. Next:
+remaining runtime/shared metadata, trusted Harness coverage/lifetime/deduplication and
+prepaid work before combined C+B+H+D. No full B or GPU/Windows-execution claim.
+
+**Prepared host metadata (awaiting review, 2026-11-12):** continues reviewed #309
+6b3180b5/review5883627408. Reports prepared scalar capacity and binding-map key
+capacities/value payload via a separate entry-budgeted inspection. Refusal precedes
+traversal; exact retry is allocation-free. Node/bucket request storage remains
+unmeasured, so full host metadata/B coverage remains incomplete. Main cee73d53's
+qualified #308 integration is included through normal merge992d54a0; #309 remains
+provisional pending native qualification. Next: remaining prepared/runtime/shared
+metadata, trusted Harness lifetime/required-family coverage/deduplication and prepaid
+work before combined C+B+H+D. No GPU/Windows execution claim; held items unchanged.
 
 **Maintainer integration — 2026-11-12:** #308 rounded host-pool virtual extents are accepted and integrated by the merge containing this record, preserving reviewed `10b3ed7f6f0401148716311cfe0181e0d75362d9`. Native 43321294234 passed all 12 jobs; smoke 43321294253 passed. Personally inspected 119 passing regressions (30/30/30/29), including native_pool_test, allocation_record_test, prepared_backing_test and reservation_request_test; database job 131549865939 reports addressed_reads=24/private_reads=0. Main already includes qualified #302–#307. #309 pool container metadata is provisionally source-accepted at `6b3180b5`; smoke 43328681937 passed and native 43328682126 remains active. Local archives were not independently inspected; historical failures remain preserved. Older status/next labels below are historical where they conflict.
 

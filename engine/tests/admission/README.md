@@ -6193,3 +6193,99 @@ Archive SHA256:111c48a710e7d388205da6e18effc1b4a9d1ff36ca12eda2aec4fbd0b5870952.
 Includes source/configuration/compiler/binary pins, commands, complete results and
 both failed observations. Raw artifacts have not been independently inspected remotely.
 Hosted qualification and maintainer acceptance remain separate; no self-merge.
+## Prepared scalar and binding-key metadata — 2026-11-12
+
+Continues #309 review5883627408 at6b3180b5, source provisionally accepted with no
+blocking finding. Main cee73d53 integrates qualified #308; normal merge992d54a0
+preserves maintainer handoff and contribution history in two Markdown conflicts.
+Maintainer inspected #308's119 passing regressions and database131549865939
+addressed_reads24/private_reads0. #309's hosted native qualification remains separate.
+No duplicate parent CI; historical failures remain preserved.
+
+PreparedBacking exposes scalar vector capacity separately from its containing object.
+A separate budgeted query enumerates four binding maps' owned key capacities and value
+payload, with entry/bucket counts. Required entries are checked before traversal;
+insufficient budget visits none. Exact retry reads capacities without allocation,
+hashing or following pointers. Node/bucket request bytes remain unmeasured, and both
+metadata completeness flags remain false. The native owner/lifetime guard is shared
+with existing prepared-buffer inspection. See [the contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:83c1d74d36a0edfe2a33ba8f07b7d0999edcbf33.
+Tracked Taichi tree:9a1d7b6da2896ce585fa1bcfd0a6107a84380598.
+Expanded prepared_backing_test checks spare scalar capacity, zero/one-short/exact
+entry budgets, allocation-free refusal/retry, map family counts, a moved-in key with
+spare capacity, cleared key/value storage without a completeness claim, foreign
+device refusal and moved-owner behavior. Existing execution/import/retirement tests
+remain in scope. No retained context state, binding reserve or launch behavior changes.
+CPU/Linux/WSL shared host only; no GPU/native Windows/database/browser/performance claim.
+Initial sourcee6cdc209 built successfully but prepared_backing_test failed, with9/10
+focused tests passing. The fixture expected only two allocation-type entries; native
+set_arg also registers the scalar argument as kNone, so the correct count is three.
+Test-only correction83c1d74d preserves production code and emits observed family counts.
+The failed source, build/test commands and logs remain under final archive history;
+that attempt is not relabelled as passing.
+Corrected native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. Focused/prepared/
+supporting CTests ran with parent TI_LIB_DIR unset; direct executables used explicit
+runtime setup. Build logs contain no compiler warnings/errors. One passing
+1-bulk-exchange_commit emitted an offline-cache lock warning; exact diagnostic is
+retained without cleanup/rerun. No warning-free-runtime claim is made.
+Fixture observations:map entries2/3/4/0, required9, scalar capacity160 bytes,
+moved-in key capacity92 bytes; these are observations, not portable constants.
+Existing argument40/result0/recordcapacity144 values remain unchanged.
+
+Tested WSL source is clean. Final publication differs only in four Markdown files;
+123local file links and whitespace checks passed. Contributor-local archive:
+prepared-metadata-domain-83c1d74d.tar.gz.
+Manifest SHA256:8a58debaf890b9a23ad6400cd8f0f78047e3cd920c0835bde4191944ccdb771e.
+Archive SHA256:9c09a1302f26038699d1666b06ec3ef092c1a9cf82963e866317ae78da148ad1.
+Includes source/configuration/compiler/binary pins, commands, results and failed
+initial observation. Raw artifacts have not been independently inspected remotely.
+Hosted qualification/maintainer acceptance remain separate; no self-merge.
+## Prepared map allocation requests — 2026-11-12
+
+Continues #310 review5883920961 at75025c10, source provisionally accepted without
+blocking findings. Main cee73d53 remains integrated through #308 and is already in
+this stack; #309/#310 hosted integration stays pending. Open queue and remote refs
+were rechecked; no duplicate parent qualification or self-merge.
+
+Four native binding maps now use stable shared request counters. Actual rebound
+node/bucket requests are reported separately from key capacity and value-payload
+subsets. Counter object and actual shared_ptr control-block request are separate
+reported allocations. Moves/rebound allocator copies retain domain lifetime; ordinary
+container copies select fresh domains. Public allocator sharing requires domain-wide
+quiescence/deduplication; identities are synchronous, not durable tokens or leases.
+Entry-budget preflight is unchanged; full host/runtime metadata remains incomplete.
+See [the contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:8001358dc47449a6c4e4df3d7a99b7058e0c1f7d.
+Tracked Taichi tree:ca93f571203ffe232beaba0dd23142060bf0e24e.
+Expanded prepared_backing_test compares all retained map/counter/control-block/key
+requests against an independent live-allocation witness after source destruction,
+rehash and clear. It checks copy-domain independence, move assignment with a displaced
+destination, reuse/destruction of a moved-from map and zero retained allocations after
+teardown. Every observed allocation site in that scenario is failed individually,
+including counter/control-block construction; each must reject and reclaim all acquired
+storage. Existing budget/refusal/retry/move/import/execution checks remain in scope.
+No GPU/native Windows/database/browser/performance qualification is claimed.
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. The allocator scenario
+exercised16 failure sites, each with zero retained allocations after unwind. Live
+request equality passed after source destruction, rehash and clear. Existing observed
+map counts2/3/4/0, required entries9, scalar capacity160/key capacity92 and
+argument40/result0/recordcapacity144 remain unchanged.
+
+Build logs have no compiler warnings/errors. One passing2-bulk-exchange_commit emitted
+an offline-cache lock warning; exact diagnostic is preserved without cleanup/rerun.
+No warning-free-runtime claim. No source build/test failure occurred.
+Focused/prepared/supporting CTests ran with parent TI_LIB_DIR unset; direct executables
+used explicit runtime setup. Tested WSL source is clean. Final publication changes
+four Markdown files and one explanatory header comment from tested source; executable
+source is unchanged. 124local file links and whitespace checks passed.
+
+Contributor-local archive:prepared-map-domain-domain-8001358d.tar.gz.
+Manifest SHA256:785a1ac9acaf2078f166619638ce3d75a5436c8e0e04ada7758dded23005965f.
+Archive SHA256:1934785f84441f35416100771058bc398a06ef3bce7140ea1fa8e09bcf760cf3.
+Source/configuration/compiler/binary pins, commands, full results and diagnostics are
+retained. Raw artifacts have not been independently inspected remotely. Parent310
+smoke43332423712 passed/native43332423596 remains active; no duplicate run or self-merge.

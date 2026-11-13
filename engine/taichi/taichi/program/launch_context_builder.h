@@ -4,6 +4,7 @@
 #include "taichi/program/argpack.h"
 #include "taichi/program/texture.h"
 #include "taichi/program/matrix.h"
+#include "taichi/rhi/common/shared_request_counting_allocator.h"
 
 namespace taichi::lang {
 
@@ -50,6 +51,7 @@ class LaunchContextBuilder {
     HostBackingView arguments, results, runtime_context;
     std::size_t context_object_bytes{0}, prepared_object_bytes{0};
     std::size_t array_binding_capacity_bytes{0};
+    std::size_t scalar_capacity_bytes{0};
     // Subset of array_binding_capacity_bytes, never an additional charge.
     std::size_t incremental_record_capacity_bytes{0};
   };
@@ -59,6 +61,26 @@ class LaunchContextBuilder {
   // Only live owned or explicitly proven owned-import backing completes array
   // coverage. This is inspection, not an execution lifetime guard.
   PreparedBacking prepared_backing(const Device &live_device) const;
+  struct BindingMapStorage {
+    std::size_t entries{0}, buckets{0};
+    // Value payload is a subset of allocation_request_bytes, not an extra charge.
+    std::size_t value_payload_bytes{0}, key_capacity_bytes{0};
+    // Synchronous shared domain identity; never dereference after owner lifetime.
+    const void *allocation_domain{nullptr};
+    std::size_t allocation_request_bytes{0};
+    std::size_t counter_object_bytes{0}, counter_control_block_bytes{0};
+  };
+  struct PreparedHostMetadata {
+    bool available{false};
+    bool complete{false};  // This is not full prepared/runtime/heap metadata.
+    bool overflow{false};
+    std::size_t required_entries{0}, visited_entries{0};
+    BindingMapStorage runtime_sizes, allocation_types, array_pointers, argpack_pointers;
+  };
+  // Quiescent owner required. Four constant-time size checks precede traversal;
+  // insufficient entry budget refuses without visiting any map entries.
+  PreparedHostMetadata prepared_host_metadata(const Device &live_device,
+                                               std::size_t entry_budget) const;
   AllocationRecord prepared_array_record(const Device &live_device,
                                          std::size_t argument) const;
   // Separate from the captured registration: canonical full backing for dedup.
@@ -163,6 +185,7 @@ class LaunchContextBuilder {
   RuntimeContext &get_context();
 
  private:
+  bool prepared_backing_available(const Device &live_device) const;
   TypedConstant fetch_ret_impl(int offset, const Type *dt);
   CallableBase *kernel_;
   // Generic/AOT CallableBase contexts retain the ordinary path only.
@@ -188,23 +211,17 @@ class LaunchContextBuilder {
 
   // `array_runtime_size` records the runtime size of the
   // corresponding array arguments.
-  std::
-      unordered_map<std::vector<int>, uint64, hashing::Hasher<std::vector<int>>>
-          array_runtime_sizes;
+  template <typename V>
+  using BindingMap = std::unordered_map<std::vector<int>, V,
+      hashing::Hasher<std::vector<int>>, std::equal_to<std::vector<int>>,
+      SharedRequestCountingAllocator<std::pair<const std::vector<int>, V>>>;
+  BindingMap<uint64> array_runtime_sizes;
   // `device_allocation_type` is set iff i-th arg is a `DeviceAllocation*`,
   // otherwise it is set to DevAllocType::kNone
-  std::unordered_map<std::vector<int>,
-                     DevAllocType,
-                     hashing::Hasher<std::vector<int>>>
-      device_allocation_type;
+  BindingMap<DevAllocType> device_allocation_type;
 
-  std::
-      unordered_map<std::vector<int>, void *, hashing::Hasher<std::vector<int>>>
-          array_ptrs;
-  std::unordered_map<std::vector<int>,
-                     const ArgPack *,
-                     hashing::Hasher<std::vector<int>>>
-      argpack_ptrs;
+  BindingMap<void *> array_ptrs;
+  BindingMap<const ArgPack *> argpack_ptrs;
 
   std::vector<ArrayBinding> array_bindings;
   // Last member: backend cleanup precedes destruction of borrowed host buffers.
