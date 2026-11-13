@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Runtime bookkeeping tables (awaiting review, 2026-11-13):** starts from main
+c5645a28 after qualified #309–#311 integration. Common ProgramImpl inspection now
+reports executor/root-manager objects and actual retained storage for three allocation
+tables, including counter ownership. Descriptor entries can outlive native backing;
+counts describe bookkeeping, not live payload. Constant-time reads preserve explicit
+unsupported/empty states; full runtime metadata remains incomplete. Next: remaining
+shared surfaces/scoped exclusions, then trusted Harness lifetime/coverage and canonical/
+domain deduplication with prepaid work before C+B+H+D. No full B or GPU/Windows claim.
+
 **Maintainer integration and morning handoff — 2026-11-13:** #310–#311 are accepted and integrated by the merge containing this record, preserving reviewed `ec463bdfddbb17d5f78b5cca6fd395e92e565846`. #310 native 43332423596 passed all 12 jobs and smoke 43332423712 passed; #311 native 43337937696 passed all 12 jobs and smoke 43337938428 passed. Personally inspected #311's 119 passing regressions (30/30/30/29), including expanded prepared_backing_test; database job 131603715402 reports addressed_reads=24/private_reads=0. Main is qualified through #311. No active contribution remains awaiting review/integration; only deliberately held #75/#111/#123 remain open. Historical failures remain preserved; contributor-local archives were not independently inspected. No unchanged CI rerun was requested. Earlier pending/next labels below are historical where they conflict.
 
 **Next bounded task for the contributing agent:** start from current main, retaining the qualified #311 implementation. Complete the remaining native runtime/shared metadata surfaces and explicitly enumerate any remaining coverage exclusions. Then construct the trusted lifetime-valid required-family Harness snapshot, deduplicating canonical backing and shared allocator domains with prepaid enumeration/lookup before checked C+B+H+D admission. Keep one charge per shared domain under domain-wide quiescence; map payload is a subset of map requests, and key buffers remain separate. Preserve retained-versus-peak distinctions, native authority and independent work gates. Additional setup cost is acceptable for long-running focal models. Full B and combined admission remain unfinished; GPU/native-Windows execution qualification is not implied. Projection-copy audit stays closed; #75/#111/#123 remain held.

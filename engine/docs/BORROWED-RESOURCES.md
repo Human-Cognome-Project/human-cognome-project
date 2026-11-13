@@ -7,6 +7,48 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Runtime bookkeeping tables (awaiting review, 2026-11-13)
+
+Continues [#311 integration handoff](https://github.com/Human-Cognome-Project/human-cognome-project/pull/311#issuecomment-6850662795)
+on main c5645a28. ProgramImpl::runtime_bookkeeping() now provides a common inspection
+surface for LLVM executor/root-manager objects and three retained allocation tables:
+root records, tree allocation descriptors and runtime allocation descriptors. Other
+implementations default to unavailable; an empty supported map still reports its
+domain/counter storage. A missing root manager has no identity/object charge and an
+unavailable root-record report. complete remains false.
+
+The tables use the reviewed shared request-counting allocator. Each report separates
+actual live node/bucket requests, counter-object request and actual counter control-block
+request, with synchronous domain identity and entry count. Map value payload is a
+subset of allocation requests. Existing incremental root-record bytes are a subset of
+root-map values, never an extra charge. These maps have fixed-size keys/values, with no
+nested key buffers. The root-manager object is separate from the executor base object;
+each includes its embedded container/allocator controls through sizeof. Executor base
+size does not assert coverage of an arbitrary derived executor or of ProgramImpl.
+
+These are retained bookkeeping allocations, not a live native backing registry.
+Ndarray destruction can retire Device backing while leaving an executor descriptor.
+Tree destruction removes the root-manager entry and its owned allocation but retains
+the executor's tree descriptor. Such entries still occupy host map storage and must
+remain counted; they must not be interpreted as evidence of live payload backing.
+Original cleanup, identity and allocation behavior are unchanged apart from allocator
+bookkeeping and its additional setup allocations.
+
+Inspection performs a fixed number of size/counter reads, without enumeration,
+allocation, native pointer following or backing lookup. Payload multiplication is
+checked; unavailable/overflow map reports cannot establish required-family coverage.
+Keep runtime, manager and all allocator domains alive and quiescent, and count each
+object/domain once across consuming Harnesses. Raw identities do not extend lifetime.
+Finalization's map copy selects a fresh domain; this snapshot is retained storage,
+not temporary copy/rehash peak accounting or setup-work prepayment.
+
+Still excluded: Program/ProgramImpl and compiler/JIT ownership trees, thread-pool and
+profiler internals, other runtime containers/buffers, backend/driver/process resources,
+host-heap internals and physical residency. This is not full B or combined admission.
+Next: remaining shared runtime surfaces and an explicit scoped coverage/exclusion
+policy, then trusted Harness lifetime/required-family coverage and canonical/domain
+deduplication with prepaid enumeration/lookup before checked C+B+H+D.
+
 ## Prepared map allocation requests (awaiting review, 2026-11-12)
 
 Continues [#310 review 5883920961](https://github.com/Human-Cognome-Project/human-cognome-project/pull/310#pullrequestreview-5883920961).
