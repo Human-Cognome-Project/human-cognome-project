@@ -1,5 +1,12 @@
 # Current implementation and work
 
+**PR #329 correction (awaiting re-review):** review 5897775574 identified a missing
+prepaid binding allowance. The live-enabled reservation now includes the response
+observer's 32 arguments and sixth context, including CUDA arithmetic; live-disabled
+reservation is unchanged. Focused fixtures check the inventory and actual prepared
+bindings against the reserve. See the live extraction boundary linked below.
+
+
 **Live response extraction (awaiting review, 2026-11-13):** follows accepted #328
 on main 98eb37cf. The existing live owner now offers budgeted native response
 inspection with actual sparse body/source records, exact fractions, current packet
