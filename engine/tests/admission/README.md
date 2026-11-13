@@ -6329,3 +6329,20 @@ Archive SHA256:1d14d90cd45de7a36d08167b7171c93ff0b431f4b532170c2f4ce7178dc2bc9e.
 Retains source/configuration/compiler/binary pins, commands and complete results.
 Raw local artifacts have not been independently inspected remotely. Hosted qualification
 and maintainer acceptance remain separate; no duplicate accepted run or self-merge.
+## Runtime coverage/exclusion source audit — 2026-11-13
+
+Inspected reviewed312 source9d459141c854e923e5eefd6bac776713cd5bb08d/native tree
+c2c0c512b5b7aa2ed05e30fbb1c3a9df7b40b7d8 after review5890043642. Main remains
+c5645a28 through311;312 is provisionally source-accepted and unmerged. No duplicate
+native build/CI run. [Coverage policy audit](../../docs/RUNTIME-COVERAGE.md) traces
+Program/ProgramImpl, LLVMRuntime initialization, executor materialization, CPU launcher
+registration, ThreadPool and HCP owner contracts. It separates required-family gaps
+from metric exclusions and proposed compiler/JIT scope. No new policy is accepted here.
+
+Concrete next code scope is native runtime-global object/table/temporary/random/result
+request export, preserving ambient-metadata coverage and canonical backing deduplication.
+Shared launch registry and Program/thread ownership remain explicit subsequent coverage
+work. Source inspection is the evidence for this documentation-only slice; no executable
+code, completeness flag or admission behavior changed. Prior CPU results remain prior
+evidence, not rerun results. No GPU/database/browser/native-Windows qualification.
+Validation:144 local file links and whitespace checks passed across the five changed Markdown files. No executable files changed.

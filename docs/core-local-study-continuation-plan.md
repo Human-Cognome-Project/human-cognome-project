@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Runtime coverage policy audit (awaiting review, 2026-11-13):** follows #312
+review5890043642 at9d459141. [Coverage matrix](../engine/docs/RUNTIME-COVERAGE.md)
+separates required-family blockers, metric exclusions and proposed compiler/JIT scope.
+No exclusion or admission behavior is implemented. Next bounded code work: native
+runtime-global object/table/temporary/random/result request exports, then shared launch
+registry and remaining ownership coverage or reviewed scope decisions. Trusted Harness
+lifetime/deduplication/prepaid work still precede C+B+H+D. #312 remains provisional;
+main is qualified through #311. No new runtime/GPU qualification.
+
 **Runtime bookkeeping tables (awaiting review, 2026-11-13):** starts from main
 c5645a28 after qualified #309–#311 integration. Common ProgramImpl inspection now
 reports executor/root-manager objects and actual retained storage for three allocation

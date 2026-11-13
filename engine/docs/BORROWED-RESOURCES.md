@@ -7,6 +7,17 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Scoped runtime coverage audit (awaiting review, 2026-11-13)
+
+The [source-traced coverage and policy matrix](RUNTIME-COVERAGE.md) follows #312
+review5890043642. It distinguishes current partial exports from required-family
+blockers and proposed exclusions, including the unexported runtime-global tables/
+buffers and shared launch registry. A compiler/JIT exclusion is proposed for review,
+not accepted or implemented. Existing selected-D exclusions do not silently remove
+borrowed B obligations. Top-level availability never replaces per-family coverage.
+Next code slice: runtime-global object/table/temporary/random/result requests through
+native/common interfaces. This audit performs no runtime qualification or gate change.
+
 ## Runtime bookkeeping tables (awaiting review, 2026-11-13)
 
 Continues [#311 integration handoff](https://github.com/Human-Cognome-Project/human-cognome-project/pull/311#issuecomment-6850662795)
