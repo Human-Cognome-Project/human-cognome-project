@@ -1272,6 +1272,7 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     const auto generation = f.h.prepared_storage().generation;
     const auto ticks = f.h.prepared_storage().completed_ticks;
     const auto anchor = f.h.frame_anchor();
+    const auto responses_before_rebase = response_snapshot(f);
     const FrameAnchor delta{134217728., -16., 8.};
     PlacementAccess::disabled_rebase(f.h, delta);
     require(PlacementAccess::rebase(f.h, {}, UINT64_MAX, generation + 1).status == UpdateStatus::Stale &&
@@ -1322,6 +1323,19 @@ void coordinate_rebase(engine::Runtime &r, HostPath path) {
     require(result.status == UpdateStatus::Ok && result.generation == generation + 1 &&
                 ticks == f.h.prepared_storage().completed_ticks && backing.same_backing(metrics.sample()),
             "rebase failed atomic generation/backing checks");
+    const auto responses_after_rebase = response_snapshot(f);
+    response_identity_equal(responses_before_rebase, responses_after_rebase);
+    require(responses_after_rebase.generation == generation + 1 &&
+                responses_after_rebase.completed_ticks == ticks &&
+                responses_after_rebase.frame_anchor == f.h.frame_anchor(),
+            "response rebase metadata stale");
+    for (std::size_t row = 0; row < responses_after_rebase.responses; ++row)
+      for (int col = 0; col < 10; ++col) {
+        const auto at = col * responses_after_rebase.capacity + row;
+        const double offset = col >= 3 && col < 6 ? delta[col - 3] : 0;
+        require(responses_after_rebase.values[at] == responses_before_rebase.values[at] - offset,
+                "response rebase changed relative geometry or failed recipient translation");
+      }
     f.h.inspect_prepared();
     const auto &s = f.h.prepared_storage();
     const auto moved_history = PlacementAccess::rebase_history(f.h);

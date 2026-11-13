@@ -205,6 +205,14 @@ foreach(threads 1 2)
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case response_observation)
     set_tests_properties(live_response_${threads}_${path} PROPERTIES
         ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
+    foreach(response_case validity lifecycle range reuse)
+      add_test(NAME live_response_${response_case}_${threads}_${path}
+          COMMAND live_hierarchy_test ${live_hierarchy_args} --case response_${response_case})
+      set_tests_properties(live_response_${response_case}_${threads}_${path} PROPERTIES
+          ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
+    endforeach()
+    # Lifecycle prepares refresh and two placement owners; allow hosted setup time.
+    set_tests_properties(live_response_lifecycle_${threads}_${path} PROPERTIES TIMEOUT 600)
     add_test(NAME live_refresh_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case refresh)
     add_test(NAME native_selection_${threads}_${path}

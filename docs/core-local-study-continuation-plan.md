@@ -1,10 +1,32 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer integration / source acceptance — 2026-11-13:** #330 and #331 are integrated together from qualified descendant `1e079091291b3c07d59ccdcba4ca3caa48eec118`. #331 smoke and all 12 native jobs passed; personally inspected logs show 141 regression passes (36/35/35/35), all response validity/lifecycle/range/reuse configurations, and database addressed_reads=24/private_reads=0. #330's older native run was cancelled with one regression shard incomplete and its aggregate gate failed; it is not relabelled successful. The descendant includes #330 and provides complete combined qualification. Documentation conflicts were resolved without changing the qualified runtime/test tree.
+
+**#333 source acceptance:** `8854c34b3b4c0befa4b4075aba699e3a72edaba9` accepted in review 5899774502 for candidate-specific refresh, rebase, exact-count, retirement/reincarnation and stale-copy coverage. Contributor reports ten focused CPU CTests at `64a505af9825f65a400028e515d066f5c91509c1`; final delta is three Markdown files. Raw local archive has not been independently inspected. Smoke passed; native 43530432584 remains pending. #332 also remains source-accepted awaiting native qualification. Older #322/#323/#325 remain open. Next: many-tick dt/Q observations, keeping candidate motion distinct from endpoint trajectories and allowing moving intent. No production braking or stability gate changes. Earlier notes below are historical where they conflict.
+
 **Maintainer source acceptance — #332, 2026-11-13:** `4d518294dd4f1edadadd3305bd866de8d0a9d2c7` accepted in review 5899338489 for live native coefficient-candidate diagnostics. Existing extracted responses and committed per-body ranges feed the shared strict arithmetic helper; native/host output and six new parameters and the seventh live context are prepaid. Production force, integration, braking and activity are unchanged. Contributor reports 38 scoped CPU passes at `25fdae23ccab17db239d8aab1d86c2c5c9b40ec5`; final delta is three Markdown files, and the local archive has not been independently inspected. Smoke passed; native run 43524802657 remains pending. #330/#331 native runs also remain pending, so all three await integration; main runtime remains qualified through #329. Older #322/#323/#325 remain open. Next source work: candidate-specific refresh/rebase/reincarnation and stale-copy coverage, then many-tick dt/Q observations. Changing intent and continued motion remain legitimate; no stability classifier or braking law is selected. Earlier notes below are historical where they conflict.
 
 **Maintainer source acceptance — #331, 2026-11-13:** `1e079091291b3c07d59ccdcba4ca3caa48eec118` accepted in review 5899185239 for test-only retirement/reuse, same-owner copied-snapshot rejection and local/inherited subtraction limits. Four slots force reincarnation; the 70-slot profile retains native allocation freedom. Contributor reports 18 focused CPU passes at `ea428fa0b7e18bf0fe10a6fd89eb51e568b14783`; the final delta is Markdown only, and the local archive has not been independently inspected. Smoke passed; native run 43522355506 remains pending. Parent #330 is source-accepted with smoke passed and native run 43515101357 pending. Neither is integrated. Main runtime remains qualified through #329; older #322/#323/#325 remain open. Next source work: owner-accounted native candidate observations, then many-tick dt/Q comparisons. Changing intent and continued motion are legitimate; production braking/activity and general identity/lease policy remain unchanged. Earlier pending-review notes below are historical where they conflict.
 
+**Response reuse/range follow-up (awaiting review):** accepted #330 review5898902458
+is continued on qualified main2e758a57. Test-only work uses the initial reuse snapshot
+for insertion/retirement/handle-incarnation checks, copied-snapshot freshness across
+ticks and retirement, and local/inherited overflow/subnormal-subtraction controls.
+This is same-owner consumer evidence, not a production freshness or lease API.
+Native candidate reduction and many-tick dt/Q observations remain next. See the
+live extraction boundary below for precise scope and evidence.
+
+
 **Maintainer acceptance — #329, 2026-11-13:** corrected source `24b0227938b734cead8cec49d04163b8f4044391` accepted in review 5898430428 and merged at `c567a13db6b5c9008ce54c0d48996b14202dd2fd`. Smoke and all 12 native jobs passed. Personally inspected logs confirm all four live-response tests and 125 regression passes (32/31/31/31), database addressed_reads=24/private_reads=0. The observer's 32 arguments and sixth live context are now prepaid. #330 `cf0a965a2f0c6896f02b11858a86a710ecd8376f` has bounded source acceptance in review 5898902458; smoke passed and native CI remains pending. Next: retirement/reuse and stale-consumer coverage, range/subtraction controls, integrated candidate reduction and many-tick dt/Q observations. Changing intent and continued motion remain valid. Production braking/activity are unchanged. Prior pending-review notes below are historical where they conflict.
+
+**Response validity/lifecycle follow-up (awaiting review):** #329 source correction
+accepted in review 5898430428 at 24b02279; hosted integration remains pending.
+The next stacked slice tests invalid recipient and selected/inactive packet data,
+exact coincidence retention, alias/reorder refresh identity and generation, and
+exact rebase snapshot translation. Production code is unchanged. General canonical
+identity/reuse, downstream reduction and many-tick dt/Q remain pending. See the
+live extraction boundary below for the precise tested scope.
+
 
 **PR #329 correction (awaiting re-review):** review 5897775574 identified a missing
 prepaid binding allowance. The live-enabled reservation now includes the response
