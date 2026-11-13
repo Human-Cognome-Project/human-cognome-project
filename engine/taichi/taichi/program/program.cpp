@@ -62,6 +62,14 @@ ProgramStorage Program::lifecycle_storage() const {
   result.function_registry = runtime_map_storage(function_map_);
   result.ndarray_registry = runtime_map_storage(ndarrays_);
   result.argpack_registry = runtime_map_storage(argpacks_);
+  result.field_expressions = runtime_map_storage(snode_to_fields_);
+  result.accessors = snode_rw_accessors_bank_.storage();
+  result.map_storage_available = true;
+  for (const auto *map : {&result.function_registry, &result.ndarray_registry,
+                         &result.argpack_registry, &result.field_expressions,
+                         &result.accessors}) {
+    result.map_storage_available &= map->available && !map->overflow;
+  }
   result.free_ids = free_snode_tree_ids_.storage();
   result.free_id_storage_available = result.free_ids.available && !result.free_ids.overflow;
   return result;
