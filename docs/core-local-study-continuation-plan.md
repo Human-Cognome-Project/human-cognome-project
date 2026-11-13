@@ -1,6 +1,8 @@
 # Core continuation after local CUDA corrections
 
-**Intent correction analysis (#324, awaiting review, 2026-11-13):** accepted scope
+**Maintainer acceptance — #326, 2026-11-13:** comparison proposal and independent algebra reference accepted in review 5895998111 and merged at `f08ad43a476a1c09abd925b6fab884db682bfec8`. Hosted smoke and all 12 native jobs passed; the new standalone reference is outside that native filter. Reviewer independently compiled and ran it with GCC 14.2.0/C++17 and strict warnings: PASS. This accepts the analysis, not a production intent/braking law. #324 remains open: resolve exact coincidence/domain/contact choices and develop bounded native diagnostics and trajectory/activity fixtures before selecting the correction. Coefficient weighting remains a candidate. Next reference revision should reject nonfinite comparisons explicitly and check the documented angled coupling target. Storage work #322/#323/#325 and the later Taichi-reuse audit remain separate.
+
+**Intent correction analysis (#324, comparison accepted in #326, 2026-11-13):** accepted scope
 6859051253 authorizes the [comparison proposal](../engine/docs/INTENT-DERIVATION.md)
 and independent algebra fixtures before selecting a kernel correction. The proposal
 compares three target normalizations and constructs equal-force/different-intent under
