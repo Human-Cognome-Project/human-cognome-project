@@ -814,9 +814,11 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path) {
     retire.operation = UpdateOp::RetireParticle;
     retire.first = UpdateRef::existing(added);
     commands.push_back(retire);
+    const auto before_retirement = response_snapshot(f);
     refresh_ok(refresh_apply(f, remove, commands));
     const auto retired_responses = response_snapshot(f);
-    require(response_current(f, retired_responses) && !response_current(f, added_responses),
+    require(response_current(f, retired_responses) && !response_current(f, before_retirement) &&
+                retired_responses.completed_ticks == before_retirement.completed_ticks,
             "retired copied snapshot accepted as current");
     ++stale_snapshots;
     response_identity_equal(initial_responses, retired_responses);
