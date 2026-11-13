@@ -1,5 +1,15 @@
 # Core continuation after local CUDA corrections
 
+**Program lifecycle vectors (awaiting review, 2026-11-13):** follows #317
+review5891422350 at31cd23ab. Native Program inspection reports its object and existing
+kernel/function/tree/texture vector capacity with per-family overflow/availability.
+Retained tree slots are distinct from retired backing and recycled slots. No lazy
+creation or native execution changes. Map/free-ID/pointee coverage remains unavailable,
+full B false. Required mixed metadata/string-contract direction is accepted; compiler
+exclusion remains conditional. Next: map/free-ID request observation and remaining
+nested ownership, then qualified string/ABI coverage before trusted aggregation.
+Main remains qualified through #314; #315–#317 are source accepted pending integration.
+
 **Program/compiler scope audit (awaiting review, 2026-11-13):** follows #316
 review5891228994 after integrating qualified main e8b503d7 through #314. The new
 [Program accounting audit](../engine/docs/PROGRAM-ACCOUNTING-SCOPE.md) traces retained Program containers, separately HCP-owned

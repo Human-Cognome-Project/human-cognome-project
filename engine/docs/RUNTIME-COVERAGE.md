@@ -1,5 +1,13 @@
 # Runtime coverage and the combined-admission boundary
 
+**Program vector implementation (awaiting review, 2026-11-13):** following #317
+review5891422350, native Program::lifecycle_storage now reports its object and four
+lifecycle vector capacities at the actual owner, without factories or execution changes.
+Map/free-ID/pointee coverage stays explicitly unavailable; full coverage remains false.
+The source-pinned audit below is historical where it describes this exporter as future.
+Required mixed metadata and string-contract directions are accepted; compiler exclusion
+remains conditional. See the [export contract](BORROWED-RESOURCES.md#program-lifecycle-object-and-vectors-awaiting-review-2026-11-13).
+
 **Program/compiler follow-up (awaiting review, 2026-11-13):** the
 [ownership and scope proposal](PROGRAM-ACCOUNTING-SCOPE.md) refines the remaining
 Program rows below. It identifies retained tree graphs, HCP-owned kernels outside the

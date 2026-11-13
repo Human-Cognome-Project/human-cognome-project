@@ -7,6 +7,47 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Program lifecycle object and vectors (awaiting review, 2026-11-13)
+
+Continues [#317 review 5891422350](https://github.com/Human-Cognome-Project/human-cognome-project/pull/317#pullrequestreview-5891422350),
+which accepts the required-scope/string-contract directions and authorizes this bounded
+exporter. The compiler-payload exclusion remains conditional, not an accepted bound.
+Program::lifecycle_storage reads its actual object and four existing vectors: kernels,
+functions, SNode trees and textures. No container moves, lazy factories, compilation,
+registration, synchronization or dispatch changes are introduced.
+
+The report supplies the live Program identity and sizeof(Program), including embedded
+container controls/config/accessor representations. Do not add those embedded objects
+again. Each vector independently reports availability, overflow, constructed slot count
+and checked capacity bytes. The element buffer is separate from Program object storage;
+its unique_ptr elements do not include pointee storage. Slot count is not a live-kernel,
+active-tree or backing count. HCP-owned CompiledKernel kernels outside Program::kernels
+are not covered by this vector report.
+
+Map storage, the free-ID deque and pointee storage are explicitly unavailable; complete
+remains false. Dynamic config strings, nested graphs and separate ProgramImpl/profiler/
+compiler owners are not implied by the object size. Empty vectors are available even
+when capacity is retained. An overflowing family has unavailable capacity with overflow
+set; other successful families and the outer available flag do not repair that gap.
+No total or completeness claim can be inferred from these partial records.
+
+All reads are fixed-cost metadata reads without enumeration, copying or allocation.
+Keep Program alive and quiescent; returned identity is not a lifetime lease. Count its
+object and each vector buffer once at the shared-owner boundary, not once per Harness.
+After tree backing retirement, Program retains the tree slot/graph; replacing a recycled
+slot does not add a vector slot or certify the old backing. A finalized or retained
+Program object is not evidence of a usable device/runtime. Native lifecycle behavior
+is unchanged.
+
+CPU fixtures cover empty vectors, populated kernel/function/tree vectors, no launcher
+creation, allocation-free inspection, retained tree slots and second-slot reuse with
+new backing identity. Texture coverage is an empty-owner fixture only. The shared
+capacity helper additionally checks retained empty capacity and synthetic overflow;
+no impossibly large real vector allocation is attempted. Nested/pointee/map/deque,
+GPU and native-Windows coverage remain unqualified. Next: native map/free-ID request
+observation and remaining ownership under the [Program scope](PROGRAM-ACCOUNTING-SCOPE.md),
+then mixed ABI/provenance metadata and the qualified string contract before aggregation.
+
 ## Program ownership scope follow-up (awaiting review, 2026-11-13)
 
 The [Program accounting audit](PROGRAM-ACCOUNTING-SCOPE.md) follows #316 review5891228994
