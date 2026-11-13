@@ -121,6 +121,9 @@ class LlvmProgramImpl : public ProgramImpl {
   std::optional<std::size_t> snode_root_record_storage_bytes() const override {
     return runtime_exec_->snode_root_record_storage_bytes();
   }
+  RuntimeBookkeeping runtime_bookkeeping() const override {
+    return runtime_exec_ ? runtime_exec_->runtime_bookkeeping() : RuntimeBookkeeping{};
+  }
 
   template <typename T>
   T fetch_result(int i, uint64 *result_buffer) {

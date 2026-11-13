@@ -71,6 +71,20 @@ class LlvmRuntimeExecutor {
       return std::nullopt;
     return snode_tree_buffer_manager_->root_record_storage_bytes();
   }
+  RuntimeBookkeeping runtime_bookkeeping() const {
+    RuntimeBookkeeping result;
+    result.available = true;
+    result.executor_identity = this;
+    result.executor_base_object_bytes = sizeof(LlvmRuntimeExecutor);
+    result.tree_allocations = runtime_map_storage(snode_tree_allocs_);
+    result.runtime_allocations = runtime_map_storage(allocated_runtime_memory_allocs_);
+    if (snode_tree_buffer_manager_) {
+      result.root_manager_identity = snode_tree_buffer_manager_.get();
+      result.root_manager_object_bytes = sizeof(SNodeTreeBufferManager);
+      result.root_records = snode_tree_buffer_manager_->root_metadata();
+    }
+    return result;
+  }
 
   void check_runtime_error(uint64 *result_buffer);
 
@@ -172,11 +186,14 @@ class LlvmRuntimeExecutor {
   std::shared_ptr<Device> device_{nullptr};
 
   std::unique_ptr<SNodeTreeBufferManager> snode_tree_buffer_manager_{nullptr};
-  std::unordered_map<int, DeviceAllocation> snode_tree_allocs_;
+  template <typename Key>
+  using AllocationMap = std::unordered_map<Key, DeviceAllocation, std::hash<Key>,
+      std::equal_to<Key>,
+      SharedRequestCountingAllocator<std::pair<const Key, DeviceAllocation>>>;
+  AllocationMap<int> snode_tree_allocs_;
   DeviceAllocationUnique preallocated_runtime_objects_allocs_ = nullptr;
   DeviceAllocationUnique preallocated_runtime_memory_allocs_ = nullptr;
-  std::unordered_map<DeviceAllocationId, DeviceAllocation>
-      allocated_runtime_memory_allocs_;
+  AllocationMap<DeviceAllocationId> allocated_runtime_memory_allocs_;
 
   // good buddy
   friend LlvmProgramImpl;

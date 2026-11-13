@@ -2,6 +2,8 @@
 #include "taichi/inc/constants.h"
 #include "taichi/struct/snode_tree.h"
 #include "taichi/rhi/public_device.h"
+#include "taichi/rhi/common/shared_request_counting_allocator.h"
+#include "taichi/program/runtime_metadata.h"
 #define TI_RUNTIME_HOST
 
 #include <set>
@@ -31,6 +33,9 @@ class SNodeTreeBufferManager {
   std::size_t root_record_storage_bytes() const {
     return snode_tree_id_to_device_alloc_.size() * sizeof(AllocationRecord);
   }
+  RuntimeMapStorage root_metadata() const {
+    return runtime_map_storage(snode_tree_id_to_device_alloc_);
+  }
 
  private:
   LlvmRuntimeExecutor *runtime_exec_;
@@ -38,7 +43,9 @@ class SNodeTreeBufferManager {
     DeviceAllocation allocation;
     AllocationRecord record;
   };
-  std::map<int, RootBacking> snode_tree_id_to_device_alloc_;
+  std::map<int, RootBacking, std::less<int>,
+      SharedRequestCountingAllocator<std::pair<const int, RootBacking>>>
+      snode_tree_id_to_device_alloc_;
 };
 
 }  // namespace taichi::lang

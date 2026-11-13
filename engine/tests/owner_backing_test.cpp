@@ -70,6 +70,19 @@ void native_owners() {
   auto &program = runtime.program();
   auto &impl = *program.get_program_impl();
   auto &device = *impl.get_compute_device();
+  const auto empty = impl.runtime_bookkeeping();
+  require(empty.available && !empty.complete && empty.executor_identity &&
+              empty.executor_base_object_bytes && empty.root_manager_identity &&
+              empty.root_manager_object_bytes && empty.root_records.available &&
+              !empty.root_records.entries && empty.tree_allocations.available &&
+              empty.runtime_allocations.available &&
+              !impl.ProgramImpl::runtime_bookkeeping().available,
+          "runtime bookkeeping confused empty supported storage with unavailable");
+  require(empty.root_records.allocation_domain != empty.tree_allocations.allocation_domain &&
+              empty.tree_allocations.allocation_domain != empty.runtime_allocations.allocation_domain &&
+              empty.root_records.counter_object_bytes &&
+              empty.root_records.counter_control_block_bytes,
+          "runtime map domains or counter requests missing");
   require(impl.snode_root_record_storage_bytes() == 0 &&
               !impl.ProgramImpl::snode_root_record_storage_bytes(),
           "empty supported metadata confused with unavailable");
@@ -79,6 +92,16 @@ void native_owners() {
   auto *second = tree(program);
   const auto a = impl.snode_root_backing_record(first->id());
   const auto b = impl.snode_root_backing_record(second->id());
+  const auto roots = impl.runtime_bookkeeping();
+  require(roots.executor_identity == empty.executor_identity &&
+              roots.root_manager_identity == empty.root_manager_identity &&
+              roots.root_records.entries == 2 &&
+              roots.tree_allocations.entries == empty.tree_allocations.entries + 2 &&
+              roots.runtime_allocations.entries == empty.runtime_allocations.entries + 2 &&
+              roots.root_records.allocation_request_bytes > empty.root_records.allocation_request_bytes &&
+              roots.root_records.allocation_request_bytes >= roots.root_records.value_payload_bytes &&
+              roots.root_records.value_payload_bytes >= 2*sizeof(AllocationRecord),
+          "runtime maps did not report retained root bookkeeping");
   require(impl.snode_root_record_storage_bytes() == 2 * sizeof(AllocationRecord),
           "root record storage missing or counted per query");
   require(a.status == AllocationRecordStatus::Live &&
@@ -96,12 +119,18 @@ void native_owners() {
     allocation_lifetime::begin();
     const auto queried_array = owned.backing_record(device);
     const auto queried_root = impl.snode_root_backing_record(first->id());
+    const auto queried_metadata = impl.runtime_bookkeeping();
     const auto counts = allocation_lifetime::end();
     require(!counts.attempts && queried_array.token == array_record.token &&
-                queried_root.token == a.token, "owner inspection allocated or changed identity");
+                queried_root.token == a.token && queried_metadata.available &&
+                queried_metadata.runtime_allocations.entries == roots.runtime_allocations.entries + 1 &&
+                queried_metadata.root_records.allocation_domain == roots.root_records.allocation_domain,
+            "owner inspection allocated or changed identity");
   }
   require(device.allocation_record(array_record.token).status == AllocationRecordStatus::Retired,
           "owned array destruction left live record");
+  require(impl.runtime_bookkeeping().runtime_allocations.entries == roots.runtime_allocations.entries + 1,
+          "retained ndarray descriptor was mistaken for live allocation storage");
   const auto first_id = first->id();
   program.destroy_snode_tree(first);
   require(impl.snode_root_backing_record(first_id).status == AllocationRecordStatus::Unknown &&
@@ -111,6 +140,17 @@ void native_owners() {
   program.destroy_snode_tree(second);
   require(impl.snode_root_record_storage_bytes() == 0,
           "root record metadata retained after destruction");
+  const auto retired = impl.runtime_bookkeeping();
+  require(!retired.root_records.entries &&
+              retired.root_records.allocation_request_bytes == empty.root_records.allocation_request_bytes &&
+              retired.runtime_allocations.entries == empty.runtime_allocations.entries + 1 &&
+              retired.tree_allocations.entries == roots.tree_allocations.entries &&
+              retired.tree_allocations.allocation_request_bytes == roots.tree_allocations.allocation_request_bytes &&
+              !retired.complete,
+          "root release lost retained descriptors or claimed full runtime coverage");
+  std::cout << "root_map_requests=" << roots.root_records.allocation_request_bytes
+            << " tree_map_requests=" << roots.tree_allocations.allocation_request_bytes
+            << " retained_runtime_entries=" << retired.runtime_allocations.entries << '\n';
   std::cout << "root_request=" << a.requested_bytes << " array_request="
             << array_record.requested_bytes << " ndarray_object=" << sizeof(Ndarray) << '\n';
 }

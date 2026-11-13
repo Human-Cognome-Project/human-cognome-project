@@ -10,6 +10,7 @@
 #include "taichi/program/kernel_launcher.h"
 #include "taichi/rhi/device.h"
 #include "taichi/program/reservation_request.h"
+#include "taichi/program/runtime_metadata.h"
 #include "taichi/aot/graph_data.h"
 #include "taichi/codegen/kernel_compiler.h"
 #include "taichi/compilation_manager/kernel_compilation_manager.h"
@@ -76,6 +77,7 @@ class ProgramImpl {
   virtual std::optional<std::size_t> snode_root_record_storage_bytes() const {
     return std::nullopt;
   }
+  virtual RuntimeBookkeeping runtime_bookkeeping() const { return {}; }
 
   virtual std::size_t get_snode_num_dynamically_allocated(
       SNode *snode,
