@@ -15,11 +15,14 @@ std::uint64_t exercise() {
   settings.cpu_threads = 1;
   settings.snode_capacity = 128;
   settings.snode_tree_capacity = 32;
+  const auto initialization_before = HostMemoryPool::get_instance().statistics();
   engine::Runtime runtime(settings);
+  const auto initialization_after = HostMemoryPool::get_instance().statistics();
   auto &program = runtime.program();
   auto &owner = *program.get_program_impl();
   const auto limits = owner.reservation_limits();
   require(limits.available && limits.node_capacity == 128 && limits.query_work_units == 1 &&
+              limits.global_requests == reservation_global_requests &&
               limits.list_pages == reservation_max_pages && limits.list_chunks == reservation_max_chunks &&
               limits.incremental_owner_bytes == 2 * sizeof(void *), "reservation limits/metadata incorrect");
   require(!owner.ProgramImpl::reservation_limits().available &&
@@ -33,6 +36,56 @@ std::uint64_t exercise() {
               metadata.requested_bytes == 128 * sizeof(std::uint64_t) && metadata.alignment == 4096 &&
               !metadata.backing_identity_complete && !metadata.rounded_extent_available && !metadata.extent_bytes,
           "ambient request metadata missing, allocated during query, or certified rounded backing");
+  ReservationRequest globals[reservation_global_requests]{};
+  PoolBackingRecord global_pools[reservation_global_requests]{};
+  std::uint64_t global_bytes = 0;
+  std::size_t global_index = 0;
+  allocation_observation::calls = 0;
+  allocation_observation::enabled = true;
+  for (auto kind : runtime_global_reservations) {
+    globals[global_index] = owner.reservation_request(kind, -1);
+    global_pools[global_index] = owner.reservation_pool_backing(kind, -1);
+    ++global_index;
+  }
+  allocation_observation::enabled = false;
+  require(!allocation_observation::calls, "global inspection allocated");
+  bool shared_pool = false;
+  for (std::size_t i = 0; i < reservation_global_requests; ++i) {
+    const auto &request = globals[i];
+    require(request.status == ReservationStatus::Present && request.requested_bytes &&
+                request.runtime_instance == metadata.runtime_instance &&
+                global_pools[i].status == PoolBackingStatus::Live &&
+                global_pools[i].raw_requested_bytes >= request.requested_bytes &&
+                global_pools[i].rounded_extent_available &&
+                !request.backing_identity_complete && !request.rounded_extent_available,
+            "global request or canonical pool coverage missing");
+    require(request.requested_bytes <= std::numeric_limits<std::uint64_t>::max() - global_bytes,
+            "global request sum overflow");
+    global_bytes += request.requested_bytes;
+    for (std::size_t j = 0; j < i; ++j) {
+      require(request.address != globals[j].address, "global catalog duplicated a request");
+      shared_pool |= global_pools[i].token == global_pools[j].token;
+    }
+    const auto kind = runtime_global_reservations[i];
+    require(owner.reservation_request(kind, 0).status == ReservationStatus::Invalid &&
+                owner.reservation_request(kind, -1, ReservationList::Free).status == ReservationStatus::Invalid &&
+                owner.reservation_request(kind, -1, ReservationList::Elements, 1).status == ReservationStatus::Invalid,
+            "invalid global selector accepted");
+  }
+  require(global_bytes == initialization_after.requested_bytes - initialization_before.requested_bytes &&
+              initialization_after.allocation_calls - initialization_before.allocation_calls == reservation_global_requests &&
+              shared_pool,
+          "global catalog disagrees with actual initialization requests or lost shared backing");
+  require(owner.reservation_request(ReservationKind::RootPointers,-1).requested_bytes == 32*sizeof(void *) &&
+              owner.reservation_request(ReservationKind::RootSizes,-1).requested_bytes == 32*sizeof(std::size_t) &&
+              owner.reservation_request(ReservationKind::ElementListPointers,-1).requested_bytes == 128*sizeof(void *) &&
+              owner.reservation_request(ReservationKind::NodeAllocatorPointers,-1).requested_bytes == 128*sizeof(void *) &&
+              owner.reservation_request(ReservationKind::AmbientPointers,-1).requested_bytes == 128*sizeof(void *) &&
+              owner.reservation_request(ReservationKind::RuntimeObject,-1).alignment == 128 &&
+              owner.reservation_request(ReservationKind::RuntimeResult,-1).alignment == 8,
+          "global capacity or request alignment incorrect");
+  require(owner.reservation_request(ReservationKind::AmbientMetadata,-1).address == metadata.address,
+          "global catalog replaced existing ambient metadata");
   allocation_observation::calls = 0;
   allocation_observation::enabled = true;
   const auto metadata_pool = owner.reservation_pool_backing(ReservationKind::AmbientMetadata,-1);
@@ -116,12 +169,19 @@ std::uint64_t exercise() {
               query(ReservationKind::ListChunk, ReservationList::Data).address == chunk.address,
           "repeated activation changed retained reservation");
   program.destroy_snode_tree(tree);
+  for (std::size_t i = 0; i < reservation_global_requests; ++i) {
+    const auto retained = owner.reservation_request(runtime_global_reservations[i], -1);
+    require(retained.address == globals[i].address && retained.requested_bytes == globals[i].requested_bytes,
+            "tree destruction changed runtime-global requests");
+  }
   require(query(ReservationKind::Ambient).address == ambient.address &&
               query(ReservationKind::ListChunk, ReservationList::Data).address == chunk.address &&
               owner.reservation_request(ReservationKind::AmbientMetadata, -1).address == metadata.address,
           "tree removal hid still-retained runtime requests");
   std::cout << "ambient_request=" << ambient.requested_bytes << " page_request=" << page.requested_bytes
             << " chunk_request=" << chunk.requested_bytes << " metadata_request=" << metadata.requested_bytes << '\n';
+  std::cout << "global_requests=" << reservation_global_requests
+            << " global_request_bytes=" << global_bytes << '\n';
   return metadata.runtime_instance;
 }
 }

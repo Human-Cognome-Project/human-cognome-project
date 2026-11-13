@@ -810,7 +810,8 @@ ReservationLimits LlvmRuntimeExecutor::reservation_limits() const {
   if (!reservation_query_ || !llvm_runtime_ || !device_->allocation_instance())
     return {};
   return {true, static_cast<uint64_t>(snode_capacity_), reservation_max_pages,
-          reservation_max_chunks, 1, sizeof(ReservationQuery) + sizeof(uint64_t *)};
+          reservation_max_chunks, 1, sizeof(ReservationQuery) + sizeof(uint64_t *),
+          reservation_global_requests};
 }
 
 PoolBackingRecord LlvmRuntimeExecutor::reservation_pool_backing(

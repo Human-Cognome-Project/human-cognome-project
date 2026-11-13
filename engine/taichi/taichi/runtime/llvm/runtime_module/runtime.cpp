@@ -807,10 +807,46 @@ void runtime_reservation_request(LLVMRuntime *runtime, int kind_value, int node,
   const auto kind = static_cast<ReservationKind>(kind_value);
   Ptr ptr = nullptr;
   uint64 bytes = 0, alignment = 4096;
-  if (kind == ReservationKind::AmbientMetadata) {
+  if (kind == ReservationKind::AmbientMetadata ||
+      (kind >= ReservationKind::RuntimeObject && kind <= ReservationKind::RuntimeResult)) {
     if (node != -1 || list_value != 0 || index != 0) return;
-    ptr = reinterpret_cast<Ptr>(runtime->ambient_request_sizes);
-    bytes = sizeof(uint64) * static_cast<uint64>(runtime->snode_capacity);
+    if (runtime->snode_capacity < 0 || runtime->snode_tree_capacity < 0 ||
+        runtime->num_rand_states < 0) return;
+    uint64 count = 1, width = 1;
+    switch (kind) {
+      case ReservationKind::RuntimeObject:
+        ptr = reinterpret_cast<Ptr>(runtime);
+        width = sizeof(LLVMRuntime); alignment = 128; break;
+      case ReservationKind::RootPointers:
+        ptr = reinterpret_cast<Ptr>(runtime->roots);
+        count = runtime->snode_tree_capacity; width = sizeof(Ptr); break;
+      case ReservationKind::RootSizes:
+        ptr = reinterpret_cast<Ptr>(runtime->root_mem_sizes);
+        count = runtime->snode_tree_capacity; width = sizeof(size_t); break;
+      case ReservationKind::ElementListPointers:
+        ptr = reinterpret_cast<Ptr>(runtime->element_lists);
+        count = runtime->snode_capacity; width = sizeof(Ptr); break;
+      case ReservationKind::NodeAllocatorPointers:
+        ptr = reinterpret_cast<Ptr>(runtime->node_allocators);
+        count = runtime->snode_capacity; width = sizeof(Ptr); break;
+      case ReservationKind::AmbientPointers:
+        ptr = reinterpret_cast<Ptr>(runtime->ambient_elements);
+        count = runtime->snode_capacity; width = sizeof(Ptr); break;
+      case ReservationKind::AmbientMetadata:
+        ptr = reinterpret_cast<Ptr>(runtime->ambient_request_sizes);
+        count = runtime->snode_capacity; width = sizeof(uint64); break;
+      case ReservationKind::Temporaries:
+        ptr = runtime->temporaries; width = taichi_global_tmp_buffer_size; break;
+      case ReservationKind::RandomStates:
+        ptr = reinterpret_cast<Ptr>(runtime->rand_states);
+        count = runtime->num_rand_states; width = sizeof(RandState); break;
+      case ReservationKind::RuntimeResult:
+        ptr = runtime->result_buffer;
+        count = taichi_result_buffer_entries; width = sizeof(uint64); alignment = 8; break;
+      default: return;
+    }
+    if (width && count > (~uint64(0)) / width) return;
+    bytes = count * width;
   } else {
     if (node < 0 || node >= runtime->snode_capacity) return;
     if (kind == ReservationKind::NodeManager || kind == ReservationKind::Ambient) {

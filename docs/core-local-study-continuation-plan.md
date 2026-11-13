@@ -1,8 +1,28 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer integration — 2026-11-13:** #313–#314 are accepted and integrated by this merge, preserving reviewed `f850a38f71cad0b1f4c4cc951a477a3b7e62ff94`. Native runs 43417067391 and 43419927538 passed all 12 jobs each; both smoke runs passed. Personally inspected #314 regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #314. #315–#316 have bounded source acceptance and passing smoke; native qualification remains pending. #316 observes the existing Taichi thread-pool object and handle-vector capacity without changing execution machinery. Remaining work: native Program ownership visibility and concrete string/compiler/JIT scope decisions, then trusted lifetime/required-family aggregation with canonical/domain deduplication and prepaid work. Full B and combined admission remain unaccepted; held #75/#111/#123 are unchanged. Earlier pending/status paragraphs below are historical where they conflict.
+
 **Maintainer handoff — 2026-11-13:** #312 is accepted and merged at `176d964a4e1084faa6d470a94bf41a04aad42e57`, preserving reviewed `9d459141c854e923e5eefd6bac776713cd5bb08d`. Native run 43415723155 passed all 12 jobs; smoke 43415723848 passed. Personally inspected regression logs show 119 passes (30/30/30/29), and database evidence reports addressed_reads=24/private_reads=0. Main is qualified through #312. #313–#315 have bounded source acceptance and passing smoke; their native CI remains pending. #315 review 5890749492 accepts inspection of the existing launcher registry, with incomplete coverage and separate potentially-inline name capacity. Contributor-local raw archives have not been independently inspected. Held #75/#111/#123 remain unchanged. Earlier status paragraphs below are historical where they conflict.
 
 **Current direction:** reuse Taichi's existing optimized compilation, registration, dispatch and thread machinery. Inspect those facilities before adding any remaining Program/thread ownership integration. Ownership visibility does not authorize a parallel scheduler, compiler or thread-specific execution mechanism. New machinery requires a demonstrated missing function. Resolve string accounting and compiler/JIT scope before trusted required-family/lifetime aggregation, canonical/domain deduplication and prepaid work for C+B+H+D. Full B and combined admission are not yet accepted.
+
+**Runtime-global requests (awaiting review, 2026-11-13):** follows accepted #313
+implementation direction/review5890147678. Native/common reservation queries now expose
+a ten-entry runtime-global catalog, including the existing ambient metadata once.
+CPU canonical pool bridges preserve shared backing identity; unsupported GPU/preallocation
+inspection remains unavailable. No allocation layout or owner-field changes. #312/#313
+remain pending integration; main is qualified through #311. Next: shared launch registry,
+Program/thread coverage or reviewed scope decisions, then trusted Harness lifetime/
+required-family/canonical-domain deduplication and prepaid work before C+B+H+D.
+
+**Runtime coverage policy audit (awaiting review, 2026-11-13):** follows #312
+review5890043642 at9d459141. [Coverage matrix](../engine/docs/RUNTIME-COVERAGE.md)
+separates required-family blockers, metric exclusions and proposed compiler/JIT scope.
+No exclusion or admission behavior is implemented. Next bounded code work: native
+runtime-global object/table/temporary/random/result request exports, then shared launch
+registry and remaining ownership coverage or reviewed scope decisions. Trusted Harness
+lifetime/deduplication/prepaid work still precede C+B+H+D. #312 remains provisional;
+main is qualified through #311. No new runtime/GPU qualification.
 
 **Runtime bookkeeping tables (awaiting review, 2026-11-13):** starts from main
 c5645a28 after qualified #309–#311 integration. Common ProgramImpl inspection now

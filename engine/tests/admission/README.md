@@ -6329,3 +6329,61 @@ Archive SHA256:1d14d90cd45de7a36d08167b7171c93ff0b431f4b532170c2f4ce7178dc2bc9e.
 Retains source/configuration/compiler/binary pins, commands and complete results.
 Raw local artifacts have not been independently inspected remotely. Hosted qualification
 and maintainer acceptance remain separate; no duplicate accepted run or self-merge.
+## Runtime coverage/exclusion source audit — 2026-11-13
+
+Inspected reviewed312 source9d459141c854e923e5eefd6bac776713cd5bb08d/native tree
+c2c0c512b5b7aa2ed05e30fbb1c3a9df7b40b7d8 after review5890043642. Main remains
+c5645a28 through311;312 is provisionally source-accepted and unmerged. No duplicate
+native build/CI run. [Coverage policy audit](../../docs/RUNTIME-COVERAGE.md) traces
+Program/ProgramImpl, LLVMRuntime initialization, executor materialization, CPU launcher
+registration, ThreadPool and HCP owner contracts. It separates required-family gaps
+from metric exclusions and proposed compiler/JIT scope. No new policy is accepted here.
+
+Concrete next code scope is native runtime-global object/table/temporary/random/result
+request export, preserving ambient-metadata coverage and canonical backing deduplication.
+Shared launch registry and Program/thread ownership remain explicit subsequent coverage
+work. Source inspection is the evidence for this documentation-only slice; no executable
+code, completeness flag or admission behavior changed. Prior CPU results remain prior
+evidence, not rerun results. No GPU/database/browser/native-Windows qualification.
+Validation:144 local file links and whitespace checks passed across the five changed Markdown files. No executable files changed.
+
+## Runtime-global request exports — 2026-11-13
+
+Continues accepted #313 implementation direction/review5890147678 atcc37384a.
+Mainc5645a28 remains qualified through311;312/313 pending underlying qualification.
+Remote refs/open queue checked; no duplicate parent run or self-merge.
+
+The common/native reservation interface exposes ten global request selectors:
+runtime object, root pointer/size tables, list/node/ambient pointer tables, existing
+ambient metadata, temporaries, random states and runtime result storage. Existing
+enum values/ambient identity are preserved. Checked native arithmetic uses actual
+stored initialization capacities. No owner field, allocation layout or request changes.
+CPU canonical pool lookup is separate; shared containing backing is counted once.
+GPU/preallocation inspection remains unavailable and unqualified.
+See [the contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:57a34d5c7d3c88583b88f3fa7a68401fcab6f352.
+Tracked Taichi tree:4bdc6d880aaa101844fd756389abc26a839180d1.
+Expanded reservation_request_test compares all ten reported requests' count/byte sum
+with independent HostMemoryPool initialization statistics; verifies individual table
+capacities/object-result alignments, unique request addresses with shared canonical pool
+tokens, invalid global selectors, allocation-free queries, existing ambient identity
+and retained global requests after tree destruction. Existing cross-runtime identity,
+node/list/ambient and activation controls remain in scope. CPU/Linux/WSL shared host
+only; no GPU/native Windows/database/browser/performance qualification is implied.
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. The global catalog
+reported10 requests totaling1,056,004 bytes, exactly matching observed initialization
+request count/bytes. Existing ambient32/page4096/chunk524288/metadata1024 observations
+remain unchanged. These are fixture values, not portable constants.
+No source build/test failure; captured build/runtime logs contain no warnings/errors.
+Focused/prepared/support CTests used parent TI_LIB_DIR unset; direct executables used
+explicit runtime setup. Tested WSL source is clean.
+
+Final publication changes only five Markdown files;147local file links/whitespace checks
+passed. Contributor-local archive:runtime-global-domain-57a34d5c.tar.gz.
+Manifest SHA256:69968b1949a1c7e6089c3c75d40d2a39c3d587da7a7cb63c482fc7185f05abe2.
+Archive SHA256:589eb33d13541e5097742dafc39376eb67268c6b3db3898408b9e1a914d498e8.
+Source/configuration/compiler/binary pins, commands and complete results are retained.
+Raw artifacts have not been independently inspected remotely. No duplicate parent
+qualification or self-merge; hosted qualification and maintainer acceptance are separate.
