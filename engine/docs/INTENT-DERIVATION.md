@@ -201,3 +201,29 @@ Report intent drift, accepted position/displacement/velocity and intent separati
 in one frame, alongside focal damping and quantization effects. Distinguish
 bounded motion, spirals and quantization stops; no universal orbital-stability
 claim or classifier follows from persistent intent alone. #324 remains open.
+
+### Executed reference qualification — 2026-11-13
+
+Tested source `b3eac9b027d1e3939c07b57bd95f445efeb83198`, using Clang 15,
+C++17 Release in Ubuntu/WSL. Standalone configuration/build with
+`-Wall -Wextra -Werror -pedantic` passed; CTest 1/1 and direct execution passed.
+Captured configuration/build logs have no warnings/errors. Ninety local file
+links and whitespace checks passed. Final evidence publication is Markdown-only.
+
+Reproduce independently from the repository root:
+
+```sh
+cmake -S engine/tests/intent_reference -B /tmp/hcp-intent-reference -DCMAKE_BUILD_TYPE=Release
+cmake --build /tmp/hcp-intent-reference
+ctest --test-dir /tmp/hcp-intent-reference --output-on-failure
+```
+
+This standalone CTest is not wired into the existing native engine CI filter;
+its pass is contributor-local reference evidence, not hosted native qualification.
+Source/compiler/binary hashes, commands and logs are retained locally in
+`intent-reference-b3eac9b0.tar.gz`. Manifest SHA256:
+`17dfa8bc2d42603feccb1fbc0916d1c0ad80c73a5e1d0e8158d22819bde2de04`;
+archive SHA256:
+`236bc7435a9b1772d96c892b0da59d6ae3338abc6de1ffb2137c6d69f147d55c`.
+Raw local evidence has not been independently reviewed remotely. No production
+build, model tick, native trajectory, GPU or database work was run for this slice.
