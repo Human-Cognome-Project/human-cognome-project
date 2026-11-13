@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Free-ID deque requests (awaiting review, 2026-11-13):** follows #319
+review5892365537 and integrates qualified main5733255c through #317. The native free-ID
+stack retains std::deque/LIFO behavior while its shared allocator exposes element and
+internal pointer-map requests. Fixed metadata inspection does not copy/pop the stack.
+Container availability is explicit; field/accessor maps, pointees and full coverage remain
+incomplete. Next: those maps, then nested ownership and mixed ABI/string coverage before
+trusted aggregation. Compiler exclusions remain conditional. #318–#319 remain source
+accepted pending integration; held #75/#111/#123 unchanged.
+
 **Maintainer integration — 2026-11-13:** #316–#317 are accepted and integrated by this merge, preserving reviewed `31cd23abb0f07ab23520ac8c09a7025f7417566e`. Native runs 43427530304 and 43429268947 passed all 12 jobs each; both smoke workflows passed. Personally inspected #317 regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #317. #318–#319 have bounded source acceptance and passing smoke; native qualification remains pending. #319 review 5892365537 accepts request observation for three existing Program registries, explicitly including added counter/control-block costs and excluding pointees/external key strings from those map reports. Next: existing field/accessor maps and free-ID container, then nested ownership and mixed ABI/provenance/string coverage before trusted aggregation. Reuse Taichi compilation, dispatch and thread machinery. Compiler exclusions remain conditional; full B and combined admission remain unaccepted. Held #75/#111/#123 remain unchanged. Earlier status paragraphs below are historical where they conflict.
 
 **Maintainer integration — 2026-11-13:** #315 is accepted and integrated by this merge, preserving reviewed `891f6141b3c849de3a5ae5f587649d7bcc4e1c22`. Native run 43422882717 passed all 12 jobs and smoke 43422882727 passed. Personally inspected regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #315. #316–#318 have bounded source acceptance and passing smoke; native qualification remains pending. #318 review 5891877028 accepts native Program object/vector inspection with map/free-ID/pointee coverage explicitly incomplete. Next: map/free-ID request observation at existing native owners, then nested ownership and mixed ABI/provenance/string coverage before trusted aggregation. Compiler exclusions remain conditional; full B and combined admission remain unaccepted. Reuse Taichi compilation, dispatch and thread machinery. Held #75/#111/#123 remain unchanged. Earlier pending/status paragraphs below are historical where they conflict.

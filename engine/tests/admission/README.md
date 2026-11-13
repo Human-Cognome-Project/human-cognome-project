@@ -6574,3 +6574,45 @@ Archive SHA256:50af7f4602d0eda2cc0f023fdeb6ae05198d4b223d9f0b63559b7c1fa63caf32.
 Source/configuration/compiler/binary pins, commands and complete results/diagnostics
 are retained. Raw artifacts not independently inspected remotely. Hosted qualification
 and maintainer acceptance remain separate; no duplicate parent run/self-merge.
+
+## Free-ID deque requests — 2026-11-13
+
+Read319review5892365537 at356cd7ec: source accepted/no blockers, continue native remaining
+containers with domain/rebound controls. Fetched/merged main5733255c through qualified
+316/317 in4c7eb178; checked open318/319 plus held75/111/123. No parent rerun/self-merge.
+
+Native free-ID stack retains std::stack/deque operations, using the existing shared
+request allocator. Generalized runtime_container_storage preserves the old map API and
+exposes deque element/internal pointer-map requests without copying/popping/allocating.
+Counter/control-block requests and payload subset remain distinct. Program container
+availability advances only for free IDs; map/pointee/full coverage remains incomplete.
+Instrumentation overhead is disclosed. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:c58ad7b7e6bc4c8b434c583c35b28431622a6f79.
+Tracked Taichi tree:a2a4d012017e417fd79b82169f77d6bb3d3b58d1.
+Expanded owner_backing_test independently compares observed C++ request bytes to the
+native report at empty/grown4096/pop-to-empty states, verifies allocation-free inspection,
+LIFO order and zero live requests after destruction. Each successful-path constructor/
+growth allocation point is failure-injected and checked for cleanup. Runtime one/two-
+worker fixtures verify two retired IDs and exact second-ID reuse leaves one ID.
+This does not qualify whole-Program constructor failure, GPU/native Windows, database,
+browser, physical memory or shared-host performance. Remaining maps/nested owners and
+conditional compiler/string scope still precede trusted aggregation.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. All39 observed free-ID
+constructor/growth allocation points passed injected-failure cleanup. Independent live
+request equality, allocation-free inspection, LIFO/pop-to-empty retention and zero-live
+teardown passed. Both runtime configurations report Program object928bytes on this build;
+this includes larger embedded allocator state and is not a portable constant.
+No source build/test failures; build logs warning-free. One passing2-direct-exchange_commit
+emitted a cache-lock warning, preserved without cleanup/rerun. CTests used parent TI_LIB_DIR
+unset; direct executables used explicit runtime setup. Tested WSL source remains clean.
+
+Final publication changes only six Markdown files;187local file links/whitespace passed.
+Contributor-local archive:program-free-id-domain-c58ad7b7.tar.gz.
+Manifest SHA256:4d68efdf01d524a0b70aa76fc17830a110f8cd0ced99737730cac4052eb5f447.
+Archive SHA256:da6215819170d1db9fc85b7f267f347711ed7997e74c44dec30b5eca0379e073.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics
+are retained. Raw artifacts not independently inspected remotely. Hosted qualification
+and maintainer acceptance remain separate; no duplicate parent run/self-merge.

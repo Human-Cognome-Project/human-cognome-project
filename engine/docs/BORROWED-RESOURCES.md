@@ -7,6 +7,49 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Free-ID deque requests (awaiting review, 2026-11-13)
+
+Continues [#319 review 5892365537](https://github.com/Human-Cognome-Project/human-cognome-project/pull/319#pullrequestreview-5892365537).
+Program's free-tree-ID owner remains a std::stack backed by std::deque, now using the
+reviewed SharedRequestCountingAllocator. A native adapter exposes the protected
+container's fixed metadata without copying, enumerating or popping the stack.
+Existing push/pop/top/empty and tree-ID reuse behavior remain authoritative; no new
+ID policy, scheduler, compiler or parallel ownership registry is introduced.
+
+The existing map-request helper is generalized to runtime_container_storage, with the
+old runtime_map_storage API forwarding unchanged. RuntimeContainerStorage aliases the
+existing request-record representation. The free_ids report supplies entries, live
+allocator requests, domain identity, counter/control-block requests and value-payload
+subset. Rebound requests include deque element blocks and its internal pointer-map
+storage. Element payload is contained in those requests, never an extra charge.
+Empty stacks may retain both internal storage and their allocator domain.
+
+Program free_id_storage_available reflects this container's successful report only;
+it does not certify tree pointees, field/accessor maps or a complete Program ledger.
+Those families and complete remain false. The embedded stack/allocator representation
+is contained in Program object size; its dynamically requested storage/counter costs
+are separate and counted once per live domain. Instrumentation adds counter/control-
+block requests and embedded allocator state. It is not an unchanged allocation trace.
+
+Inspection requires the live quiescent Program/domain, adds no allocations or lazy
+factories, and is fixed metadata work. Identity is not a lifetime lease. Retirement
+pushes an ID; native LIFO replacement consumes it while the tree vector retains slots.
+An ID entry is neither an owning tree pointer nor proof of live backing. Pointer-map
+requests are not a separate map owner/domain or an additional charge over live requests.
+
+A standalone native stack fixture independently witnesses C++ new/delete requests:
+empty construction, growth to4096IDs (including rebound storage), pop-to-empty retained
+storage and teardown. It checks exact current request totals including counter/control-
+block costs and zero-allocation inspection, then injects failure at every observed
+constructor/growth allocation point and checks cleanup. This is stack/allocator evidence,
+not whole-Program constructor failure qualification. Runtime one/two-worker fixtures
+check two retired IDs and exact second-ID reuse with one ID remaining. No GPU/native-
+Windows or physical-memory qualification is claimed.
+
+Next: field-expression/accessor maps, then nested ownership and mixed ABI/provenance/
+string coverage under the [Program scope](PROGRAM-ACCOUNTING-SCOPE.md). Compiler exclusions
+remain conditional; this slice does not establish full B or combined admission.
+
 ## Program registry requests (awaiting review, 2026-11-13)
 
 Continues [#318 review 5891877028](https://github.com/Human-Cognome-Project/human-cognome-project/pull/318#pullrequestreview-5891877028).

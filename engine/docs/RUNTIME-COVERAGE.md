@@ -1,5 +1,13 @@
 # Runtime coverage and the combined-admission boundary
 
+**Free-ID follow-up (awaiting review, 2026-11-13):** the
+[native deque request export](BORROWED-RESOURCES.md#free-id-deque-requests-awaiting-review-2026-11-13)
+observes Program's existing stack through shared allocator requests, including rebound
+internal pointer storage. No copy/pop is used for inspection and LIFO semantics remain
+native. Free-ID container availability is now explicit; field/accessor maps, pointees
+and full coverage remain incomplete. Earlier descriptions below are pinned history
+where superseded. Compiler exclusions remain conditional.
+
 **Program registry follow-up (awaiting review, 2026-11-13):** the
 [three-registry request export](BORROWED-RESOURCES.md#program-registry-requests-awaiting-review-2026-11-13)
 reuses native shared counting allocators for Program function/ndarray/argpack maps.
