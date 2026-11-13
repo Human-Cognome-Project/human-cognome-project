@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Field/accessor map requests (awaiting review, 2026-11-13):** follows #320
+review5892748763 and integrates qualified main dc7705eb through #318. Existing native
+field-expression/accessor maps now reuse shared request counters; Program forwards the
+bank's same domain report. All five direct map reports govern map availability, while
+pointee/full coverage remains false. Tree retirement removes accessor rows but retains
+field rows/kernel objects; no new cleanup policy. Next: nested ownership and mixed ABI/
+provenance/string coverage before trusted aggregation. Compiler exclusions remain
+conditional. #319–#320 await integration; held #75/#111/#123 unchanged.
+
 **Maintainer integration — 2026-11-13:** #318 is accepted and integrated by this merge, preserving reviewed `7b1242be177283c39b9b5ea38a4590b34804f79d`. Native run 43432471080 passed all 12 jobs and smoke 43432471126 passed. Personally inspected regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #318. #319–#320 have bounded source acceptance and passing smoke; native qualification remains pending. #320 review 5892748763 accepts native free-ID deque request inspection and its scoped allocation/failure controls, retaining native LIFO behavior. Next: existing field-expression/accessor maps, then nested ownership and mixed ABI/provenance/string coverage before trusted aggregation. Reuse Taichi compilation, dispatch and thread machinery. Compiler exclusions remain conditional; full B and combined admission remain unaccepted. Held #75/#111/#123 remain unchanged. Earlier status paragraphs below are historical where they conflict.
 
 **Free-ID deque requests (awaiting review, 2026-11-13):** follows #319

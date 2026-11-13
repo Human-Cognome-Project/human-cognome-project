@@ -6616,3 +6616,43 @@ Archive SHA256:da6215819170d1db9fc85b7f267f347711ed7997e74c44dec30b5eca0379e073.
 Source/configuration/compiler/binary pins, commands and complete results/diagnostics
 are retained. Raw artifacts not independently inspected remotely. Hosted qualification
 and maintainer acceptance remain separate; no duplicate parent run/self-merge.
+
+## Field-expression/accessor map requests — 2026-11-13
+
+Read320review5892748763 at4c7b7bee: source accepted/no blockers; continue existing field/
+accessor maps then nested ownership. Fetched/merged main dc7705eb through qualified318
+in5dc0e403; checked open319/320 and held75/111/123. No parent rerun/self-merge.
+
+SNodeFieldMap and the existing accessor-bank map reuse SharedRequestCountingAllocator.
+The bank owns its storage query; Program forwards the same domain and observes its own
+field map. Direct map availability checks all five reports, without implying pointee/
+string/full coverage. Embedded bank storage is a Program subset; new allocator overhead
+is disclosed. No parallel registry or cleanup policy. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:7ec1821668a5eaa7de2df102081f33dcd9eddacb.
+Tracked Taichi tree:ef9795b3e135de6edb4c3f5c8d409d6487f41385.
+Expanded owner_backing_test uses native field placement/accessor creation and read/write
+execution in one/two-worker runtimes. Checks independent empty map domains, population,
+allocation-free/direct-forwarded queries, accessor erasure on tree retirement, retained
+kernel/field rows and retained field buckets after explicit fixture erasure. New whole-
+Program/field-placement failure injection is not added; prior allocator/deque controls
+remain. CPU/Linux/WSL shared host only; no GPU/native Windows/database/browser/performance
+or nested-pointee/full-B qualification is implied.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. Both runtime configurations
+report136field-map and136accessor-map request bytes with distinct domains;104accessor
+bytes remain after row removal. Program object960bytes reflects embedded allocator
+state. These are build observations, not portable constants. Native accessor read/write,
+retained field/kernel controls and existing39deque failure controls pass.
+No source build/test failures; build logs warning-free. One passing2-bulk-exchange_commit
+emitted a cache-lock warning, preserved without cleanup/rerun. CTests used parent TI_LIB_DIR
+unset; direct executables used explicit runtime setup. Tested WSL source remains clean.
+
+Final publication changes only six Markdown files;191local file links/whitespace passed.
+Contributor-local archive:program-field-map-domain-7ec18216.tar.gz.
+Manifest SHA256:29aaaf5838fef32a63d570aafc53b27f7845ad7c596e34b921718c813432a6c4.
+Archive SHA256:f2e6d876e4b0c426e2fde13b0b5e1de265825653f02e42d3297f2ea1968b3e45.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics
+are retained. Raw artifacts not independently inspected remotely. Hosted qualification
+and maintainer acceptance remain separate; no duplicate parent run/self-merge.

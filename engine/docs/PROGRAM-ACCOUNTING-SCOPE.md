@@ -1,5 +1,13 @@
 # Program ownership and accounting scope
 
+**Field/accessor follow-up (awaiting review, 2026-11-13):** the
+[two remaining map exporters](BORROWED-RESOURCES.md#field-expression-and-accessor-map-requests-awaiting-review-2026-11-13)
+complete direct Program map node/bucket observation through existing native owners.
+Aggregate map availability now checks all five reports; it does not certify nested
+strings, shared pointees/control blocks or full Program storage. Native ownership and
+execution remain unchanged apart from disclosed accounting overhead. Earlier missing-map
+descriptions below are pinned history where superseded; compiler exclusions stay conditional.
+
 **Free-ID follow-up (awaiting review, 2026-11-13):** the
 [native deque request export](BORROWED-RESOURCES.md#free-id-deque-requests-awaiting-review-2026-11-13)
 observes Program's existing stack through shared allocator requests, including rebound

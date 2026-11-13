@@ -7,6 +7,52 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Field-expression and accessor map requests (awaiting review, 2026-11-13)
+
+Continues [#320 review 5892748763](https://github.com/Human-Cognome-Project/human-cognome-project/pull/320#pullrequestreview-5892748763).
+The existing SNodeFieldMap alias and SNodeRwAccessorsBank map now use the reviewed
+SharedRequestCountingAllocator. The bank exposes its own fixed storage query; Program
+forwards that same report and observes its existing field map. No copied registry,
+lookup authority or compiler/scheduler/dispatch replacement is introduced.
+
+All five direct Program maps now expose independently available node/bucket request
+reports. map_storage_available is true only when each report is available and non-
+overflowing. This flag means direct map-container coverage only: it does not cover
+mapped pointees, external strings, shared_ptr pointee control blocks, nested containers
+or complete Program ownership. pointee_storage_available and complete remain false.
+The field map's shared FieldExpression owners differ from the accessor map's borrowed
+Kernel pointers. Erasing accessor rows does not destroy Program-vector-owned kernels.
+
+Each allocator domain accounts rebound node/bucket requests and retains its identity
+through erasure. Its counter object/control block are separate requests; value payload
+is a contained subset. The bank is embedded in Program, so its object/control storage
+must not be added to Program object bytes again. Direct bank inspection and Program's
+forwarded accessor report describe one domain, not two charges. The two new allocators
+add retained counters/control blocks and larger embedded allocator state. SNodeFieldMap
+is a shared native type alias, so other instances also use the accounting allocator;
+this Program report covers only its own instance, not every map with that alias.
+
+The query performs fixed metadata reads and five availability checks, without dynamic
+traversal, copying, allocation, field placement, accessor creation or lazy factories.
+Keep Program, bank and allocator domains live and quiescent; identities are not leases.
+Existing tree destruction removes cached accessor rows while retaining field-map rows
+and Program kernel objects. The fixture separately erases its field row via the existing
+map interface to verify retained buckets; this does not introduce production cleanup.
+Retained rows are not proof that their referenced tree backing is still live.
+
+CPU one/two-worker fixtures use real native field placement, accessor creation and
+read/write execution. They check five independent empty domains, populated maps,
+allocation-free inspection, direct/forwarded report identity, accessor removal during
+tree retirement, retained kernels/field rows and retained buckets after explicit field
+erasure. Existing allocator failure/rebind and deque failure controls remain in scope;
+new whole-Program/field-placement failure injection is not added. No nested pointee,
+GPU, native-Windows or full-B qualification is implied.
+
+Next: nested ownership and mixed ABI/provenance/string coverage under the
+[Program scope](PROGRAM-ACCOUNTING-SCOPE.md), before trusted lifetime/required-family
+aggregation, canonical/domain deduplication and prepaid work. Compiler exclusions
+remain conditional; combined admission is not established.
+
 ## Free-ID deque requests (awaiting review, 2026-11-13)
 
 Continues [#319 review 5892365537](https://github.com/Human-Cognome-Project/human-cognome-project/pull/319#pullrequestreview-5892365537).
