@@ -1,5 +1,14 @@
 # Current implementation and work
 
+**Runtime-global requests (awaiting review, 2026-11-13):** follows accepted #313
+implementation direction/review5890147678. Native/common reservation queries now expose
+a ten-entry runtime-global catalog, including the existing ambient metadata once.
+CPU canonical pool bridges preserve shared backing identity; unsupported GPU/preallocation
+inspection remains unavailable. No allocation layout or owner-field changes. #312/#313
+remain pending integration; main is qualified through #311. Next: shared launch registry,
+Program/thread coverage or reviewed scope decisions, then trusted Harness lifetime/
+required-family/canonical-domain deduplication and prepaid work before C+B+H+D.
+
 **Runtime coverage policy audit (awaiting review, 2026-11-13):** follows #312
 review5890043642 at9d459141. [Coverage matrix](../../engine/docs/RUNTIME-COVERAGE.md)
 separates required-family blockers, metric exclusions and proposed compiler/JIT scope.

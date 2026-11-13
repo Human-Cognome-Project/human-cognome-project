@@ -7,6 +7,49 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Runtime-global requests (awaiting review, 2026-11-13)
+
+Continues [#313 review 5890147678](https://github.com/Human-Cognome-Project/human-cognome-project/pull/313#pullrequestreview-5890147678).
+The existing native reservation interface now has a fixed runtime_global_reservations
+catalog: LLVMRuntime object; root pointers/sizes; element-list, node-manager and ambient
+pointer tables; existing ambient request-size metadata; temporaries; random states;
+and the runtime result buffer. The ten-entry catalog contains AmbientMetadata exactly
+once, retaining its existing enum value and request. Other existing enum values remain
+unchanged. Supported ReservationLimits exposes the catalog count; unsupported defaults
+remain unavailable with zero count.
+
+Every global selector requires node=-1, Elements, index=0. Native queries read the
+actual stored initialization capacities/counts and pointers, with checked multiplication
+and invalid negative-count refusal. Object/result alignments preserve CPU requests128/8;
+the tables/temporary/random requests preserve4096. LLVMRuntime object size is computed
+inside its owning runtime module, not reconstructed by HCP. No allocation behavior,
+owner fields, native request size or buffer layout changes.
+
+The existing CPU query bridge remains allocation-free and synchronous under a live,
+quiescent owner. GPU query coverage remains unavailable: no host dereference of GPU
+runtime state and no inferred preallocation coverage. GPU result storage is contained
+in preallocated runtime-object backing and still requires its own supported export/
+qualification; this change does not certify it.
+
+reservation_pool_backing resolves each Present CPU request through the existing
+canonical host-pool interface. Distinct global requests can share one pool token:
+containing raw/rounded backing and contained requests are not disjoint byte charges.
+The request report itself still does not claim canonical/rounded coverage; the separate
+bridge supplies that evidence. Global result storage is distinct from prepared
+invocation result buffers. Tree destruction does not retire these runtime-global
+reservations; runtime lifetime, not tree generation, governs their views.
+
+Catalog length permits explicit bounded enumeration, not free work. Each request
+query retains its fixed native lookup unit; the pool bridge repeats that query and
+performs the existing logarithmic pool lookup. Caller/Harness enumeration, validation
+and deduplication must be prepaid separately. This is retained request observability,
+not a complete ledger, setup peak or physical-residency measurement.
+
+Next: shared launch-registry metadata and remaining Program/thread ownership or
+reviewed scope decisions, then trusted Harness required-family/lifetime coverage and
+canonical/domain deduplication before combined C+B+H+D. Compiler/JIT exclusion remains
+proposed, not accepted; the [coverage audit](RUNTIME-COVERAGE.md) retains that distinction.
+
 ## Scoped runtime coverage audit (awaiting review, 2026-11-13)
 
 The [source-traced coverage and policy matrix](RUNTIME-COVERAGE.md) follows #312

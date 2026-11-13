@@ -1,5 +1,14 @@
 # Runtime coverage and the combined-admission boundary
 
+**Implementation follow-up (awaiting review, 2026-11-13):** the
+[runtime-global request slice](BORROWED-RESOURCES.md#runtime-global-requests-awaiting-review-2026-11-13)
+now exports the CPU object/table/temporary/random/result requests through the existing
+common reservation interface and canonical pool bridge. The source-pinned matrix below
+records the audit baseline, not a claim that those exporters are still absent. GPU
+preallocation inspection, trusted aggregation and remaining shared owners stay open.
+Compiler/JIT exclusion remains proposed. Next implementation focus is shared launcher
+metadata, followed by Program/thread coverage or concrete scope decisions.
+
 Source audit and **proposed policy**, 2026-11-13. Inspected reviewed #312
 `9d459141c854e923e5eefd6bac776713cd5bb08d`, native tree
 `c2c0c512b5b7aa2ed05e30fbb1c3a9df7b40b7d8`, following
