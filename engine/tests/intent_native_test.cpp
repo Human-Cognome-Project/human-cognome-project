@@ -124,7 +124,9 @@ engine::CompiledKernel build(engine::Runtime &runtime, int n) {
     const auto put=[&](int col,Stmt *value) {
       b.create_global_store(b.create_external_ptr(out,{b.get_int32(col),row}),b.create_cast(value,PrimitiveType::f64));
     };
-    put(0,status); put(1,field_ok); put(2,contact_ok); put(3,b.create_local_load(coincident));
+    put(0,status); put(1,b.create_select(field_ok,b.get_int32(1),b.get_int32(0)));
+    put(2,b.create_select(contact_ok,b.get_int32(1),b.get_int32(0)));
+    put(3,b.create_local_load(coincident));
     for(int k=0;k<3;++k) {
       put(4+k,b.create_select(field_ok,b.create_local_load(force[k]),b.get_float64(0)));
       put(7+k,b.create_select(contact_ok,b.create_local_load(contact[k]),b.get_float64(0)));
@@ -157,6 +159,14 @@ void run(int threads) {
   add(1,std::numeric_limits<double>::quiet_NaN(),0,1);
   rows.push_back(rows.back());for(int k=0;k<7;++k) std::swap(rows.back()[k],rows.back()[7+k]);
   add(1,1);rows.back()[4]=std::numeric_limits<double>::infinity();
+  add(2,8,0,1);rows.back()[8]=1; // angled XY contributions
+  add(0,8);rows.back()[2]=2; // independent Z component
+  add(0,1); // lone coincidence is not absence
+  add(1,1e308,1,1e308); // normalizer accumulation overflow
+  add(1,1);rows.back()[4]=1e308;rows.back()[11]=1e308; // contact overflow
+  add(1,1);rows.back()[14]=std::numeric_limits<double>::quiet_NaN();
+  add(1,1);rows.back()[4]=std::numeric_limits<double>::min();
+  rows.back()[11]=-std::nextafter(std::numeric_limits<double>::min(),1.0); // contact sum underflow
   require(rows.size()<=max_cases,"packet budget exceeded");
   const int n=static_cast<int>(rows.size());
   std::vector<double> input(columns*n),output(columns*n);
@@ -167,10 +177,11 @@ void run(int threads) {
   Ndarray in(&runtime.program(),PrimitiveType::f64,{columns,n}),out(&runtime.program(),PrimitiveType::f64,{columns,n});
   auto kernel=build(runtime,n);
   engine::upload(in,input.data(),input.size()*sizeof(double));
-  auto ctx=kernel.make_context();ctx.set_arg_ndarray({0},in);ctx.set_arg_ndarray({1},out);
+  auto invocation=kernel.invocation(true);
+  auto &ctx=invocation.get();ctx.set_arg_ndarray({0},in);ctx.set_arg_ndarray({1},out);
   kernel.prepare(ctx);
   for(int repeat=0;repeat<2;++repeat) {
-    auto call=kernel.invocation(true);kernel.launch(call.get());runtime.synchronize();
+    kernel.launch(ctx);runtime.synchronize();
     engine::readback(out,output.data(),output.size()*sizeof(double));
     const auto value=[&](int i,int col){return output[col*n+i];};
     for(int i=0;i<n;++i) {
@@ -185,6 +196,12 @@ void run(int threads) {
     near(value(14,4),1);near(value(14,7),-3);near(value(14,10),1);
     near(value(15,13),12);near(value(16,13),13);near(value(17,13),140);near(value(17,14),-64);
     near(value(21,0),3);near(value(21,1),1);near(value(21,2),0);near(value(21,4),1);
+    near(value(22,4),2);near(value(22,5),1);near(value(22,10),1);near(value(22,11),0.5);
+    near(value(23,6),2);near(value(23,12),2);near(value(24,0),2);near(value(24,4),0);
+    near(value(25,0),3);near(value(25,1),0);
+    near(value(26,0),3);near(value(26,1),1);near(value(26,2),0);
+    near(value(27,0),3);near(value(27,1),0);
+    near(value(28,0),3);near(value(28,2),0);
   }
   std::cout<<"intent_native PASS threads="<<threads<<" cases="<<n<<" packet_visits="<<2*n
            <<" ndarray_payload_bytes="<<2*columns*n*sizeof(double)
