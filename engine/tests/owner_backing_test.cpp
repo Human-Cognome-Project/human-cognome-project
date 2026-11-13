@@ -95,6 +95,55 @@ SNodeTree *tree(Program &program) {
   leaf.dt = PrimitiveType::i32;
   return program.add_snode_tree(std::move(root), false);
 }
+void snode_host_storage() {
+  auto root = std::make_unique<SNode>(0, SNodeType::root);
+  auto &dense = root->dense(Axis(0), 7);
+  auto &leaf = dense.insert_children(SNodeType::place);
+  leaf.dt = PrimitiveType::i32;
+  root->name.assign(96, 'r');
+  leaf.node_type_name.assign(96, 'l');
+  leaf.index_offsets = {3};
+  SNodeTree tree(0, std::move(root));
+  const auto before = tree.root()->host_storage();
+  tree.root()->ch.reserve(19);
+  leaf.index_offsets.reserve(23);
+  allocation_lifetime::begin();
+  const auto tree_storage = tree.host_storage();
+  const auto root_storage = tree.root()->host_storage();
+  const auto dense_storage = dense.host_storage();
+  const auto leaf_storage = leaf.host_storage();
+  const auto counts = allocation_lifetime::end();
+  require(!counts.attempts && tree_storage.available && !tree_storage.complete &&
+              tree_storage.owner == &tree && tree_storage.object_bytes == sizeof(SNodeTree) &&
+              tree_storage.root_identity == tree.root() &&
+              tree_storage.owner != root_storage.owner,
+          "tree host query allocated, lost identity or claimed complete coverage");
+  require(root_storage.available && !root_storage.overflow && !root_storage.complete &&
+              !root_storage.string_storage_available && !root_storage.gradient_storage_available &&
+              root_storage.owner == tree.root() && root_storage.object_bytes == sizeof(SNode) &&
+              root_storage.child_slots == before.child_slots && root_storage.child_slots == 1 &&
+              root_storage.child_capacity_bytes >= 19 * sizeof(std::unique_ptr<SNode>) &&
+              root_storage.child_capacity_bytes > before.child_capacity_bytes &&
+              !root_storage.index_offset_entries,
+          "root host query lost capacity or included recursive child objects");
+  require(dense_storage.owner == &dense && dense_storage.owner != root_storage.owner &&
+              dense_storage.child_slots == 1 && leaf_storage.owner == &leaf &&
+              leaf_storage.available && !leaf_storage.overflow && !leaf_storage.complete &&
+              !leaf_storage.string_storage_available && !leaf_storage.gradient_storage_available &&
+              !leaf_storage.child_slots && !leaf_storage.child_capacity_bytes &&
+              leaf_storage.index_offset_entries == 1 &&
+              leaf_storage.index_offset_capacity_bytes >= 23 * sizeof(int),
+          "node metadata confused empty children, offset capacity or unknown nested storage");
+  leaf.index_offsets.clear();
+  const auto cleared = leaf.host_storage();
+  require(!cleared.index_offset_entries &&
+              cleared.index_offset_capacity_bytes == leaf_storage.index_offset_capacity_bytes,
+          "empty offsets lost retained capacity");
+  std::cout << "snode_object=" << root_storage.object_bytes
+            << " snode_tree_object=" << tree_storage.object_bytes
+            << " child_capacity=" << root_storage.child_capacity_bytes
+            << " offset_capacity=" << leaf_storage.index_offset_capacity_bytes << '\n';
+}
 void array_views() {
   cpu::CpuDevice device, foreign;
   auto allocation = allocate(device, 64);
@@ -263,6 +312,11 @@ void native_owners(int workers) {
           "missing root reported as zero backing");
   auto *first = tree(program);
   auto *second = tree(program);
+  const auto first_host = first->host_storage();
+  const auto first_root_host = first->root()->host_storage();
+  require(first_host.owner != second->host_storage().owner &&
+              first_host.root_identity != second->host_storage().root_identity,
+          "distinct native trees shared host identities");
   const auto program_roots = program.lifecycle_storage();
   require(program_roots.trees.available && !program_roots.trees.overflow &&
               program_roots.trees.slots == 2 &&
@@ -321,6 +375,11 @@ void native_owners(int workers) {
           "retained ndarray descriptor was mistaken for live allocation storage");
   const auto first_id = first->id();
   program.destroy_snode_tree(first);
+  require(first->host_storage().owner == first_host.owner &&
+              first->host_storage().root_identity == first_host.root_identity &&
+              first->root()->host_storage().owner == first_root_host.owner &&
+              first->root()->host_storage().child_capacity_bytes == first_root_host.child_capacity_bytes,
+          "backing retirement erased retained tree/node host storage");
   require(impl.snode_root_backing_record(first_id).status == AllocationRecordStatus::Unknown &&
               device.allocation_record(a.token).status == AllocationRecordStatus::Retired &&
               impl.snode_root_backing_record(second->id()).token == b.token,
@@ -458,6 +517,7 @@ void native_owners(int workers) {
 }
 int main() {
   try {
+    snode_host_storage();
     vector_limits();
     free_id_requests();
     array_views();
