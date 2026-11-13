@@ -76,6 +76,18 @@ class LlvmRuntimeExecutor {
     result.available = true;
     result.executor_identity = this;
     result.executor_base_object_bytes = sizeof(LlvmRuntimeExecutor);
+    result.thread_pool.available = true;
+    if (thread_pool_) {
+      auto &storage = result.thread_pool;
+      storage.present = true;
+      storage.owner = thread_pool_.get();
+      storage.object_bytes = sizeof(ThreadPool);
+      storage.thread_handles = thread_pool_->threads.size();
+      if (thread_pool_->threads.capacity() > std::numeric_limits<std::size_t>::max() / sizeof(std::thread))
+        storage.overflow = true;
+      else
+        storage.handle_capacity_bytes = thread_pool_->threads.capacity() * sizeof(std::thread);
+    }
     result.tree_allocations = runtime_map_storage(snode_tree_allocs_);
     result.runtime_allocations = runtime_map_storage(allocated_runtime_memory_allocs_);
     if (snode_tree_buffer_manager_) {
