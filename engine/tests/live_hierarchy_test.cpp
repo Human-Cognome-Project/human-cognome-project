@@ -1782,6 +1782,8 @@ void cumulative(engine::Runtime &r, HostPath path, bool cancel) {
   std::cout << "cumulative,cancel=" << cancel << ",max_polls=" << max_polls
             << ",reuse=32 PASS\n";
 }
+#include "live_response_cases.inc"
+
 void response_binding_reservation() {
   using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
   using Array = taichi::lang::LaunchContextBuilder::ArrayBinding;
@@ -2989,6 +2991,12 @@ int main(int argc, char **argv) {
 #ifdef HCP_HAS_VIEWPORT
       run("refresh_capture", [&] { refresh_capture(r, path); });
 #endif
+    }
+    if (wants("response_validity"))
+      run("response_validity", [&] { response_validity(r, path); });
+    if (only == "response_lifecycle") {
+      run("response_refresh", [&] { refresh_basics(r, path); });
+      run("response_rebase", [&] { coordinate_rebase(r, path); });
     }
     if (wants("response_observation"))
       run("response_observation", [&] { response_observation(r, path); });

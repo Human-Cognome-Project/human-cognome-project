@@ -261,6 +261,7 @@ void refresh_basics(engine::Runtime &runtime, HostPath path) {
             false, 1024, {.25, .125, .25});
   f.install();
   refresh_compiler_controls(f);
+  const auto initial_responses = response_snapshot(f);
   const auto hash = state_hash(f);
   const auto generation = f.h.prepared_storage().generation;
   RefreshRequest same(f.h);
@@ -280,6 +281,11 @@ void refresh_basics(engine::Runtime &runtime, HostPath path) {
   require(refresh_apply(f, permuted).status == UpdateStatus::NoChange &&
               state_hash(f) == hash,
           "serialization-only reorder changed arithmetic or state");
+  const auto unchanged_responses = response_snapshot(f);
+  response_identity_equal(initial_responses, unchanged_responses);
+  require(initial_responses.generation == unchanged_responses.generation &&
+              initial_responses.values == unchanged_responses.values,
+          "alias/reorder refresh changed response snapshot");
   auto changed = same;
   changed.nodes[0].retained_fraction_bits = 4;
   f.h.inspect_prepared();
@@ -290,6 +296,11 @@ void refresh_basics(engine::Runtime &runtime, HostPath path) {
   refresh_ok(refresh_apply(f, changed));
   require(f.h.prepared_storage().generation == generation + 1,
           "hierarchy-only refresh did not advance once");
+  const auto refreshed_responses = response_snapshot(f);
+  response_identity_equal(initial_responses, refreshed_responses);
+  require(refreshed_responses.generation == generation + 1 &&
+              refreshed_responses.completed_ticks == initial_responses.completed_ticks,
+          "response snapshot did not follow refresh generation");
   refresh_survivors(f, before, motion, speed, handles);
   UpdateCommand old;
   old.operation = UpdateOp::ReplaceFocus;
@@ -683,6 +694,7 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path) {
             false, 1024, {letter.radii[0], letter.radii[0], letter.radii[0]});
   f.install();
   refresh_compiler_controls(f);
+  const auto initial_responses = response_snapshot(f);
   auto survivors = std::vector<engine::RecordHandle>(
       f.in.particle_rows.begin(), f.in.particle_rows.begin() + 3);
   Parameters64 p;
