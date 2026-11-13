@@ -237,6 +237,9 @@ void LiveHierarchy::append_layout(const BudgetDemand &l,
   add("live-leaf-fields", g, 4);
   add("live-field-owners", g, 4);
   add("live-field-inspection", h, 4, 1);
+  add("live-response-observation", 10 * r, sizeof(double));
+  add("live-response-identities", 4 * r, sizeof(int), 1);
+  add("live-response-fractions", 2 * r, sizeof(std::uint64_t), 1);
   add("live-counters", Counts, 8);
   add("live-node-observations", 2 * h, 8);
   add("live-node-identities", h, sizeof(CascadeNode), 1);
@@ -272,6 +275,9 @@ struct LiveHierarchy::Impl {
   bool cuda_qualification_device{};
   std::uint64_t generation{}, nodes{}, responses{}, references{};
   LiveHierarchyInspection inspection;
+  LiveResponseInspection response_inspection;
+  std::unique_ptr<Ndarray> response_observation;
+  engine::CompiledKernel response_kernel;
   std::vector<int> cfg, children, sources, coverage, influences, offsets, leaf,
       owners;
   std::vector<std::uint64_t> ratios, masks, weights;
@@ -351,6 +357,12 @@ struct LiveHierarchy::Impl {
     inspection.selectors.resize(H);
     inspection.fields.resize(H);
     inspection.visits.resize(2 * H);
+    response_inspection.values.resize(std::size_t(10) * R);
+    response_inspection.identities.resize(std::size_t(4) * R);
+    response_inspection.fractions.resize(std::size_t(2) * R);
+    response_observation = std::make_unique<Ndarray>(
+        &h.runtime_->program(), PrimitiveType::f64, std::vector<int>{10, R});
+    h.runtime_->program().fill_ndarray_fast_u32(response_observation.get(), 0);
     const std::array<DataType, 19> types{
         PrimitiveType::f64, PrimitiveType::i32, PrimitiveType::i32,
         PrimitiveType::i32, PrimitiveType::i32, PrimitiveType::u64,
@@ -396,6 +408,8 @@ struct LiveHierarchy::Impl {
     poll_kernel = std::move(kernels[1]);
     command_kernel = std::move(kernels[2]);
     prepare_refresh_execution();
+    prepare_response_observation();
+    observe_responses(0);
     launch(command_kernel, 0, 0);
     launch(force_kernel, 0, -1);
     launch(poll_kernel, 0, -1);
@@ -406,6 +420,22 @@ struct LiveHierarchy::Impl {
   }
   std::array<engine::CompiledKernel, 3> build_kernels(NativeSet, NativeSet);
   void prepare_refresh_execution();
+  void prepare_response_observation();
+  void observe_responses(int count) {
+    auto invocation = response_kernel.invocation(true);
+    auto &c = invocation.get();
+    if (!c.prepared) {
+      for (int i = 0; i < 24; ++i) bind_input(c, i, i);
+      for (int i : {28, 29}) bind_input(c, i, i);
+      c.set_arg_ndarray({30}, *response_observation);
+    }
+    engine::argument_int(c, 24, nodes);
+    engine::argument_float(c, 25, 0);
+    engine::argument_int(c, 26, 0);
+    engine::argument_float(c, 27, 0);
+    engine::argument_int(c, 31, count);
+    response_kernel.launch(c);
+  }
   void launch_refresh(bool commit);
   Ndarray *input_array(int input) const {
     switch (input) {
@@ -467,6 +497,55 @@ struct LiveHierarchy::Impl {
     kernel.launch(c);
   }
 };
+
+void LiveHierarchy::Impl::prepare_response_observation() {
+  IRBuilder b;
+  Args a(b);
+  auto *out = array(b, 30, PrimitiveType::f64, 2);
+  auto *n = b.create_arg_load({31}, PrimitiveType::i32, false, 0);
+  auto *loop = b.create_range_for(b.get_int32(0), n, false, h.runtime_->cpu_threads());
+  {
+    auto scope = b.get_loop_guard(loop);
+    auto *ref = b.get_loop_index(loop);
+    auto *body = read(b, a.influences, cell(b, 0, ref));
+    auto *node = read(b, a.influences, cell(b, 1, ref));
+    auto *parent = read(b, a.influences, cell(b, 2, ref));
+    auto *kind = read(b, a.influences, cell(b, 3, ref));
+    auto child = packet(b, a, node), ancestor = packet(b, a, parent);
+    Stmt *valid = b.get_int32(1);
+    for (auto *v : child) valid = b.create_logical_and(valid, supported_real(b, v));
+    for (auto *v : ancestor) valid = b.create_logical_and(valid, supported_real(b, v));
+    for (int k = 0; k < 3; ++k) {
+      auto *position = read(b, a.bodies, cell(b, kPosX + k, body));
+      auto *left = b.create_select(kind, ancestor[k], child[k]);
+      auto *right = b.create_select(kind, child[k], position);
+      auto *d = b.create_sub(left, right);
+      valid = b.create_logical_and(valid, supported_real(b, position));
+      valid = b.create_logical_and(valid, supported_real(b, d));
+      valid = b.create_logical_and(valid, b.create_logical_not(
+          b.create_logical_and(b.create_cmp_eq(d, b.get_float64(0)),
+                               b.create_cmp_ne(left, right))));
+      write(b, out, cell(b, k, ref), d);
+      write(b, out, cell(b, 3 + k, ref), position);
+    }
+    auto *mass = read(b, a.bodies, cell(b, kMass, body));
+    valid = b.create_logical_and(valid, supported_real(b, mass));
+    write(b, out, cell(b, 6, ref), mass);
+    write(b, out, cell(b, 7, ref), b.create_select(kind, ancestor[3], child[3]));
+    auto *source_node = b.create_select(kind, parent, node);
+    auto *eligible = b.create_logical_and(read(b, a.cfg, cell(b, MultipleBodies, source_node)),
+        b.create_logical_or(b.create_cmp_eq(kind, b.get_int32(0)),
+                            read(b, a.cfg, cell(b, Complement, node))));
+    write(b, out, cell(b, 8, ref), b.create_select(eligible, b.get_float64(1), b.get_float64(0)));
+    write(b, out, cell(b, 9, ref), b.create_select(valid, b.get_float64(1), b.get_float64(0)));
+  }
+  auto params = signature();
+  params.push_back(engine::Param::array(PrimitiveType::f64, 2));
+  params.push_back(engine::Param::scalar(PrimitiveType::i32));
+  response_kernel = engine::CompiledKernel(*h.runtime_,
+      "live_response_observation_" + std::to_string(h.activity_->centroids.cells->id),
+      b.extract_ir(), params, engine::MathMode::Strict);
+}
 
 std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
     NativeSet particle_selection,
@@ -789,6 +868,7 @@ std::size_t LiveHierarchy::binding_bytes() const {
   return impl_->force_kernel.prepared_bytes() +
          impl_->poll_kernel.prepared_bytes() +
          impl_->command_kernel.prepared_bytes() +
+         impl_->response_kernel.prepared_bytes() +
          impl_->refresh->candidate.prepared_bytes() +
          impl_->refresh->commit.prepared_bytes();
 }
@@ -868,6 +948,39 @@ const LiveHierarchyInspection &LiveHierarchy::inspect() {
   engine::readback(*a.owned[19], a.inspection.visits.data(),
                    a.inspection.visits.size() * 8);
   return a.inspection;
+}
+
+const LiveResponseInspection &LiveHierarchy::inspect_responses(std::uint64_t limit) {
+  auto &a = *impl_;
+  auto &out = a.response_inspection;
+  out.status = CascadeStatus::CapacityExhausted;
+  out.failure = {};
+  out.work_used = out.readback_bytes = 0;
+  out.generation = a.generation;
+  out.completed_ticks = a.h.prepared_->completed_ticks;
+  out.responses = a.responses;
+  out.capacity = a.R;
+  out.frame_anchor = a.h.frame_anchor_;
+  // One fixed dispatch unit, one response evaluation, and one unit per scalar
+  // transferred (including padding). This is not an instruction/time bound.
+  out.work_required = 1 + a.responses + 16 * std::uint64_t(a.R);
+  limit = std::min(limit, a.h.prepared_->capacity.limits()[Budget::CascadeWork]);
+  if (limit < out.work_required) {
+    out.failure = {Budget::CascadeWork, out.work_required, limit};
+    return out;
+  }
+  validate();
+  a.h.runtime_->synchronize();
+  a.observe_responses(int(a.responses));
+  a.h.runtime_->synchronize();
+  engine::readback(*a.response_observation, out.values.data(), out.values.size() * sizeof(double));
+  engine::readback(*a.arrays[10], out.identities.data(), out.identities.size() * sizeof(int));
+  engine::readback(*a.arrays[11], out.fractions.data(), out.fractions.size() * sizeof(std::uint64_t));
+  out.readback_bytes = out.values.size() * sizeof(double) +
+      out.identities.size() * sizeof(int) + out.fractions.size() * sizeof(std::uint64_t);
+  out.work_used = out.work_required;
+  out.status = CascadeStatus::Ok;
+  return out;
 }
 
 LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,

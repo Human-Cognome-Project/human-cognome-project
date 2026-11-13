@@ -201,6 +201,10 @@ foreach(threads 1 2)
     endif()
     add_test(NAME live_hierarchy_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args})
+    add_test(NAME live_response_${threads}_${path}
+        COMMAND live_hierarchy_test ${live_hierarchy_args} --case response_observation)
+    set_tests_properties(live_response_${threads}_${path} PROPERTIES
+        ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
     add_test(NAME live_refresh_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case refresh)
     add_test(NAME native_selection_${threads}_${path}

@@ -152,15 +152,16 @@ std::size_t PreparedStorage::binding_reserve_bytes(bool cuda,
   // Trial adds six arguments, including final-speed output in integration.
   // Installed hierarchy: three 30-parameter contexts plus two integration
   // arguments. Refresh adds two 23-argument contexts and two update scalars.
+  // Response observation adds one 32-argument context (output and row count).
   // Numerical arrays are inventoried separately above.
   const std::size_t parameters =
                         151 + (geometry ? 33 : 0) + (cascade ? 22 : 0) +
                         (cascade && weighted ? 2 : 0) + (wide ? 6 : 0) +
-                        (live ? 92 + 2 + 46 : 0) + (live && ticks ? 31 : 0) +
+                        (live ? 92 + 2 + 46 + 32 : 0) + (live && ticks ? 31 : 0) +
                         (ticks ? (live ? 531 : 417) : 0) + (placement ? 95 : 0) +
                         (placement && live ? 51 + (ticks ? 13 : 0) : 0),
                     contexts = 22 + (geometry ? 4 : 0) + (cascade ? 2 : 0) +
-                               (live ? 5 : 0) + (live && ticks ? 3 : 0) +
+                               (live ? 6 : 0) + (live && ticks ? 3 : 0) +
                                (ticks ? (live ? 34 : 31) : 0) +
                                (placement ? 9 : 0) +
                                (placement && live ? 6 + (ticks ? 1 : 0) : 0),

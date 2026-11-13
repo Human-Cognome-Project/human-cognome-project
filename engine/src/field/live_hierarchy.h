@@ -25,6 +25,22 @@ struct LiveHierarchyInspection {
   std::vector<int> order;
   std::size_t node_count{};
 };
+// Synchronized extraction, not combined intent or a motion decision. Values
+// are borrowed until the next synchronized operation on this Harness.
+struct LiveResponseInspection {
+  CascadeStatus status{CascadeStatus::Unready};
+  BudgetFailure failure{};
+  std::uint64_t generation{}, completed_ticks{}, responses{}, capacity{},
+      work_required{}, work_used{}, readback_bytes{};
+  std::array<double, 3> frame_anchor{};
+  // Column-major: delta XYZ, recipient XYZ, body mass, source field mass,
+  // structural eligibility, normal-or-zero validity. Only responses rows live.
+  std::vector<double> values;
+  // Actual native response rows: body, child packet slot, parent slot, kind.
+  std::vector<int> identities;
+  // Exact participating numerator and denominator, not rounded float shares.
+  std::vector<std::uint64_t> fractions;
+};
 // Existing fields use CascadeNode::field. A pending owner instead names a
 // DefineField command and leaves field empty. No future native handle is
 // guessed.
@@ -67,6 +83,7 @@ class LiveHierarchy {
   void force(double);
   void poll(double, double contact_stiffness);
   const LiveHierarchyInspection &inspect();
+  const LiveResponseInspection &inspect_responses(std::uint64_t work_limit);
   std::size_t binding_bytes() const;
   const taichi::lang::Ndarray &leaf_fields() const;
   UpdateStatus prepare_refresh(const LiveRefreshSpec &,

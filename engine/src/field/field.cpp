@@ -1185,4 +1185,16 @@ const LiveHierarchyInspection &Harness::inspect_live_hierarchy() {
   }
 }
 
+const LiveResponseInspection &Harness::inspect_live_responses(std::uint64_t work) {
+  if (!ready_ || !live_hierarchy_installed())
+    throw std::logic_error("no ready live hierarchy");
+  live_hierarchy_->validate();
+  try {
+    return live_hierarchy_->inspect_responses(work);
+  } catch (...) {
+    ready_ = false;
+    throw;
+  }
+}
+
 }  // namespace field
