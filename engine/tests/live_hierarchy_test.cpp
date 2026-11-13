@@ -1782,7 +1782,35 @@ void cumulative(engine::Runtime &r, HostPath path, bool cancel) {
   std::cout << "cumulative,cancel=" << cancel << ",max_polls=" << max_polls
             << ",reuse=32 PASS\n";
 }
+void response_binding_reservation() {
+  using Scalar = taichi::lang::LaunchContextBuilder::Prepared::Scalar;
+  using Array = taichi::lang::LaunchContextBuilder::ArrayBinding;
+  const std::size_t host_arg = 24 + sizeof(Scalar) + sizeof(Array);
+  const std::size_t cuda_context = 1 + sizeof(std::uint64_t) + sizeof(void *);
+  // Isolated wide profile: 151 base + six trial arguments, 22 contexts.
+  // Before observation, live added 90 hierarchy + two integration + two
+  // update + 46 refresh arguments and five contexts. Observation adds 32/one.
+  for (bool cuda : {false, true}) {
+    const std::size_t arg = host_arg + (cuda ? 24 : 0);
+    const std::size_t context = cuda ? cuda_context : 0;
+    const auto disabled = detail::PreparedStorage::binding_reserve_bytes(
+        cuda, false, false, false, true, false);
+    const auto enabled = detail::PreparedStorage::binding_reserve_bytes(
+        cuda, false, false, false, true, true);
+    const auto baseline = 157 * arg + 22 * context;
+    const auto prior_live = baseline + 140 * arg + 5 * context;
+    const auto observation = 32 * arg + context;
+    require(disabled == baseline, "live-disabled binding reserve changed");
+    require(enabled == prior_live + observation,
+            "response context missing from prepaid binding reserve");
+    std::cout << "response_binding_reserve,cuda_arithmetic=" << cuda
+              << ",disabled=" << disabled << ",enabled=" << enabled
+              << ",observation_allowance=" << observation << '\n';
+  }
+}
+
 void response_observation(engine::Runtime &r, HostPath path) {
+  response_binding_reservation();
   Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
             {1, 1, 1}, {1, 1, 2}, {0, 2, 5});
   bool rejected = false;
@@ -1790,6 +1818,16 @@ void response_observation(engine::Runtime &r, HostPath path) {
   catch (const std::logic_error &) { rejected = true; }
   require(rejected && f.h.ready(), "uninstalled response inspection changed readiness");
   f.install();
+  const auto &storage = f.h.prepared_storage();
+  const auto &l = storage.capacity.limits();
+  const auto reserve = detail::PreparedStorage::binding_reserve_bytes(
+      r.on_cuda(), l[Budget::GeometryWork] != 0, l[Budget::CascadeNodes] != 0,
+      l[Budget::CascadeCoverage] != 0, true, l[Budget::LiveResponses] != 0,
+      l[Budget::TickWork] != 0, l[Budget::PlacementWork] != 0);
+  require(storage.binding_bytes > 0 && storage.binding_bytes <= reserve,
+          "actual prepared bindings exceed declared reserve");
+  std::cout << "response_binding_actual,bytes=" << storage.binding_bytes
+            << ",reserve=" << reserve << '\n';
   const auto before = state_hash(f);
   const auto &short_result = f.h.inspect_live_responses(0);
   const auto need = short_result.work_required;
