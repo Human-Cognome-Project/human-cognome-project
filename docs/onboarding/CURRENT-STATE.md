@@ -1,5 +1,14 @@
 # Current implementation and work
 
+**Native intent packet diagnostic (awaiting review, 2026-11-13):** follows #327
+review5896078321. A bounded test-owned Taichi f64 probe observes coefficient intent,
+gated field force and contact force separately, with complete packet validation and
+Unsupported > UnresolvedCoincidence > Supported > Absent precedence. Production
+braking/activity remain unchanged. This is supplied-packet evidence, not live hierarchy
+extraction, resource admission, sleeping wake or trajectory qualification. See the
+[native diagnostic boundary](../../engine/docs/INTENT-NATIVE-DIAGNOSTIC.md). Next: owner
+integration/accounting and native rebase/dedup/invalidation, then many-tick dt/Q evidence.
+
 **Intent domain follow-up (awaiting review, 2026-11-13):** follows #326 review
 5895998111 from main bf363f92. Reference comparisons now reject nonfinite operands
 and assert angled coupling intent. Exact-coincidence alternatives, negative-contact
