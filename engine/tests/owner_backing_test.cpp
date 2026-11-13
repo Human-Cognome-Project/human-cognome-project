@@ -31,6 +31,56 @@ void vector_limits() {
               empty.capacity_bytes >= 7 * sizeof(int),
           "empty vector lost retained capacity");
 }
+void free_id_requests() {
+  allocation_lifetime::begin();
+  std::size_t attempts = 0;
+  {
+    ProgramFreeIdStack ids;
+    const auto empty = ids.storage();
+    const auto accounted = [](const RuntimeContainerStorage &s) {
+      return s.allocation_request_bytes + s.counter_object_bytes + s.counter_control_block_bytes;
+    };
+    require(empty.available && !empty.overflow && !empty.entries &&
+                empty.allocation_domain && accounted(empty) == allocation_lifetime::counts.live,
+            "empty free-ID deque requests differ from independent allocation witness");
+    for (int i = 0; i < 4096; ++i) ids.push(i);
+    const auto before_query = allocation_lifetime::counts.attempts;
+    const auto grown = ids.storage();
+    require(allocation_lifetime::counts.attempts == before_query &&
+                grown.entries == 4096 && grown.value_payload_bytes == 4096 * sizeof(int) &&
+                grown.allocation_domain == empty.allocation_domain &&
+                grown.allocation_request_bytes > empty.allocation_request_bytes &&
+                accounted(grown) == allocation_lifetime::counts.live,
+            "grown free-ID deque omitted rebound requests or inspection allocated");
+    for (int i = 4095; i >= 0; --i) {
+      require(ids.top() == i, "free-ID accounting changed LIFO order");
+      ids.pop();
+    }
+    const auto cleared = ids.storage();
+    require(!cleared.entries && !cleared.value_payload_bytes &&
+                cleared.allocation_request_bytes &&
+                cleared.allocation_domain == empty.allocation_domain &&
+                accounted(cleared) == allocation_lifetime::counts.live,
+            "empty free-ID deque lost retained block/map requests");
+    attempts = allocation_lifetime::counts.attempts;
+  }
+  const auto destroyed = allocation_lifetime::end();
+  require(!destroyed.live && !destroyed.blocks, "free-ID allocator domain leaked at teardown");
+  for (std::size_t fail = 1; fail <= attempts; ++fail) {
+    allocation_lifetime::begin(fail);
+    bool refused = false;
+    try {
+      ProgramFreeIdStack ids;
+      for (int i = 0; i < 4096; ++i) ids.push(i);
+    } catch (const std::bad_alloc &) {
+      refused = true;
+    }
+    const auto result = allocation_lifetime::end();
+    require(refused && !result.live && !result.blocks,
+            "free-ID constructor/growth failure leaked requests");
+  }
+  std::cout << "free_id_failure_controls=" << attempts << '\n';
+}
 DeviceAllocation allocate(Device &device, std::size_t bytes) {
   Device::AllocParams params;
   params.size = bytes;
@@ -100,14 +150,35 @@ void native_owners(int workers) {
               program_empty.trees.available && !program_empty.trees.slots &&
               program_empty.textures.available && !program_empty.textures.slots &&
               !program_empty.map_storage_available &&
-              !program_empty.free_id_storage_available &&
+              program_empty.free_id_storage_available &&
+              program_empty.free_ids.available && !program_empty.free_ids.entries &&
               !program_empty.pointee_storage_available,
           "Program empty coverage confused unavailable families with zero storage");
   require(impl.launch_registry_storage().status == LaunchMetadataStatus::Absent,
           "Program inspection created a launcher");
+  const auto &fm = program_empty.function_registry;
+  const auto &nm = program_empty.ndarray_registry;
+  const auto &am = program_empty.argpack_registry;
+  require(fm.available && nm.available && am.available &&
+              !fm.entries && !nm.entries && !am.entries &&
+              !fm.overflow && !nm.overflow && !am.overflow &&
+              fm.allocation_domain && nm.allocation_domain && am.allocation_domain &&
+              fm.allocation_domain != nm.allocation_domain &&
+              fm.allocation_domain != am.allocation_domain &&
+              nm.allocation_domain != am.allocation_domain &&
+              fm.counter_object_bytes && fm.counter_control_block_bytes &&
+              nm.counter_object_bytes && nm.counter_control_block_bytes &&
+              am.counter_object_bytes && am.counter_control_block_bytes,
+          "empty Program registries lost independent allocator domains or coverage");
   program.kernel([](Kernel *) {}, "storage_probe");
   program.create_function(FunctionKey("storage_function", 17, 0));
   const auto definitions = program.lifecycle_storage();
+  require(definitions.function_registry.entries == 1 &&
+              definitions.function_registry.allocation_domain == fm.allocation_domain &&
+              definitions.function_registry.allocation_request_bytes > fm.allocation_request_bytes &&
+              definitions.function_registry.allocation_request_bytes >=
+                  definitions.function_registry.value_payload_bytes,
+          "Program function registry omitted node/bucket requests");
   require(definitions.kernels.slots == 1 && definitions.functions.slots == 1 &&
               definitions.kernels.capacity_bytes >= sizeof(std::unique_ptr<Kernel>) &&
               definitions.functions.capacity_bytes >= sizeof(std::unique_ptr<Function>) &&
@@ -182,6 +253,9 @@ void native_owners(int workers) {
     require(!counts.attempts && queried_array.token == array_record.token &&
                 queried_program.owner == &program &&
                 queried_program.trees.capacity_bytes == program_roots.trees.capacity_bytes &&
+                queried_program.function_registry.allocation_domain == fm.allocation_domain &&
+                queried_program.function_registry.allocation_request_bytes ==
+                    definitions.function_registry.allocation_request_bytes &&
                 queried_root.token == a.token && queried_metadata.available &&
                 queried_metadata.runtime_allocations.entries == roots.runtime_allocations.entries + 1 &&
                 queried_metadata.root_records.allocation_domain == roots.root_records.allocation_domain,
@@ -205,6 +279,9 @@ void native_owners(int workers) {
   program.destroy_snode_tree(second);
   const auto program_retired = program.lifecycle_storage();
   require(program_retired.trees.slots == 2 &&
+              program_retired.free_ids.entries == 2 &&
+              program_retired.free_ids.value_payload_bytes == 2 * sizeof(int) &&
+              program_retired.free_ids.allocation_domain == program_empty.free_ids.allocation_domain &&
               program_retired.trees.capacity_bytes == program_roots.trees.capacity_bytes &&
               !program_retired.complete && !program_retired.pointee_storage_available,
           "retired backing erased retained Program slots or implied pointee coverage");
@@ -235,12 +312,45 @@ void native_owners(int workers) {
   const auto reused = program.lifecycle_storage();
   const auto replacement_backing = impl.snode_root_backing_record(replacement->id());
   require(replacement->id() == second_id &&
+              reused.free_ids.entries == 1 &&
+              reused.free_ids.allocation_domain == program_empty.free_ids.allocation_domain &&
               reused.owner == program_roots.owner && reused.trees.slots == 2 &&
               reused.trees.capacity_bytes == program_roots.trees.capacity_bytes &&
               replacement_backing.status == AllocationRecordStatus::Live &&
               !(replacement_backing.token == a.token) && !(replacement_backing.token == b.token),
           "tree slot reuse duplicated vector storage or reused retired backing identity");
   program.destroy_snode_tree(replacement);
+  auto *registered_a = program.create_ndarray(PrimitiveType::i32, {7});
+  auto *registered_b = program.create_ndarray(PrimitiveType::i32, {7});
+  const auto registered = program.lifecycle_storage();
+  require(registered.ndarray_registry.entries == 2 &&
+              registered.ndarray_registry.allocation_domain == nm.allocation_domain &&
+              registered.ndarray_registry.allocation_request_bytes > nm.allocation_request_bytes &&
+              registered.ndarray_registry.allocation_request_bytes >=
+                  registered.ndarray_registry.value_payload_bytes &&
+              registered_a != registered_b,
+          "Program ndarray registry omitted distinct owning rows");
+  program.delete_ndarray(registered_a);
+  const auto one_array = program.lifecycle_storage();
+  program.delete_ndarray(registered_b);
+  allocation_lifetime::begin();
+  const auto cleared = program.lifecycle_storage();
+  const auto registry_query_counts = allocation_lifetime::end();
+  require(!registry_query_counts.attempts &&
+              one_array.ndarray_registry.entries == 1 &&
+              !cleared.ndarray_registry.entries &&
+              !cleared.ndarray_registry.value_payload_bytes &&
+              cleared.ndarray_registry.allocation_request_bytes > nm.allocation_request_bytes &&
+              cleared.ndarray_registry.allocation_request_bytes <
+                  one_array.ndarray_registry.allocation_request_bytes &&
+              one_array.ndarray_registry.allocation_request_bytes <
+                  registered.ndarray_registry.allocation_request_bytes &&
+              cleared.ndarray_registry.allocation_domain == nm.allocation_domain &&
+              !cleared.map_storage_available && !cleared.complete,
+          "registry erasure lost retained buckets or claimed complete Program maps");
+  std::cout << "function_registry_requests=" << definitions.function_registry.allocation_request_bytes
+            << " ndarray_registry_requests=" << registered.ndarray_registry.allocation_request_bytes
+            << " empty_ndarray_registry_requests=" << cleared.ndarray_registry.allocation_request_bytes << '\n';
   std::cout << "program_object=" << reused.object_bytes
             << " tree_slots=" << reused.trees.slots
             << " tree_capacity=" << reused.trees.capacity_bytes << '\n';
@@ -249,6 +359,7 @@ void native_owners(int workers) {
 int main() {
   try {
     vector_limits();
+    free_id_requests();
     array_views();
     native_owners(1);
     native_owners(2);

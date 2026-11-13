@@ -59,6 +59,11 @@ ProgramStorage Program::lifecycle_storage() const {
   result.functions = program_vector_storage(functions_);
   result.trees = program_vector_storage(snode_trees_);
   result.textures = program_vector_storage(textures_);
+  result.function_registry = runtime_map_storage(function_map_);
+  result.ndarray_registry = runtime_map_storage(ndarrays_);
+  result.argpack_registry = runtime_map_storage(argpacks_);
+  result.free_ids = free_snode_tree_ids_.storage();
+  result.free_id_storage_available = result.free_ids.available && !result.free_ids.overflow;
   return result;
 }
 

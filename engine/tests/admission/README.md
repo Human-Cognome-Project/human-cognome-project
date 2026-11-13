@@ -6533,3 +6533,86 @@ Archive SHA256:d63c1f37caacfef5f901a1f77b6f978545c7d29381aca3d2ff84743c41942993.
 Source/configuration/compiler/binary pins, commands and full results/diagnostics retained.
 Raw artifacts have not been independently inspected remotely. Hosted qualification and
 maintainer acceptance remain separate; no duplicate parent run or self-merge.
+
+## Program registry requests — 2026-11-13
+
+Read318review5891877028 at7b1242be: bounded source acceptance; continue native map/free-ID
+accounting, preserve allocator domains and retained-empty evidence. Fetched/merged main
+ed9c153d through qualified315 in50e52d5d; checked open316–318 and held75/111/123.
+No duplicate parent qualification or self-merge.
+
+Program function/ndarray/argpack registries reuse SharedRequestCountingAllocator and
+runtime_map_storage. Entries/live node-bucket requests/domain/counter/control-block and
+payload subset are explicit; pointer pointees and external key strings are separate.
+Instrumentation adds counter allocations and embedded allocator size; native registry
+semantics remain unchanged. Field/accessor maps and free-ID/pointee coverage remain
+unavailable, aggregate map/full flags false. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:1a680a9c954d90091b53343b9a46d70853994723.
+Tracked Taichi tree:58ad485efe887c0ed16c90085f4842b7938e0fa9.
+Expanded owner_backing_test covers one/two-worker runtimes, independent empty registry
+domains/counter requests, populated function/ndarray rows, allocation-free reads,
+decreasing node requests during erasure and retained buckets after the last array row.
+Argpack coverage is empty-owner only. Existing shared-allocator failure/rebind controls
+remain in the focused suite; new Program-constructor failure injection is not added.
+CPU/Linux/WSL shared host only; no GPU/native Windows/database/browser/performance claim.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. Both worker fixtures
+report160function-registry request bytes,152two-array request bytes and104retained-empty
+array-registry request bytes. Program object is912bytes on this build, reflecting the
+three embedded shared allocators; observations are not portable constants. Existing
+backing/thread/vector controls remain passing. No source build/test failures; compiler
+build logs warning-free. One passing2-bulk-exchange_commit emitted a cache-lock warning;
+preserved without cleanup/rerun. CTests used parent TI_LIB_DIR unset; direct executables
+used explicit runtime setup. Tested WSL source remains clean at the recorded pin.
+
+Final publication changes only six Markdown files;183local file links/whitespace passed.
+Contributor-local archive:program-registry-domain-1a680a9c.tar.gz.
+Manifest SHA256:182dc8ea29891200a7a71648cd12a40e877224816cb37ba498a756ea1ffcbee6.
+Archive SHA256:50af7f4602d0eda2cc0f023fdeb6ae05198d4b223d9f0b63559b7c1fa63caf32.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics
+are retained. Raw artifacts not independently inspected remotely. Hosted qualification
+and maintainer acceptance remain separate; no duplicate parent run/self-merge.
+
+## Free-ID deque requests — 2026-11-13
+
+Read319review5892365537 at356cd7ec: source accepted/no blockers, continue native remaining
+containers with domain/rebound controls. Fetched/merged main5733255c through qualified
+316/317 in4c7eb178; checked open318/319 plus held75/111/123. No parent rerun/self-merge.
+
+Native free-ID stack retains std::stack/deque operations, using the existing shared
+request allocator. Generalized runtime_container_storage preserves the old map API and
+exposes deque element/internal pointer-map requests without copying/popping/allocating.
+Counter/control-block requests and payload subset remain distinct. Program container
+availability advances only for free IDs; map/pointee/full coverage remains incomplete.
+Instrumentation overhead is disclosed. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:c58ad7b7e6bc4c8b434c583c35b28431622a6f79.
+Tracked Taichi tree:a2a4d012017e417fd79b82169f77d6bb3d3b58d1.
+Expanded owner_backing_test independently compares observed C++ request bytes to the
+native report at empty/grown4096/pop-to-empty states, verifies allocation-free inspection,
+LIFO order and zero live requests after destruction. Each successful-path constructor/
+growth allocation point is failure-injected and checked for cleanup. Runtime one/two-
+worker fixtures verify two retired IDs and exact second-ID reuse leaves one ID.
+This does not qualify whole-Program constructor failure, GPU/native Windows, database,
+browser, physical memory or shared-host performance. Remaining maps/nested owners and
+conditional compiler/string scope still precede trusted aggregation.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. All39 observed free-ID
+constructor/growth allocation points passed injected-failure cleanup. Independent live
+request equality, allocation-free inspection, LIFO/pop-to-empty retention and zero-live
+teardown passed. Both runtime configurations report Program object928bytes on this build;
+this includes larger embedded allocator state and is not a portable constant.
+No source build/test failures; build logs warning-free. One passing2-direct-exchange_commit
+emitted a cache-lock warning, preserved without cleanup/rerun. CTests used parent TI_LIB_DIR
+unset; direct executables used explicit runtime setup. Tested WSL source remains clean.
+
+Final publication changes only six Markdown files;187local file links/whitespace passed.
+Contributor-local archive:program-free-id-domain-c58ad7b7.tar.gz.
+Manifest SHA256:4d68efdf01d524a0b70aa76fc17830a110f8cd0ced99737730cac4052eb5f447.
+Archive SHA256:da6215819170d1db9fc85b7f267f347711ed7997e74c44dec30b5eca0379e073.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics
+are retained. Raw artifacts not independently inspected remotely. Hosted qualification
+and maintainer acceptance remain separate; no duplicate parent run/self-merge.
