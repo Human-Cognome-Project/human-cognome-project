@@ -6289,3 +6289,43 @@ Archive SHA256:1934785f84441f35416100771058bc398a06ef3bce7140ea1fa8e09bcf760cf3.
 Source/configuration/compiler/binary pins, commands, full results and diagnostics are
 retained. Raw artifacts have not been independently inspected remotely. Parent310
 smoke43332423712 passed/native43332423596 remains active; no duplicate run or self-merge.
+## Runtime bookkeeping tables — 2026-11-13
+
+Starts from mainc5645a28 after qualified #309–#311 integration. #311 integration note
+6850662795 records all12jobs passed for #310/#311 and personally inspected119 #311
+regressions plus addressed_reads24/private_reads0. Main differs from qualified311 only
+in two handoff documents. Remote refs/open queue checked; only held75/111/123 remained.
+No accepted-baseline rerun or self-merge.
+
+Common ProgramImpl::runtime_bookkeeping exposes LLVM executor base/root-manager object
+storage and three retained map families. Actual node/bucket/counter/control-block
+requests use reviewed shared allocator domains; value and incremental record payloads
+remain subsets. Fixed reads allocate/enumerate nothing. These tables may retain retired
+descriptors and cannot certify live payload backing. Full runtime completeness is false;
+remaining shared/compile/thread/backend surfaces are explicit exclusions in
+[the contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:e94e8c03059daa0b54ab73457c7104269e142f0a.
+Tracked Taichi tree:c2c0c512b5b7aa2ed05e30fbb1c3a9df7b40b7d8.
+Expanded owner_backing_test checks unsupported versus supported-empty maps, separate
+domains/counter storage, root insertion, payload subsets, allocation-free stable queries,
+retained ndarray descriptors after Device retirement, root-map release and retained tree
+descriptors after tree destruction. Existing prepared allocator live-witness/16failure
+controls remain in the focused subset. CPU/Linux/WSL shared host only; no GPU/native
+Windows/database/browser/performance qualification is claimed.
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. No source build/test
+failure; captured build/runtime logs contain no warnings/errors. Focused/prepared/
+supporting CTests used parent TI_LIB_DIR unset; direct executables used explicit setup.
+Fixture observations:root-map requests208 bytes, tree-map requests168 bytes, one retained
+runtime descriptor after array retirement; root backing4096/array request28/Ndarray
+object224 bytes. These are observed values, not portable constants.
+
+Tested WSL source is clean. Final publication changes only four Markdown files;
+125local file links and whitespace checks passed. Contributor-local archive:
+runtime-metadata-domain-e94e8c03.tar.gz.
+Manifest SHA256:ca446301d2e6e9b4ba65c55fec6fb5ea12a01bcd0ffc620eae85a032104b9e06.
+Archive SHA256:1d14d90cd45de7a36d08167b7171c93ff0b431f4b532170c2f4ce7178dc2bc9e.
+Retains source/configuration/compiler/binary pins, commands and complete results.
+Raw local artifacts have not been independently inspected remotely. Hosted qualification
+and maintainer acceptance remain separate; no duplicate accepted run or self-merge.
