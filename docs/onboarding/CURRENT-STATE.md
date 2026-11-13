@@ -1,5 +1,14 @@
 # Current implementation and work
 
+**Response validity/lifecycle follow-up (awaiting review):** #329 source correction
+accepted in review 5898430428 at 24b02279; hosted integration remains pending.
+The next stacked slice tests invalid recipient and selected/inactive packet data,
+exact coincidence retention, alias/reorder refresh identity and generation, and
+exact rebase snapshot translation. Production code is unchanged. General canonical
+identity/reuse, downstream reduction and many-tick dt/Q remain pending. See the
+live extraction boundary below for the precise tested scope.
+
+
 **PR #329 correction (awaiting re-review):** review 5897775574 identified a missing
 prepaid binding allowance. The live-enabled reservation now includes the response
 observer's 32 arguments and sixth context, including CUDA arithmetic; live-disabled

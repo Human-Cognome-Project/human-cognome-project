@@ -112,3 +112,57 @@ Source/config/compiler/binary pins and full logs retained; raw local evidence is
 not independently reviewed remotely. Publication after this pin is Markdown only.
 Prior-head hosted smoke passed; native CI was still queued when checked, and was
 not manually retriggered. Updated-head hosted qualification and re-review remain due.
+
+## Response validity and lifecycle follow-up
+
+Following #329 acceptance review 5898430428 at 24b02279, the next bounded slice
+adds fixtures around the existing extraction API. No production implementation,
+resource inventory, intent formula or dynamics changes are made in this follow-up.
+The parent remains pending integration while its hosted native qualification runs.
+
+`response_validity` uses test-only injection into an installed owner. It checks
+NaN, both infinities and subnormal recipient XYZ/mass; only that recipient's rows
+become extraction-invalid. It corrupts each of the four words in selected and
+inactive centroid packets separately: selected packet corruption invalidates the
+rows referring to it, while inactive packet corruption does not. All checks retain
+source identities/fractions, generation/tick/frame metadata and readiness, and
+hash physical/activity/publication state before and after inspection. Test-owned
+snapshot copies are outside the allocation-free inspection interval.
+
+Zero and negative finite body mass remain extraction-valid, explicitly showing
+that this flag is not downstream formula/positive-mass certification. Exact local
+coincidence remains a visible zero displacement with valid extraction; it is not
+silently removed or interpreted as valid coefficient intent. These synthetic
+injections do not qualify production admission of invalid inputs.
+
+`response_lifecycle` reuses the existing refresh and exact-rebase fixtures. Duplicate
+source-row aliases and serialization-only sibling reorder preserve snapshots.
+A hierarchy precision refresh advances snapshot generation while retaining source
+records/fractions and completed ticks. Exact coordinate rebasing at capacities 70
+and 128 advances generation, records the current frame anchor, translates recipient
+XYZ, and preserves displacement, masses, eligibility, validity and source identities.
+Inspection itself remains allocation-free and leaves the owner state unchanged.
+
+These are bounded identity continuity witnesses for existing rows, not a general
+canonical-identity/lease scheme. Retire/reuse, changed coverage/ratios, stale borrowed
+consumers, range-overflow/subtraction-underflow controls, integrated coefficient
+reduction and many-tick dt/Q comparisons remain pending. No wake/sleep requirement
+or requirement that supported intent stop moving is introduced.
+
+Follow-up qualification at `dcbba8316903bf8f14b58f6467e6b6fd5ef77c2a` (unchanged
+Taichi tree ef9795b3e135de6edb4c3f5c8d409d6487f41385): native/engine build and all
+14 focused CPU CTests passed: four validity, four lifecycle, four original response
+and two supplied-packet intent tests. Each validity configuration covers 31 controls.
+Lifecycle cases exercised both capacities and completed in 141–143 seconds under
+the original 180-second timeout. Publication adds only a 600-second lifecycle timeout
+for slower hosted setup plus Markdown; executable sources are unchanged after the
+qualified pin. No assertion/build failures. The local script initially named a
+nonexistent branch and stopped before building; correcting its name resumed setup.
+No GPU/native Windows/database/browser/performance or many-tick intent qualification.
+
+Local archive `response-validity-dcbba831.tar.gz`: manifest SHA256
+`a8e067f9d5effef47f1ed3d954a688a66aa41a53a26df1faf10b2238a06584b6`;
+archive SHA256 `aff17f52d059ee696ead0cd76a3d99e28f457db2ba7d19a5ad04e60971fb9360`.
+Source/config/compiler/binary pins, commands and full output are retained locally;
+raw evidence is not independently reviewed remotely. Hosted qualification and
+maintainer review of this follow-up remain pending. No duplicate parent CI requested.
