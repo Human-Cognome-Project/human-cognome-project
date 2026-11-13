@@ -1,3 +1,4 @@
+#define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
 #include "engine/runtime.h"
 #include "engine/transfer.h"
@@ -9,6 +10,54 @@ using namespace taichi::lang;
 namespace {
 void require(bool ok, const char *message) {
   if (!ok) throw std::runtime_error(message);
+}
+void map_allocator_lifetime() {
+  using Map = LaunchContextBuilder::BindingMap<void *>;
+  const auto scenario = [] {
+    Map survivor;
+    {
+      Map source;
+      source.reserve(17);
+      source.emplace(std::vector<int>{1, 2}, nullptr);
+      const auto *domain = source.get_allocator().domain();
+      Map copied = source;
+      require(copied.get_allocator().domain() != domain && copied.size() == source.size(),
+              "container copy shared its allocation counter");
+      survivor = std::move(source);
+      require(survivor.get_allocator().domain() == domain,
+              "map move assignment lost stable allocation domain");
+      // A moved-from allocator remains usable and shares the domain; its
+      // temporary allocations must disappear when that container is destroyed.
+      source.emplace(std::vector<int>{3}, nullptr);
+    }
+    const auto verify = [&] {
+      const auto *domain = survivor.get_allocator().domain();
+      std::size_t keys = 0;
+      for (const auto &entry : survivor) keys += entry.first.capacity() * sizeof(int);
+      require(domain->control_block_bytes && allocation_lifetime::counts.live ==
+                  domain->live_bytes + sizeof(SharedRequestCounter) +
+                  domain->control_block_bytes + keys,
+              "live witness disagrees with map/counter/key requests");
+    };
+    verify();
+    survivor.rehash(97);
+    verify();
+    survivor.clear();
+    verify();
+  };
+  allocation_lifetime::begin();
+  scenario();
+  const auto baseline = allocation_lifetime::end();
+  require(!baseline.live && !baseline.blocks, "map/counter teardown leaked");
+  for (std::size_t fail = 1; fail <= baseline.attempts; ++fail) {
+    allocation_lifetime::begin(fail);
+    bool rejected = false;
+    try { scenario(); } catch (const std::bad_alloc &) { rejected = true; }
+    const auto failed = allocation_lifetime::end();
+    require(rejected && !failed.live && !failed.blocks,
+            "map/counter construction failure leaked or was ignored");
+  }
+  std::cout << "map_allocator_failure_sites=" << baseline.attempts << '\n';
 }
 engine::CompiledKernel kernel(engine::Runtime &runtime) {
   IRBuilder ir;
@@ -22,6 +71,7 @@ engine::CompiledKernel kernel(engine::Runtime &runtime) {
        engine::Param::scalar(PrimitiveType::i32)});
 }
 void run() {
+  map_allocator_lifetime();
   engine::InstanceSettings settings;
   settings.cpu_threads = 1;
   engine::Runtime runtime(settings);
@@ -70,6 +120,14 @@ void run() {
   const auto short_budget = context.prepared_host_metadata(device, refused.required_entries - 1);
   const auto metadata = context.prepared_host_metadata(device, refused.required_entries);
   allocation_observation::enabled = false;
+  require(metadata.runtime_sizes.allocation_domain &&
+              metadata.runtime_sizes.allocation_domain != metadata.allocation_types.allocation_domain &&
+              metadata.runtime_sizes.allocation_request_bytes >= metadata.runtime_sizes.value_payload_bytes &&
+              metadata.runtime_sizes.counter_object_bytes == sizeof(SharedRequestCounter) &&
+              metadata.runtime_sizes.counter_control_block_bytes &&
+              metadata.argpack_pointers.allocation_domain &&
+              metadata.argpack_pointers.counter_control_block_bytes,
+          "actual map requests/counter metadata missing or conflated");
   std::cout << "metadata_maps=" << metadata.runtime_sizes.entries << ','
             << metadata.allocation_types.entries << ',' << metadata.array_pointers.entries
             << ',' << metadata.argpack_pointers.entries << '\n';

@@ -43,6 +43,11 @@ LaunchContextBuilder::PreparedHostMetadata LaunchContextBuilder::prepared_host_m
     using Map = std::decay_t<decltype(map)>;
     storage.entries = map.size();
     storage.buckets = map.bucket_count();
+    const auto *domain = map.get_allocator().domain();
+    storage.allocation_domain = domain;
+    storage.allocation_request_bytes = domain->live_bytes;
+    storage.counter_object_bytes = sizeof(SharedRequestCounter);
+    storage.counter_control_block_bytes = domain->control_block_bytes;
     if (map.size() > std::numeric_limits<std::size_t>::max() / sizeof(typename Map::value_type)) {
       result.overflow = true;
       return false;

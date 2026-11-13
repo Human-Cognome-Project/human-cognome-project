@@ -4,6 +4,7 @@
 #include "taichi/program/argpack.h"
 #include "taichi/program/texture.h"
 #include "taichi/program/matrix.h"
+#include "taichi/rhi/common/shared_request_counting_allocator.h"
 
 namespace taichi::lang {
 
@@ -64,10 +65,14 @@ class LaunchContextBuilder {
     std::size_t entries{0}, buckets{0};
     // Value payload is a subset of unmeasured node allocation storage.
     std::size_t value_payload_bytes{0}, key_capacity_bytes{0};
+    // Synchronous shared domain identity; never dereference after owner lifetime.
+    const void *allocation_domain{nullptr};
+    std::size_t allocation_request_bytes{0};
+    std::size_t counter_object_bytes{0}, counter_control_block_bytes{0};
   };
   struct PreparedHostMetadata {
     bool available{false};
-    bool complete{false};  // Map nodes/bucket allocations remain unmeasured.
+    bool complete{false};  // This is not full prepared/runtime/heap metadata.
     bool overflow{false};
     std::size_t required_entries{0}, visited_entries{0};
     BindingMapStorage runtime_sizes, allocation_types, array_pointers, argpack_pointers;
@@ -206,23 +211,17 @@ class LaunchContextBuilder {
 
   // `array_runtime_size` records the runtime size of the
   // corresponding array arguments.
-  std::
-      unordered_map<std::vector<int>, uint64, hashing::Hasher<std::vector<int>>>
-          array_runtime_sizes;
+  template <typename V>
+  using BindingMap = std::unordered_map<std::vector<int>, V,
+      hashing::Hasher<std::vector<int>>, std::equal_to<std::vector<int>>,
+      SharedRequestCountingAllocator<std::pair<const std::vector<int>, V>>>;
+  BindingMap<uint64> array_runtime_sizes;
   // `device_allocation_type` is set iff i-th arg is a `DeviceAllocation*`,
   // otherwise it is set to DevAllocType::kNone
-  std::unordered_map<std::vector<int>,
-                     DevAllocType,
-                     hashing::Hasher<std::vector<int>>>
-      device_allocation_type;
+  BindingMap<DevAllocType> device_allocation_type;
 
-  std::
-      unordered_map<std::vector<int>, void *, hashing::Hasher<std::vector<int>>>
-          array_ptrs;
-  std::unordered_map<std::vector<int>,
-                     const ArgPack *,
-                     hashing::Hasher<std::vector<int>>>
-      argpack_ptrs;
+  BindingMap<void *> array_ptrs;
+  BindingMap<const ArgPack *> argpack_ptrs;
 
   std::vector<ArrayBinding> array_bindings;
   // Last member: backend cleanup precedes destruction of borrowed host buffers.
