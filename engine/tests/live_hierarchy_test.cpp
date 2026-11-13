@@ -1782,6 +1782,78 @@ void cumulative(engine::Runtime &r, HostPath path, bool cancel) {
   std::cout << "cumulative,cancel=" << cancel << ",max_polls=" << max_polls
             << ",reuse=32 PASS\n";
 }
+void response_observation(engine::Runtime &r, HostPath path) {
+  Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
+            {1, 1, 1}, {1, 1, 2}, {0, 2, 5});
+  bool rejected = false;
+  try { f.h.inspect_live_responses(UINT64_MAX); }
+  catch (const std::logic_error &) { rejected = true; }
+  require(rejected && f.h.ready(), "uninstalled response inspection changed readiness");
+  f.install();
+  const auto before = state_hash(f);
+  const auto &short_result = f.h.inspect_live_responses(0);
+  const auto need = short_result.work_required;
+  require(short_result.status == CascadeStatus::CapacityExhausted && need > 0 &&
+              !short_result.work_used && !short_result.readback_bytes,
+          "short response budget performed work");
+  no_new([&] {
+    const auto &shorter = f.h.inspect_live_responses(need - 1);
+    require(shorter.status == CascadeStatus::CapacityExhausted &&
+                shorter.failure.budget == Budget::CascadeWork &&
+                shorter.failure.required == need && !shorter.work_used,
+            "one-short observation budget accepted");
+  });
+  const auto check = [&] {
+    f.h.inspect_prepared();
+    const auto hierarchy = f.h.inspect_live_hierarchy();
+    const LiveResponseInspection *result = nullptr;
+    no_new([&] { result = &f.h.inspect_live_responses(need); });
+    const auto &v = *result;
+    require(v.status == CascadeStatus::Ok && v.responses == 6 &&
+                v.work_used == need && v.generation == f.h.prepared_storage().generation &&
+                v.completed_ticks == f.h.prepared_storage().completed_ticks &&
+                v.frame_anchor == f.h.frame_anchor() &&
+                v.readback_bytes == v.capacity * (10 * 8 + 4 * 4 + 2 * 8),
+            "response observation status or accounting mismatch");
+    const auto R = v.capacity;
+    int local = 0, inherited = 0;
+    std::set<std::array<int, 4>> identities;
+    for (std::size_t row = 0; row < v.responses; ++row) {
+      const int body = v.identities[row], child = v.identities[R + row],
+                parent = v.identities[2 * R + row], kind = v.identities[3 * R + row];
+      require(identities.insert({body, child, parent, kind}).second,
+              "fixture response identity duplicated");
+      require(body >= 0 && body < 3 && child >= 0 && child < 2 &&
+                  (kind == 0 || kind == 1), "invalid response identity");
+      const auto c = selected(hierarchy, child), p = selected(hierarchy, parent);
+      for (int k = 0; k < 3; ++k) {
+        const auto x = f.h.particle64(kPosX + k, body);
+        near(v.values[(3 + k) * R + row], x, "recipient snapshot mismatch");
+        near(v.values[k * R + row], kind ? p[k] - c[k] : c[k] - x,
+             "local/inherited native displacement mismatch");
+      }
+      near(v.values[6 * R + row], f.h.particle64(kMass, body), "body mass mismatch");
+      near(v.values[7 * R + row], kind ? p[3] : c[3], "source mass mismatch");
+      near(v.values[8 * R + row], kind || child == 0 ? 1 : 0, "eligibility mismatch");
+      near(v.values[9 * R + row], 1, "finite extraction unavailable");
+      require(v.fractions[row] == 1 && v.fractions[R + row] == 1,
+              "exact participation ratio changed");
+      if (kind) { ++inherited; require(parent == 2, "wrong parent identity"); }
+      else { ++local; require(parent == child, "wrong local identity"); }
+    }
+    require(local == 3 && inherited == 3, "canonical response count mismatch");
+    std::cout << "response_observation,rows=" << v.responses << ",work=" << v.work_used
+              << ",readback_bytes=" << v.readback_bytes << ",ticks=" << v.completed_ticks << '\n';
+  };
+  check();
+  require(state_hash(f) == before, "observation changed physical/activity/publication state");
+  Parameters64 p; p.dt = .01; p.gravity = .1;
+  f.h.tick64(p);
+  const auto after_tick = state_hash(f);
+  check();
+  require(state_hash(f) == after_tick, "post-motion observation changed state");
+}
+
 void basic(engine::Runtime &r, HostPath path) {
   Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
             {1, 1, 1}, {1, 1, 2}, {0, 2, 5});
@@ -1820,7 +1892,7 @@ void basic(engine::Runtime &r, HostPath path) {
             << ",node=" << sizeof(CascadeNode)
             << ",source_row=" << sizeof(CascadeSourceRow)
             << ",ndarray_wrapper=" << sizeof(taichi::lang::Ndarray)
-            << ",owned_live_ndarrays=16,compiled_kernel_wrapper="
+            << ",owned_live_ndarrays=17,compiled_kernel_wrapper="
             << sizeof(engine::CompiledKernel) << '\n';
   Parameters64 p;
   p.gravity = 1;
@@ -2878,6 +2950,8 @@ int main(int argc, char **argv) {
       run("refresh_capture", [&] { refresh_capture(r, path); });
 #endif
     }
+    if (wants("response_observation"))
+      run("response_observation", [&] { response_observation(r, path); });
     if (wants("basic"))
       run("basic", [&] { basic(r, path); });
     if (!quick) {
