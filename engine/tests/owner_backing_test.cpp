@@ -11,6 +11,26 @@ namespace {
 void require(bool ok, const char *message) {
   if (!ok) throw std::runtime_error(message);
 }
+void vector_limits() {
+  struct Oversized {
+    using value_type = std::uint64_t;
+    std::size_t size() const { return 0; }
+    std::size_t capacity() const { return std::numeric_limits<std::size_t>::max(); }
+  };
+  const auto overflow = program_vector_storage(Oversized{});
+  require(overflow.overflow && !overflow.available && !overflow.capacity_bytes,
+          "vector capacity overflow became available zero storage");
+  std::vector<int> retained;
+  retained.reserve(7);
+  retained.push_back(1);
+  const auto populated = program_vector_storage(retained);
+  retained.clear();
+  const auto empty = program_vector_storage(retained);
+  require(empty.available && !empty.overflow && !empty.slots &&
+              empty.capacity_bytes == populated.capacity_bytes &&
+              empty.capacity_bytes >= 7 * sizeof(int),
+          "empty vector lost retained capacity");
+}
 DeviceAllocation allocate(Device &device, std::size_t bytes) {
   Device::AllocParams params;
   params.size = bytes;
@@ -71,6 +91,28 @@ void native_owners(int workers) {
   auto &program = runtime.program();
   auto &impl = *program.get_program_impl();
   auto &device = *impl.get_compute_device();
+  const auto program_empty = program.lifecycle_storage();
+  require(program_empty.available && !program_empty.complete &&
+              program_empty.owner == &program &&
+              program_empty.object_bytes == sizeof(Program) &&
+              program_empty.kernels.available && !program_empty.kernels.slots &&
+              program_empty.functions.available && !program_empty.functions.slots &&
+              program_empty.trees.available && !program_empty.trees.slots &&
+              program_empty.textures.available && !program_empty.textures.slots &&
+              !program_empty.map_storage_available &&
+              !program_empty.free_id_storage_available &&
+              !program_empty.pointee_storage_available,
+          "Program empty coverage confused unavailable families with zero storage");
+  require(impl.launch_registry_storage().status == LaunchMetadataStatus::Absent,
+          "Program inspection created a launcher");
+  program.kernel([](Kernel *) {}, "storage_probe");
+  program.create_function(FunctionKey("storage_function", 17, 0));
+  const auto definitions = program.lifecycle_storage();
+  require(definitions.kernels.slots == 1 && definitions.functions.slots == 1 &&
+              definitions.kernels.capacity_bytes >= sizeof(std::unique_ptr<Kernel>) &&
+              definitions.functions.capacity_bytes >= sizeof(std::unique_ptr<Function>) &&
+              !definitions.kernels.overflow && !definitions.functions.overflow,
+          "Program definition vectors omitted retained capacity");
   const auto empty = impl.runtime_bookkeeping();
   require(empty.thread_pool.available && empty.thread_pool.present &&
               !empty.thread_pool.overflow && !empty.thread_pool.complete &&
@@ -100,6 +142,11 @@ void native_owners(int workers) {
           "missing root reported as zero backing");
   auto *first = tree(program);
   auto *second = tree(program);
+  const auto program_roots = program.lifecycle_storage();
+  require(program_roots.trees.available && !program_roots.trees.overflow &&
+              program_roots.trees.slots == 2 &&
+              program_roots.trees.capacity_bytes >= 2 * sizeof(std::unique_ptr<SNodeTree>),
+          "Program tree-vector storage missing");
   const auto a = impl.snode_root_backing_record(first->id());
   const auto b = impl.snode_root_backing_record(second->id());
   const auto roots = impl.runtime_bookkeeping();
@@ -130,8 +177,11 @@ void native_owners(int workers) {
     const auto queried_array = owned.backing_record(device);
     const auto queried_root = impl.snode_root_backing_record(first->id());
     const auto queried_metadata = impl.runtime_bookkeeping();
+    const auto queried_program = program.lifecycle_storage();
     const auto counts = allocation_lifetime::end();
     require(!counts.attempts && queried_array.token == array_record.token &&
+                queried_program.owner == &program &&
+                queried_program.trees.capacity_bytes == program_roots.trees.capacity_bytes &&
                 queried_root.token == a.token && queried_metadata.available &&
                 queried_metadata.runtime_allocations.entries == roots.runtime_allocations.entries + 1 &&
                 queried_metadata.root_records.allocation_domain == roots.root_records.allocation_domain,
@@ -151,7 +201,13 @@ void native_owners(int workers) {
               device.allocation_record(a.token).status == AllocationRecordStatus::Retired &&
               impl.snode_root_backing_record(second->id()).token == b.token,
           "root destruction did not retire exactly its backing");
+  const auto second_id = second->id();
   program.destroy_snode_tree(second);
+  const auto program_retired = program.lifecycle_storage();
+  require(program_retired.trees.slots == 2 &&
+              program_retired.trees.capacity_bytes == program_roots.trees.capacity_bytes &&
+              !program_retired.complete && !program_retired.pointee_storage_available,
+          "retired backing erased retained Program slots or implied pointee coverage");
   require(impl.snode_root_record_storage_bytes() == 0,
           "root record metadata retained after destruction");
   const auto retired = impl.runtime_bookkeeping();
@@ -175,10 +231,24 @@ void native_owners(int workers) {
             << " retained_runtime_entries=" << retired.runtime_allocations.entries << '\n';
   std::cout << "root_request=" << a.requested_bytes << " array_request="
             << array_record.requested_bytes << " ndarray_object=" << sizeof(Ndarray) << '\n';
+  auto *replacement = tree(program);
+  const auto reused = program.lifecycle_storage();
+  const auto replacement_backing = impl.snode_root_backing_record(replacement->id());
+  require(replacement->id() == second_id &&
+              reused.owner == program_roots.owner && reused.trees.slots == 2 &&
+              reused.trees.capacity_bytes == program_roots.trees.capacity_bytes &&
+              replacement_backing.status == AllocationRecordStatus::Live &&
+              !(replacement_backing.token == a.token) && !(replacement_backing.token == b.token),
+          "tree slot reuse duplicated vector storage or reused retired backing identity");
+  program.destroy_snode_tree(replacement);
+  std::cout << "program_object=" << reused.object_bytes
+            << " tree_slots=" << reused.trees.slots
+            << " tree_capacity=" << reused.trees.capacity_bytes << '\n';
 }
 }
 int main() {
   try {
+    vector_limits();
     array_views();
     native_owners(1);
     native_owners(2);

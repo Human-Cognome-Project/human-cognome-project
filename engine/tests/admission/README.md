@@ -6492,3 +6492,44 @@ file-link/whitespace validation is recorded below. Full B/combined admission and
 proposals remain unaccepted until their applicable review. No self-merge.
 
 All175 local file links across the six changed Markdown files resolve; whitespace checks passed. Native source tree is unchanged from the inspected pin.
+
+## Program lifecycle object/vector storage — 2026-11-13
+
+Read317review5891422350 at31cd23ab: required mixed-metadata scope and string-contract
+directions accepted; compiler exclusion conditional. Current maine8b503d7 through314
+already in stack; remote refs/open315–317 and held75/111/123 checked. No duplicate parent
+qualification or self-merge. This implements the explicitly authorized Program exporter.
+
+Program::lifecycle_storage observes object identity/size and four existing vector
+capacities without factories, traversal, copying or allocation. Per-vector availability/
+overflow/slots/capacity distinguish supported empty/retained storage from unavailable
+families. Map/free-ID/pointee flags remain false and full completeness remains false.
+Native lifecycle/compiler/dispatch behavior is unchanged. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:77b085616710dd1948b5db20b6611c05732066e8.
+Tracked Taichi tree:303701b357a96ccedb83b1658bad61a42f8b1ebd.
+Expanded owner_backing_test covers one/two-worker runtimes, empty vectors, populated
+kernel/function/tree vectors, no launcher creation, allocation-free queries, retained
+tree slots after backing retirement and exact recycled-slot reuse with new backing
+identity. Helper controls cover retained capacity after clear and synthetic overflow.
+Texture coverage remains empty-owner only; nested graph/map/deque/pointee storage and
+cross-backend execution are not qualified. CPU/Linux/WSL shared-host scope; no GPU,
+native Windows, database, browser or performance qualification is implied.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. One/two-worker fixtures
+both report864Program-object bytes, two retained tree slots and16tree-capacity bytes
+on this build; these are observations, not portable constants. Existing backing/map/
+thread controls remain passing. No source build/test failures; compiler logs are
+warning-free. One passing1-direct-exchange_commit emitted a cache-lock warning;
+preserved without cleanup/rerun. No warning-free-runtime claim. Focused/prepared/support
+CTests used parent TI_LIB_DIR unset; direct executables used explicit runtime setup.
+Tested WSL source remains clean at the recorded revision.
+
+Final publication changes only six Markdown files;179local file links and whitespace
+checks passed. Contributor-local archive:program-vector-domain-77b08561.tar.gz.
+Manifest SHA256:499a464565b12aaf7386d5dc30927e453b10075f75e458471d7217d11255494f.
+Archive SHA256:d63c1f37caacfef5f901a1f77b6f978545c7d29381aca3d2ff84743c41942993.
+Source/configuration/compiler/binary pins, commands and full results/diagnostics retained.
+Raw artifacts have not been independently inspected remotely. Hosted qualification and
+maintainer acceptance remain separate; no duplicate parent run or self-merge.

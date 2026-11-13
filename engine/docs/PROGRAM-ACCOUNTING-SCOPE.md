@@ -1,5 +1,13 @@
 # Program ownership and accounting scope
 
+**Program vector implementation (awaiting review, 2026-11-13):** following #317
+review5891422350, native Program::lifecycle_storage now reports its object and four
+lifecycle vector capacities at the actual owner, without factories or execution changes.
+Map/free-ID/pointee coverage stays explicitly unavailable; full coverage remains false.
+The source-pinned audit below is historical where it describes this exporter as future.
+Required mixed metadata and string-contract directions are accepted; compiler exclusion
+remains conditional. See the [export contract](BORROWED-RESOURCES.md#program-lifecycle-object-and-vectors-awaiting-review-2026-11-13).
+
 **Source audit and proposal, awaiting review, 2026-11-13.** Follows
 [#316 review 5891228994](https://github.com/Human-Cognome-Project/human-cognome-project/pull/316#pullrequestreview-5891228994).
 Inspected source `055d4d3ae160d7815c33d08ae310ae9689b2e459`, which integrates

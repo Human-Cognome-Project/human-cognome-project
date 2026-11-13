@@ -1,8 +1,20 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer integration — 2026-11-13:** #318 is accepted and integrated by this merge, preserving reviewed `7b1242be177283c39b9b5ea38a4590b34804f79d`. Native run 43432471080 passed all 12 jobs and smoke 43432471126 passed. Personally inspected regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #318. #319–#320 have bounded source acceptance and passing smoke; native qualification remains pending. #320 review 5892748763 accepts native free-ID deque request inspection and its scoped allocation/failure controls, retaining native LIFO behavior. Next: existing field-expression/accessor maps, then nested ownership and mixed ABI/provenance/string coverage before trusted aggregation. Reuse Taichi compilation, dispatch and thread machinery. Compiler exclusions remain conditional; full B and combined admission remain unaccepted. Held #75/#111/#123 remain unchanged. Earlier status paragraphs below are historical where they conflict.
+
 **Maintainer integration — 2026-11-13:** #316–#317 are accepted and integrated by this merge, preserving reviewed `31cd23abb0f07ab23520ac8c09a7025f7417566e`. Native runs 43427530304 and 43429268947 passed all 12 jobs each; both smoke workflows passed. Personally inspected #317 regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #317. #318–#319 have bounded source acceptance and passing smoke; native qualification remains pending. #319 review 5892365537 accepts request observation for three existing Program registries, explicitly including added counter/control-block costs and excluding pointees/external key strings from those map reports. Next: existing field/accessor maps and free-ID container, then nested ownership and mixed ABI/provenance/string coverage before trusted aggregation. Reuse Taichi compilation, dispatch and thread machinery. Compiler exclusions remain conditional; full B and combined admission remain unaccepted. Held #75/#111/#123 remain unchanged. Earlier status paragraphs below are historical where they conflict.
 
 **Maintainer integration — 2026-11-13:** #315 is accepted and integrated by this merge, preserving reviewed `891f6141b3c849de3a5ae5f587649d7bcc4e1c22`. Native run 43422882717 passed all 12 jobs and smoke 43422882727 passed. Personally inspected regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #315. #316–#318 have bounded source acceptance and passing smoke; native qualification remains pending. #318 review 5891877028 accepts native Program object/vector inspection with map/free-ID/pointee coverage explicitly incomplete. Next: map/free-ID request observation at existing native owners, then nested ownership and mixed ABI/provenance/string coverage before trusted aggregation. Compiler exclusions remain conditional; full B and combined admission remain unaccepted. Reuse Taichi compilation, dispatch and thread machinery. Held #75/#111/#123 remain unchanged. Earlier pending/status paragraphs below are historical where they conflict.
+
+**Program lifecycle vectors (awaiting review, 2026-11-13):** follows #317
+review5891422350 at31cd23ab. Native Program inspection reports its object and existing
+kernel/function/tree/texture vector capacity with per-family overflow/availability.
+Retained tree slots are distinct from retired backing and recycled slots. No lazy
+creation or native execution changes. Map/free-ID/pointee coverage remains unavailable,
+full B false. Required mixed metadata/string-contract direction is accepted; compiler
+exclusion remains conditional. Next: map/free-ID request observation and remaining
+nested ownership, then qualified string/ABI coverage before trusted aggregation.
+Main remains qualified through #314; #315–#317 are source accepted pending integration.
 
 **Program/compiler scope audit (awaiting review, 2026-11-13):** follows #316
 review5891228994 after integrating qualified main e8b503d7 through #314. The new
