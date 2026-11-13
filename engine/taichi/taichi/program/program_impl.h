@@ -197,6 +197,20 @@ class ProgramImpl {
   }
 
   KernelLauncher &get_kernel_launcher();
+  // Inspection must not call the lazy factory or instantiate a launcher.
+  LaunchRegistryStorage launch_registry_storage() const {
+    if (kernel_launcher_) return kernel_launcher_->registry_storage();
+    LaunchRegistryStorage result;
+    result.status = LaunchMetadataStatus::Absent;
+    return result;
+  }
+  LaunchContextStorage launch_context_storage(std::size_t index,
+                                              std::size_t parameter_budget) const {
+    if (kernel_launcher_) return kernel_launcher_->context_storage(index, parameter_budget);
+    LaunchContextStorage result;
+    result.status = LaunchMetadataStatus::Absent;
+    return result;
+  }
 
   virtual DeviceCapabilityConfig get_device_caps() {
     return {};

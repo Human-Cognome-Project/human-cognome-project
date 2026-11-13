@@ -75,6 +75,22 @@ void run() {
   engine::InstanceSettings settings;
   settings.cpu_threads = 1;
   engine::Runtime runtime(settings);
+  auto &impl = *runtime.program().get_program_impl();
+  allocation_observation::calls = 0;
+  allocation_observation::enabled = true;
+  const auto absent_registry = impl.launch_registry_storage();
+  const auto absent_context = impl.launch_context_storage(0, 0);
+  allocation_observation::enabled = false;
+  require(!allocation_observation::calls && absent_registry.status == LaunchMetadataStatus::Absent &&
+              absent_context.status == LaunchMetadataStatus::Absent && !absent_registry.owner,
+          "inspection instantiated an absent launcher");
+  auto &launcher = impl.get_kernel_launcher();
+  const auto empty_registry = impl.launch_registry_storage();
+  require(empty_registry.status == LaunchMetadataStatus::Present && !empty_registry.contexts &&
+              empty_registry.owner && empty_registry.object_bytes &&
+              launcher.KernelLauncher::registry_storage().status == LaunchMetadataStatus::Unavailable &&
+              impl.launch_context_storage(0, 0).status == LaunchMetadataStatus::Invalid,
+          "launcher empty/unsupported/invalid states conflated");
   auto &device = *runtime.program().get_compute_device();
   cpu::CpuDevice foreign;
   auto compiled = kernel(runtime);
@@ -90,7 +106,32 @@ void run() {
   context.set_arg_ndarray({0}, *owned);
   context.set_arg_ndarray({1}, part);
   context.set_arg_int({2}, 7);
+  const auto registry_before = impl.launch_registry_storage();
   compiled.prepare(context);
+  const auto registry = impl.launch_registry_storage();
+  const auto refused_launch = impl.launch_context_storage(registry_before.contexts, 0);
+  require(registry.contexts == registry_before.contexts + 1 &&
+              registry.owner == empty_registry.owner && registry.context_capacity_bytes &&
+              refused_launch.status == LaunchMetadataStatus::InsufficientWork &&
+              refused_launch.required_parameters == 3 && !refused_launch.visited_parameters,
+          "launch registry growth or parameter preflight incorrect");
+  allocation_observation::calls = 0;
+  allocation_observation::enabled = true;
+  const auto short_launch = impl.launch_context_storage(registry_before.contexts, 2);
+  const auto launch_storage = impl.launch_context_storage(registry_before.contexts, 3);
+  allocation_observation::enabled = false;
+  require(!allocation_observation::calls && short_launch.status == LaunchMetadataStatus::InsufficientWork &&
+              !short_launch.visited_parameters && launch_storage.status == LaunchMetadataStatus::Present &&
+              launch_storage.visited_parameters == 3 && launch_storage.owner == registry.owner &&
+              launch_storage.task_capacity_bytes && launch_storage.parameter_capacity_bytes &&
+              launch_storage.path_capacity_bytes >= 3*sizeof(int) &&
+              launch_storage.name_capacity_charge_bytes >= 3 && !launch_storage.complete &&
+              !registry.complete &&
+              impl.launch_context_storage(SIZE_MAX, SIZE_MAX).status == LaunchMetadataStatus::Invalid,
+          "budgeted launch metadata allocated, omitted storage or claimed completeness");
+  std::cout << "launch_contexts=" << registry.contexts
+            << " launch_parameters=" << launch_storage.required_parameters
+            << " launch_path_capacity=" << launch_storage.path_capacity_bytes << '\n';
   context.prepared->scalars.reserve(context.prepared->scalars.size() + 7);
   const auto view = context.prepared_backing(device);
   const auto a = context.prepared_array_record(device, 0);
@@ -190,6 +231,10 @@ void run() {
   runtime.synchronize();
   engine::readback(*owned, values, sizeof(values));
   require(values[0] == 19, "moved prepared execution changed");
+  require(impl.launch_registry_storage().contexts == registry.contexts &&
+              impl.launch_context_storage(registry_before.contexts, 3).parameter_capacity_bytes ==
+                  launch_storage.parameter_capacity_bytes,
+          "invocation move or repeated execution duplicated shared registry storage");
 
   const auto owner_token = owned->backing_record(device).token;
   DeviceAllocation proven_import;
