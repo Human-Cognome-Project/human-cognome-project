@@ -1821,6 +1821,7 @@ void response_observation(engine::Runtime &r, HostPath path) {
     for (std::size_t row = 0; row < v.responses; ++row) {
       const int body = v.identities[row], child = v.identities[R + row],
                 parent = v.identities[2 * R + row], kind = v.identities[3 * R + row];
+      std::cout << "response_identity,row=" << row << ",body=" << body << ",child=" << child << ",parent=" << parent << ",kind=" << kind << '\n';
       require(identities.insert({body, child, parent, kind}).second,
               "fixture response identity duplicated");
       require(body >= 0 && body < 3 && child >= 0 && child < 2 &&
