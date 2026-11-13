@@ -18,6 +18,7 @@
 #include "taichi/program/argpack.h"
 #include "taichi/program/program_impl.h"
 #include "taichi/program/program_storage.h"
+#include "taichi/rhi/common/shared_request_counting_allocator.h"
 #include "taichi/program/callable.h"
 #include "taichi/program/function.h"
 #include "taichi/program/kernel.h"
@@ -339,7 +340,10 @@ class TI_DLL_EXPORT Program {
   std::stack<int> free_snode_tree_ids_;
 
   std::vector<std::unique_ptr<Function>> functions_;
-  std::unordered_map<FunctionKey, Function *> function_map_;
+  template <typename Key, typename Value>
+  using Registry = std::unordered_map<Key, Value, std::hash<Key>, std::equal_to<Key>,
+      SharedRequestCountingAllocator<std::pair<const Key, Value>>>;
+  Registry<FunctionKey, Function *> function_map_;
 
   std::unique_ptr<ProgramImpl> program_impl_;
   float64 total_compilation_time_{0.0};
@@ -347,8 +351,8 @@ class TI_DLL_EXPORT Program {
   bool finalized_{false};
 
   // TODO: Move ndarrays_, argpacks_ and textures_ to be managed by runtime
-  std::unordered_map<void *, std::unique_ptr<Ndarray>> ndarrays_;
-  std::unordered_map<void *, std::unique_ptr<ArgPack>> argpacks_;
+  Registry<void *, std::unique_ptr<Ndarray>> ndarrays_;
+  Registry<void *, std::unique_ptr<ArgPack>> argpacks_;
   std::vector<std::unique_ptr<Texture>> textures_;
 };
 

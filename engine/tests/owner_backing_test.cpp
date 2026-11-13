@@ -105,9 +105,29 @@ void native_owners(int workers) {
           "Program empty coverage confused unavailable families with zero storage");
   require(impl.launch_registry_storage().status == LaunchMetadataStatus::Absent,
           "Program inspection created a launcher");
+  const auto &fm = program_empty.function_registry;
+  const auto &nm = program_empty.ndarray_registry;
+  const auto &am = program_empty.argpack_registry;
+  require(fm.available && nm.available && am.available &&
+              !fm.entries && !nm.entries && !am.entries &&
+              !fm.overflow && !nm.overflow && !am.overflow &&
+              fm.allocation_domain && nm.allocation_domain && am.allocation_domain &&
+              fm.allocation_domain != nm.allocation_domain &&
+              fm.allocation_domain != am.allocation_domain &&
+              nm.allocation_domain != am.allocation_domain &&
+              fm.counter_object_bytes && fm.counter_control_block_bytes &&
+              nm.counter_object_bytes && nm.counter_control_block_bytes &&
+              am.counter_object_bytes && am.counter_control_block_bytes,
+          "empty Program registries lost independent allocator domains or coverage");
   program.kernel([](Kernel *) {}, "storage_probe");
   program.create_function(FunctionKey("storage_function", 17, 0));
   const auto definitions = program.lifecycle_storage();
+  require(definitions.function_registry.entries == 1 &&
+              definitions.function_registry.allocation_domain == fm.allocation_domain &&
+              definitions.function_registry.allocation_request_bytes > fm.allocation_request_bytes &&
+              definitions.function_registry.allocation_request_bytes >=
+                  definitions.function_registry.value_payload_bytes,
+          "Program function registry omitted node/bucket requests");
   require(definitions.kernels.slots == 1 && definitions.functions.slots == 1 &&
               definitions.kernels.capacity_bytes >= sizeof(std::unique_ptr<Kernel>) &&
               definitions.functions.capacity_bytes >= sizeof(std::unique_ptr<Function>) &&
@@ -182,6 +202,9 @@ void native_owners(int workers) {
     require(!counts.attempts && queried_array.token == array_record.token &&
                 queried_program.owner == &program &&
                 queried_program.trees.capacity_bytes == program_roots.trees.capacity_bytes &&
+                queried_program.function_registry.allocation_domain == fm.allocation_domain &&
+                queried_program.function_registry.allocation_request_bytes ==
+                    definitions.function_registry.allocation_request_bytes &&
                 queried_root.token == a.token && queried_metadata.available &&
                 queried_metadata.runtime_allocations.entries == roots.runtime_allocations.entries + 1 &&
                 queried_metadata.root_records.allocation_domain == roots.root_records.allocation_domain,
@@ -241,6 +264,37 @@ void native_owners(int workers) {
               !(replacement_backing.token == a.token) && !(replacement_backing.token == b.token),
           "tree slot reuse duplicated vector storage or reused retired backing identity");
   program.destroy_snode_tree(replacement);
+  auto *registered_a = program.create_ndarray(PrimitiveType::i32, {7});
+  auto *registered_b = program.create_ndarray(PrimitiveType::i32, {7});
+  const auto registered = program.lifecycle_storage();
+  require(registered.ndarray_registry.entries == 2 &&
+              registered.ndarray_registry.allocation_domain == nm.allocation_domain &&
+              registered.ndarray_registry.allocation_request_bytes > nm.allocation_request_bytes &&
+              registered.ndarray_registry.allocation_request_bytes >=
+                  registered.ndarray_registry.value_payload_bytes &&
+              registered_a != registered_b,
+          "Program ndarray registry omitted distinct owning rows");
+  program.delete_ndarray(registered_a);
+  const auto one_array = program.lifecycle_storage();
+  program.delete_ndarray(registered_b);
+  allocation_lifetime::begin();
+  const auto cleared = program.lifecycle_storage();
+  const auto registry_query_counts = allocation_lifetime::end();
+  require(!registry_query_counts.attempts &&
+              one_array.ndarray_registry.entries == 1 &&
+              !cleared.ndarray_registry.entries &&
+              !cleared.ndarray_registry.value_payload_bytes &&
+              cleared.ndarray_registry.allocation_request_bytes > nm.allocation_request_bytes &&
+              cleared.ndarray_registry.allocation_request_bytes <
+                  one_array.ndarray_registry.allocation_request_bytes &&
+              one_array.ndarray_registry.allocation_request_bytes <
+                  registered.ndarray_registry.allocation_request_bytes &&
+              cleared.ndarray_registry.allocation_domain == nm.allocation_domain &&
+              !cleared.map_storage_available && !cleared.complete,
+          "registry erasure lost retained buckets or claimed complete Program maps");
+  std::cout << "function_registry_requests=" << definitions.function_registry.allocation_request_bytes
+            << " ndarray_registry_requests=" << registered.ndarray_registry.allocation_request_bytes
+            << " empty_ndarray_registry_requests=" << cleared.ndarray_registry.allocation_request_bytes << '\n';
   std::cout << "program_object=" << reused.object_bytes
             << " tree_slots=" << reused.trees.slots
             << " tree_capacity=" << reused.trees.capacity_bytes << '\n';
