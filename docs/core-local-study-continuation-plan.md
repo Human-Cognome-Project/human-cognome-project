@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Response reuse/range follow-up (awaiting review):** accepted #330 review5898902458
+is continued on qualified main2e758a57. Test-only work uses the initial reuse snapshot
+for insertion/retirement/handle-incarnation checks, copied-snapshot freshness across
+ticks and retirement, and local/inherited overflow/subnormal-subtraction controls.
+This is same-owner consumer evidence, not a production freshness or lease API.
+Native candidate reduction and many-tick dt/Q observations remain next. See the
+live extraction boundary below for precise scope and evidence.
+
+
 **Maintainer acceptance — #329, 2026-11-13:** corrected source `24b0227938b734cead8cec49d04163b8f4044391` accepted in review 5898430428 and merged at `c567a13db6b5c9008ce54c0d48996b14202dd2fd`. Smoke and all 12 native jobs passed. Personally inspected logs confirm all four live-response tests and 125 regression passes (32/31/31/31), database addressed_reads=24/private_reads=0. The observer's 32 arguments and sixth live context are now prepaid. #330 `cf0a965a2f0c6896f02b11858a86a710ecd8376f` has bounded source acceptance in review 5898902458; smoke passed and native CI remains pending. Next: retirement/reuse and stale-consumer coverage, range/subtraction controls, integrated candidate reduction and many-tick dt/Q observations. Changing intent and continued motion remain valid. Production braking/activity are unchanged. Prior pending-review notes below are historical where they conflict.
 
 **Response validity/lifecycle follow-up (awaiting review):** #329 source correction

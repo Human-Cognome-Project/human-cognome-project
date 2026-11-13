@@ -166,3 +166,66 @@ archive SHA256 `aff17f52d059ee696ead0cd76a3d99e28f457db2ba7d19a5ad04e60971fb9360
 Source/config/compiler/binary pins, commands and full output are retained locally;
 raw evidence is not independently reviewed remotely. Hosted qualification and
 maintainer review of this follow-up remain pending. No duplicate parent CI requested.
+
+## Retirement/reuse and subtraction follow-up
+
+Continues #330 review 5898902458 with qualified main 2e758a57 integrated. The
+previously unused initial response snapshot in refresh_occurrence_reuse now serves
+as the baseline for inserted and retired rows. This remains test-only work.
+
+Each capacity variant of the 32-round fixture ticks, inserts an occurrence with two response rows
+and contact edges, ticks again, then retires it. New checks require the exact source
+ratio and extraction flag on inserted rows, remove retired rows from the live
+prefix, recover the baseline source identities/fractions for survivors, and observe
+31 forced slot reuses with distinct native handle incarnations in a four-slot
+profile (three survivors). The original 70-slot profile remains covered without
+assuming immediate slot recycling. Raw body/packet integers
+remain owner-local storage references, not persistent occurrence identities.
+
+A same-owner test consumer checks status, generation, completed ticks and frame
+anchor on copied snapshots. It rejects copies across 32 ticks and 32 retirements;
+retirement is checked separately with no intervening tick. This illustrates required
+consumer discipline using existing metadata, not a new production freshness API,
+lease, or cross-owner identity validator. Borrowed report storage still expires at
+the next synchronized operation. The snapshots used across operations are owned
+copies, not retained borrowed references. Direct test-only source mutation within a
+generation is outside this freshness witness.
+
+Sixteen range controls cover both local and inherited subtraction: positive and
+negative overflow, both directions of a subnormal difference between normal inputs,
+exact cancellation, minimum normal and maximum finite results, and signed zero.
+Unsupported extraction remains explicit while rows/identities/fractions remain
+visible. A subnormal difference may be preserved or flushed by the backend; either
+must be extraction-invalid. These controls do not select a coincidence law or
+qualify inverse powers/coefficient reduction. Inspection stays allocation-free and
+bitwise owner-state preserving, and the fixture restores its synthetic inputs.
+
+Next: integrate native candidate observations with owner-accounted storage/work,
+then many-tick dt/Q comparisons. General identity/lease validation and cross-owner
+consumers remain outside these same-owner fixtures. Moving intent is legitimate;
+no production braking/activity change or full-B acceptance follows.
+
+Qualification at `ea428fa0b7e18bf0fe10a6fd89eb51e568b14783` (Taichi tree
+`ef9795b3e135de6edb4c3f5c8d409d6487f41385`): builds and all 18 focused CPU CTests
+passed, four concurrent test processes, one/two workers and bulk/direct: four range,
+four reuse, four existing validity, four original extraction, two native intent.
+Each reuse configuration observed 31 same-slot reincarnations at capacity four,
+zero immediate slot reuses at capacity 70, and 64 stale-copy rejections per capacity.
+Each range configuration passed all 16 controls. No GPU/native Windows/database/
+browser/performance or integrated many-tick intent qualification. Parent rebase/
+lifecycle tests were not repeated; only the changed subset and related controls ran.
+
+Initial source `4a96c762` built; 14/18 checks passed but all four reuse tests failed
+because they incorrectly required immediate recycling in the 70-slot profile.
+Native prepared allocation consumes the available free list; spare slots make that
+assumption invalid. The correction preserves capacity 70 and adds capacity four
+with three survivors, forcing the one vacant slot to recycle. No allocator behavior
+was changed. Initial failures are retained, not relabelled as passing evidence.
+
+Local archive `response-reuse-ea428fa0.tar.gz`: manifest SHA256
+`829377a574e7d3937291381be260dfd15dc03b0ea9154c7e96f41e6bddee311c`;
+archive SHA256 `a1d6c4a4e41b170b6cd5b0fe278f5164d89097c3a5e3b0098ccbed70d92598b7`.
+Source/config/compiler/binary pins, commands, full results and initial failure logs
+are retained locally; raw evidence is not independently reviewed remotely. Final
+publication after the tested pin changes Markdown only. Hosted checks/review remain
+pending; no duplicate parent run or self-merge.
