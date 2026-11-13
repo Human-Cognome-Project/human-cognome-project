@@ -685,13 +685,17 @@ void refresh_field_lifecycle(engine::Runtime &runtime, HostPath path) {
   std::cout << "refresh_field_lifecycle,pending_owner=1,three_levels=1,stable_"
                "slots=1,same_level=1,retired_packet_cleared=1 PASS\n";
 }
-void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path) {
+void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path, int capacity = 70) {
   const auto letter = letter_data(runtime);
   const auto D = letter.denominators[0];
   const auto mass = letter.masses[0];
+  auto budgets = limits(1024, runtime.on_cuda());
+  budgets[Budget::Particles] = capacity;
+  budgets[Budget::ScratchBytes] = detail::PreparedStorage::required_scratch(
+      budgets, runtime.on_cuda(), NumericalProfile::trial(8, 6));
   Fixture f(runtime, path, {{}, {}, {0, 1}}, {{D, D, 0}, {0, 0, D}, {0, 0, 0}},
             {D, D, D}, {mass, mass, mass}, {0, 2, 5}, 8, 6, false, false, false,
-            false, 1024, {letter.radii[0], letter.radii[0], letter.radii[0]});
+            false, 1024, {letter.radii[0], letter.radii[0], letter.radii[0]}, &budgets);
   f.install();
   refresh_compiler_controls(f);
   const auto initial_responses = response_snapshot(f);
@@ -765,8 +769,8 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path) {
                 "inserted response ratio or extraction invalid");
       }
     require(added_rows == 2, "new occurrence lacks local/inherited response pair");
-    if (old.context) {
-      require(old.record == added.record && old.incarnation != added.incarnation &&
+    if (old.context && old.record == added.record) {
+      require(old.incarnation != added.incarnation &&
                   !detail::same_handle(old, f.h.prepared_storage().particle_headers[old.record]),
               "reused row did not distinguish old occurrence identity");
       ++response_reuses;
@@ -830,8 +834,9 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path) {
     require(f.h.present_particles() == 3,
             "retirement changed another occurrence");
   }
-  require(response_reuses == 31 && stale_snapshots == 64, "reuse/stale controls incomplete");
-  std::cout << "response_reuse,slot_reuses=" << response_reuses
+  require((capacity != 4 || response_reuses == 31) && stale_snapshots == 64,
+          "reuse/stale controls incomplete");
+  std::cout << "response_reuse,capacity=" << capacity << ",slot_reuses=" << response_reuses
             << ",stale_copies=" << stale_snapshots << " PASS\n";
   const auto after = metrics.sample();
   backing.print("refresh_reuse_before");

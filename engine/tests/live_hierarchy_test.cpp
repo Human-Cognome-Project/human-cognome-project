@@ -2995,7 +2995,10 @@ int main(int argc, char **argv) {
     if (wants("response_range"))
       run("response_range", [&] { response_range(r, path); });
     if (only == "response_reuse")
-      run("response_reuse", [&] { refresh_occurrence_reuse(r, path); });
+      run("response_reuse", [&] {
+        refresh_occurrence_reuse(r, path, 4);
+        refresh_occurrence_reuse(r, path, 70);
+      });
     if (wants("response_validity"))
       run("response_validity", [&] { response_validity(r, path); });
     if (only == "response_lifecycle") {
