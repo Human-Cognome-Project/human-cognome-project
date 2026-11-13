@@ -3,6 +3,7 @@
 #include "engine/runtime.h"
 #include "taichi/rhi/cpu/cpu_device.h"
 #include "taichi/system/threading.h"
+#include "taichi/ir/type_factory.h"
 #include <iostream>
 #include <stdexcept>
 
@@ -219,6 +220,50 @@ void array_views() {
               !(fresh.backing_record(device).token == original.token),
           "new array did not capture new incarnation");
   device.clear();
+}
+void argpack_hosts(int workers) {
+  engine::InstanceSettings settings;
+  settings.cpu_threads = workers;
+  engine::Runtime runtime(settings);
+  auto &program = runtime.program();
+  const auto empty = program.lifecycle_storage().argpack_registry;
+  const DataType type(TypeFactory::get_instance().get_argpack_type(
+      {{PrimitiveType::i32, std::string(96, 'a'), 0}}));
+  auto *first = program.create_argpack(type);
+  auto *second = program.create_argpack(type);
+  const auto populated = program.lifecycle_storage().argpack_registry;
+  allocation_lifetime::begin();
+  const auto a = first->host_storage();
+  const auto b = second->host_storage();
+  const auto counts = allocation_lifetime::end();
+  require(!counts.attempts && a.available && b.available && !a.complete && !b.complete &&
+              !a.type_storage_available && !b.type_storage_available &&
+              !a.backing_storage_available && !b.backing_storage_available &&
+              a.owner == first && b.owner == second && a.owner != b.owner &&
+              a.object_bytes == sizeof(ArgPack) && b.object_bytes == a.object_bytes &&
+              first->get_data_type() == second->get_data_type(),
+          "argpack query allocated, conflated shared type with wrappers or claimed full coverage");
+  require(populated.available && !populated.overflow && populated.entries == 2 &&
+              populated.allocation_domain == empty.allocation_domain &&
+              populated.allocation_request_bytes > empty.allocation_request_bytes &&
+              populated.allocation_request_bytes >= populated.value_payload_bytes &&
+              !program.lifecycle_storage().pointee_storage_available,
+          "populated argpack registry omitted requests or implied aggregate coverage");
+  program.delete_argpack(first);
+  const auto remaining = program.lifecycle_storage().argpack_registry;
+  require(remaining.entries == 1 && second->host_storage().owner == b.owner &&
+              remaining.allocation_domain == empty.allocation_domain,
+          "argpack deletion removed another live wrapper or changed registry domain");
+  program.delete_argpack(second);
+  const auto cleared = program.lifecycle_storage().argpack_registry;
+  require(!cleared.entries && !cleared.value_payload_bytes &&
+              cleared.allocation_domain == empty.allocation_domain &&
+              cleared.allocation_request_bytes > 0 &&
+              cleared.allocation_request_bytes < populated.allocation_request_bytes,
+          "argpack deletion lost retained empty bucket accounting");
+  std::cout << "argpack_object=" << a.object_bytes
+            << " argpack_registry_requests=" << populated.allocation_request_bytes
+            << " retained_argpack_requests=" << cleared.allocation_request_bytes << '\n';
 }
 void native_owners(int workers) {
   engine::InstanceSettings settings;
@@ -523,6 +568,8 @@ int main() {
     array_views();
     native_owners(1);
     native_owners(2);
+    argpack_hosts(1);
+    argpack_hosts(2);
     std::cout << "owner_backing_test PASS\n";
     return 0;
   } catch (const std::exception &error) {

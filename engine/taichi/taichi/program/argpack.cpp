@@ -9,6 +9,14 @@
 
 namespace taichi::lang {
 
+ArgPackStorage ArgPack::host_storage() const {
+  ArgPackStorage result;
+  result.available = true;
+  result.owner = this;
+  result.object_bytes = sizeof(ArgPack);
+  return result;
+}
+
 ArgPack::ArgPack(Program *prog, const DataType type) : prog_(prog) {
   auto *old_type = type->get_type()->as<ArgPackType>();
   auto [argpack_type, alloc_size] = prog->get_argpack_type_with_data_layout(

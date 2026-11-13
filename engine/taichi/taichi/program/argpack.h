@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include <vector>
 
 #include "taichi/inc/constants.h"
@@ -11,12 +12,24 @@ namespace taichi::lang {
 
 class Program;
 
+// Live, quiescent host wrapper only; not backing or shared type storage.
+struct ArgPackStorage {
+  bool available{false};
+  bool complete{false};
+  bool type_storage_available{false};
+  bool backing_storage_available{false};
+  const void *owner{nullptr};
+  std::size_t object_bytes{0};
+};
+
 class TI_DLL_EXPORT ArgPack {
  public:
   /* Constructs a ArgPack managed by Program.
    * Memory allocation and deallocation is handled by Program.
    */
   explicit ArgPack(Program *prog, const DataType type);
+
+  ArgPackStorage host_storage() const;
 
   DeviceAllocation argpack_alloc_{kDeviceNullAllocation};
   DataType dtype;
