@@ -7,6 +7,48 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Prepared map allocation requests (awaiting review, 2026-11-12)
+
+Continues [#310 review 5883920961](https://github.com/Human-Cognome-Project/human-cognome-project/pull/310#pullrequestreview-5883920961).
+The four native context binding maps now use SharedRequestCountingAllocator. Rebound
+allocations record checked actual n*sizeof(allocated type), including standard-library
+nodes and bucket arrays; matching deallocation removes those requests. The budgeted
+metadata query reports that retained request total separately from key-vector capacity.
+Value payload is a subset of node requests and must not be added again. Bucket count
+remains diagnostic; it is not multiplied by an assumed pointer or bucket size.
+
+Each allocator domain owns one separately allocated SharedRequestCounter plus one
+shared_ptr control block. Both requests are exported: sizeof(SharedRequestCounter)
+for the separate counter object and the actual rebound control-block allocator request.
+The control-block observer writes only after successful allocation; its deallocate
+does not dereference the observation pointer because shared_ptr deletes the counter
+before freeing its control block. Constructor failure relies on shared_ptr's deleter
+cleanup. This is requested storage, not malloc rounding or physical residency.
+
+Allocator rebind/copies share stable counter lifetime. Move assignment propagates that
+domain after releasing displaced storage; moved-from allocators retain a valid shared
+domain. Ordinary container copy construction selects a fresh domain, so an independent
+map copy does not contaminate the source's count. A domain can still be shared through
+moves or explicit allocator copies. Reported allocation_domain is a synchronous identity:
+count node/bucket requests and counter/control-block storage once per domain, not once
+per aliasing map/context. All related containers must remain alive and quiescent during
+inspection. Reuse after destruction is not certified; the raw identity is not a lease.
+
+The context object includes the enlarged allocator/control members through sizeof.
+Counter object, control block, node/bucket requests and key element buffers are separate
+requested-storage surfaces; vector control objects/value payload are included in nodes.
+The maps are publicly accessible native containers, so explicit allocator-sharing users
+must preserve domain-wide synchronization/deduplication. This is not a new thread-safe
+container or a replacement for the future trusted Harness ownership boundary.
+
+The existing entry preflight and key enumeration budget remain unchanged. Counter reads
+add constant work per map, do not allocate, and do not prepay setup/rehash/peak work.
+Additional setup allocations are intentional. No numerical/launch policy changes or
+model-side backend casts are introduced. complete and host_metadata_complete remain
+false: this export is not all prepared/runtime/shared metadata or physical memory.
+Next: remaining runtime/shared surfaces, then lifetime-valid required-family Harness
+coverage and canonical/domain deduplication with prepaid work before checked C+B+H+D.
+
 ## Prepared host metadata (awaiting review, 2026-11-12)
 
 Continues [#309 review 5883627408](https://github.com/Human-Cognome-Project/human-cognome-project/pull/309#pullrequestreview-5883627408).

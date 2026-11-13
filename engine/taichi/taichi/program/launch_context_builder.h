@@ -63,7 +63,7 @@ class LaunchContextBuilder {
   PreparedBacking prepared_backing(const Device &live_device) const;
   struct BindingMapStorage {
     std::size_t entries{0}, buckets{0};
-    // Value payload is a subset of unmeasured node allocation storage.
+    // Value payload is a subset of allocation_request_bytes, not an extra charge.
     std::size_t value_payload_bytes{0}, key_capacity_bytes{0};
     // Synchronous shared domain identity; never dereference after owner lifetime.
     const void *allocation_domain{nullptr};

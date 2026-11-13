@@ -1,5 +1,15 @@
 # Current implementation and work
 
+**Prepared map requests (awaiting review, 2026-11-12):** continues reviewed #310
+75025c10/review5883920961. Four binding maps now report actual retained node/bucket
+allocation requests and their stable shared counter/control-block requests. Map value
+payload remains a subset; key buffers are separate. Moves/allocator copies can share
+a domain, so domain lifetime/deduplication is explicit; ordinary container copies get
+independent domains. Existing inspection preflight remains. Main cee73d53 is already
+included through #308; #309/#310 remain provisional pending hosted integration. Next:
+remaining runtime/shared metadata, trusted Harness coverage/lifetime/deduplication and
+prepaid work before combined C+B+H+D. No full B or GPU/Windows-execution claim.
+
 **Prepared host metadata (awaiting review, 2026-11-12):** continues reviewed #309
 6b3180b5/review5883627408. Reports prepared scalar capacity and binding-map key
 capacities/value payload via a separate entry-budgeted inspection. Refusal precedes

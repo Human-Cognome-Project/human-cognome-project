@@ -6242,3 +6242,50 @@ Archive SHA256:9c09a1302f26038699d1666b06ec3ef092c1a9cf82963e866317ae78da148ad1.
 Includes source/configuration/compiler/binary pins, commands, results and failed
 initial observation. Raw artifacts have not been independently inspected remotely.
 Hosted qualification/maintainer acceptance remain separate; no self-merge.
+## Prepared map allocation requests — 2026-11-12
+
+Continues #310 review5883920961 at75025c10, source provisionally accepted without
+blocking findings. Main cee73d53 remains integrated through #308 and is already in
+this stack; #309/#310 hosted integration stays pending. Open queue and remote refs
+were rechecked; no duplicate parent qualification or self-merge.
+
+Four native binding maps now use stable shared request counters. Actual rebound
+node/bucket requests are reported separately from key capacity and value-payload
+subsets. Counter object and actual shared_ptr control-block request are separate
+reported allocations. Moves/rebound allocator copies retain domain lifetime; ordinary
+container copies select fresh domains. Public allocator sharing requires domain-wide
+quiescence/deduplication; identities are synchronous, not durable tokens or leases.
+Entry-budget preflight is unchanged; full host/runtime metadata remains incomplete.
+See [the contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:8001358dc47449a6c4e4df3d7a99b7058e0c1f7d.
+Tracked Taichi tree:ca93f571203ffe232beaba0dd23142060bf0e24e.
+Expanded prepared_backing_test compares all retained map/counter/control-block/key
+requests against an independent live-allocation witness after source destruction,
+rehash and clear. It checks copy-domain independence, move assignment with a displaced
+destination, reuse/destruction of a moved-from map and zero retained allocations after
+teardown. Every observed allocation site in that scenario is failed individually,
+including counter/control-block construction; each must reject and reclaim all acquired
+storage. Existing budget/refusal/retry/move/import/execution checks remain in scope.
+No GPU/native Windows/database/browser/performance qualification is claimed.
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. The allocator scenario
+exercised16 failure sites, each with zero retained allocations after unwind. Live
+request equality passed after source destruction, rehash and clear. Existing observed
+map counts2/3/4/0, required entries9, scalar capacity160/key capacity92 and
+argument40/result0/recordcapacity144 remain unchanged.
+
+Build logs have no compiler warnings/errors. One passing2-bulk-exchange_commit emitted
+an offline-cache lock warning; exact diagnostic is preserved without cleanup/rerun.
+No warning-free-runtime claim. No source build/test failure occurred.
+Focused/prepared/supporting CTests ran with parent TI_LIB_DIR unset; direct executables
+used explicit runtime setup. Tested WSL source is clean. Final publication changes
+four Markdown files and one explanatory header comment from tested source; executable
+source is unchanged. 124local file links and whitespace checks passed.
+
+Contributor-local archive:prepared-map-domain-domain-8001358d.tar.gz.
+Manifest SHA256:785a1ac9acaf2078f166619638ce3d75a5436c8e0e04ada7758dded23005965f.
+Archive SHA256:1934785f84441f35416100771058bc398a06ef3bce7140ea1fa8e09bcf760cf3.
+Source/configuration/compiler/binary pins, commands, full results and diagnostics are
+retained. Raw artifacts have not been independently inspected remotely. Parent310
+smoke43332423712 passed/native43332423596 remains active; no duplicate run or self-merge.
