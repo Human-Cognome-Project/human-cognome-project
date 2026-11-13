@@ -83,10 +83,10 @@ preinstall/short-budget behavior, allocation-free inspection, unchanged model st
 and frame/generation/tick/work/readback metadata. The accepted packet cases continue
 to exercise shared helper arithmetic, including independent contact handling.
 
-Many-tick dt/Q comparisons, candidate-specific refresh/rebase/reincarnation fixtures,
-GPU/native Windows and live contact diagnostics remain separate. Existing extraction
-lifecycle evidence does not automatically qualify the new reduced report. No new
-braking law or stability classifier is selected.
+The initial integration did not qualify candidate-specific lifecycle; the follow-up
+below records that bounded evidence. Many-tick dt/Q comparisons, GPU/native Windows
+and live contact diagnostics remain separate. Extraction evidence alone does not
+qualify the reduced report. No new braking law or stability classifier is selected.
 
 ## Contributor-local evidence
 
@@ -118,3 +118,59 @@ Source/config/compiler/binary pins, commands, full focused and regression result
 and initial failures are preserved. Raw local evidence has not been independently
 reviewed remotely. Final publication after the tested pin changes only Markdown.
 Hosted CI and maintainer acceptance of this integration remain pending.
+
+## Candidate-specific lifecycle follow-up
+
+Following #332 review 5899338489, the existing lifecycle fixtures now exercise
+reduced reports directly. This follow-up changes tests only. A reusable host
+long-double reference recomputes coefficient sums, force and relative/operative
+candidates from the current extracted source rows at each transition. It handles
+valid coincidence and absence, checks every physical slot, and does not call the
+native IR helper. It is source-derived arithmetic evidence, not an independent
+reimplementation of extraction or an invalid-range oracle.
+
+Refresh coverage includes duplicate aliases/serialization-only reorder (unchanged
+candidate values and generation), precision refresh (new generation), deliberately
+lagged dirty publications, and a count-only edit with unchanged f32 share. The latter
+must change the candidate coefficient sum and match the current exact source ratio.
+It does not replace published packets with independently recomputed body centroids.
+
+Rebase coverage at capacities 70 and 128 compares independently recomputed values,
+requires state/availability/coefficient/coincidence/force/relative columns unchanged,
+and checks translated operative candidates with the established numerical tolerance.
+Absent or unresolved masked coordinates remain zero. Inverse rebasing restores the
+values but cannot revive a copied report's old generation.
+
+The 32-round occurrence fixture runs at capacities four and 70. Native insertion
+must create a non-absent candidate; retirement must clear its status and coefficient/
+force/candidate payload, while all slots continue to match fresh source-derived
+expectations. The four-slot profile forces 31 reincarnations. Copied reports are
+rejected across each tick and separately across retirement without tick advancement.
+The same-owner test consumer also checks readiness, requested gravity and frame.
+These checks are consumer discipline, not a new production lease/freshness API;
+cross-owner validity and direct test-only mutation within a generation are not claimed.
+
+Snapshot copies are made outside allocation-free inspection intervals. Every query
+checks unchanged physical/activity/publication state and budget/readback metadata.
+No production formula, source state, accounting inventory, braking or activity rule
+changes. Many-tick dt/Q comparisons remain next; the zero-gravity turnover ticks in
+these lifecycle fixtures are not trajectory/stability qualification.
+
+Lifecycle qualification at `64a505af9825f65a400028e515d066f5c91509c1`, unchanged
+Taichi tree `ef9795b3e135de6edb4c3f5c8d409d6487f41385`: builds and all ten focused
+CPU CTests passed: four candidate lifecycle, four original live candidate, and two
+supplied-packet probes. One/two workers and bulk/direct paths were exercised with
+four independent test processes. Each lifecycle case includes refresh basics,
+dirty/count refresh, rebase at capacities 70/128, and turnover at capacities 4/70.
+The existing model-survival, native backing and allocation checks remain in those
+fixtures. No build/assertion failures. This run does not relabel the earlier 38-check
+integration qualification or infer GPU/native Windows/database/browser/performance
+or many-tick dt/Q results.
+
+Local archive `intent-lifecycle-64a505af.tar.gz`: manifest SHA256
+`fb3c8a86c6cbaeab1c3c8fed760c4cbf102ee53a001be668f21673b2201dacd8`;
+archive SHA256 `d920f34cd7a196c868709fdfda2c0e9107b06680a3dd6ccf8c213d37d184903e`.
+Source/config/compiler/binary pins, commands and full outputs retained locally;
+raw evidence is not independently reviewed remotely. Final publication after the
+tested pin changes Markdown only. Hosted qualification and review remain pending;
+no duplicate parent CI was requested and no self-merge was performed.

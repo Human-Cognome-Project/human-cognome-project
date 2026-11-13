@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Candidate lifecycle follow-up (awaiting review):** #332 source acceptance
+5899338489 is continued on main24c1438b. Test-only work independently recomputes
+source-derived long-double candidates through alias/precision/count refresh,
+rebase/inverse rebase, and forced reincarnation/retirement with sparse absent slots.
+Copied-report metadata is checked separately from arithmetic. No production or
+accounting changes; many-tick dt/Q comparisons remain next. See the candidate
+boundary below for the qualification limits.
+
+
 **Maintainer source acceptance — #332, 2026-11-13:** `4d518294dd4f1edadadd3305bd866de8d0a9d2c7` accepted in review 5899338489 for live native coefficient-candidate diagnostics. Existing extracted responses and committed per-body ranges feed the shared strict arithmetic helper; native/host output and six new parameters and the seventh live context are prepaid. Production force, integration, braking and activity are unchanged. Contributor reports 38 scoped CPU passes at `25fdae23ccab17db239d8aab1d86c2c5c9b40ec5`; final delta is three Markdown files, and the local archive has not been independently inspected. Smoke passed; native run 43524802657 remains pending. #330/#331 native runs also remain pending, so all three await integration; main runtime remains qualified through #329. Older #322/#323/#325 remain open. Next source work: candidate-specific refresh/rebase/reincarnation and stale-copy coverage, then many-tick dt/Q observations. Changing intent and continued motion remain legitimate; no stability classifier or braking law is selected. Earlier notes below are historical where they conflict.
 
 **Live native candidate observation (awaiting review):** follows #331 acceptance
