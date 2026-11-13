@@ -1,5 +1,14 @@
 # Current implementation and work
 
+**Intent correction analysis (#324, awaiting review, 2026-11-13):** accepted scope
+6859051253 authorizes the [comparison proposal](../../engine/docs/INTENT-DERIVATION.md)
+and independent algebra fixtures before selecting a kernel correction. The proposal
+compares three target normalizations and constructs equal-force/different-intent under
+the leading coefficient-weighted candidate. Exact source coincidence remains unresolved;
+no braking law or production dynamics changed. Native trajectory/activity/quantization
+qualification remains pending. #325 storage work and the later Taichi-reuse audit stay
+separate; preserve main's composition orientation at647c6484.
+
 **Maintainer integration — 2026-11-13:** #321 is accepted and integrated by this merge, preserving reviewed `8d77ff2e81d0e72f23ff7d3b73a5ee90064cb055`. Native run 43446605556 passed all 12 jobs and smoke 43446605870 passed. Personally inspected regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #321. #322–#323 have bounded source acceptance and passing smoke; native qualification remains pending. #323 review 5894203678 accepts fixed-work SNodeTree/SNode host inspection with strings/gradient/nested coverage incomplete. Next: remaining nested ownership and mixed ABI/provenance/string coverage before trusted lifetime/required-family aggregation, canonical/domain deduplication and prepaid work. Compiler exclusions remain conditional; full B and combined admission remain unaccepted. Held #75/#111/#123 remain unchanged. Earlier status paragraphs below are historical where they conflict.
 
 **Follow-up direction — 2026-11-13:** Finish the current work, then review earlier implementation for functions already supplied by Taichi. Reuse existing optimized native compilation, dispatch, ownership and thread facilities. That later review should identify concrete duplication or unnecessary integration paths; do not divert the current bounded work into speculative engine replacement or optimization. Ownership clarity and avoiding duplicate work matter to performance; measured speedups remain separate evidence.

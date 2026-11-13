@@ -377,6 +377,13 @@ remain required. Actual GPU behavior/performance is unexecuted here.
 
 ## Combined destination and the discretization brake
 
+**2026-11-13 correction scope:** [#324 comparison proposal](INTENT-DERIVATION.md)
+separates spatial intent from force and accepted motion. The historical force-magnitude
+reach below is not a justified spatial destination. Production behavior is unchanged;
+target normalization, exact coincidence and replacement braking await review and native
+trajectory evidence. Independent algebra fixtures are not kernel qualification.
+
+
 Each field contributes a target relative to its centroid and a directed
 inverse-square pull. The directed forces sum to `F_net`; the particle also
 needs an **effective destination and remaining distance** to compare with
