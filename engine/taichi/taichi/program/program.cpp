@@ -50,6 +50,18 @@
 namespace taichi::lang {
 std::atomic<int> Program::num_instances_;
 
+ProgramStorage Program::lifecycle_storage() const {
+  ProgramStorage result;
+  result.available = true;
+  result.owner = this;
+  result.object_bytes = sizeof(Program);
+  result.kernels = program_vector_storage(kernels);
+  result.functions = program_vector_storage(functions_);
+  result.trees = program_vector_storage(snode_trees_);
+  result.textures = program_vector_storage(textures_);
+  return result;
+}
+
 Program::Program(Arch desired_arch) : snode_rw_accessors_bank_(this) {
   TI_TRACE("Program initializing...");
 

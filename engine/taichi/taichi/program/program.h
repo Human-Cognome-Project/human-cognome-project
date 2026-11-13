@@ -17,6 +17,7 @@
 #include "taichi/util/lang_util.h"
 #include "taichi/program/argpack.h"
 #include "taichi/program/program_impl.h"
+#include "taichi/program/program_storage.h"
 #include "taichi/program/callable.h"
 #include "taichi/program/function.h"
 #include "taichi/program/kernel.h"
@@ -72,6 +73,8 @@ class TI_DLL_EXPORT Program {
   const CompileConfig &compile_config() const {
     return compile_config_;
   }
+
+  ProgramStorage lifecycle_storage() const;
 
   struct KernelProfilerQueryResult {
     int counter{0};
