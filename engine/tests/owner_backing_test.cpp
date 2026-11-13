@@ -149,13 +149,26 @@ void native_owners(int workers) {
               program_empty.functions.available && !program_empty.functions.slots &&
               program_empty.trees.available && !program_empty.trees.slots &&
               program_empty.textures.available && !program_empty.textures.slots &&
-              !program_empty.map_storage_available &&
+              program_empty.map_storage_available &&
               program_empty.free_id_storage_available &&
               program_empty.free_ids.available && !program_empty.free_ids.entries &&
               !program_empty.pointee_storage_available,
           "Program empty coverage confused unavailable families with zero storage");
   require(impl.launch_registry_storage().status == LaunchMetadataStatus::Absent,
           "Program inspection created a launcher");
+  require(program_empty.field_expressions.available && program_empty.accessors.available &&
+              !program_empty.field_expressions.entries && !program_empty.accessors.entries,
+          "empty field/accessor maps unavailable");
+  const void *domains[] = {program_empty.function_registry.allocation_domain,
+                          program_empty.ndarray_registry.allocation_domain,
+                          program_empty.argpack_registry.allocation_domain,
+                          program_empty.field_expressions.allocation_domain,
+                          program_empty.accessors.allocation_domain};
+  for (int i = 0; i < 5; ++i) {
+    require(domains[i], "Program map domain missing");
+    for (int j = 0; j < i; ++j)
+      require(domains[i] != domains[j], "independent Program maps share a domain");
+  }
   const auto &fm = program_empty.function_registry;
   const auto &nm = program_empty.ndarray_registry;
   const auto &am = program_empty.argpack_registry;
@@ -346,14 +359,58 @@ void native_owners(int workers) {
               one_array.ndarray_registry.allocation_request_bytes <
                   registered.ndarray_registry.allocation_request_bytes &&
               cleared.ndarray_registry.allocation_domain == nm.allocation_domain &&
-              !cleared.map_storage_available && !cleared.complete,
-          "registry erasure lost retained buckets or claimed complete Program maps");
+              cleared.map_storage_available && !cleared.pointee_storage_available && !cleared.complete,
+          "registry erasure lost retained buckets or claimed complete Program ownership");
   std::cout << "function_registry_requests=" << definitions.function_registry.allocation_request_bytes
             << " ndarray_registry_requests=" << registered.ndarray_registry.allocation_request_bytes
             << " empty_ndarray_registry_requests=" << cleared.ndarray_registry.allocation_request_bytes << '\n';
   std::cout << "program_object=" << reused.object_bytes
             << " tree_slots=" << reused.trees.slots
             << " tree_capacity=" << reused.trees.capacity_bytes << '\n';
+  auto field_root = std::make_unique<SNode>(0, SNodeType::root);
+  auto &field_dense = field_root->dense(Axis(0), 7);
+  auto expression = Expr::make<FieldExpression>(PrimitiveType::i32,
+      program.get_next_global_id("accounted_field"));
+  place_child(&expression, {}, -1, &field_dense, program.get_snode_to_fields());
+  auto *field_node = expression.snode();
+  auto *owned_field_tree = program.add_snode_tree(std::move(field_root), false);
+  auto accessor = program.get_snode_rw_accessors_bank().get(field_node);
+  allocation_lifetime::begin();
+  const auto field_maps = program.lifecycle_storage();
+  const auto direct_accessor = program.get_snode_rw_accessors_bank().storage();
+  const auto field_query_counts = allocation_lifetime::end();
+  require(!field_query_counts.attempts && field_maps.map_storage_available &&
+              field_maps.field_expressions.entries == 1 && field_maps.accessors.entries == 1 &&
+              field_maps.field_expressions.allocation_domain == domains[3] &&
+              field_maps.accessors.allocation_domain == domains[4] &&
+              field_maps.accessors.allocation_domain == direct_accessor.allocation_domain &&
+              field_maps.accessors.allocation_request_bytes == direct_accessor.allocation_request_bytes &&
+              field_maps.field_expressions.allocation_request_bytes >
+                  program_empty.field_expressions.allocation_request_bytes &&
+              field_maps.accessors.allocation_request_bytes > program_empty.accessors.allocation_request_bytes &&
+              !field_maps.pointee_storage_available && !field_maps.complete,
+          "field/accessor map inspection allocated, aliased owners or implied pointee coverage");
+  accessor.write_int({2}, 37);
+  require(accessor.read_int({2}) == 37, "native accessor execution changed");
+  program.destroy_snode_tree(owned_field_tree);
+  const auto field_retired = program.lifecycle_storage();
+  require(!field_retired.accessors.entries && field_retired.field_expressions.entries == 1 &&
+              field_retired.kernels.slots == field_maps.kernels.slots &&
+              field_retired.accessors.allocation_request_bytes > program_empty.accessors.allocation_request_bytes &&
+              field_retired.accessors.allocation_request_bytes < field_maps.accessors.allocation_request_bytes,
+          "tree retirement lost retained field rows/kernels or accessor buckets");
+  program.get_snode_to_fields()->erase(field_node);
+  const auto field_erased = program.lifecycle_storage();
+  require(!field_erased.field_expressions.entries &&
+              field_erased.field_expressions.allocation_request_bytes >
+                  program_empty.field_expressions.allocation_request_bytes &&
+              field_erased.field_expressions.allocation_request_bytes <
+                  field_maps.field_expressions.allocation_request_bytes &&
+              field_erased.field_expressions.allocation_domain == domains[3],
+          "explicit field-map erasure lost retained bucket accounting");
+  std::cout << "field_map_requests=" << field_maps.field_expressions.allocation_request_bytes
+            << " accessor_map_requests=" << field_maps.accessors.allocation_request_bytes
+            << " retained_accessor_requests=" << field_retired.accessors.allocation_request_bytes << '\n';
 }
 }
 int main() {

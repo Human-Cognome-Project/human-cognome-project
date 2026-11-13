@@ -4,6 +4,8 @@
 
 #include "taichi/program/kernel.h"
 #include "taichi/ir/snode.h"
+#include "taichi/program/runtime_metadata.h"
+#include "taichi/rhi/common/shared_request_counting_allocator.h"
 
 namespace taichi::lang {
 
@@ -51,6 +53,10 @@ class SNodeRwAccessorsBank {
 
   Accessors get(SNode *snode);
 
+  RuntimeMapStorage storage() const {
+    return runtime_map_storage(snode_to_kernels_);
+  }
+
   void remove_cached_kernels(const SNode *snode) {
     if (snode_to_kernels_.find(snode) != snode_to_kernels_.end())
       snode_to_kernels_.erase(snode);
@@ -58,7 +64,10 @@ class SNodeRwAccessorsBank {
 
  private:
   Program *const program_;
-  std::unordered_map<const SNode *, RwKernels> snode_to_kernels_;
+  std::unordered_map<const SNode *, RwKernels, std::hash<const SNode *>,
+      std::equal_to<const SNode *>,
+      SharedRequestCountingAllocator<std::pair<const SNode *const, RwKernels>>>
+      snode_to_kernels_;
 };
 
 }  // namespace taichi::lang
