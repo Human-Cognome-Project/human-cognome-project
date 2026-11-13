@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Intent domain follow-up (awaiting review, 2026-11-13):** follows #326 review
+5895998111 from main bf363f92. Reference comparisons now reject nonfinite operands
+and assert angled coupling intent. Exact-coincidence alternatives, negative-contact
+normalizer failure, and changing local/inherited intent are independently compared.
+Recommend explicit unresolved coincidence for bounded diagnostics; no production law
+or brake is selected. Native diagnostics, wake and many-tick dt/Q evidence remain next.
+See the [intent proposal](../engine/docs/INTENT-DERIVATION.md). Storage work and
+Taichi-reuse follow-up remain separate.
+
 **Maintainer acceptance — #326, 2026-11-13:** comparison proposal and independent algebra reference accepted in review 5895998111 and merged at `f08ad43a476a1c09abd925b6fab884db682bfec8`. Hosted smoke and all 12 native jobs passed; the new standalone reference is outside that native filter. Reviewer independently compiled and ran it with GCC 14.2.0/C++17 and strict warnings: PASS. This accepts the analysis, not a production intent/braking law. #324 remains open: resolve exact coincidence/domain/contact choices and develop bounded native diagnostics and trajectory/activity fixtures before selecting the correction. Coefficient weighting remains a candidate. Next reference revision should reject nonfinite comparisons explicitly and check the documented angled coupling target. Storage work #322/#323/#325 and the later Taichi-reuse audit remain separate.
 
 **Intent correction analysis (#324, comparison accepted in #326, 2026-11-13):** accepted scope
