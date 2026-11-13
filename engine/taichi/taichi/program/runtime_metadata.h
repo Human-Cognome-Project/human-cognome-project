@@ -12,6 +12,12 @@ struct RuntimeMapStorage {
   std::size_t value_payload_bytes{0};
 };
 
+struct RuntimeThreadStorage {
+  bool available{false}, present{false}, overflow{false}, complete{false};
+  const void *owner{nullptr};
+  std::size_t object_bytes{0}, thread_handles{0}, handle_capacity_bytes{0};
+};
+
 // Retained host bookkeeping only, not a live backing registry or full runtime B.
 // Identities are synchronous: the runtime and all domains must remain quiescent
 // and alive. Counts can include retired allocation descriptors.
@@ -20,6 +26,8 @@ struct RuntimeBookkeeping {
   const void *executor_identity{nullptr}, *root_manager_identity{nullptr};
   std::size_t executor_base_object_bytes{0}, root_manager_object_bytes{0};
   RuntimeMapStorage root_records, tree_allocations, runtime_allocations;
+  // Existing native pool object/handle vector only, not OS stacks or worker state.
+  RuntimeThreadStorage thread_pool;
 };
 
 template <typename Map>

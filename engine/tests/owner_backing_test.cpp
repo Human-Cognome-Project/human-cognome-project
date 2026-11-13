@@ -2,6 +2,7 @@
 #include "allocation_observation.h"
 #include "engine/runtime.h"
 #include "taichi/rhi/cpu/cpu_device.h"
+#include "taichi/system/threading.h"
 #include <iostream>
 #include <stdexcept>
 
@@ -63,14 +64,23 @@ void array_views() {
           "new array did not capture new incarnation");
   device.clear();
 }
-void native_owners() {
+void native_owners(int workers) {
   engine::InstanceSettings settings;
-  settings.cpu_threads = 1;
+  settings.cpu_threads = workers;
   engine::Runtime runtime(settings);
   auto &program = runtime.program();
   auto &impl = *program.get_program_impl();
   auto &device = *impl.get_compute_device();
   const auto empty = impl.runtime_bookkeeping();
+  require(empty.thread_pool.available && empty.thread_pool.present &&
+              !empty.thread_pool.overflow && !empty.thread_pool.complete &&
+              empty.thread_pool.owner && empty.thread_pool.owner != empty.executor_identity &&
+              empty.thread_pool.owner != empty.root_manager_identity &&
+              empty.thread_pool.object_bytes == sizeof(taichi::ThreadPool) &&
+              empty.thread_pool.thread_handles == static_cast<std::size_t>(workers) &&
+              empty.thread_pool.handle_capacity_bytes >= workers * sizeof(std::thread) &&
+              !impl.ProgramImpl::runtime_bookkeeping().thread_pool.available,
+          "native thread-pool storage coverage incorrect");
   require(empty.available && !empty.complete && empty.executor_identity &&
               empty.executor_base_object_bytes && empty.root_manager_identity &&
               empty.root_manager_object_bytes && empty.root_records.available &&
@@ -126,6 +136,10 @@ void native_owners() {
                 queried_metadata.runtime_allocations.entries == roots.runtime_allocations.entries + 1 &&
                 queried_metadata.root_records.allocation_domain == roots.root_records.allocation_domain,
             "owner inspection allocated or changed identity");
+    require(queried_metadata.thread_pool.owner == empty.thread_pool.owner &&
+                queried_metadata.thread_pool.thread_handles == empty.thread_pool.thread_handles &&
+                queried_metadata.thread_pool.handle_capacity_bytes == empty.thread_pool.handle_capacity_bytes,
+            "runtime ownership work changed thread-pool storage");
   }
   require(device.allocation_record(array_record.token).status == AllocationRecordStatus::Retired,
           "owned array destruction left live record");
@@ -141,6 +155,14 @@ void native_owners() {
   require(impl.snode_root_record_storage_bytes() == 0,
           "root record metadata retained after destruction");
   const auto retired = impl.runtime_bookkeeping();
+  require(retired.thread_pool.owner == empty.thread_pool.owner &&
+              retired.thread_pool.object_bytes == empty.thread_pool.object_bytes &&
+              retired.thread_pool.handle_capacity_bytes == empty.thread_pool.handle_capacity_bytes &&
+              !retired.thread_pool.complete,
+          "tree destruction changed retained pool storage or claimed complete thread coverage");
+  std::cout << "thread_handles=" << retired.thread_pool.thread_handles
+            << " thread_pool_object=" << retired.thread_pool.object_bytes
+            << " thread_handle_capacity=" << retired.thread_pool.handle_capacity_bytes << '\n';
   require(!retired.root_records.entries &&
               retired.root_records.allocation_request_bytes == empty.root_records.allocation_request_bytes &&
               retired.runtime_allocations.entries == empty.runtime_allocations.entries + 1 &&
@@ -158,7 +180,8 @@ void native_owners() {
 int main() {
   try {
     array_views();
-    native_owners();
+    native_owners(1);
+    native_owners(2);
     std::cout << "owner_backing_test PASS\n";
     return 0;
   } catch (const std::exception &error) {
