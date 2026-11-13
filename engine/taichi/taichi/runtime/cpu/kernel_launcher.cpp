@@ -1,9 +1,61 @@
 #include "taichi/runtime/cpu/kernel_launcher.h"
 #include "taichi/rhi/arch.h"
 #include <stdexcept>
+#include <limits>
 
 namespace taichi::lang {
 namespace cpu {
+
+LaunchRegistryStorage KernelLauncher::registry_storage() const {
+  LaunchRegistryStorage result;
+  result.owner = this;
+  result.contexts = contexts_.size();
+  if (contexts_.capacity() > std::numeric_limits<std::size_t>::max() / sizeof(Context)) {
+    result.status = LaunchMetadataStatus::Overflow;
+    return result;
+  }
+  result.status = LaunchMetadataStatus::Present;
+  result.object_bytes = sizeof(KernelLauncher);
+  result.context_capacity_bytes = contexts_.capacity() * sizeof(Context);
+  return result;
+}
+
+LaunchContextStorage KernelLauncher::context_storage(std::size_t index,
+                                                     std::size_t parameter_budget) const {
+  LaunchContextStorage result;
+  result.owner = this;
+  if (index >= contexts_.size()) {
+    result.status = LaunchMetadataStatus::Invalid;
+    return result;
+  }
+  const auto &ctx = contexts_[index];
+  result.required_parameters = ctx.parameters.size();
+  if (parameter_budget < result.required_parameters) {
+    result.status = LaunchMetadataStatus::InsufficientWork;
+    return result;
+  }
+  const auto add = [](std::size_t &total, std::size_t count, std::size_t width) {
+    const auto max = std::numeric_limits<std::size_t>::max();
+    if (width && count > max / width) return false;
+    const auto bytes = count * width;
+    if (bytes > max - total) return false;
+    total += bytes;
+    return true;
+  };
+  result.status = LaunchMetadataStatus::Overflow;
+  if (!add(result.task_capacity_bytes, ctx.task_funcs.capacity(), sizeof(Context::TaskFunc)) ||
+      !add(result.parameter_capacity_bytes, ctx.parameters.capacity(),
+           sizeof(decltype(ctx.parameters)::value_type))) return result;
+  for (const auto &entry : ctx.parameters) {
+    ++result.visited_parameters;
+    if (!add(result.path_capacity_bytes, entry.first.capacity(), sizeof(int)) ||
+        !add(result.element_shape_capacity_bytes, entry.second.element_shape.capacity(), sizeof(int)) ||
+        !add(result.name_capacity_charge_bytes, entry.second.name.capacity(), 1) ||
+        !add(result.name_capacity_charge_bytes, 1, 1)) return result;
+  }
+  result.status = LaunchMetadataStatus::Present;
+  return result;
+}
 
 std::unique_ptr<LaunchContextBuilder::Prepared>
 KernelLauncher::prepare_llvm_kernel(Handle handle, LaunchContextBuilder &ctx) {

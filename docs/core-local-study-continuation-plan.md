@@ -1,10 +1,21 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer integration — 2026-11-13:** #315 is accepted and integrated by this merge, preserving reviewed `891f6141b3c849de3a5ae5f587649d7bcc4e1c22`. Native run 43422882717 passed all 12 jobs and smoke 43422882727 passed. Personally inspected regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #315. #316–#318 have bounded source acceptance and passing smoke; native qualification remains pending. #318 review 5891877028 accepts native Program object/vector inspection with map/free-ID/pointee coverage explicitly incomplete. Next: map/free-ID request observation at existing native owners, then nested ownership and mixed ABI/provenance/string coverage before trusted aggregation. Compiler exclusions remain conditional; full B and combined admission remain unaccepted. Reuse Taichi compilation, dispatch and thread machinery. Held #75/#111/#123 remain unchanged. Earlier pending/status paragraphs below are historical where they conflict.
+
 **Maintainer integration — 2026-11-13:** #313–#314 are accepted and integrated by this merge, preserving reviewed `f850a38f71cad0b1f4c4cc951a477a3b7e62ff94`. Native runs 43417067391 and 43419927538 passed all 12 jobs each; both smoke runs passed. Personally inspected #314 regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #314. #315–#316 have bounded source acceptance and passing smoke; native qualification remains pending. #316 observes the existing Taichi thread-pool object and handle-vector capacity without changing execution machinery. Remaining work: native Program ownership visibility and concrete string/compiler/JIT scope decisions, then trusted lifetime/required-family aggregation with canonical/domain deduplication and prepaid work. Full B and combined admission remain unaccepted; held #75/#111/#123 are unchanged. Earlier pending/status paragraphs below are historical where they conflict.
 
 **Maintainer handoff — 2026-11-13:** #312 is accepted and merged at `176d964a4e1084faa6d470a94bf41a04aad42e57`, preserving reviewed `9d459141c854e923e5eefd6bac776713cd5bb08d`. Native run 43415723155 passed all 12 jobs; smoke 43415723848 passed. Personally inspected regression logs show 119 passes (30/30/30/29), and database evidence reports addressed_reads=24/private_reads=0. Main is qualified through #312. #313–#315 have bounded source acceptance and passing smoke; their native CI remains pending. #315 review 5890749492 accepts inspection of the existing launcher registry, with incomplete coverage and separate potentially-inline name capacity. Contributor-local raw archives have not been independently inspected. Held #75/#111/#123 remain unchanged. Earlier status paragraphs below are historical where they conflict.
 
 **Current direction:** reuse Taichi's existing optimized compilation, registration, dispatch and thread machinery. Inspect those facilities before adding any remaining Program/thread ownership integration. Ownership visibility does not authorize a parallel scheduler, compiler or thread-specific execution mechanism. New machinery requires a demonstrated missing function. Resolve string accounting and compiler/JIT scope before trusted required-family/lifetime aggregation, canonical/domain deduplication and prepaid work for C+B+H+D. Full B and combined admission are not yet accepted.
+
+**Shared launcher registry capacity (awaiting review, 2026-11-13):** follows #314
+review5890456367 atf850a38f. Common native inspection reports existing CPU launcher/
+context/task/parameter/path/shape capacities, with parameter work checked before traversal.
+Absent inspection never creates a launcher. Name capacity is a separate conservative
+charge that can overlap inline parameter storage; actual-request/full coverage remains
+incomplete. Taichi compilation/registration/dispatch is unchanged. Next: Program/thread
+ownership and concrete scope/string-policy decisions, then trusted Harness aggregation
+and prepaid work. GPU inspection is deferred, not a detected GPU failure.
 
 **Runtime-global requests (awaiting review, 2026-11-13):** follows accepted #313
 implementation direction/review5890147678. Native/common reservation queries now expose

@@ -1,5 +1,13 @@
 # Runtime coverage and the combined-admission boundary
 
+**Launcher follow-up (awaiting review, 2026-11-13):** the
+[shared registry capacity export](BORROWED-RESOURCES.md#shared-launcher-registry-capacity-awaiting-review-2026-11-13)
+observes existing Taichi ownership without recreating compilation/dispatch. CPU context,
+task, parameter/path/shape capacities are exposed with a preflighted parameter budget;
+name capacity remains a separate potentially-inline charge. Program/thread ownership,
+string accounting policy, trusted aggregation and deferred GPU coverage remain open.
+The matrix below remains the pinned audit baseline; compiler/JIT exclusion is not accepted.
+
 **Implementation follow-up (awaiting review, 2026-11-13):** the
 [runtime-global request slice](BORROWED-RESOURCES.md#runtime-global-requests-awaiting-review-2026-11-13)
 now exports the CPU object/table/temporary/random/result requests through the existing

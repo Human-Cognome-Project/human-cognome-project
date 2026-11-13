@@ -17,6 +17,9 @@ class KernelLauncher : public LLVM::KernelLauncher {
 
  public:
   using Base::Base;
+  LaunchRegistryStorage registry_storage() const override;
+  LaunchContextStorage context_storage(std::size_t index,
+                                       std::size_t parameter_budget) const override;
 
   void launch_llvm_kernel(Handle handle, LaunchContextBuilder &ctx) override;
   std::unique_ptr<LaunchContextBuilder::Prepared> prepare_llvm_kernel(
