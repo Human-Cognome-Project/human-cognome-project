@@ -1,5 +1,12 @@
 # Runtime coverage and the combined-admission boundary
 
+**Program/compiler follow-up (awaiting review, 2026-11-13):** the
+[ownership and scope proposal](PROGRAM-ACCOUNTING-SCOPE.md) refines the remaining
+Program rows below. It identifies retained tree graphs, HCP-owned kernels outside the
+Program kernel vector, mixed compiler provenance/ABI ownership and distinct launcher
+copies. Cache serialization size cannot certify memory. Concrete scope/string proposals
+and the next read-only Program exporter are specified; no exclusion is accepted here.
+
 **Thread-pool follow-up (awaiting review, 2026-11-13):** the
 [existing pool storage export](BORROWED-RESOURCES.md#existing-thread-pool-storage-awaiting-review-2026-11-13)
 adds read-only object and handle-vector capacity evidence to runtime_bookkeeping.

@@ -7,6 +7,16 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Program ownership scope follow-up (awaiting review, 2026-11-13)
+
+The [Program accounting audit](PROGRAM-ACCOUNTING-SCOPE.md) follows #316 review5891228994
+and traces existing ownership before further inspection changes. It distinguishes
+retained Program host graphs from retired device backing, HCP-owned kernels from Program
+kernel-vector entries, and compiler provenance/ABI metadata from implementation payloads.
+The compiler exclusion and string-storage classification are concrete proposals for
+review, not accepted policies. The next bounded exporter is Program object/vector storage,
+with remaining map/deque/pointee coverage explicit; no parallel execution machinery.
+
 ## Existing thread-pool storage (awaiting review, 2026-11-13)
 
 Continues [#315 review 5890749492](https://github.com/Human-Cognome-Project/human-cognome-project/pull/315#pullrequestreview-5890749492).

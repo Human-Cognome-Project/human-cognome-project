@@ -1,5 +1,15 @@
 # Core continuation after local CUDA corrections
 
+**Program/compiler scope audit (awaiting review, 2026-11-13):** follows #316
+review5891228994 after integrating qualified main e8b503d7 through #314. The new
+[Program accounting audit](../engine/docs/PROGRAM-ACCOUNTING-SCOPE.md) traces retained Program containers, separately HCP-owned
+kernels, compiler provenance/ABI metadata and copied launcher parameters. Serialized
+cache-file sizes are not memory evidence. It proposes a narrow compiler-payload exclusion
+and a disjoint string-storage contract; neither is accepted or implemented here.
+Next bounded code: read-only Program lifecycle object/vector inspection, then map/free-ID
+requests and nested ownership, preserving native compilation/dispatch. Full B/combined
+admission remain open. #315–#316 remain pending native integration; held PRs unchanged.
+
 **Maintainer integration — 2026-11-13:** #313–#314 are accepted and integrated by this merge, preserving reviewed `f850a38f71cad0b1f4c4cc951a477a3b7e62ff94`. Native runs 43417067391 and 43419927538 passed all 12 jobs each; both smoke runs passed. Personally inspected #314 regression logs show 119 passes (30/30/30/29), with database addressed_reads=24/private_reads=0. Main is qualified through #314. #315–#316 have bounded source acceptance and passing smoke; native qualification remains pending. #316 observes the existing Taichi thread-pool object and handle-vector capacity without changing execution machinery. Remaining work: native Program ownership visibility and concrete string/compiler/JIT scope decisions, then trusted lifetime/required-family aggregation with canonical/domain deduplication and prepaid work. Full B and combined admission remain unaccepted; held #75/#111/#123 are unchanged. Earlier pending/status paragraphs below are historical where they conflict.
 
 **Existing thread-pool storage (awaiting review, 2026-11-13):** follows #315

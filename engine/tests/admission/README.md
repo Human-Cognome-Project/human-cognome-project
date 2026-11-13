@@ -6468,3 +6468,27 @@ Archive SHA256:f65d1c6f879b7c25e98f2967be43ec1c9c7691b3be20e80dd045a07181c60bb4.
 Source/configuration/compiler/binary pins, commands and complete results are retained.
 Raw artifacts have not been independently inspected remotely. Hosted qualification and
 maintainer acceptance remain separate; no duplicate parent run or self-merge.
+
+## Program ownership and accounting scope audit — 2026-11-13
+
+Follows316review5891228994 atd03c2681; no blockers and native qualification pending.
+Fetched/integrated maine8b503d7 through qualified313/314; open315/316 plus held75/111/123
+checked. Merge055d4d3ae160d7815c33d08ae310ae9689b2e459 preserves both handoffs.
+Inspected that source with unchanged Taichi tree32de5736fc1aa974fdd8fe4454177b33f96f5f09.
+
+[Program accounting scope](../../docs/PROGRAM-ACCOUNTING-SCOPE.md) traces Program
+container/pointee aliases, tree retirement/reuse, lazy factories, separately HCP-owned
+kernels, compiler provenance lookup, ABI checks, launcher copies and serialized cache
+size. Existing facilities supply ownership/provenance but not complete storage evidence.
+Recommends keeping observable mixed metadata required; narrowly excluding implementation
+payloads only after review; and qualifying a contained/external string-storage contract
+before consuming the existing potentially-inline surcharge. No executable policy or
+completeness flag changes. Next code slice is read-only Program object/vector metadata,
+then map/free-ID requests and nested ownership; native execution remains authoritative.
+
+Source audit only: no native rebuild, model/GPU/database/browser run or duplicate parent
+qualification. Prior CPU results remain prior evidence. The final change is Markdown only;
+file-link/whitespace validation is recorded below. Full B/combined admission and the scope
+proposals remain unaccepted until their applicable review. No self-merge.
+
+All175 local file links across the six changed Markdown files resolve; whitespace checks passed. Native source tree is unchanged from the inspected pin.
