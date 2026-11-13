@@ -1,5 +1,13 @@
 # Program ownership and accounting scope
 
+**Ndarray host follow-up (awaiting review, 2026-11-13):** the
+[native wrapper report](BORROWED-RESOURCES.md#ndarray-host-wrapper-storage-awaiting-review-2026-11-13)
+adds object identity/size and shape/total-shape vector capacities at the existing Ndarray
+owner. Wrapper metadata is separate from backing, including after backing retirement.
+Debug strings/shared types and aggregate pointee coverage remain incomplete; this fixed
+query does not enumerate Program/Harness owners. Earlier audit descriptions are pinned
+history where superseded. Compiler exclusions remain conditional.
+
 **Field/accessor follow-up (awaiting review, 2026-11-13):** the
 [two remaining map exporters](BORROWED-RESOURCES.md#field-expression-and-accessor-map-requests-awaiting-review-2026-11-13)
 complete direct Program map node/bucket observation through existing native owners.

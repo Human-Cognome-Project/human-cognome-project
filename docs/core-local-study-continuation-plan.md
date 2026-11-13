@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Ndarray host wrapper storage (awaiting review, 2026-11-13):** follows #321
+review5893130922 at8d77ff2e. Native Ndarray inspection now reports wrapper identity/object
+size and separate checked shape/total-shape capacities, without device queries or copies.
+Distinct wrappers can share backing; retained host metadata does not prove live backing.
+Debug strings/shared types and aggregate pointee/full coverage stay incomplete. Next:
+remaining nested owners and mixed ABI/provenance/string coverage before trusted aggregation.
+Compiler exclusions remain conditional. Main remains qualified through #318; #319–#321
+await integration, held #75/#111/#123 unchanged.
+
 **Field/accessor map requests (awaiting review, 2026-11-13):** follows #320
 review5892748763 and integrates qualified main dc7705eb through #318. Existing native
 field-expression/accessor maps now reuse shared request counters; Program forwards the

@@ -6656,3 +6656,41 @@ Archive SHA256:f2e6d876e4b0c426e2fde13b0b5e1de265825653f02e42d3297f2ea1968b3e45.
 Source/configuration/compiler/binary pins, commands and complete results/diagnostics
 are retained. Raw artifacts not independently inspected remotely. Hosted qualification
 and maintainer acceptance remain separate; no duplicate parent run/self-merge.
+
+## Ndarray host wrapper storage — 2026-11-13
+
+Read321review5893130922 at8d77ff2e: source accepted/no blockers; continue nested ownership
+with actual identities/lifetimes and explicit incomplete coverage. Fetched main dc7705eb
+unchanged/already in stack; checked open319–321 and held75/111/123. No parent rerun/self-merge.
+
+Ndarray::host_storage reports actual object identity/size and separate shape/total-shape
+vector counts/capacities, checked before availability. Fixed metadata reads allocate/
+traverse/copy nothing and query no device. Wrapper identity is separate from backing;
+embedded wrapper storage is not a separate allocation fee. Debug strings/shared types,
+aggregate pointee/full coverage remain incomplete. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:ebf471da88cd6808515c3c659624abd98217f545.
+Tracked Taichi tree:e26616394bcfa3b73fdacd99919f1d769323def7.
+Expanded owner_backing_test covers distinct shared-backing views, tensor/zero-rank shapes,
+nonempty debug text staying unavailable, shape reserve growth independent of logical
+length/total-shape capacity, allocation-free queries, retained host metadata after backing
+retirement and Program-owned wrapper identities. Capacity-overflow branch source-reviewed;
+no oversized/synthetic overflow fixture added here. Prior allocator/deque controls remain.
+CPU/Linux/WSL shared host only; no GPU/native Windows/database/browser/performance or
+whole-Program pointee/full-B qualification implied.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. New wrapper identity/
+shape/retirement controls and existing39deque failure controls pass. Existing object/
+registry/backing observations remain unchanged; no retained Ndarray fields were added.
+No source build/test failures; captured build/runtime logs contain no warnings/errors.
+CTests used parent TI_LIB_DIR unset; direct executables used explicit runtime setup.
+Tested WSL source remains clean at the recorded pin.
+
+Final publication changes only six Markdown files;195local file links/whitespace passed.
+Contributor-local archive:ndarray-host-domain-ebf471da.tar.gz.
+Manifest SHA256:12f36e02b2830b1792e5537b056e565fa189876c2047ef36f4ac8b3a8c442ec9.
+Archive SHA256:97834b52d8c676823263c198e473a559760ac7d316a24c3fd2611055f2ca4d71.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics
+are retained. Raw artifacts not independently inspected remotely. Hosted qualification
+and maintainer acceptance remain separate; no duplicate parent run/self-merge.

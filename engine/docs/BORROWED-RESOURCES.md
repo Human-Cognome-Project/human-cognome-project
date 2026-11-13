@@ -7,6 +7,51 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Ndarray host wrapper storage (awaiting review, 2026-11-13)
+
+Continues [#321 review 5893130922](https://github.com/Human-Cognome-Project/human-cognome-project/pull/321#pullrequestreview-5893130922).
+Ndarray::host_storage reports its actual wrapper identity, sizeof(Ndarray), logical
+shape/total-shape entry counts and separate checked vector capacity bytes. The query
+reads existing metadata; it does not reconstruct shapes, copy vectors, query a device,
+capture a backing token or change native array ownership/execution.
+
+The wrapper object contains both vector controls, DebugInfo representations, type/device
+handles and its stored backing record. Those embedded objects are subsets, not extra
+charges. The two vector element buffers are separate storage even if their dimensions
+have identical values. Capacity is an accounted-capacity quantity, not an allocator-
+request, logical array byte size, device backing extent or physical memory measurement.
+The report computes no sum; downstream checked aggregation remains required.
+
+Distinct wrappers may share one backing token but have different host owner identities
+and shape buffers. Count each actual wrapper once while deduplicating backing separately
+through the existing backing-record/pool mechanisms. A wrapper can be embedded, stack-
+allocated, directly owned by HCP or owned by Program's ndarray map; sizeof(Ndarray) is
+not proof of a separate allocation. Do not add its object bytes again if already covered
+by a containing owner. A map node's unique_ptr storage does not contain the wrapper.
+
+Both capacity multiplications are checked before marking the report available; overflow
+leaves unavailable capacity with overflow set. Empty/zero-rank vectors remain supported.
+DebugInfo's external strings and shared DataType/TypeFactory ownership are not inspected;
+debug_storage_available and complete remain false, including for nonempty debug text.
+Program's aggregate pointee flag remains false: one wrapper query is not an enumeration
+or certification of every Program/Harness pointee. No new exclusion is accepted here.
+
+Inspection is fixed work with no allocation/traversal or lazy factories. Keep the wrapper
+live and quiescent; its pointer identity is not a lifetime lease. Device backing can
+retire while the wrapper and its host buffers remain live. The report cannot certify
+backing validity, extend its lifetime or permit a query through a destroyed wrapper.
+No lifetime recapture occurs; existing backing-record checks remain authoritative.
+
+Fixtures cover Program-owned wrappers, distinct views sharing backing, a nonempty tensor
+shape, zero-rank shape with nonempty debug text, shape reserve growth without length or
+total-shape changes, allocation-free inspection and host-storage retention after backing
+retirement. No impossible-sized real vector or synthetic capacity overflow fixture is
+added to this slice; the arithmetic branch is source-reviewed. GPU/native-Windows and
+whole-Program pointee coverage remain unqualified. Next: remaining nested owners and
+mixed ABI/provenance/string coverage under the [Program scope](PROGRAM-ACCOUNTING-SCOPE.md),
+then trusted required-family/lifetime aggregation, canonical/domain deduplication and
+prepaid traversal/validation work. Compiler exclusions remain conditional; no full B.
+
 ## Field-expression and accessor map requests (awaiting review, 2026-11-13)
 
 Continues [#320 review 5892748763](https://github.com/Human-Cognome-Project/human-cognome-project/pull/320#pullrequestreview-5892748763).
