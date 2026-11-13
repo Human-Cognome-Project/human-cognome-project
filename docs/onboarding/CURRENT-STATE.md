@@ -1,5 +1,7 @@
 # Current implementation and work
 
+**Maintainer source acceptance — #331, 2026-11-13:** `1e079091291b3c07d59ccdcba4ca3caa48eec118` accepted in review 5899185239 for test-only retirement/reuse, same-owner copied-snapshot rejection and local/inherited subtraction limits. Four slots force reincarnation; the 70-slot profile retains native allocation freedom. Contributor reports 18 focused CPU passes at `ea428fa0b7e18bf0fe10a6fd89eb51e568b14783`; the final delta is Markdown only, and the local archive has not been independently inspected. Smoke passed; native run 43522355506 remains pending. Parent #330 is source-accepted with smoke passed and native run 43515101357 pending. Neither is integrated. Main runtime remains qualified through #329; older #322/#323/#325 remain open. Next source work: owner-accounted native candidate observations, then many-tick dt/Q comparisons. Changing intent and continued motion are legitimate; production braking/activity and general identity/lease policy remain unchanged. Earlier pending-review notes below are historical where they conflict.
+
 **Response reuse/range follow-up (awaiting review):** accepted #330 review5898902458
 is continued on qualified main2e758a57. Test-only work uses the initial reuse snapshot
 for insertion/retirement/handle-incarnation checks, copied-snapshot freshness across
