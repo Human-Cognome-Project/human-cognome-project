@@ -243,8 +243,10 @@ void intent_observation(engine::Runtime &r, HostPath path) {
   for (double invalid : {-1., std::numeric_limits<double>::infinity(),
                           std::numeric_limits<double>::quiet_NaN()}) {
     const auto v = snapshot(invalid);
-    for (auto h : f.in.particle_rows)
-      if (h.context) require(v.values[h.record] == 3, "invalid gravity did not mask candidate");
+    const auto &headers = f.h.prepared_storage().particle_headers;
+    for (std::size_t row = 0; row < v.capacity; ++row)
+      require(v.values[row] == (headers[row].record >= 0 ? 3 : 0),
+              "invalid gravity/live-row candidate mismatch");
   }
   const auto tree = f.h.inspect_live_hierarchy();
   PreparedFixtureAccess::inject_value64(f.h, kPosX, body, selected(tree, tree.order[0])[0]);
