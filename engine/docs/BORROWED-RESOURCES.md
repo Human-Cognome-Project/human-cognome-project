@@ -7,6 +7,45 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Existing thread-pool storage (awaiting review, 2026-11-13)
+
+Continues [#315 review 5890749492](https://github.com/Human-Cognome-Project/human-cognome-project/pull/315#pullrequestreview-5890749492).
+Source inspection found the executor already owns a native ThreadPool whose constructor
+creates the configured workers and whose run method supplies synchronization and dispatch.
+The existing ProgramImpl runtime_bookkeeping report now observes that owner directly.
+ThreadPool construction, scheduling, worker state and compilation are unchanged; no
+alternative thread machinery or native optimization is introduced.
+
+The report separates pool object bytes from its std::thread vector capacity bytes.
+Object size includes embedded synchronization representations and vector control storage;
+the vector's element buffer is separate. Count these once per live pool owner, not per
+worker, task, invocation or Harness. thread_handles counts constructed handle objects,
+not currently executing workers, a concurrency budget or a performance observation.
+The pool is separately allocated from the executor and root manager; their object sizes
+do not contain its object or handle buffer. Capacity multiplication is checked.
+
+Unsupported ProgramImpl defaults remain unavailable. A supported executor with no pool
+reports available but absent, with zero identity/object/capacity. An existing pool is
+present even if its vector is empty. Overflow marks the report unusable for aggregation;
+zero bytes must not be treated as complete coverage. complete remains false in all states.
+The query performs fixed metadata reads without allocation, enumeration, locks, waits,
+worker-state inspection or OS queries. Keep the executor alive and quiescent; the returned
+pointer is a synchronous identity, not a lifetime lease or teardown-safe token.
+
+This exports object/capacity accounting, not all thread allocation requests. OS stacks,
+kernel resources, implementation-private standard-library allocations, worker TLS and
+other hidden resources are not measured. These omissions are disclosed, not newly accepted
+exclusions from full B. Linux CPU fixtures cover one/two workers and retained storage
+through existing array/tree work; absence during partial construction, thread-creation
+failure and OS teardown reclamation are not exercised. GPU/native Windows remain unqualified.
+
+Next: remaining Program ownership and concrete string/compiler/JIT scope decisions,
+then trusted required-family/lifetime aggregation with canonical/domain deduplication
+and prepaid work before C+B+H+D. The launcher nonempty-name/shape fixtures requested when
+those fields are consumed remain deferred to that integration. No full B or combined
+admission claim is made. See [coverage audit](RUNTIME-COVERAGE.md).
+
+
 ## Shared launcher registry capacity (awaiting review, 2026-11-13)
 
 Continues [#314 review 5890456367](https://github.com/Human-Cognome-Project/human-cognome-project/pull/314#pullrequestreview-5890456367).

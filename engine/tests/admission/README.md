@@ -6428,3 +6428,43 @@ Archive SHA256:73f363b9f82c5e8a0f50ce0e1c439362a541ddf0856436d04a4b7481c9aae7eb.
 Source/configuration/compiler/binary pins, commands and complete results/diagnostics
 are retained. Raw artifacts have not been independently inspected remotely. Hosted
 qualification/maintainer acceptance remain separate; no duplicate parent run/self-merge.
+## Existing thread-pool storage — 2026-11-13
+
+Continues315review5890749492 at891f6141, preserving the reviewed pending stack.
+Merged current maind262bc4d (qualified through312) in aec618d0 before this source change.
+Open313–315 and held75/111/123 were checked; no duplicate parent run or self-merge.
+Inspected the native ThreadPool constructor/run and executor ownership before extending
+the existing ProgramImpl runtime_bookkeeping report. Construction, synchronization,
+dispatch and compiler paths remain unchanged. No alternative thread mechanism is added.
+
+The report exposes the separately-owned pool object and handle-vector capacity with
+checked multiplication, owner identity and constructed handle count. Unsupported,
+known-absent and present states remain distinct; complete stays false. Object bytes
+include inline synchronization/vector representations; capacity is separate. OS stacks,
+worker TLS and hidden implementation allocations are unmeasured, not implicitly accepted
+exclusions. No total-runtime/physical-memory/full-B claim. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:1f4a4aac779ead32c24a96fbb7129c5d96db0c2e.
+Tracked Taichi tree:32de5736fc1aa974fdd8fe4454177b33f96f5f09.
+Expanded owner_backing_test exercises sequential one/two-worker CPU runtimes, pool
+object/handle capacity, distinct owner identities, unsupported base defaults, allocation-
+free queries and retained identity/capacity through array/tree creation and destruction.
+Known absence during partial construction, worker-creation failure, capacity overflow
+injection and OS teardown reclamation are not runtime fixtures in this slice.
+CPU/Linux/WSL shared host only; no GPU/native Windows/database/browser/performance claim.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. One/two-worker fixtures
+report232object bytes and8/16handle-capacity bytes on this build; these are observations,
+not portable constants. Existing map/backing checks pass in both worker configurations.
+No source build/test failures; captured build/runtime logs contain no warnings/errors.
+Focused/prepared/support CTests used parent TI_LIB_DIR unset; direct executables used
+explicit runtime setup. Tested WSL source remains clean at the recorded revision.
+
+Final publication changes only five Markdown files;152local file links and whitespace
+checks passed. Contributor-local archive:thread-pool-domain-1f4a4aac.tar.gz.
+Manifest SHA256:9b6f9407bfd334111014af0f254b1581203724409fee59d2172a25384f8083d3.
+Archive SHA256:f65d1c6f879b7c25e98f2967be43ec1c9c7691b3be20e80dd045a07181c60bb4.
+Source/configuration/compiler/binary pins, commands and complete results are retained.
+Raw artifacts have not been independently inspected remotely. Hosted qualification and
+maintainer acceptance remain separate; no duplicate parent run or self-merge.
