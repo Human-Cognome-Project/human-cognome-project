@@ -7,6 +7,54 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## Shared launcher registry capacity (awaiting review, 2026-11-13)
+
+Continues [#314 review 5890456367](https://github.com/Human-Cognome-Project/human-cognome-project/pull/314#pullrequestreview-5890456367).
+Common KernelLauncher inspection methods expose existing registry storage. ProgramImpl
+forwards inspection only to an already-owned launcher: it never calls the lazy factory.
+Absent means no launcher exists; an instantiated unsupported backend remains Unavailable.
+The CPU override reports Present even for an empty registry, while invalid context
+indices report Invalid. No compilation, registration, dispatch or allocation policy is
+reimplemented; these methods observe the native owners already used for execution.
+
+The outer report gives launcher object size, constructed context-slot count and outer
+vector capacity bytes. Object size includes its vector control object; the element
+buffer is separate. Constructed slots can include empty entries and must not be read
+as proof of active kernels. One indexed context report supplies task-function and
+parameter-vector capacity, plus constructed parameters' nested argument-path and
+element-shape vector capacities. Parameter rows contain string/vector control objects;
+nested element buffers are separate. Unconstructed spare slots are not traversed.
+
+Parameter-name capacity+terminator is exported as a separate conservative charge,
+not a disjoint allocation request: small-string storage may already lie inside the
+parameter object. It must not silently be added to an actual-request ledger. An agreed
+accounted-capacity policy or actual string-allocation classification is still required.
+DataType pointees, executable code and compiler/JIT ownership are not followed or
+claimed by this report. Both completeness flags remain false.
+
+Outer inspection and context-index validation are constant-time. Before traversal,
+the context checks its parameter count against the supplied budget. InsufficientWork
+returns the required count with zero visited parameters. Exact-budget retry visits
+each constructed parameter once, reading capacities without walking strings or path/
+shape elements, copying data or allocating. Overflow yields an unusable partial report.
+Checked products/additions cover capacity arithmetic. Outer enumeration, validation,
+deduplication, registration/setup and other backing lookups remain separately payable.
+
+The synchronous owner identity is the shared launcher, not an invocation. Count its
+object/outer buffer once, then each selected constructed context's nested storage once.
+Identify a context slot by the queried (launcher owner, index) while quiescent; the
+report alone is not a durable context token. Invocation moves and repeat launches do
+not create independent shared-registry charges.
+Keep Program/launcher/runtime alive and quiescent; the identity is not a lifetime lease,
+and retained capacity may change when registration occurs. GPU metadata inspection is
+still deferred, not a detected compilation/device failure. HCP uses the common native
+interface, with no new model-side backend casts.
+
+Next: remaining Program/thread ownership and string/request-policy decisions, followed
+by trusted Harness required-family/lifetime coverage, canonical/domain deduplication
+and prepaid work before C+B+H+D. Compiler/JIT exclusion remains a proposal; no full B,
+heap/physical-residency, GPU or native-Windows execution qualification is claimed.
+
 ## Runtime-global requests (awaiting review, 2026-11-13)
 
 Continues [#313 review 5890147678](https://github.com/Human-Cognome-Project/human-cognome-project/pull/313#pullrequestreview-5890147678).

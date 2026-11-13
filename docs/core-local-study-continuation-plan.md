@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Shared launcher registry capacity (awaiting review, 2026-11-13):** follows #314
+review5890456367 atf850a38f. Common native inspection reports existing CPU launcher/
+context/task/parameter/path/shape capacities, with parameter work checked before traversal.
+Absent inspection never creates a launcher. Name capacity is a separate conservative
+charge that can overlap inline parameter storage; actual-request/full coverage remains
+incomplete. Taichi compilation/registration/dispatch is unchanged. Next: Program/thread
+ownership and concrete scope/string-policy decisions, then trusted Harness aggregation
+and prepaid work. GPU inspection is deferred, not a detected GPU failure.
+
 **Runtime-global requests (awaiting review, 2026-11-13):** follows accepted #313
 implementation direction/review5890147678. Native/common reservation queries now expose
 a ten-entry runtime-global catalog, including the existing ambient metadata once.

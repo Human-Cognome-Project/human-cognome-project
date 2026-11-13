@@ -6387,3 +6387,44 @@ Archive SHA256:589eb33d13541e5097742dafc39376eb67268c6b3db3898408b9e1a914d498e8.
 Source/configuration/compiler/binary pins, commands and complete results are retained.
 Raw artifacts have not been independently inspected remotely. No duplicate parent
 qualification or self-merge; hosted qualification and maintainer acceptance are separate.
+## Shared launcher registry capacity — 2026-11-13
+
+Continues314review5890456367 atf850a38f; source accepted with scoped shared-launcher
+continuation. Mainc5645a28 remains qualified through311;312–314 pending integration.
+User confirmed Taichi compilation/backend mechanisms should be reused; GPU inspection
+is deferred, not evidence of a GPU fault. Existing native compilation/registration/
+dispatch code is unchanged. Remote refs/open queue checked; no parent rerun/self-merge.
+
+ProgramImpl inspection forwards only to an already-owned launcher. Common native
+defaults remain Unavailable; no launcher is Absent; an empty CPU registry is Present.
+Outer object/vector capacity and indexed context task/parameter/path/shape capacities
+are observable. Parameter preflight refuses zero/one-short budgets before traversal;
+exact retry reads each constructed row once. Name capacity+terminator is explicitly a
+potentially-inline conservative charge, not a disjoint heap request. Full metadata/JIT/
+type pointee coverage remains incomplete. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:f50753f9423f313571411804bd949837b2d0dea8.
+Tracked Taichi tree:4a369c9043ec52d10ec213b078a62c7a7e8de87d.
+Expanded prepared_backing_test covers no-instantiation inspection, absent/empty/default/
+invalid states, registration growth, exact/short budget and visited counts, allocation-
+free inspection, observed flat parameter storage, repeated-launch retention and invocation
+move without duplicate registry storage. Existing import/execution/shared-counter failure
+controls remain in scope. Nonempty nested parameter-name/element-shape fixtures are not
+added by this slice; their capacity traversal is source-reviewed. CPU/Linux/WSL shared
+host only; no GPU/native Windows/database/browser/performance qualification is implied.
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. Fixture reports one
+shared context, three parameters and12bytes of path capacity. Existing invocation/map
+observations and16 shared-allocator failure controls passed unchanged.
+No source build/test failure; compiler build logs contain no warnings/errors.
+One passing2-direct-exchange_commit emitted a cache-lock warning; preserved without
+cleanup/rerun. No warning-free-runtime claim. Focused/prepared/support CTests used parent
+TI_LIB_DIR unset; direct executables used explicit setup. Tested WSL source is clean.
+
+Final publication changes only five Markdown files;149local links/whitespace checked.
+Contributor-local archive:launch-registry-domain-f50753f9.tar.gz.
+Manifest SHA256:91a4b70d7857be54ecb184d310c6920deb45df83e678f00da91cf7a3d4928850.
+Archive SHA256:73f363b9f82c5e8a0f50ce0e1c439362a541ddf0856436d04a4b7481c9aae7eb.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics
+are retained. Raw artifacts have not been independently inspected remotely. Hosted
+qualification/maintainer acceptance remain separate; no duplicate parent run/self-merge.
