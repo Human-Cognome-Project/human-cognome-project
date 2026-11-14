@@ -251,3 +251,50 @@ Source/config/compiler/binary pins, commands, complete CTest output and per-axis
 traces are retained locally. Raw local evidence has not been independently reviewed
 remotely. Final publication after the tested pin changes three Markdown files only;
 hosted qualification and review remain pending.
+
+## Independent motion controls — 2026-11-14
+
+The test-only `intent_controls` case follows #334 review 5904501254. Seven
+one-tick controls separate approach, a crossing **pre-brake proposal**, tangential
+carried motion, contact off/on and focal damping off/on. All use identical
+one-field/two-body source geometry and a Supported initial intent at x=2.
+Changing contact stiffness or damping must not change the initial field-only
+candidate or its force. The paired controls keep contacts/focus installed in both
+runs, varying only the corresponding parameter. No production mechanics change.
+
+Each case independently checks the native candidate against extracted sources,
+then the complete tick against the existing physical reference. The contact pair
+requires the analytically expected -0.6 X force increment; the focal pair requires
+unchanged force, reduced outward X displacement and unchanged tangential Y
+motion. The approach proposal lies between the recipient and intent plane; the
+crossing proposal passes that plane before braking. Neither assertion requires
+the accepted endpoint to cross. The tangential control requires retained sideways
+movement without sideways field force. No stability interpretation is a test gate.
+
+The per-axis output identifies candidate, field force, combined force, carried
+velocity, host-reference pre-brake/pre-Q proposals and native accepted position
+and retained velocity separately. Fresh post-tick candidate status accompanies
+its coordinates; old copied reports must be stale. References are not native
+intermediate readbacks. These test traces are groundwork for viewport-usable
+observations, not a new viewport API or UI. No-allocation query/tick checks remain.
+
+This bounded slice does not complete equal-force/different-intent **activity**
+invalidation coverage; the existing packet arithmetic controls do not substitute
+for it. That remains next under #324, followed by further integrated observations
+as needed. No new brake, sleep criterion or conceptual interpretation is selected.
+
+Qualification: source `7cf12be4a415728763e4d7335ee8ea78d7a3ee51`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL Ubuntu CPU, Clang/LLVM 15 Release.
+Matching fork/engine build and all ten focused CTests passed: four controls
+(one/two workers, bulk/direct), four original candidate and two packet tests.
+The four control profiles each execute all seven cases. No build/assertion failures
+or reported compiler warnings. The prior many-tick/lifecycle suites were not rerun.
+No GPU, native Windows, database, browser or performance qualification is claimed.
+
+Local archive `intent-controls-7cf12be4.tar.gz`: manifest SHA256
+`e3b2e88b81a9e433829cf5221bca5b9a83b437a4faea5d350e3c274f1a1adf51`;
+archive SHA256 `d9b559d73cd47ee07726e6d145dfd297a6df21f18d3618d81e9c582b72d2554d`.
+Source/config/compiler/binary pins, commands and full outputs are retained locally;
+raw archive is not independently reviewed remotely. Final delta after the tested
+source is three Markdown files. #334 remains the source-accepted parent pending
+hosted qualification; no duplicate main/parent CI or self-merge was requested.
