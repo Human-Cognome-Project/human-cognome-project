@@ -174,3 +174,80 @@ Source/config/compiler/binary pins, commands and full outputs retained locally;
 raw evidence is not independently reviewed remotely. Final publication after the
 tested pin changes Markdown only. Hosted qualification and review remain pending;
 no duplicate parent CI was requested and no self-merge was performed.
+
+## Many-tick dt/Q observations — 2026-11-14
+
+The test-only `intent_trajectories` case follows #333 review 5899774502 and
+integrated main `a504af8e9d639483b1002da5ed279fcb04a9e78d`. It runs 64 production
+ticks for each combination of dt=0.125/0.5 and body/field fraction bits=8/24/52.
+The three-body, two-level fixture has unequal whole-body masses (1,2,3), partial
+participation (1/2 for the first two bodies), sparse physical records, and initial
+X/Y carried velocity. Contacts and radial damping are explicitly disabled to
+isolate this first bounded sweep; field publications evolve normally.
+
+At every sample the candidate is checked against the source-derived long-double
+reference described above, including all physical slots and unavailable/masked
+states. Every tick also uses the existing independent physical reference:
+participating mass generates force, whole-body mass supplies inertia, the current
+brake acts once, and accepted displacement determines retained velocity. Normal
+activity selection continues after initial invalidation; the fixture does not
+force all bodies awake on every tick. Candidate copies must become stale after
+each tick. Inspection and tick allocation checks remain in place.
+
+`intent_trace` records each body's three axes before/after every tick, including
+candidate status, carried velocity, evaluated force, pre-brake proposed endpoint,
+post-brake/pre-Q endpoint, accepted position/displacement, retained velocity and
+publication delta. Proposed endpoints are **host reference calculations**, not
+native intermediate readbacks. Inactive rows report unchanged proposed endpoints;
+their force field may be cached. Candidate coordinates are meaningful only when
+the corresponding status is Supported; `comparable` marks supported pairs. Frame
+anchors must remain unchanged. The trace allows intent drift and separation to be
+computed independently of particle motion. Summary counters count body-tick events,
+not unique bodies, and zero displacement alone is not labelled convergence or sleep.
+
+Each dt uses the same number of ticks (physical durations 8 and 32), not a matched
+time integration-error experiment. There is no trajectory equality assertion
+between precisions, worker counts or paths, nor a fixed-intent convergence gate.
+At least one moving particle and moving supported candidate witness is required
+per configuration to prevent a vacuous stationary fixture. Existing production
+force/braking/activity code and all resource inventories remain unchanged.
+
+Remaining #324 work includes explicit crossing/approach controls, contact and
+focal-damping comparisons, equal-force/different-intent activity invalidation,
+longer moving-intent studies and a reviewed decision before any brake change.
+This sweep does not qualify GPU behavior, linguistic settling, orbital stability,
+performance, or full B/combined admission. Storage accounting remains separate.
+
+Executed source `0bf93258f0c2e8dee9580a1ae3215248a43f57e7`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, LLVM/Clang 15 Release, WSL Ubuntu CPU.
+The matching fork and engine rebuilt without reported compiler warnings. All ten
+focused CTests passed: four trajectory profiles (one/two workers, bulk/direct),
+four original live-candidate tests and two packet probes. Each trajectory profile
+executed six configurations/384 ticks; all four profiles total 1,536 ticks.
+No build/assertion failures. Prior lifecycle/whole-repository tests were not rerun
+or relabelled. Native Windows, GPU, database, browser and performance were not tested.
+
+All four profiles produced these summary counts (192 body-ticks per row):
+
+| Fraction bits | dt | Moving supported candidates | Moved bodies | Active with no accepted movement |
+|---|---|---|---|---|
+| 8 | 0.125 | 192 | 192 | 0 |
+| 8 | 0.5 | 24 | 24 | 3 |
+| 24 | 0.125 | 192 | 192 | 0 |
+| 24 | 0.5 | 93 | 91 | 5 |
+| 52 | 0.125 | 192 | 192 | 0 |
+| 52 | 0.5 | 93 | 91 | 5 |
+
+These observed counters are not cross-profile trajectory equality checks or
+stability classifications. In particular, candidate motion and accepted particle
+motion need not have equal counts. An unchanged active endpoint alone cannot
+identify whether braking, quantization or cancellation caused it; inspect the
+separate proposal/publication trace. Continued motion is legitimate.
+
+Local archive `intent-trajectories-0bf93258.tar.gz`: manifest SHA256
+`f112e735c9eed7b554158a97572fcb18ebc1b0248af40fdce398757afc83fe33`;
+archive SHA256 `34e308b3520a63ff04f5e044ecd3e30f6f406a041760e3e7b423f138ecc5eeae`.
+Source/config/compiler/binary pins, commands, complete CTest output and per-axis
+traces are retained locally. Raw local evidence has not been independently reviewed
+remotely. Final publication after the tested pin changes three Markdown files only;
+hosted qualification and review remain pending.
