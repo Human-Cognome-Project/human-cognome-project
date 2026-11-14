@@ -1,5 +1,9 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer update — #334, 2026-11-14:** `784a5751120fb55204071bdadad3d8e6092ad6c1` has bounded source acceptance in review 5904501254 for test-only many-tick dt/Q observations. Candidate, host-reference proposed endpoints and accepted particle motion remain distinct; production mechanics/accounting are unchanged. Contributor reports ten focused CPU CTests and 1,536 trajectory ticks at `0bf93258f0c2e8dee9580a1ae3215248a43f57e7`; final delta is three Markdown files, and the local raw archive has not been independently inspected. Smoke passed; PR native 43599026919 and combined-main native 43597732642 remain pending. #334 is not integrated. Held #75/#111/#123 remain unchanged.
+
+**Review focus clarified by Patrick:** prioritize correctness, separation of concerns and observations usable by the viewport. Defer interpretation of movement counters; the viewport will help clarify behavior. Do not make conceptual interpretation an extra acceptance gate. Continue bounded approach/crossing, contact/focal-damping and equal-force/different-intent activity controls with candidate, proposal and accepted motion kept separate. Moving intent remains legitimate; no new brake/sleep law follows from these counters. This update supersedes older next-step/status wording below where it conflicts.
+
 **Current maintainer handoff — 2026-11-14 (supersedes historical status below)**
 
 The accepted queue is integrated through #333, including the previously separate #322/#323/#325 native host-storage stack and #332/#333 live-candidate diagnostics/lifecycle. All five PR heads passed hosted smoke and native qualification. Previous main `3b42465499d06a61e86eaa465e5e8fa76d7caac8` also passed both overnight workflows. Held #75/#111/#123 remain unchanged; there is no remaining accepted PR backlog.
