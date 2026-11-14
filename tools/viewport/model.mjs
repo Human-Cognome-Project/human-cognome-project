@@ -51,9 +51,9 @@ export function validateSnapshot(value) {
     if (q.status === 'ok') {
       requireValue(e.mode === 'installed_hierarchy' && BigInt(q.work_used) === BigInt(q.work_required) &&
         BigInt(q.work_used) <= BigInt(q.work_limit), 'Invalid candidate work metadata.');
-      const slots = new Set();
+      const slots = new Set(), occurrenceSlots = new Set(particles.map(p => p.slot));
       for (const row of q.rows) {
-        requireValue(!slots.has(row.slot) && particles.some(p => p.slot === row.slot), 'Invalid candidate occurrence mapping.');
+        requireValue(!slots.has(row.slot) && occurrenceSlots.has(row.slot), 'Invalid candidate occurrence mapping.');
         slots.add(row.slot);
         requireValue(row.status === 1 ? Array.isArray(row.position) && Array.isArray(row.relative) &&
           [...row.position, ...row.relative].every(Number.isFinite) : row.position === null && row.relative === null,
