@@ -5,6 +5,7 @@
 #include "taichi/inc/constants.h"
 #include "taichi/ir/expr.h"
 #include "taichi/ir/snode_types.h"
+#include "taichi/ir/snode_storage.h"
 #include "taichi/ir/type.h"
 #include "taichi/program/snode_expr_utils.h"
 
@@ -124,6 +125,8 @@ class SNode {
   SNode(const SNode &);
 
   ~SNode() = default;
+
+  SNodeStorage host_storage() const;
 
   std::string node_type_name;
   SNodeType type;

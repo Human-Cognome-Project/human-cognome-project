@@ -6656,3 +6656,116 @@ Archive SHA256:f2e6d876e4b0c426e2fde13b0b5e1de265825653f02e42d3297f2ea1968b3e45.
 Source/configuration/compiler/binary pins, commands and complete results/diagnostics
 are retained. Raw artifacts not independently inspected remotely. Hosted qualification
 and maintainer acceptance remain separate; no duplicate parent run/self-merge.
+
+## Ndarray host wrapper storage — 2026-11-13
+
+Read321review5893130922 at8d77ff2e: source accepted/no blockers; continue nested ownership
+with actual identities/lifetimes and explicit incomplete coverage. Fetched main dc7705eb
+unchanged/already in stack; checked open319–321 and held75/111/123. No parent rerun/self-merge.
+
+Ndarray::host_storage reports actual object identity/size and separate shape/total-shape
+vector counts/capacities, checked before availability. Fixed metadata reads allocate/
+traverse/copy nothing and query no device. Wrapper identity is separate from backing;
+embedded wrapper storage is not a separate allocation fee. Debug strings/shared types,
+aggregate pointee/full coverage remain incomplete. [Contract](../../docs/BORROWED-RESOURCES.md).
+
+Tested source:ebf471da88cd6808515c3c659624abd98217f545.
+Tracked Taichi tree:e26616394bcfa3b73fdacd99919f1d769323def7.
+Expanded owner_backing_test covers distinct shared-backing views, tensor/zero-rank shapes,
+nonempty debug text staying unavailable, shape reserve growth independent of logical
+length/total-shape capacity, allocation-free queries, retained host metadata after backing
+retirement and Program-owned wrapper identities. Capacity-overflow branch source-reviewed;
+no oversized/synthetic overflow fixture added here. Prior allocator/deque controls remain.
+CPU/Linux/WSL shared host only; no GPU/native Windows/database/browser/performance or
+whole-Program pointee/full-B qualification implied.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. New wrapper identity/
+shape/retirement controls and existing39deque failure controls pass. Existing object/
+registry/backing observations remain unchanged; no retained Ndarray fields were added.
+No source build/test failures; captured build/runtime logs contain no warnings/errors.
+CTests used parent TI_LIB_DIR unset; direct executables used explicit runtime setup.
+Tested WSL source remains clean at the recorded pin.
+
+Final publication changes only six Markdown files;195local file links/whitespace passed.
+Contributor-local archive:ndarray-host-domain-ebf471da.tar.gz.
+Manifest SHA256:12f36e02b2830b1792e5537b056e565fa189876c2047ef36f4ac8b3a8c442ec9.
+Archive SHA256:97834b52d8c676823263c198e473a559760ac7d316a24c3fd2611055f2ca4d71.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics
+are retained. Raw artifacts not independently inspected remotely. Hosted qualification
+and maintainer acceptance remain separate; no duplicate parent run/self-merge.
+
+## SNode tree and node host storage — 2026-11-13
+
+Read322review5893720324 at41600acc: bounded source acceptance/no blockers; continue nested
+owners and mixed ABI/provenance/string coverage before aggregation. Fetched main4a147cf6,
+qualified through319/320, merged cb17724c preserving both handoffs. Checked open321/322
+and held75/111/123. No duplicate parent run or self-merge.
+
+Native SNodeTree/SNode queries expose object identities/sizes and checked child/offset
+vector capacities, with no allocation, traversal, backend queries or retained-field changes.
+Root identity is read without dereference. Strings, gradient providers, nested/shared
+pointees, Program aggregate coverage and full B remain incomplete.
+[Contract](../../docs/BORROWED-RESOURCES.md#snode-tree-and-node-host-storage-awaiting-review-2026-11-13).
+
+Tested source:50afdca6ba4563a5c7f362fffe2ccf77d1ad1ffe.
+Tracked Taichi tree:700483a784b50e7c35559ccc1b6ff2c58c9b25ce.
+Expanded owner_backing_test covers root/dense/place metadata, nonempty strings remaining
+unqualified, empty children, child reserve growth, nonempty/retained-empty offset capacity,
+allocation-free queries and distinct native tree/root identities. One/two worker controls
+check retained host storage after backing retirement before slot replacement. No destroyed
+pointer query; overflow branch source-reviewed only, gradient-provider storage unqualified.
+CPU/Linux/WSL shared host only; no GPU/native Windows/database/browser/performance or
+whole-Program/full-B qualification implied.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. New host metadata/
+capacity/retirement controls and existing39deque failure controls pass. This ABI reports
+SNode496/tree16 bytes, reserved child buffer152/offset buffer92 bytes. These are local
+build observations, not portable constants. No source build/test failures; captured
+build/runtime logs contain no warnings/errors. CTests used parent TI_LIB_DIR unset;
+direct executables used explicit runtime setup. Tested WSL source is clean at the pin.
+
+Final publication changes only six Markdown files;203local file links/whitespace passed.
+Contributor-local archive:snode-host-domain-50afdca6.tar.gz.
+Manifest SHA256:41d67ead5d688bec1117cecf8c32ec64e5384eb5e023cc56f04fa367f600865a.
+Archive SHA256:f6602e6445582124dbfcb02a0d49eb4a7fb898c7009f7379043524b7965ae1a1.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics
+are retained. Raw artifacts not independently inspected remotely. Hosted qualification
+and maintainer acceptance remain separate; no duplicate parent run/self-merge.
+
+## ArgPack host wrapper storage — 2026-11-13
+
+Read323review5894203678 atc6036aeb: bounded source acceptance/no blockers; continue native
+ownership/ABI/provenance/string coverage, retaining a later audit for existing Taichi
+functionality. Fetched main4f5d273c qualified through321 and merged9ce30c94 preserving both
+handoffs. Open322/323 and held75/111/123 checked; no duplicate parent run/self-merge.
+
+ArgPack::host_storage exports actual wrapper identity/size without allocation, dereference,
+backend queries or retained layout changes. Embedded type/device/Program handles are
+subsets, not extra charges. Type/backing and aggregate/full coverage remain unavailable.
+[Contract](../../docs/BORROWED-RESOURCES.md#argpack-host-wrapper-storage-awaiting-review-2026-11-13).
+
+Tested source:089cdbb770ef4e6e155e94b49d0dbd4176386748.
+Tracked Taichi tree:8b31651be07d8bad0b2a6a261369e8690b9c3b53.
+New one/two-worker fixtures create two Program-owned packs sharing a nonempty named type,
+check separate wrapper identities/allocation-free queries, populated registry requests,
+immediate CPU erasure preserving the second wrapper and retained empty bucket requests.
+No erased pointer queries. Pending-use/deferred deletion, nested packs, shared type storage,
+GPU/native Windows/database/browser/performance and full-B coverage remain unqualified.
+
+Native static/dependent engine builds and all57 scoped CPU checks passed:
+10focused,20exchange,12prepared,9supporting native,6warm recipe. New ArgPack controls and
+existing39deque failure controls pass. This ABI reports wrapper32/populated registry152/
+retained-empty registry104 bytes with both worker counts; not portable constants or full
+pack storage. No source build/test failures; captured build/runtime logs have no warnings
+or errors. CTests parent TI_LIB_DIR unset, direct executables explicitly configured.
+Tested WSL source is clean at the recorded pin.
+
+Final publication changes only six Markdown files;209local file links/whitespace passed.
+Contributor-local archive:argpack-host-domain-089cdbb7.tar.gz.
+Manifest SHA256:676a32b8ad49e5b5ee247342e59164b56d57385a44b4b4833370c6c4415616e1.
+Archive SHA256:e27355bf8707dd1dd6bad176f2b9bd5e606ce90d73114daa7c7ccfd8775ea783.
+Source/configuration/compiler/binary pins, commands and complete results/diagnostics are
+retained. Raw local artifacts not independently reviewed remotely. Hosted qualification
+and maintainer acceptance remain separate; no self-merge or duplicate parent run.

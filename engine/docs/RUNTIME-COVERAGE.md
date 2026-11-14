@@ -1,5 +1,29 @@
 # Runtime coverage and the combined-admission boundary
 
+**ArgPack host follow-up (awaiting review, 2026-11-13):** the
+[native wrapper report](BORROWED-RESOURCES.md#argpack-host-wrapper-storage-awaiting-review-2026-11-13)
+adds object identity/size and a populated-registry CPU fixture. Shared type metadata and
+device backing remain unavailable; present packs cannot be treated as absent optional
+storage. Native guarded deletion is unchanged; only immediate CPU erasure is qualified.
+Aggregate pointee/full coverage remains false. After the current accounting work, retain
+the review-requested audit for functionality already supplied by Taichi.
+
+**SNode host follow-up (awaiting review, 2026-11-13):** the
+[per-object tree/node reports](BORROWED-RESOURCES.md#snode-tree-and-node-host-storage-awaiting-review-2026-11-13)
+add tree/root identities, object sizes and checked child/offset vector capacities without
+walking the graph. Host objects can outlive backend backing; slot replacement ends their
+lifetime. Strings, gradient providers, nested/shared pointees and aggregate coverage remain
+incomplete. Traversal/validation/deduplication still require prepaid work. Earlier audit
+entries remain pinned history; compiler exclusions remain conditional.
+
+**Ndarray host follow-up (awaiting review, 2026-11-13):** the
+[native wrapper report](BORROWED-RESOURCES.md#ndarray-host-wrapper-storage-awaiting-review-2026-11-13)
+adds object identity/size and shape/total-shape vector capacities at the existing Ndarray
+owner. Wrapper metadata is separate from backing, including after backing retirement.
+Debug strings/shared types and aggregate pointee coverage remain incomplete; this fixed
+query does not enumerate Program/Harness owners. Earlier audit descriptions are pinned
+history where superseded. Compiler exclusions remain conditional.
+
 **Field/accessor follow-up (awaiting review, 2026-11-13):** the
 [two remaining map exporters](BORROWED-RESOURCES.md#field-expression-and-accessor-map-requests-awaiting-review-2026-11-13)
 complete direct Program map node/bucket observation through existing native owners.

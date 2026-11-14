@@ -1,6 +1,16 @@
 #include "taichi/struct/snode_tree.h"
 
 namespace taichi::lang {
+
+SNodeTreeStorage SNodeTree::host_storage() const {
+  SNodeTreeStorage result;
+  result.available = true;
+  result.owner = this;
+  result.root_identity = root_.get();
+  result.object_bytes = sizeof(SNodeTree);
+  return result;
+}
+
 namespace {
 
 void get_snodes_to_root_id_impl(const SNode &node,

@@ -1,10 +1,39 @@
 # Current implementation and work
 
+**Current maintainer handoff — 2026-11-14 (supersedes historical status below)**
+
+The accepted queue is integrated through #333, including the previously separate #322/#323/#325 native host-storage stack and #332/#333 live-candidate diagnostics/lifecycle. All five PR heads passed hosted smoke and native qualification. Previous main `3b42465499d06a61e86eaa465e5e8fa76d7caac8` also passed both overnight workflows. Held #75/#111/#123 remain unchanged; there is no remaining accepted PR backlog.
+
+Personally inspected #333 run 43530432584: all 12 jobs passed; 149 regression passes (38/37/37/37), all four live-candidate and all four candidate-lifecycle tests, database addressed_reads=24/private_reads=0. #332 run 43524802657 also passed all 12 jobs. Personally inspected #325 run 43462806479: all 12 jobs passed; 119 regression passes (30/30/30/29), including owner_backing_test, database addressed_reads=24/private_reads=0. #322/#323 workflow results are also successful. Contributor-local archives remain separate evidence and have not been independently inspected.
+
+Integration preserves the exact reviewed #333 files and the exact reviewed #325 storage-stack files; their source changes are disjoint. Only the two handoffs required editorial reconciliation. Main's Minecraft/composition introduction is preserved. The combined main revision has its normal push CI still to qualify; successful component runs are not a claim that the combined run has finished. Do not duplicate that run.
+
+**Start-of-day work:** update the coding checkout from main and proceed with many-tick dt/Q observations under #324. Track combined intent, proposed/accepted endpoint trajectories, carried/tangential motion and quantization separately; changing intent and continued motion are legitimate. Preserve participating-mass force generation followed by whole-body inertia. Diagnostic extraction/reduction/lifecycle are built; no new production braking law, sleep gate or orbital-stability classifier has been selected. Keep equal-force/different-intent activity coverage in the numerical follow-up.
+
+**Remaining accounting work:** nested/shared ownership and mixed ABI/provenance/string coverage, then trusted required-family/lifetime aggregation, canonical/domain deduplication and prepaid traversal/validation. Full B/combined admission remain unaccepted and compiler exclusions remain conditional. Retain the later audit for functions already supplied by Taichi; reuse its compilation, dispatch, ownership and threading machinery.
+
 **Maintainer integration / source acceptance — 2026-11-13:** #330 and #331 are integrated together from qualified descendant `1e079091291b3c07d59ccdcba4ca3caa48eec118`. #331 smoke and all 12 native jobs passed; personally inspected logs show 141 regression passes (36/35/35/35), all response validity/lifecycle/range/reuse configurations, and database addressed_reads=24/private_reads=0. #330's older native run was cancelled with one regression shard incomplete and its aggregate gate failed; it is not relabelled successful. The descendant includes #330 and provides complete combined qualification. Documentation conflicts were resolved without changing the qualified runtime/test tree.
 
 **#333 source acceptance:** `8854c34b3b4c0befa4b4075aba699e3a72edaba9` accepted in review 5899774502 for candidate-specific refresh, rebase, exact-count, retirement/reincarnation and stale-copy coverage. Contributor reports ten focused CPU CTests at `64a505af9825f65a400028e515d066f5c91509c1`; final delta is three Markdown files. Raw local archive has not been independently inspected. Smoke passed; native 43530432584 remains pending. #332 also remains source-accepted awaiting native qualification. Older #322/#323/#325 remain open. Next: many-tick dt/Q observations, keeping candidate motion distinct from endpoint trajectories and allowing moving intent. No production braking or stability gate changes. Earlier notes below are historical where they conflict.
 
+**Candidate lifecycle follow-up (awaiting review):** #332 source acceptance
+5899338489 is continued on main24c1438b. Test-only work independently recomputes
+source-derived long-double candidates through alias/precision/count refresh,
+rebase/inverse rebase, and forced reincarnation/retirement with sparse absent slots.
+Copied-report metadata is checked separately from arithmetic. No production or
+accounting changes; many-tick dt/Q comparisons remain next. See the candidate
+boundary below for the qualification limits.
+
+
 **Maintainer source acceptance — #332, 2026-11-13:** `4d518294dd4f1edadadd3305bd866de8d0a9d2c7` accepted in review 5899338489 for live native coefficient-candidate diagnostics. Existing extracted responses and committed per-body ranges feed the shared strict arithmetic helper; native/host output and six new parameters and the seventh live context are prepaid. Production force, integration, braking and activity are unchanged. Contributor reports 38 scoped CPU passes at `25fdae23ccab17db239d8aab1d86c2c5c9b40ec5`; final delta is three Markdown files, and the local archive has not been independently inspected. Smoke passed; native run 43524802657 remains pending. #330/#331 native runs also remain pending, so all three await integration; main runtime remains qualified through #329. Older #322/#323/#325 remain open. Next source work: candidate-specific refresh/rebase/reincarnation and stale-copy coverage, then many-tick dt/Q observations. Changing intent and continued motion remain legitimate; no stability classifier or braking law is selected. Earlier notes below are historical where they conflict.
+
+**Live native candidate observation (awaiting review):** follows #331 acceptance
+5899185239 with mainc11db82d integrated. Existing live-owner response extraction now
+feeds a native per-body coefficient diagnostic with prepaid output/context/work.
+The packet probe shares its strict arithmetic helper. Production mechanics are
+unchanged; candidate-specific lifecycle and many-tick dt/Q evidence remain next.
+See the [candidate boundary](../../engine/docs/LIVE-INTENT-OBSERVATION.md).
+
 
 **Maintainer source acceptance — #331, 2026-11-13:** `1e079091291b3c07d59ccdcba4ca3caa48eec118` accepted in review 5899185239 for test-only retirement/reuse, same-owner copied-snapshot rejection and local/inherited subtraction limits. Four slots force reincarnation; the 70-slot profile retains native allocation freedom. Contributor reports 18 focused CPU passes at `ea428fa0b7e18bf0fe10a6fd89eb51e568b14783`; the final delta is Markdown only, and the local archive has not been independently inspected. Smoke passed; native run 43522355506 remains pending. Parent #330 is source-accepted with smoke passed and native run 43515101357 pending. Neither is integrated. Main runtime remains qualified through #329; older #322/#323/#325 remain open. Next source work: owner-accounted native candidate observations, then many-tick dt/Q comparisons. Changing intent and continued motion are legitimate; production braking/activity and general identity/lease policy remain unchanged. Earlier pending-review notes below are historical where they conflict.
 

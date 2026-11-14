@@ -300,6 +300,7 @@ class Harness {
   bool live_hierarchy_installed() const;
   const LiveHierarchyInspection &inspect_live_hierarchy();
   const LiveResponseInspection &inspect_live_responses(std::uint64_t work_limit);
+  const LiveIntentInspection &inspect_live_intent(double gravity, std::uint64_t work_limit);
   void set_tick_mode(TickMode mode);
   // Explicit prepared group slots, not automatic focal-field selection.
   // An empty selection retains the legacy fixed coordinate origin.

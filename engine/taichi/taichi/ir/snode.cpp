@@ -11,6 +11,25 @@ namespace taichi::lang {
 
 std::atomic<int> SNode::counter{0};
 
+SNodeStorage SNode::host_storage() const {
+  SNodeStorage result;
+  result.owner = this;
+  result.object_bytes = sizeof(SNode);
+  result.child_slots = ch.size();
+  result.index_offset_entries = index_offsets.size();
+  if (ch.capacity() > std::numeric_limits<std::size_t>::max() /
+                          sizeof(std::unique_ptr<SNode>) ||
+      index_offsets.capacity() >
+          std::numeric_limits<std::size_t>::max() / sizeof(int)) {
+    result.overflow = true;
+    return result;
+  }
+  result.available = true;
+  result.child_capacity_bytes = ch.capacity() * sizeof(std::unique_ptr<SNode>);
+  result.index_offset_capacity_bytes = index_offsets.capacity() * sizeof(int);
+  return result;
+}
+
 SNode &SNode::insert_children(SNodeType t) {
   TI_ASSERT(t != SNodeType::root);
 

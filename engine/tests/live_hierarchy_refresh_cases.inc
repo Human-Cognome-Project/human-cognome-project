@@ -262,6 +262,7 @@ void refresh_basics(engine::Runtime &runtime, HostPath path) {
   f.install();
   refresh_compiler_controls(f);
   const auto initial_responses = response_snapshot(f);
+  const auto initial_intent = intent_reference(f);
   const auto hash = state_hash(f);
   const auto generation = f.h.prepared_storage().generation;
   RefreshRequest same(f.h);
@@ -286,6 +287,10 @@ void refresh_basics(engine::Runtime &runtime, HostPath path) {
   require(initial_responses.generation == unchanged_responses.generation &&
               initial_responses.values == unchanged_responses.values,
           "alias/reorder refresh changed response snapshot");
+  const auto reordered_intent = intent_reference(f);
+  require(intent_current(f, initial_intent, .5) && reordered_intent.values == initial_intent.values,
+          "alias/reorder changed candidate or invalidated unchanged report");
+  require(!intent_current(f, initial_intent, 1), "consumer ignored requested gravity");
   auto changed = same;
   changed.nodes[0].retained_fraction_bits = 4;
   f.h.inspect_prepared();
@@ -296,6 +301,9 @@ void refresh_basics(engine::Runtime &runtime, HostPath path) {
   refresh_ok(refresh_apply(f, changed));
   require(f.h.prepared_storage().generation == generation + 1,
           "hierarchy-only refresh did not advance once");
+  const auto refreshed_intent = intent_reference(f);
+  require(intent_current(f, refreshed_intent, .5) && !intent_current(f, initial_intent, .5),
+          "candidate precision-refresh generation mismatch");
   const auto refreshed_responses = response_snapshot(f);
   response_identity_equal(initial_responses, refreshed_responses);
   require(refreshed_responses.generation == generation + 1 &&
@@ -361,7 +369,10 @@ void refresh_dirty_and_counts(engine::Runtime &runtime, HostPath path) {
   // Change only the other leaf's precision, repairing the root from the
   // deliberately lagged left packet rather than from its changed body.
   request.nodes[1].retained_fraction_bits = 8;
+  const auto dirty_intent = intent_reference(f);
   refresh_ok(refresh_apply(f, request));
+  intent_reference(f);
+  require(!intent_current(f, dirty_intent, .5), "dirty-refresh candidate copy remained current");
   const auto after = f.h.inspect_live_hierarchy();
   for (int k = 0; k < 8; ++k)
     require(after.slots[k * after.selectors.size()] ==
@@ -410,7 +421,13 @@ void refresh_dirty_and_counts(engine::Runtime &runtime, HostPath path) {
     }
   f.control->set(0);
   runtime.synchronize();
+  const auto before_count_intent = intent_reference(f);
   refresh_ok(refresh_apply(f, counted, commands));
+  const auto after_count_intent = intent_reference(f);
+  require(!intent_current(f, before_count_intent, .5) &&
+              before_count_intent.values[2*before_count_intent.capacity+body.record] !=
+                  after_count_intent.values[2*after_count_intent.capacity+body.record],
+          "candidate ignored exact-count refresh");
   f.h.inspect_prepared();
   const auto packet = selected(f.h.inspect_live_hierarchy(), 0);
   const long double w = static_cast<long double>(C + 1) / D,
@@ -714,9 +731,11 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path, int capac
   engine::RecordHandle old;
   int response_reuses = 0, stale_snapshots = 0;
   for (int round = 0; round < 32; ++round) {
+    const auto before_tick_intent = intent_reference(f);
     const auto before_tick_responses = response_snapshot(f);
     no_new([&] { f.h.tick64(p); });
     require(!response_current(f, before_tick_responses), "copied response survived a tick as current");
+    require(!intent_current(f, before_tick_intent, .5), "candidate copy survived tick");
     ++stale_snapshots;
     f.h.inspect_prepared();
     auto bodies = f.h.particles64(), motion = f.h.prepared_storage().motion64(),
@@ -755,6 +774,9 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path, int capac
     commands.push_back(contact);
     refresh_ok(refresh_apply(f, add, commands));
     const auto added = f.h.prepared_storage().resolved[0];
+    const auto added_intent = intent_reference(f);
+    require(intent_current(f, added_intent, .5) && added_intent.values[added.record] != 0,
+            "new occurrence missing candidate response");
     const auto added_responses = response_snapshot(f);
     require(response_current(f, added_responses) && !response_current(f, initial_responses) &&
                 added_responses.responses == initial_responses.responses + 2,
@@ -818,12 +840,22 @@ void refresh_occurrence_reuse(engine::Runtime &runtime, HostPath path, int capac
     retire.operation = UpdateOp::RetireParticle;
     retire.first = UpdateRef::existing(added);
     commands.push_back(retire);
+    const auto before_retirement_intent = intent_reference(f);
     const auto before_retirement = response_snapshot(f);
     refresh_ok(refresh_apply(f, remove, commands));
+    const auto retired_intent = intent_reference(f);
+    require(!intent_current(f, before_retirement_intent, .5) &&
+                retired_intent.completed_ticks == before_retirement_intent.completed_ticks &&
+                retired_intent.values[added.record] == 0,
+            "retired candidate row or copied report remained live");
+    for (int col = 2; col < 13; ++col)
+      require(retired_intent.values[col*retired_intent.capacity+added.record] == 0,
+              "retired candidate retained numeric payload");
     const auto retired_responses = response_snapshot(f);
     require(response_current(f, retired_responses) && !response_current(f, before_retirement) &&
                 retired_responses.completed_ticks == before_retirement.completed_ticks,
             "retired copied snapshot accepted as current");
+    require(!intent_current(f, before_tick_intent, .5), "candidate copy survived tick");
     ++stale_snapshots;
     response_identity_equal(initial_responses, retired_responses);
     for (std::size_t row = 0; row < retired_responses.responses; ++row)

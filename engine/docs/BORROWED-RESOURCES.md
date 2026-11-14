@@ -7,6 +7,133 @@ at `5771326e4992889c3b9c16b8b98ee752ae4d0d1a`. Taichi source tree:
 ledger or combined admission gate. It identifies the precise missing native
 request surfaces requested by that review, without replacing them with estimates.
 
+## ArgPack host wrapper storage (awaiting review, 2026-11-13)
+
+Continues [#323 review 5894203678](https://github.com/Human-Cognome-Project/human-cognome-project/pull/323#pullrequestreview-5894203678).
+The native [ArgPack report](../taichi/taichi/program/argpack.h) and
+[query](../taichi/taichi/program/argpack.cpp) expose the actual live wrapper identity and
+sizeof(ArgPack). This wrapper has no owned host vectors or strings. Its DeviceAllocation,
+DataType and Program pointer representations are embedded object subsets, not additional
+charges. The query performs fixed reads, without dereferencing those handles, calling a
+factory, inspecting a backend, allocating or changing native ownership/layout/execution.
+
+Shared ArgPackType storage, member names/layout metadata and device backing are separate
+and uninspected: type_storage_available, backing_storage_available and complete remain
+false. A nonempty registry is not an absent optional family; Program's aggregate pointee
+flag remains false. No compiler/type exclusion or full optional-family coverage follows
+from this wrapper report. No size sum/product is computed. Object size is not proof of a
+separate allocation; a containing owner's storage must not be charged again.
+
+Two Program-owned wrappers can share one canonical type while remaining separate objects
+and allocations. Registry node/bucket requests cover pointer/unique_ptr rows, not their
+wrapper pointees. Deduplicate actual object identity separately from shared type/backing
+identity. Pointer observations require live, quiescent objects and confer no lifetime lease.
+Program::delete_argpack retains its native used_in_kernel guard: deletion may be deferred
+on a backend with pending usage. After actual erase the pointer is invalid. This query
+neither bypasses that guard nor certifies backing lifetime or allocation extent.
+
+The [fixture](../tests/owner_backing_test.cpp) creates two packs with the same nonempty
+named type under one/two CPU workers, observes separate wrapper identities and populated
+registry requests, checks allocation-free wrapper queries, erases one without disturbing
+the other, then verifies retained empty bucket requests. It never queries an erased pack.
+This qualifies the immediate-erasure CPU path, not deferred deletion, pending launches,
+GPU behavior, nested argpack pointers, shared-type storage or whole-Program coverage.
+The existing native allocation/deallocation and registry request mechanisms are unchanged.
+
+Remaining nested owners, mixed ABI/provenance/string coverage and separately prepaid
+traversal/validation still precede trusted aggregation. Compiler exclusions remain
+conditional; full B and combined admission remain unaccepted. Preserve the #323 follow-up:
+after completing the current work, audit earlier implementation for functionality already
+provided by Taichi; do not divert this bounded slice into replacement or optimization.
+
+## SNode tree and node host storage (awaiting review, 2026-11-13)
+
+Continues [#322 review 5893720324](https://github.com/Human-Cognome-Project/human-cognome-project/pull/322#pullrequestreview-5893720324).
+The native [reports](../taichi/taichi/ir/snode_storage.h),
+[node query](../taichi/taichi/ir/snode.cpp) and
+[tree query](../taichi/taichi/struct/snode_tree.cpp) expose existing host metadata.
+SNodeTree reports its object identity/size and root pointer identity without dereferencing
+it. SNode reports its own identity/size, child-vector slot count/capacity and index-offset
+entry count/capacity. Neither query walks children, resolves parents, asks a backend,
+creates a map, copies strings or changes native ownership, layout or execution.
+
+Object bytes include embedded vector/string controls, fixed extractor/index arrays,
+type/value representations and pointer fields. These are subsets, not extra charges.
+Child-vector elements are unique_ptr slots, not child objects. Offset and child buffers
+are separate accounted capacities, not allocator requests or physical memory. Both
+capacity products are checked before availability; overflow leaves unavailable capacity
+with overflow set. No unchecked combined total is exported. sizeof does not establish
+separate allocation: callers must establish containment before charging an object.
+
+Strings, gradient-provider objects, child pointees and shared types remain unqualified.
+string_storage_available, gradient_storage_available and complete stay false even with
+nonempty strings. The tree's complete flag stays false. Program's aggregate pointee flag
+is unchanged. An available local report is not complete graph or backing coverage.
+
+Queries require live, quiescent objects. Pointer identities are synchronous observations,
+not lifetime leases or allocation tokens. Program can retire backend tree backing while
+retaining the host tree/root in its vector; slot reuse can later destroy those objects.
+Do not inspect stale pointers after replacement or teardown. Existing backing records
+remain authoritative for backend lifetime; this query never recaptures that lifetime.
+
+The [fixtures](../tests/owner_backing_test.cpp) cover distinct native tree/root identities,
+root/dense/place objects, nonempty strings, empty leaf children, child reserve growth,
+nonempty offset reserve and retained empty offset capacity, allocation-free queries and
+retained host metadata after backing retirement with one/two CPU workers. They do not
+query destroyed objects. Capacity overflow is source-reviewed, not exercised with an
+impossible-sized real vector. Gradient-provider storage is not qualified by this fixture.
+
+These are fixed-work per-object queries; enumeration, traversal, identity validation and
+deduplication still require separately prepaid work. No graph inventory or aggregate
+ledger is added. Remaining nested owners and mixed ABI/provenance/string coverage precede
+trusted aggregation under the [Program scope](PROGRAM-ACCOUNTING-SCOPE.md). Compiler
+exclusions remain conditional; full B and combined admission remain unaccepted.
+
+## Ndarray host wrapper storage (awaiting review, 2026-11-13)
+
+Continues [#321 review 5893130922](https://github.com/Human-Cognome-Project/human-cognome-project/pull/321#pullrequestreview-5893130922).
+Ndarray::host_storage reports its actual wrapper identity, sizeof(Ndarray), logical
+shape/total-shape entry counts and separate checked vector capacity bytes. The query
+reads existing metadata; it does not reconstruct shapes, copy vectors, query a device,
+capture a backing token or change native array ownership/execution.
+
+The wrapper object contains both vector controls, DebugInfo representations, type/device
+handles and its stored backing record. Those embedded objects are subsets, not extra
+charges. The two vector element buffers are separate storage even if their dimensions
+have identical values. Capacity is an accounted-capacity quantity, not an allocator-
+request, logical array byte size, device backing extent or physical memory measurement.
+The report computes no sum; downstream checked aggregation remains required.
+
+Distinct wrappers may share one backing token but have different host owner identities
+and shape buffers. Count each actual wrapper once while deduplicating backing separately
+through the existing backing-record/pool mechanisms. A wrapper can be embedded, stack-
+allocated, directly owned by HCP or owned by Program's ndarray map; sizeof(Ndarray) is
+not proof of a separate allocation. Do not add its object bytes again if already covered
+by a containing owner. A map node's unique_ptr storage does not contain the wrapper.
+
+Both capacity multiplications are checked before marking the report available; overflow
+leaves unavailable capacity with overflow set. Empty/zero-rank vectors remain supported.
+DebugInfo's external strings and shared DataType/TypeFactory ownership are not inspected;
+debug_storage_available and complete remain false, including for nonempty debug text.
+Program's aggregate pointee flag remains false: one wrapper query is not an enumeration
+or certification of every Program/Harness pointee. No new exclusion is accepted here.
+
+Inspection is fixed work with no allocation/traversal or lazy factories. Keep the wrapper
+live and quiescent; its pointer identity is not a lifetime lease. Device backing can
+retire while the wrapper and its host buffers remain live. The report cannot certify
+backing validity, extend its lifetime or permit a query through a destroyed wrapper.
+No lifetime recapture occurs; existing backing-record checks remain authoritative.
+
+Fixtures cover Program-owned wrappers, distinct views sharing backing, a nonempty tensor
+shape, zero-rank shape with nonempty debug text, shape reserve growth without length or
+total-shape changes, allocation-free inspection and host-storage retention after backing
+retirement. No impossible-sized real vector or synthetic capacity overflow fixture is
+added to this slice; the arithmetic branch is source-reviewed. GPU/native-Windows and
+whole-Program pointee coverage remain unqualified. Next: remaining nested owners and
+mixed ABI/provenance/string coverage under the [Program scope](PROGRAM-ACCOUNTING-SCOPE.md),
+then trusted required-family/lifetime aggregation, canonical/domain deduplication and
+prepaid traversal/validation work. Compiler exclusions remain conditional; no full B.
+
 ## Field-expression and accessor map requests (awaiting review, 2026-11-13)
 
 Continues [#320 review 5892748763](https://github.com/Human-Cognome-Project/human-cognome-project/pull/320#pullrequestreview-5892748763).

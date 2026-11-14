@@ -1,4 +1,5 @@
 #include <numeric>
+#include <limits>
 
 #include "taichi/program/ndarray.h"
 #include "taichi/program/program.h"
@@ -10,6 +11,23 @@
 #endif
 
 namespace taichi::lang {
+
+NdarrayStorage Ndarray::host_storage() const {
+  NdarrayStorage result;
+  result.owner = this;
+  result.object_bytes = sizeof(Ndarray);
+  result.shape_entries = shape.size();
+  result.total_shape_entries = total_shape_.size();
+  if (shape.capacity() > std::numeric_limits<std::size_t>::max() / sizeof(int) ||
+      total_shape_.capacity() > std::numeric_limits<std::size_t>::max() / sizeof(int)) {
+    result.overflow = true;
+    return result;
+  }
+  result.available = true;
+  result.shape_capacity_bytes = shape.capacity() * sizeof(int);
+  result.total_shape_capacity_bytes = total_shape_.capacity() * sizeof(int);
+  return result;
+}
 
 namespace {
 

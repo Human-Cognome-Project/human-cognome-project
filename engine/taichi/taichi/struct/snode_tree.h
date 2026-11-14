@@ -24,6 +24,8 @@ class SNodeTree {
    */
   explicit SNodeTree(int id, std::unique_ptr<SNode> root);
 
+  SNodeTreeStorage host_storage() const;
+
   int id() const {
     return id_;
   }

@@ -1,3 +1,4 @@
+#include "field/intent_ir.h"
 #include "field/live_hierarchy.h"
 #include <algorithm>
 #include <limits>
@@ -238,6 +239,7 @@ void LiveHierarchy::append_layout(const BudgetDemand &l,
   add("live-field-owners", g, 4);
   add("live-field-inspection", h, 4, 1);
   add("live-response-observation", 10 * r, sizeof(double));
+  add("live-intent-observation", 13 * physical(l[Budget::Particles]), sizeof(double));
   add("live-response-identities", 4 * r, sizeof(int), 1);
   add("live-response-fractions", 2 * r, sizeof(std::uint64_t), 1);
   add("live-counters", Counts, 8);
@@ -278,6 +280,9 @@ struct LiveHierarchy::Impl {
   LiveResponseInspection response_inspection;
   std::unique_ptr<Ndarray> response_observation;
   engine::CompiledKernel response_kernel;
+  LiveIntentInspection intent_inspection;
+  std::unique_ptr<Ndarray> intent_observation;
+  engine::CompiledKernel intent_kernel;
   std::vector<int> cfg, children, sources, coverage, influences, offsets, leaf,
       owners;
   std::vector<std::uint64_t> ratios, masks, weights;
@@ -363,6 +368,10 @@ struct LiveHierarchy::Impl {
     response_observation = std::make_unique<Ndarray>(
         &h.runtime_->program(), PrimitiveType::f64, std::vector<int>{10, R});
     h.runtime_->program().fill_ndarray_fast_u32(response_observation.get(), 0);
+    intent_inspection.values.resize(std::size_t(13) * std::max(P, 1));
+    intent_observation = std::make_unique<Ndarray>(
+        &h.runtime_->program(), PrimitiveType::f64, std::vector<int>{13, std::max(P, 1)});
+    h.runtime_->program().fill_ndarray_fast_u32(intent_observation.get(), 0);
     const std::array<DataType, 19> types{
         PrimitiveType::f64, PrimitiveType::i32, PrimitiveType::i32,
         PrimitiveType::i32, PrimitiveType::i32, PrimitiveType::u64,
@@ -410,6 +419,8 @@ struct LiveHierarchy::Impl {
     prepare_refresh_execution();
     prepare_response_observation();
     observe_responses(0);
+    prepare_intent_observation();
+    observe_intent(0, 0);
     launch(command_kernel, 0, 0);
     launch(force_kernel, 0, -1);
     launch(poll_kernel, 0, -1);
@@ -421,6 +432,20 @@ struct LiveHierarchy::Impl {
   std::array<engine::CompiledKernel, 3> build_kernels(NativeSet, NativeSet);
   void prepare_refresh_execution();
   void prepare_response_observation();
+  void prepare_intent_observation();
+  void observe_intent(double gravity, int count) {
+    auto invocation = intent_kernel.invocation(true);
+    auto &c = invocation.get();
+    if (!c.prepared) {
+      c.set_arg_ndarray({0}, *response_observation);
+      c.set_arg_ndarray({1}, *arrays[11]);
+      c.set_arg_ndarray({2}, *arrays[12]);
+      c.set_arg_ndarray({3}, *intent_observation);
+    }
+    engine::argument_float(c, 4, gravity);
+    engine::argument_int(c, 5, count);
+    intent_kernel.launch(c);
+  }
   void observe_responses(int count) {
     auto invocation = response_kernel.invocation(true);
     auto &c = invocation.get();
@@ -498,6 +523,69 @@ struct LiveHierarchy::Impl {
   }
 };
 
+void LiveHierarchy::Impl::prepare_intent_observation() {
+  IRBuilder b;
+  auto *source = array(b, 0, PrimitiveType::f64, 2);
+  auto *fractions = array(b, 1, PrimitiveType::u64, 2);
+  auto *ranges = array(b, 2, PrimitiveType::i32, 2);
+  auto *out = array(b, 3, PrimitiveType::f64, 2);
+  auto *gravity = b.create_arg_load({4}, PrimitiveType::f64, false, 0);
+  auto *count = b.create_arg_load({5}, PrimitiveType::i32, false, 0);
+  auto *loop = b.create_range_for(b.get_int32(0), count, false, h.runtime_->cpu_threads());
+  {
+    auto scope = b.get_loop_guard(loop);
+    auto *body = b.get_loop_index(loop);
+    auto *begin = read(b, ranges, cell(b, 0, body));
+    auto *end = read(b, ranges, cell(b, 1, body));
+    IntentAccumulator candidate(b);
+    std::array<AllocaStmt *, 3> position{};
+    for (auto &v : position) v = candidate.variable(PrimitiveType::f64, b.get_float64(0));
+    auto *rows = b.create_range_for(begin, end, false, 1, 0, true);
+    {
+      auto row_scope = b.get_loop_guard(rows);
+      auto *ref = b.get_loop_index(rows);
+      std::array<Stmt *, 3> d{};
+      for (int k = 0; k < 3; ++k) {
+        d[k] = read(b, source, cell(b, k, ref));
+        b.create_local_store(position[k], read(b, source, cell(b, 3+k, ref)));
+      }
+      candidate.fail(b.create_cmp_eq(read(b, source, cell(b, 9, ref)), b.get_float64(0)));
+      auto *g = candidate.checked(gravity);
+      auto *mass = candidate.checked(read(b, source, cell(b, 6, ref)));
+      auto *field_mass = candidate.checked(read(b, source, cell(b, 7, ref)));
+      auto *numerator = read(b, fractions, cell(b, 0, ref));
+      auto *denominator = read(b, fractions, cell(b, 1, ref));
+      candidate.fail(b.create_cmp_lt(g, b.get_float64(0)));
+      candidate.fail(b.create_cmp_le(mass, b.get_float64(0)));
+      candidate.fail(b.create_cmp_le(field_mass, b.get_float64(0)));
+      candidate.fail(b.create_cmp_eq(numerator, b.get_uint64(0)));
+      auto *den_ok = b.create_cmp_ne(denominator, b.get_uint64(0));
+      candidate.fail(b.create_logical_not(den_ok));
+      auto *share = candidate.divide(b.create_cast(numerator, PrimitiveType::f64),
+          b.create_cast(b.create_select(den_ok, denominator, b.get_uint64(1)), PrimitiveType::f64));
+      // Inactive structural rows still validate inputs; do not evaluate a
+      // coupling product for them (nor reinterpret them as coincident sources).
+      auto *coupling = candidate.variable(PrimitiveType::f64, b.get_float64(0));
+      {
+        auto active = b.get_if_guard(b.create_if(b.create_cmp_ne(
+            read(b, source, cell(b, 8, ref)), b.get_float64(0))), true);
+        b.create_local_store(coupling, candidate.mul(candidate.mul(g, candidate.mul(mass, share)), field_mass));
+      }
+      candidate.append(d, b.create_local_load(coupling));
+    }
+    std::array<Stmt *, 3> x{};
+    for (int k = 0; k < 3; ++k) x[k] = b.create_local_load(position[k]);
+    const auto values = candidate.finish(x);
+    for (int k = 0; k < 13; ++k)
+      write(b, out, cell(b, k, body), b.create_cast(values[k], PrimitiveType::f64));
+  }
+  intent_kernel = engine::CompiledKernel(*h.runtime_,
+      "live_intent_observation_" + std::to_string(h.activity_->centroids.cells->id), b.extract_ir(),
+      {engine::Param::array(PrimitiveType::f64, 2), engine::Param::array(PrimitiveType::u64, 2),
+       engine::Param::array(PrimitiveType::i32, 2), engine::Param::array(PrimitiveType::f64, 2),
+       engine::Param::scalar(PrimitiveType::f64), engine::Param::scalar(PrimitiveType::i32)},
+      engine::MathMode::Strict);
+}
 void LiveHierarchy::Impl::prepare_response_observation() {
   IRBuilder b;
   Args a(b);
@@ -869,6 +957,7 @@ std::size_t LiveHierarchy::binding_bytes() const {
          impl_->poll_kernel.prepared_bytes() +
          impl_->command_kernel.prepared_bytes() +
          impl_->response_kernel.prepared_bytes() +
+         impl_->intent_kernel.prepared_bytes() +
          impl_->refresh->candidate.prepared_bytes() +
          impl_->refresh->commit.prepared_bytes();
 }
@@ -950,6 +1039,36 @@ const LiveHierarchyInspection &LiveHierarchy::inspect() {
   return a.inspection;
 }
 
+const LiveIntentInspection &LiveHierarchy::inspect_intent(double gravity, std::uint64_t limit) {
+  auto &a = *impl_;
+  auto &out = a.intent_inspection;
+  out.status = CascadeStatus::CapacityExhausted;
+  out.failure = {};
+  out.work_used = out.readback_bytes = 0;
+  out.generation = a.generation;
+  out.completed_ticks = a.h.prepared_->completed_ticks;
+  out.capacity = std::max(a.P, 1);
+  out.responses = a.responses;
+  out.frame_anchor = a.h.frame_anchor_;
+  out.gravity = gravity;
+  // Two dispatches, two response visits, one body visit and 13 readback scalars.
+  out.work_required = 2 + 2 * a.responses + 14 * out.capacity;
+  limit = std::min(limit, a.h.prepared_->capacity.limits()[Budget::CascadeWork]);
+  if (limit < out.work_required) {
+    out.failure = {Budget::CascadeWork, out.work_required, limit};
+    return out;
+  }
+  validate();
+  a.h.runtime_->synchronize();
+  a.observe_responses(int(a.responses));
+  a.observe_intent(gravity, a.P);
+  a.h.runtime_->synchronize();
+  engine::readback(*a.intent_observation, out.values.data(), out.values.size() * sizeof(double));
+  out.readback_bytes = out.values.size() * sizeof(double);
+  out.work_used = out.work_required;
+  out.status = CascadeStatus::Ok;
+  return out;
+}
 const LiveResponseInspection &LiveHierarchy::inspect_responses(std::uint64_t limit) {
   auto &a = *impl_;
   auto &out = a.response_inspection;

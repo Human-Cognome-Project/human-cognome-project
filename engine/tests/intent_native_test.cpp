@@ -2,7 +2,7 @@
 // state is modified. Input rows are caller-supplied, not a graph enumeration.
 #include "engine/runtime.h"
 #include "engine/transfer.h"
-#include "field/numeric_ir.h"
+#include "field/intent_ir.h"
 #include <array>
 #include <cmath>
 #include <iostream>
@@ -31,115 +31,40 @@ engine::CompiledKernel build(engine::Runtime &runtime, int n) {
     const auto load = [&](int col) -> Stmt * {
       return b.create_global_load(b.create_external_ptr(in, {b.get_int32(col), row}));
     };
-    const auto var = [&](DataType type, Stmt *initial) {
-      auto *v = b.create_local_var(type); b.create_local_store(v, initial); return v;
-    };
-    auto *bad = var(PrimitiveType::i32, b.get_int32(0));
-    auto *contact_bad = var(PrimitiveType::i32, b.get_int32(0));
-    auto *coincident = var(PrimitiveType::i32, b.get_int32(0));
-    auto *weight = var(PrimitiveType::f64, b.get_float64(0));
-    std::array<AllocaStmt *, 3> force{}, contact{};
-    for (int k=0;k<3;++k) {
-      force[k]=var(PrimitiveType::f64,b.get_float64(0));
-      contact[k]=var(PrimitiveType::f64,b.get_float64(0));
-    }
-    const auto fail = [&](AllocaStmt *flag, Stmt *condition) {
-      b.create_local_store(flag, b.create_logical_or(b.create_local_load(flag), condition));
-    };
-    // Native normal-or-zero contract, including bit-level input subnormals.
-    const auto checked = [&](Stmt *v, AllocaStmt *flag) -> Stmt * {
-      auto *ok=field::detail::supported_real(b,v);
-      fail(flag,b.create_logical_not(ok));
-      return b.create_select(ok,v,b.get_float64(0));
-    };
-    const auto mul = [&](Stmt *a, Stmt *c) -> Stmt * {
-      auto *v=b.create_mul(a,c);
-      fail(bad,b.create_logical_and(b.create_logical_and(
-          b.create_cmp_ne(a,b.get_float64(0)),b.create_cmp_ne(c,b.get_float64(0))),
-          b.create_cmp_eq(v,b.get_float64(0))));
-      return checked(v,bad);
-    };
-    const auto add = [&](Stmt *a, Stmt *c, AllocaStmt *flag) -> Stmt * {
-      auto *v=b.create_add(a,c);
-      fail(flag,b.create_logical_and(b.create_cmp_eq(v,b.get_float64(0)),
-                                    b.create_cmp_ne(a,b.create_neg(c))));
-      return checked(v,flag);
-    };
-    const auto divide = [&](Stmt *a, Stmt *c) -> Stmt * {
-      auto *v=b.create_div(a,c);
-      fail(bad,b.create_logical_and(b.create_cmp_ne(a,b.get_float64(0)),
-                                  b.create_cmp_eq(v,b.get_float64(0))));
-      return checked(v,bad);
-    };
-    std::array<Stmt *,3> position{};
-    for(int k=0;k<3;++k) position[k]=checked(load(14+k),bad);
-    for(int j=0;j<packets;++j) {
-      std::array<Stmt *,3> d{};
-      for(int k=0;k<3;++k) {
-        d[k]=checked(load(7*j+k),bad);
-        auto *c=checked(load(7*j+4+k),contact_bad);
-        b.create_local_store(contact[k],add(b.create_local_load(contact[k]),c,contact_bad));
+    field::detail::IntentAccumulator field(b), contact(b);
+    std::array<AllocaStmt *, 3> contact_force{};
+    for (auto &v : contact_force) v = contact.variable(PrimitiveType::f64, b.get_float64(0));
+    for (int j = 0; j < packets; ++j) {
+      std::array<Stmt *, 3> d{};
+      for (int k = 0; k < 3; ++k) {
+        d[k] = load(7*j+k);
+        b.create_local_store(contact_force[k], contact.add(b.create_local_load(contact_force[k]),
+                                                         contact.checked(load(7*j+4+k))));
       }
-      auto *coupling=checked(load(7*j+3),bad);
-      fail(bad,b.create_cmp_lt(coupling,b.get_float64(0)));
-      auto active=b.get_if_guard(b.create_if(b.create_cmp_gt(coupling,b.get_float64(0))),true);
-      auto *zero=b.create_logical_and(b.create_cmp_eq(d[0],b.get_float64(0)),
-          b.create_logical_and(b.create_cmp_eq(d[1],b.get_float64(0)),
-                              b.create_cmp_eq(d[2],b.get_float64(0))));
-      {
-        auto exact=b.get_if_guard(b.create_if(zero),true);
-        b.create_local_store(coincident,b.create_add(b.create_local_load(coincident),b.get_int32(1)));
-      }
-      {
-        auto separated=b.get_if_guard(b.create_if(b.create_logical_not(zero)),true);
-        Stmt *d2=b.get_float64(0);
-        for(auto *v:d) d2=add(d2,mul(v,v),bad);
-        auto *positive=b.create_cmp_gt(d2,b.get_float64(0));
-        fail(bad,b.create_logical_not(positive));
-        auto *safe=b.create_select(positive,d2,b.get_float64(1));
-        auto *distance=checked(b.create_sqrt(safe),bad);
-        auto *cube=mul(safe,distance);
-        auto *cube_positive=b.create_cmp_gt(cube,b.get_float64(0));
-        fail(bad,b.create_logical_not(cube_positive));
-        auto *alpha=divide(coupling,b.create_select(cube_positive,cube,b.get_float64(1)));
-        b.create_local_store(weight,add(b.create_local_load(weight),alpha,bad));
-        for(int k=0;k<3;++k)
-          b.create_local_store(force[k],add(b.create_local_load(force[k]),mul(alpha,d[k]),bad));
-      }
+      field.append(d, load(7*j+3));
     }
-    auto *has=b.create_cmp_gt(b.create_local_load(weight),b.get_float64(0));
-    std::array<Stmt *,3> relative{}, common{};
-    for(int k=0;k<3;++k) {
-      relative[k]=divide(b.create_local_load(force[k]),b.create_select(has,b.create_local_load(weight),b.get_float64(1)));
-      common[k]=add(position[k],relative[k],bad);
-    }
-    // Precedence is independent of encounter order: unsupported > coincidence
-    // > supported > absent. Contacts have a separate validity flag.
-    auto *field_ok=b.create_logical_not(b.create_local_load(bad));
-    auto *contact_ok=b.create_logical_not(b.create_local_load(contact_bad));
-    auto *status=b.create_select(b.create_logical_or(b.create_local_load(bad),b.create_local_load(contact_bad)),b.get_int32(3),
-        b.create_select(b.create_cmp_gt(b.create_local_load(coincident),b.get_int32(0)),b.get_int32(2),
-                        b.create_select(has,b.get_int32(1),b.get_int32(0))));
-    auto *valid=b.create_cmp_eq(status,b.get_int32(1));
-    const auto put=[&](int col,Stmt *value) {
-      b.create_global_store(b.create_external_ptr(out,{b.get_int32(col),row}),b.create_cast(value,PrimitiveType::f64));
+    const auto values = field.finish({load(14), load(15), load(16)});
+    auto *contact_ok = b.create_logical_not(b.create_local_load(contact.bad));
+    auto *status = b.create_select(contact_ok, values[0], b.get_int32(3));
+    auto *valid = b.create_cmp_eq(status, b.get_int32(1));
+    const auto put = [&](int col, Stmt *v) {
+      b.create_global_store(b.create_external_ptr(out, {b.get_int32(col), row}), b.create_cast(v, PrimitiveType::f64));
     };
-    put(0,status); put(1,b.create_select(field_ok,b.get_int32(1),b.get_int32(0)));
-    put(2,b.create_select(contact_ok,b.get_int32(1),b.get_int32(0)));
-    put(3,b.create_local_load(coincident));
-    for(int k=0;k<3;++k) {
-      put(4+k,b.create_select(field_ok,b.create_local_load(force[k]),b.get_float64(0)));
-      put(7+k,b.create_select(contact_ok,b.create_local_load(contact[k]),b.get_float64(0)));
-      put(10+k,b.create_select(valid,relative[k],b.get_float64(0)));
-      put(13+k,b.create_select(valid,common[k],b.get_float64(0)));
+    put(0, status); put(1, values[1]);
+    put(2, b.create_select(contact_ok, b.get_int32(1), b.get_int32(0)));
+    put(3, values[3]);
+    for (int k = 0; k < 3; ++k) {
+      put(4+k, values[4+k]);
+      put(7+k, b.create_select(contact_ok, b.create_local_load(contact_force[k]), b.get_float64(0)));
+      put(10+k, b.create_select(valid, values[7+k], b.get_float64(0)));
+      put(13+k, b.create_select(valid, values[10+k], b.get_float64(0)));
     }
-    put(16,b.get_int32(packets));
+    put(16, b.get_int32(packets));
   }
-  return engine::CompiledKernel(runtime,"intent_packet_probe",b.extract_ir(),
+  return engine::CompiledKernel(runtime, "intent_packet_probe", b.extract_ir(),
       {engine::Param::array(PrimitiveType::f64,2),engine::Param::array(PrimitiveType::f64,2)},
       engine::MathMode::Strict,engine::Optimization::Local);
 }
-
 void run(int threads) {
   std::vector<Row> rows;
   const auto add=[&](double dx,double k,double dx2=0,double k2=0) {
