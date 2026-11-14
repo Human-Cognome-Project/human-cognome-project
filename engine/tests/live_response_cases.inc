@@ -405,8 +405,8 @@ void intent_controls(engine::Runtime &r, HostPath path) {
 
 void intent_activity(engine::Runtime &r, HostPath path) {
   for (bool changed : {false, true}) {
-    Fixture f(r, path, {{}, {}}, {{1, 1, 1, 0, 0}, {1, 0, 0, 1, 1}},
-              {1, 1, 1, 1, 1}, {1, .5, .5, .5, .5}, {0, 2, 2, -4, -4});
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 1, 0, 0}, {1, 0, 0, 1, 1}, {0, 0, 0, 0, 0}},
+              {2, 1, 1, 1, 1}, {1, .25, .25, .25, .25}, {0, 2, 2, -4, -4});
     f.install();
     Parameters64 p; p.dt = 0; p.gravity = 1;
     p.contact_stiffness = p.reach_strength = 0;
@@ -416,13 +416,13 @@ void intent_activity(engine::Runtime &r, HostPath path) {
             "activity control recipient did not consume initial work");
     const auto before = intent_reference(f, p.gravity);
     const auto P = before.capacity;
-    near(before.values[4*P+body], 1.5, "initial activity force mismatch");
-    near(before.values[10*P+body], 2./3, "initial activity intent mismatch");
+    near(before.values[4*P+body], .375, "initial activity force mismatch");
+    near(before.values[10*P+body], 162./499, "initial activity intent mismatch");
     const auto retained_force = f.h.particle64(kForceX, body);
     if (changed) {
       // Test-only source edit, followed by the ordinary native publication phase.
       // Each source mass grows 4x and its distance doubles: force is unchanged.
-      const double masses[]{1, 3, 4, 3, 4}, positions[]{0, 0, 4, 0, -8};
+      const double masses[]{1, 1.5, 2, 1.5, 2}, positions[]{0, 0, 4, 0, -8};
       for (int i = 1; i < 5; ++i) {
         const int slot = f.in.particle_rows[i].record;
         f.h.particle64(kMass, slot) = masses[i];
@@ -430,7 +430,7 @@ void intent_activity(engine::Runtime &r, HostPath path) {
       }
       no_new([&] {
         PreparedFixtureAccess::upload_body_fixture64(f.h);
-        LiveHierarchyAccess::mass_total(f.h, 15);
+        LiveHierarchyAccess::mass_total(f.h, 8);
       });
     }
     no_new([&] {
@@ -447,7 +447,7 @@ void intent_activity(engine::Runtime &r, HostPath path) {
     require(published.values[4*P+body] == before.values[4*P+body] &&
                 f.h.particle64(kForceX, body) == retained_force,
             "equal-force publication control changed force");
-    near(published.values[10*P+body], changed ? 4./3 : 2./3,
+    near(published.values[10*P+body], changed ? 324./499 : 162./499,
          "published intent mismatch");
     require(((f.h.prepared_storage().inspection_flags[body] & 2) != 0) == awake,
             "candidate observation changed activity");
