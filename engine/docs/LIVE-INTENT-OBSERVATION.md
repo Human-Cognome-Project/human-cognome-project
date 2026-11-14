@@ -298,3 +298,66 @@ Source/config/compiler/binary pins, commands and full outputs are retained local
 raw archive is not independently reviewed remotely. Final delta after the tested
 source is three Markdown files. #334 remains the source-accepted parent pending
 hosted qualification; no duplicate main/parent CI or self-merge was requested.
+
+## Equal-force intent publication and activity — 2026-11-14
+
+The test-only `intent_activity` case follows #335 review 5904523468. It exercises
+two live leaf fields under one shared root, sharing one recipient, with unchanged and changed-source
+controls. Initial leaf packets have (X,mass)=(1,1),(-2,1); changed packets are
+(2,4),(-4,4). The root changes from (-0.5,2) to (-1,8). Each response force is unchanged, so the recipient's combined X force
+remains exactly 0.375 while the coefficient-weighted intent moves from 162/499 to 324/499. The recipient participates by one half in each leaf; both inherited responses are retained in the coefficient sum even though their forces cancel.
+All inputs use exact binary geometry/mass arithmetic. Five real fixture bodies
+supply those packets through ordinary native field publication, not supplied
+candidate packets or a host replacement for publication.
+
+After an initial zero-duration tick consumes body work, the test modifies source
+body masses/positions through test-only access and selects only fields. The next
+ordinary tick must evaluate zero bodies, publish the fields, and leave the shared
+recipient awake only for the changed case. The current mass-publication
+invalidation path is the expected cause: equal combined force does not suppress
+that path. **This is not proof of a candidate-aware wake predicate**, nor a test
+of geometric equal-force changes with unchanged source mass. No production
+predicate, invalidator, brake or sleep law changes.
+
+Observations match the independent source-derived reference. The unchanged case
+retains candidate values but its old copied observation still becomes stale when
+the completed tick changes; freshness is distinct from both value change and wake.
+The changed case preserves the retained native force accumulator and exact
+candidate force while changing intent. Inspection must not change the wake flag.
+The following ordinary body phase consumes the native wake and is checked against
+the existing physical reference, including retained motion. With dt=0, recipient
+position and velocity remain zero; this is activity evidence, not a trajectory
+or stability study. No-allocation query/tick checks are retained.
+
+Traces separately report source change, old/new force and intent, post-publication
+wake, following body visits, stale-copy rejection and accepted position. This
+establishes current behavior for viewport-oriented observation without treating
+conceptual interpretation as an acceptance gate. The direct source mutations are
+fixture setup, not an operational edit/refresh API qualification. Further geometric
+controls and the eventual viewport observation interface remain separate work.
+
+Qualification at `a2706e3a7f560234e2f5120e53c739fb78949d02`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL Ubuntu CPU/Clang 15 Release:
+matching build and all ten focused CTests passed (four activity profiles,
+four original candidate profiles, two packet probes). One/two workers and
+bulk/direct paths were exercised. Every activity profile reported unchanged:
+force 0.375, intent 162/499, no wake or following body visits; changed: force
+0.375, intent 324/499, recipient awake and five following body visits. Both reject
+the old observation and preserve the dt=0 recipient position/velocity. These
+are current-behavior observations, not an intent-aware activity policy.
+
+The initial source `e73cb04fb973dde060ab7a772b32f1d62d3119fc` built but failed
+all four new activity tests at installation: the fixture incorrectly supplied
+two roots. The correction adds the required shared root and includes inherited
+responses in the independent expectation. The other six checks passed in that
+initial run; it is not relabelled successful. Initial build/test logs are retained
+inside the final archive. Final build has no reported compiler warnings.
+
+Local archive `intent-activity-a2706e3a.tar.gz`: manifest SHA256
+`1cef70d9d16eaa685f506aba941480c37079dbd77aad1c5254671b38ee739d02`;
+archive SHA256 `c569a9b2a2b211b634e04626a91c07ccbc4e1797579eeb60662ba71263f96e05`.
+Source/config/compiler/binary pins, commands, full outputs and initial failure
+are retained locally, not independently reviewed remotely. Final delta after
+the tested pin is three Markdown files. Earlier trajectory/control/lifecycle
+suites were not rerun; GPU/native Windows/database/browser/performance were not
+tested. #335 remains the source-accepted parent pending hosted qualification.

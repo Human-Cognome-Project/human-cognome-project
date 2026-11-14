@@ -1,5 +1,8 @@
 # Current implementation and work
 
+**Contributor follow-up — 2026-11-14 (awaiting review):** integrated equal-force/different-intent controls exercise current mass-publication wake behavior, an unchanged-input negative control, copied-observation freshness and following body-phase consumption. No production predicate changes. See [activity controls](../../engine/docs/LIVE-INTENT-OBSERVATION.md#equal-force-intent-publication-and-activity--2026-11-14); geometric equal-force changes with unchanged mass remain outside this slice.
+
+
 **Maintainer update — #335, 2026-11-14:** `d5d5d8a4f38915202c135da9c1c9386ab2cf8e3d` source-accepted in review 5904523468 for seven bounded approach/crossing-proposal, tangential, contact and focal-damping controls. Candidate, field/combined forces, host-reference proposals and accepted motion remain distinct; production behavior/accounting are unchanged. Contributor reports ten focused CPU CTests at `7cf12be4a415728763e4d7335ee8ea78d7a3ee51`; final delta is three Markdown files, local raw archive not independently inspected. Smoke passed; #335 native 43599723433 and parent #334 native 43599026919 remain pending. Combined-main native 43597732642 has passed build/projection/database and is running regression/compiler checks. #334/#335 are not integrated; no duplicate CI needed. Held #75/#111/#123 unchanged.
 
 Next bounded work: equal-force/different-intent activity invalidation under #324. Keep observation freshness, activity decisions and motion behavior separate; establish current behavior before selecting changes. Continue prioritizing correctness and viewport-usable observations without an interpretation gate. This supersedes older next-step/status notes below where they conflict.
