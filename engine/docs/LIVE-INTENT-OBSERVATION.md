@@ -529,3 +529,45 @@ and helper notes retained locally, not independently reviewed remotely. Final
 publication after the browser source changes Markdown only. Hosted review/CI remain
 pending; no self-merge or duplicate parent CI. No new engine force/brake/activity,
 resource inventory or reference-proposal implementation is introduced.
+
+## Owning-run capture configuration — 2026-11-14
+
+Source `6f4e53829a0f3a73f4c23e403161a8ca36426f04`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`. Stacked on source-accepted #339,
+with qualified main `1541729b` merged; no self-merge or inference of parent acceptance
+from CI. The C3 capture runner now exports intent only with explicit
+`--intent-work-limit N`, using its own gravity and the existing validated completed
+boundary. Omission and zero-budget refusal remain distinct. Optional pacing leaves
+model ticks unchanged. Legacy ActiveSession capture is unchanged.
+
+Local qualification on WSL Ubuntu, CPU-only Clang 15 Release: matching native
+build and viewport_snapshot_test passed. Windows Node 22.13.0: all 16 model tests
+passed. Three actual finite native runs (ticks 0–4) fed the offline Chrome
+157.0.8103.50 watch reader: successful intent (one worker/bulk), omitted intent and
+zero-budget refusal (two workers/direct). Each applied all five captures,
+preserved selection, matched final JSON exactly, and displayed the expected
+inspector status with no browser errors or network requests. Native reference,
+f64, state-neutrality and stale-binding checks ran within each capture case.
+Four malformed budgets and a repeated budget option rejected before engine setup.
+The enabled run screenshot was visually inspected.
+
+The adapter reads bytes and metadata from one opened native file on every poll;
+it does not fabricate snapshots. It substitutes for the directory picker, so
+real picker/handle support remains unqualified. Browser rendering is SwiftShader;
+no physical GPU engine, native Windows engine, database, or dedicated performance
+qualification is claimed. Regression diagnostic probes are separate from the
+configured export's accounting. No formula, activity or accepted-motion changes.
+
+Local raw evidence: workspace `setup-evidence/intent-config-6f4e5382.zip` contains
+native source/build/config/compiler/binary pins, option failures, three sets of
+native files/logs, watch results and screenshots. Archive SHA256:
+`0ca0833726a6461a8b3375f15a32230c54fa84591621629bc027d1ea15914ec0`.
+Adjacent `intent-config-manifest.sha256` SHA256:
+`369c5c98c65784f3bf57721916ddc5d91239b3829fa6c7fc3a6e52da57faced3`.
+These are contributor-reported local observations, not independently inspected
+hosted qualification. Final source delta after the tested pin is documentation only.
+
+Next: review the explicit C3 configuration and native file-watch evidence. The
+bounded fixture is usable for live inspection; broader owning-run/retained study
+integration remains separate. Overlays are optional; keep candidate observations,
+reference proposals and accepted motion distinct.

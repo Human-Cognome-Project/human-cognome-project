@@ -1,5 +1,8 @@
 # Current implementation and work
 
+**Contributor follow-up — 2026-11-14 (awaiting review):** the bounded C3 owning run now accepts explicit optional intent work budgets and capture pacing. Three real native runs fed the browser watch reader through a read-only filesystem adapter: omitted, supported and refused observations each applied ticks 0–4. See [configuration and evidence](../../engine/docs/LIVE-INTENT-OBSERVATION.md#owning-run-capture-configuration--2026-11-14). Legacy retained/ActiveSession integration and real picker qualification remain separate; candidate overlays are optional.
+
+
 **Maintainer integration/update — 2026-11-14:** #337 is integrated from qualified `7ea19bef319b3f438a29abea653cc36101c94bff`. Smoke and all 12 native jobs passed. Personally inspected run 43601732045: 165 regression passes (42/41/41/41), all four geometric controls, database addressed_reads=24/private_reads=0. Only handoff documentation differs from the qualified source tree.
 
 **#339 source acceptance:** `bc82e7f2d4203a0bf1dd1c52570768dab00148e5` accepted in review 5905404011 for optional read-only viewport candidate capture/validation/inspection. Personally inspected hosted viewport run 43609125946: bundle rebuilt, 16 model tests and 127 offline browser checks passed, direct file navigation passed and no browser errors. Real directory handles were unavailable in that environment. Native contributor captures/screenshots/archive remain separately reported evidence, not independently inspected. Smoke passed; native 43609125966 and parent #338 remain pending. #338/#339 are not integrated. Held #75/#111/#123 unchanged.

@@ -360,6 +360,46 @@ engine/build/live_hierarchy_test --backend cpu --threads 1 --case capture \
   --capture-output /tmp/hcp-current-hierarchy --ticks 1024 --every 16
 ```
 
+The C3 run owner can opt into candidate capture with `--intent-work-limit N`.
+Omitting it exports no `intent` payload; `N` is a strict unsigned decimal uint64
+(including zero). The request uses the run's own gravity at each completed
+capture boundary. An insufficient budget exports `budget_refused`, not absent
+intent. `--pace-ms M` (0–86400000, default 0) sets a minimum wall-clock gap
+between capture starts; it changes neither tick length nor the tick schedule.
+For a watchable finite CPU run, add `--intent-work-limit 18446744073709551615
+--pace-ms 1500 --every 1`. Stop the finite run by choosing an appropriate
+`--ticks`; this test runner does not add the legacy client's signal protocol.
+
+This configuration belongs to the existing bounded C3 fixture runner, not the
+legacy flat `viewport_letter_capture` producer. The runner still performs its
+independent candidate/refusal/absence regression probes even when exported intent
+is omitted. Export accounting describes the configured observation, not those
+test probes or total process work. No browser action requests native computation.
+
+### Native capture-to-watch integration check
+
+`tests/capture-watch.mjs` starts a supplied finite native command and watches its
+actual atomically replaced `latest.json` through the page's existing watch reader.
+Use a fresh output directory and the same path in both arguments:
+
+```sh
+cd tools/viewport
+node tests/capture-watch.mjs /tmp/hcp-watch ok \
+  ../../engine/build/live_hierarchy_test --case capture --threads 1 \
+  --capture-output /tmp/hcp-watch --ticks 4 --every 1 --pace-ms 1500 \
+  --intent-work-limit 18446744073709551615
+```
+
+Source `engine/build/engine-env.sh` before changing directory; install the pinned
+viewport dependencies and provide Playwright Chromium or `HCP_CHROMIUM` as for
+the browser tests below. Use expected mode `omitted` without the intent option,
+or `budget_refused` with limit `0`. Each run must observe tick zero, an intermediate
+tick and the final tick, preserve selection, show the expected inspector status,
+and exactly match the final native file. It retains native logs, browser evidence
+and a screenshot in the output directory. The read-only filesystem bridge replaces
+only the picker: it is not proof of native FileSystemDirectoryHandle support.
+Rendering uses SwiftShader; this check is not physical GPU qualification.
+
 The run owner configures/reserves/installs the hierarchy and advances it. The
 shared [native interface](native/snapshot.h) only binds supplied identity/slot
 metadata and reads completed state. `observe(Harness&, binding)` and the
