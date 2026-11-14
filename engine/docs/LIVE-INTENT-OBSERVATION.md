@@ -424,3 +424,63 @@ Source/config/compiler/binary pins, commands and complete outputs retained local
 raw evidence is not independently reviewed remotely. Final delta from tested pin
 is three Markdown files. Source-accepted #336 remains the parent pending hosted
 qualification; no duplicate parent/main CI or self-merge was requested.
+
+## Positive-duration geometric observations — 2026-11-14
+
+`intent_geometry_motion` continues #337 review 5904746631 using the same accepted
+unchanged/edited geometry fixtures. It first runs their zero-duration activity
+controls, then advances each through 32 ordinary ticks at dt=0.125 (four model
+time units). The duration change invalidates the first body phase as production
+already requires; later phases follow native activity. No observation selects
+work and no stability criterion is added. A nonzero accepted-coordinate witness
+ensures this is actual motion coverage rather than a stationary replay.
+
+Every tick checks candidate arithmetic from current extracted sources, the
+independent combined-force/integration/Q reference, exact retained displacement
+velocity, unchanged frame, completed tick advancement, copied-report rejection,
+and allocation-free query/tick boundaries. The per-body/per-axis trace includes
+before/after candidate status and coordinates, prior position/carried velocity,
+diagnostic field force, native force, host-reference pre-brake/pre-Q endpoints,
+native accepted position/displacement/velocity, evaluated-body and next-awake
+flags. Candidate coordinates require Supported status; inactive native force can
+be cached. Host-reference endpoints are not native intermediate readbacks.
+
+This extends numerical observation evidence and changes no production formula,
+activity predicate, resource inventory or viewport interface. The prior equal-force
+relationship describes the staged geometric endpoints, not a constraint imposed on
+subsequent evolving trajectories. Contacts and radial damping remain disabled in
+this geometric study; they have separate controls above. This is one dt and one
+precision profile, not an accuracy sweep or performance/stability qualification.
+
+### Viewport connection identified (not implemented here)
+
+The existing [CompletedState/HarnessBinding](../../tools/viewport/native/snapshot.h)
+and [native observer](../../tools/viewport/native/completed_state.cpp) already
+capture an exclusively owned completed boundary, validate record incarnations and
+prepared generation, retain actual backend/tick/frame, and account requested
+readback separately from owned copies. Follow-on integration should reuse that
+route with explicit optional candidate inspection and its gravity/work/status
+metadata, joining by validated physical record to existing occurrence identity.
+It must not label the test-only reference proposals as engine-owned observations.
+The strict [capture schema](../../tools/viewport/snapshot.schema.json), browser
+validation and display need a coordinated extension before candidate payloads
+are exposed. No new JSON shape or browser behavior is claimed by this test slice.
+
+Qualification: source `1ac2838974a6db41e4bf11a3bdfab698e226b72f`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL Ubuntu CPU/Clang 15 Release.
+Matching build and all ten focused CTests passed: four geometric-motion profiles,
+four original candidate tests and two packet probes. Each motion profile runs both
+zero-duration geometry controls followed by 32 positive-duration ticks per case;
+256 positive-duration ticks total across one/two workers and bulk/direct paths.
+All profiles exercised nonzero accepted-coordinate steps in both cases. No build/
+assertion failures or reported compiler warnings. This does not rerun or relabel
+the earlier broader trajectory/lifecycle matrix. No GPU, native Windows, database,
+browser, viewport rendering or performance qualification is claimed.
+
+Local archive `intent-geometric-motion-1ac28389.tar.gz`: manifest SHA256
+`50b4e4bf4a7cd42fb945a462947ae69923a635b2b8417b91883228d643dd08cd`;
+archive SHA256 `65b1bf5ad406ead1d1ee753542b856925e1e954aba0b6373815981efb5968bb8`.
+Source/config/compiler/binary pins, commands and full per-axis outputs retained
+locally; raw archive is not independently reviewed remotely. Final delta after
+tested source is three Markdown files. Source-accepted #337 remains the parent
+pending hosted qualification; no duplicate parent/main CI or self-merge requested.
