@@ -231,6 +231,94 @@ LiveIntentInspection intent_reference(Fixture &f, double gravity = .5) {
   }
   return v;
 }
+// Observe the unchanged production law. Candidate motion is not a convergence
+// gate; endpoint references use whole-body inertia and the existing brake/Q.
+void intent_trajectories(engine::Runtime &r, HostPath path) {
+  constexpr int ticks = 64;
+  const auto precision = std::cout.precision();
+  std::cout << std::setprecision(17);
+  for (int bits : {8, 24, 52}) for (double dt : {.125, .5}) {
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
+              {2, 2, 1}, {1, 2, 3}, {1, 3, 7}, bits, bits);
+    f.install();
+    f.h.inspect_prepared();
+    for (int i = 0; i < 3; ++i) {
+      const auto b = f.in.particle_rows[i].record;
+      f.h.particle64(kVelX, b) = i == 2 ? -.02 : .02;
+      f.h.particle64(kVelY, b) = i == 1 ? -.03 : .03;
+    }
+    no_new([&] {
+      PreparedFixtureAccess::upload_body_fixture64(f.h);
+      f.control->set(3);
+    });
+    Parameters64 p;
+    p.dt = dt; p.gravity = .1;
+    p.contact_stiffness = p.reach_strength = 0;
+    std::size_t moving_candidates = 0, moved_bodies = 0, unchanged_active = 0;
+    auto candidate = intent_reference(f, p.gravity);
+    for (int tick = 0; tick < ticks; ++tick) {
+      f.h.inspect_prepared();
+      const auto old = f.h.particles64();
+      const auto expected = physical_reference(f, p, tick == 0);
+      no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+      verify_physical(f, expected, old, p);
+      require(!intent_current(f, candidate, p.gravity), "tick retained stale candidate");
+      const auto next = intent_reference(f, p.gravity);
+      require(next.completed_ticks == candidate.completed_ticks + 1 &&
+                  next.frame_anchor == candidate.frame_anchor,
+              "trajectory tick/frame mismatch");
+      const auto P = candidate.capacity;
+      for (int i = 0; i < 3; ++i) {
+        const int b = f.in.particle_rows[i].record;
+        const bool active = f.reference_active[b];
+        Vector force{}, x{}, carried{}, origin{};
+        for (int k = 0; k < 3; ++k) {
+          force[k] = f.h.particle64(kForceX+k, b);
+          x[k] = old[(kPosX+k)*P+b];
+          carried[k] = old[(kVelX+k)*P+b];
+          origin[k] = f.h.demand().focal_origin[k];
+        }
+        const auto step = velocity_reference(force, x, carried, origin,
+            old[kMass*P+b], f.h.universal64(), p);
+        bool moved = false, intent_moved = false;
+        const bool comparable = candidate.values[b] == 1 && next.values[b] == 1;
+        for (int k = 0; k < 3; ++k) {
+          const auto accepted = f.h.particle64(kPosX+k, b);
+          const auto pre_brake = active ? x[k] +
+              (carried[k] + force[k]*dt/old[kMass*P+b])*dt : x[k];
+          const auto pre_q = active ? x[k] + step.value[k]*dt : x[k];
+          moved |= accepted != double(x[k]);
+          intent_moved |= comparable &&
+              next.values[(10+k)*P+b] != candidate.values[(10+k)*P+b];
+          std::cout << "intent_trace,bits=" << bits << ",dt=" << dt
+                    << ",tick=" << tick+1 << ",body=" << b << ",axis=" << k
+                    << ",active=" << active << ",status_before=" << candidate.values[b]
+                    << ",status_after=" << next.values[b] << ",comparable=" << comparable
+                    << ",x=" << double(x[k]) << ",carried=" << double(carried[k])
+                    << ",force=" << double(force[k]) << ",pre_brake_reference=" << double(pre_brake)
+                    << ",pre_q_reference=" << double(pre_q) << ",accepted=" << accepted
+                    << ",displacement=" << accepted-double(x[k])
+                    << ",retained=" << f.h.particle64(kVelX+k, b)
+                    << ",publication_delta=" << double(accepted-pre_q)
+                    << ",intent_before=" << candidate.values[(10+k)*P+b]
+                    << ",intent_after=" << next.values[(10+k)*P+b] << '\n';
+        }
+        moved_bodies += moved;
+        moving_candidates += intent_moved;
+        unchanged_active += active && !moved;
+      }
+      candidate = next;
+    }
+    // Coverage witnesses, not requirements to converge or to keep moving forever.
+    require(moved_bodies && moving_candidates, "moving-intent trajectory not exercised");
+    std::cout << "intent_trajectory_summary,bits=" << bits << ",dt=" << dt
+              << ",ticks=" << ticks << ",moving_candidates=" << moving_candidates
+              << ",moved_bodies=" << moved_bodies << ",unchanged_active=" << unchanged_active
+              << ",contacts=0,radial_damping=0 PASS\n";
+  }
+  std::cout.precision(precision);
+}
+
 void intent_observation(engine::Runtime &r, HostPath path) {
   Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
             {1, 1, 1}, {1, 1, 2}, {0, 2, 5}, 52, 52, false, true);

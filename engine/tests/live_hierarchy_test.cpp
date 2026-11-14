@@ -2995,6 +2995,8 @@ int main(int argc, char **argv) {
     }
     if (wants("intent_observation"))
       run("intent_observation", [&] { intent_observation(r, path); });
+    if (only == "intent_trajectories")
+      run("intent_trajectories", [&] { intent_trajectories(r, path); });
     if (wants("response_range"))
       run("response_range", [&] { response_range(r, path); });
     if (only == "response_reuse")
