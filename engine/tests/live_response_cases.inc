@@ -421,7 +421,7 @@ void intent_activity(engine::Runtime &r, HostPath path) {
     const auto retained_force = f.h.particle64(kForceX, body);
     if (changed) {
       // Test-only source edit, followed by the ordinary native publication phase.
-      // Each source mass grows 4x and its distance doubles: force is unchanged.
+      // Each published field packet mass grows 4x and its distance doubles.
       const double masses[]{1, 1.5, 2, 1.5, 2}, positions[]{0, 0, 4, 0, -8};
       for (int i = 1; i < 5; ++i) {
         const int slot = f.in.particle_rows[i].record;
@@ -467,6 +467,83 @@ void intent_activity(engine::Runtime &r, HostPath path) {
               << ",awake_after_publication=" << awake
               << ",following_body_visits=" << f.h.demand().particles_evaluated
               << ",stale_copy_rejected=1,dt=0,accepted_x=0 PASS\n";
+  }
+}
+
+void intent_geometry(engine::Runtime &r, HostPath path) {
+  for (bool changed : {false, true}) {
+    Fixture f(r, path, {{}, {}, {0, 1}},
+              {{1, 1, 0}, {1, 0, 1}, {0, 0, 0}},
+              {2, 1, 1}, {1, .5, .5}, {0, 2, 2});
+    f.h.inspect_prepared();
+    for (int i = 1; i < 3; ++i) {
+      const int b = f.in.particle_rows[i].record, sign = i == 1 ? 1 : -1;
+      f.h.particle64(kPosY, b) = sign*8;
+      f.h.particle64(kPosZ, b) = sign*16;
+    }
+    no_new([&] { PreparedFixtureAccess::upload_body_fixture64(f.h); });
+    f.install();
+    Parameters64 p; p.dt = 0; p.gravity = 1;
+    p.contact_stiffness = p.reach_strength = 0;
+    no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+    const int body = f.in.particle_rows[0].record;
+    require(!(f.h.prepared_storage().inspection_flags[body] & 2),
+            "geometric recipient did not consume initial work");
+    const auto before = intent_reference(f, 1);
+    const auto packets = f.h.inspect_live_hierarchy();
+    const auto P = before.capacity;
+    std::array<double, 3> force_before{};
+    for (int k = 0; k < 3; ++k) force_before[k] = f.h.particle64(kForceX+k, body);
+    if (changed) {
+      for (int i = 1; i < 3; ++i) {
+        const int b = f.in.particle_rows[i].record, sign = i == 1 ? 1 : -1;
+        f.h.particle64(kPosX, b) = 16;
+        f.h.particle64(kPosY, b) = sign*4;
+        f.h.particle64(kPosZ, b) = sign*32;
+      }
+      no_new([&] { PreparedFixtureAccess::upload_body_fixture64(f.h); });
+    }
+    no_new([&] { f.control->set(3); f.h.tick64(p); f.h.inspect_prepared(); });
+    require(f.h.demand().particles_evaluated == 0, "geometry field phase visited bodies");
+    const bool awake = (f.h.prepared_storage().inspection_flags[body] & 2) != 0;
+    require(awake == changed, "geometric publication wake control mismatch");
+    require(!intent_current(f, before, 1), "geometry tick retained stale report");
+    std::uint64_t body_visits = 0;
+    // Allow ordinary parent propagation; do not impose a same-tick global solve.
+    for (int tick = 0; tick < 3; ++tick) {
+      const auto old = f.h.particles64();
+      const auto expected = physical_reference(f, p, false);
+      no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+      verify_physical(f, expected, old, p);
+      body_visits += f.h.demand().particles_evaluated;
+    }
+    require((body_visits > 0) == changed, "geometry wake not consumed");
+    const auto after = intent_reference(f, 1);
+    const auto final_packets = f.h.inspect_live_hierarchy();
+    for (int node = 0; node < 3; ++node)
+      require(selected(packets, node)[3] == selected(final_packets, node)[3],
+              "geometric control changed packet mass");
+    for (int i = 0; i < 3; ++i)
+      require(f.h.particle64(kMass, f.in.particle_rows[i].record) == (i ? .5 : 1),
+              "geometric control changed body mass");
+    near(after.values[4*P+body], 1./729, "geometric analytical force mismatch");
+    require(after.values[4*P+body] == before.values[4*P+body],
+            "geometric X force not exactly preserved");
+    require((after.values[10*P+body] != before.values[10*P+body]) == changed,
+            "geometric intent change control mismatch");
+    for (int k = 0; k < 3; ++k) {
+      const auto force_after = f.h.particle64(kForceX+k, body);
+      near(force_after, k == 0 ? 1./729 : 0, "native geometric force mismatch");
+      require(f.h.particle64(kPosX+k, body) == 0 && f.h.particle64(kVelX+k, body) == 0,
+              "zero-duration geometry control moved recipient");
+      std::cout << "intent_geometry,changed=" << changed << ",axis=" << k
+                << ",mass_unchanged=1,intent_before=" << before.values[(10+k)*P+body]
+                << ",intent_after=" << after.values[(10+k)*P+body]
+                << ",native_force_before=" << force_before[k] << ",native_force_after=" << force_after
+                << ",native_force_exact=" << (force_before[k] == force_after)
+                << ",awake_after_publication=" << awake << ",following_body_visits=" << body_visits
+                << ",stale_copy_rejected=1,dt=0,accepted=0 PASS\n";
+    }
   }
 }
 
