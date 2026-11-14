@@ -231,6 +231,245 @@ LiveIntentInspection intent_reference(Fixture &f, double gravity = .5) {
   }
   return v;
 }
+// Observe the unchanged production law. Candidate motion is not a convergence
+// gate; endpoint references use whole-body inertia and the existing brake/Q.
+void intent_trajectories(engine::Runtime &r, HostPath path) {
+  constexpr int ticks = 64;
+  const auto precision = std::cout.precision();
+  std::cout << std::setprecision(17);
+  for (int bits : {8, 24, 52}) for (double dt : {.125, .5}) {
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
+              {2, 2, 1}, {1, 2, 3}, {1, 3, 7}, bits, bits);
+    f.install();
+    f.h.inspect_prepared();
+    for (int i = 0; i < 3; ++i) {
+      const auto b = f.in.particle_rows[i].record;
+      f.h.particle64(kVelX, b) = i == 2 ? -.02 : .02;
+      f.h.particle64(kVelY, b) = i == 1 ? -.03 : .03;
+    }
+    no_new([&] {
+      PreparedFixtureAccess::upload_body_fixture64(f.h);
+      f.control->set(3);
+    });
+    Parameters64 p;
+    p.dt = dt; p.gravity = .1;
+    p.contact_stiffness = p.reach_strength = 0;
+    std::size_t moving_candidates = 0, moved_bodies = 0, unchanged_active = 0;
+    auto candidate = intent_reference(f, p.gravity);
+    for (int tick = 0; tick < ticks; ++tick) {
+      f.h.inspect_prepared();
+      const auto old = f.h.particles64();
+      const auto expected = physical_reference(f, p, tick == 0);
+      no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+      verify_physical(f, expected, old, p);
+      require(!intent_current(f, candidate, p.gravity), "tick retained stale candidate");
+      const auto next = intent_reference(f, p.gravity);
+      require(next.completed_ticks == candidate.completed_ticks + 1 &&
+                  next.frame_anchor == candidate.frame_anchor,
+              "trajectory tick/frame mismatch");
+      const auto P = candidate.capacity;
+      for (int i = 0; i < 3; ++i) {
+        const int b = f.in.particle_rows[i].record;
+        const bool active = f.reference_active[b];
+        Vector force{}, x{}, carried{}, origin{};
+        for (int k = 0; k < 3; ++k) {
+          force[k] = f.h.particle64(kForceX+k, b);
+          x[k] = old[(kPosX+k)*P+b];
+          carried[k] = old[(kVelX+k)*P+b];
+          origin[k] = f.h.demand().focal_origin[k];
+        }
+        const auto step = velocity_reference(force, x, carried, origin,
+            old[kMass*P+b], f.h.universal64(), p);
+        bool moved = false, intent_moved = false;
+        const bool comparable = candidate.values[b] == 1 && next.values[b] == 1;
+        for (int k = 0; k < 3; ++k) {
+          const auto accepted = f.h.particle64(kPosX+k, b);
+          const auto pre_brake = active ? x[k] +
+              (carried[k] + force[k]*dt/old[kMass*P+b])*dt : x[k];
+          const auto pre_q = active ? x[k] + step.value[k]*dt : x[k];
+          moved |= accepted != double(x[k]);
+          intent_moved |= comparable &&
+              next.values[(10+k)*P+b] != candidate.values[(10+k)*P+b];
+          std::cout << "intent_trace,bits=" << bits << ",dt=" << dt
+                    << ",tick=" << tick+1 << ",body=" << b << ",axis=" << k
+                    << ",active=" << active << ",status_before=" << candidate.values[b]
+                    << ",status_after=" << next.values[b] << ",comparable=" << comparable
+                    << ",x=" << double(x[k]) << ",carried=" << double(carried[k])
+                    << ",force=" << double(force[k]) << ",pre_brake_reference=" << double(pre_brake)
+                    << ",pre_q_reference=" << double(pre_q) << ",accepted=" << accepted
+                    << ",displacement=" << accepted-double(x[k])
+                    << ",retained=" << f.h.particle64(kVelX+k, b)
+                    << ",publication_delta=" << double(accepted-pre_q)
+                    << ",intent_before=" << candidate.values[(10+k)*P+b]
+                    << ",intent_after=" << next.values[(10+k)*P+b] << '\n';
+        }
+        moved_bodies += moved;
+        moving_candidates += intent_moved;
+        unchanged_active += active && !moved;
+      }
+      candidate = next;
+    }
+    // Coverage witnesses, not requirements to converge or to keep moving forever.
+    require(moved_bodies && moving_candidates, "moving-intent trajectory not exercised");
+    std::cout << "intent_trajectory_summary,bits=" << bits << ",dt=" << dt
+              << ",ticks=" << ticks << ",moving_candidates=" << moving_candidates
+              << ",moved_bodies=" << moved_bodies << ",unchanged_active=" << unchanged_active
+              << ",contacts=0,radial_damping=0 PASS\n";
+  }
+  std::cout.precision(precision);
+}
+
+void intent_controls(engine::Runtime &r, HostPath path) {
+  struct Case { const char *name; double vx, vy, contact, damping; };
+  const Case cases[]{{"approach", .1, 0, 0, 0},
+                     {"crossing_proposal", 2, 0, 0, 0},
+                     {"tangential", 0, .2, 0, 0},
+                     {"contact_off", .1, 0, 0, 0},
+                     {"contact_on", .1, 0, .3, 0},
+                     {"damping_off", -.5, .1, 0, 0},
+                     {"damping_on", -.5, .1, 0, 8}};
+  std::array<double, 3> contact_force{}, damping_position{};
+  const auto precision = std::cout.precision();
+  std::cout << std::setprecision(17);
+  for (const auto &c : cases) {
+    // Identical sources, contacts, focus and geometry across parameter pairs.
+    Fixture f(r, path, {{}}, {{1, 1}}, {1, 1}, {1, 1}, {1, 3},
+              52, 52, false, true, true, false, 1024, {2, 2});
+    f.install();
+    f.h.inspect_prepared();
+    const int body = f.in.particle_rows[0].record;
+    f.h.particle64(kVelX, body) = c.vx;
+    f.h.particle64(kVelY, body) = c.vy;
+    no_new([&] {
+      PreparedFixtureAccess::upload_body_fixture64(f.h);
+      f.control->set(3);
+    });
+    Parameters64 p; p.gravity = .1; p.dt = 1;
+    p.contact_stiffness = c.contact; p.reach_strength = c.damping;
+    const auto candidate = intent_reference(f, p.gravity);
+    const auto P = candidate.capacity;
+    require(candidate.values[body] == 1, "control candidate unavailable");
+    near(candidate.values[10*P+body], 2, "control intent changed with independent forces");
+    near(candidate.values[4*P+body], .2, "control field force mismatch");
+    const auto old = f.h.particles64();
+    const auto expected = physical_reference(f, p, true);
+    no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+    verify_physical(f, expected, old, p);
+    require(!intent_current(f, candidate, p.gravity), "control accepted stale candidate");
+    const auto after = intent_reference(f, p.gravity);
+    Vector force{}, position{}, carried{}, origin{};
+    for (int k = 0; k < 3; ++k) {
+      force[k] = f.h.particle64(kForceX+k, body);
+      position[k] = old[(kPosX+k)*P+body];
+      carried[k] = old[(kVelX+k)*P+body];
+      origin[k] = f.h.demand().focal_origin[k];
+    }
+    const auto velocity = velocity_reference(force, position, carried, origin, 1,
+                                             f.h.universal64(), p);
+    const auto proposal_x = position[0] + carried[0] + force[0];
+    if (std::string(c.name) == "approach")
+      require(proposal_x > position[0] && proposal_x < 2, "approach control missed target interval");
+    if (std::string(c.name) == "crossing_proposal")
+      require(proposal_x > 2, "pre-brake proposal did not cross intent plane");
+    if (std::string(c.name) == "tangential") {
+      near(double(force[1]), 0, "tangential control gained field force");
+      require(f.h.particle64(kPosY, body) > 0, "tangential carried motion missing");
+    }
+    for (int k = 0; k < 3; ++k) {
+      const auto x = f.h.particle64(kPosX+k, body);
+      if (std::string(c.name) == "contact_off") contact_force[k] = double(force[k]);
+      if (std::string(c.name) == "contact_on")
+        near(double(force[k])-contact_force[k], k == 0 ? -.6 : 0,
+             "contact force was conflated with field intent");
+      if (std::string(c.name) == "damping_off") damping_position[k] = x;
+      if (std::string(c.name) == "damping_on") {
+        near(double(force[k]), k == 0 ? .2 : 0, "damping altered force generation");
+        if (k == 0) require(x > damping_position[k] && x < 1,
+                           "outward focal damping control not exercised");
+        if (k == 1) near(x, damping_position[k], "radial damping changed tangential component");
+      }
+      std::cout << "intent_control,name=" << c.name << ",body=" << body << ",axis=" << k
+                << ",intent_before=" << candidate.values[(10+k)*P+body]
+                << ",field_force=" << candidate.values[(4+k)*P+body]
+                << ",total_force=" << double(force[k]) << ",carried=" << double(carried[k])
+                << ",pre_brake_reference=" << double(position[k]+carried[k]+force[k])
+                << ",pre_q_reference=" << double(position[k]+velocity.value[k])
+                << ",accepted=" << x << ",retained=" << f.h.particle64(kVelX+k, body)
+                << ",status_after=" << after.values[body]
+                << ",intent_after=" << after.values[(10+k)*P+body] << '\n';
+    }
+  }
+  std::cout << "intent_controls,cases=7,independent_force_motion_checks=1 PASS\n";
+  std::cout.precision(precision);
+}
+
+void intent_activity(engine::Runtime &r, HostPath path) {
+  for (bool changed : {false, true}) {
+    Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 1, 0, 0}, {1, 0, 0, 1, 1}, {0, 0, 0, 0, 0}},
+              {2, 1, 1, 1, 1}, {1, .25, .25, .25, .25}, {0, 2, 2, -4, -4});
+    f.install();
+    Parameters64 p; p.dt = 0; p.gravity = 1;
+    p.contact_stiffness = p.reach_strength = 0;
+    no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+    const int body = f.in.particle_rows[0].record;
+    require(!(f.h.prepared_storage().inspection_flags[body] & 2),
+            "activity control recipient did not consume initial work");
+    const auto before = intent_reference(f, p.gravity);
+    const auto P = before.capacity;
+    near(before.values[4*P+body], .375, "initial activity force mismatch");
+    near(before.values[10*P+body], 162./499, "initial activity intent mismatch");
+    const auto retained_force = f.h.particle64(kForceX, body);
+    if (changed) {
+      // Test-only source edit, followed by the ordinary native publication phase.
+      // Each source mass grows 4x and its distance doubles: force is unchanged.
+      const double masses[]{1, 1.5, 2, 1.5, 2}, positions[]{0, 0, 4, 0, -8};
+      for (int i = 1; i < 5; ++i) {
+        const int slot = f.in.particle_rows[i].record;
+        f.h.particle64(kMass, slot) = masses[i];
+        f.h.particle64(kPosX, slot) = positions[i];
+      }
+      no_new([&] {
+        PreparedFixtureAccess::upload_body_fixture64(f.h);
+        LiveHierarchyAccess::mass_total(f.h, 8);
+      });
+    }
+    no_new([&] {
+      f.control->set(3); // select fields only; do not activate the recipient
+      f.h.tick64(p);
+      f.h.inspect_prepared();
+    });
+    require(f.h.demand().particles_evaluated == 0,
+            "publication control evaluated bodies before wake");
+    const bool awake = (f.h.prepared_storage().inspection_flags[body] & 2) != 0;
+    require(awake == changed, "current mass-publication wake behavior changed");
+    require(!intent_current(f, before, p.gravity), "completed tick retained stale observation");
+    const auto published = intent_reference(f, p.gravity);
+    require(published.values[4*P+body] == before.values[4*P+body] &&
+                f.h.particle64(kForceX, body) == retained_force,
+            "equal-force publication control changed force");
+    near(published.values[10*P+body], changed ? 324./499 : 162./499,
+         "published intent mismatch");
+    require(((f.h.prepared_storage().inspection_flags[body] & 2) != 0) == awake,
+            "candidate observation changed activity");
+    const auto old = f.h.particles64();
+    const auto expected = physical_reference(f, p, false);
+    no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+    verify_physical(f, expected, old, p);
+    require((f.h.demand().particles_evaluated > 0) == changed,
+            "native wake not consumed on following body phase");
+    require(f.h.particle64(kPosX, body) == 0 && f.h.particle64(kVelX, body) == 0,
+            "zero-duration activity control moved recipient");
+    std::cout << "intent_activity,changed_mass_publication=" << changed
+              << ",force_before=" << before.values[4*P+body]
+              << ",force_after=" << published.values[4*P+body]
+              << ",intent_before=" << before.values[10*P+body]
+              << ",intent_after=" << published.values[10*P+body]
+              << ",awake_after_publication=" << awake
+              << ",following_body_visits=" << f.h.demand().particles_evaluated
+              << ",stale_copy_rejected=1,dt=0,accepted_x=0 PASS\n";
+  }
+}
+
 void intent_observation(engine::Runtime &r, HostPath path) {
   Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
             {1, 1, 1}, {1, 1, 2}, {0, 2, 5}, 52, 52, false, true);

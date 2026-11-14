@@ -174,3 +174,190 @@ Source/config/compiler/binary pins, commands and full outputs retained locally;
 raw evidence is not independently reviewed remotely. Final publication after the
 tested pin changes Markdown only. Hosted qualification and review remain pending;
 no duplicate parent CI was requested and no self-merge was performed.
+
+## Many-tick dt/Q observations — 2026-11-14
+
+The test-only `intent_trajectories` case follows #333 review 5899774502 and
+integrated main `a504af8e9d639483b1002da5ed279fcb04a9e78d`. It runs 64 production
+ticks for each combination of dt=0.125/0.5 and body/field fraction bits=8/24/52.
+The three-body, two-level fixture has unequal whole-body masses (1,2,3), partial
+participation (1/2 for the first two bodies), sparse physical records, and initial
+X/Y carried velocity. Contacts and radial damping are explicitly disabled to
+isolate this first bounded sweep; field publications evolve normally.
+
+At every sample the candidate is checked against the source-derived long-double
+reference described above, including all physical slots and unavailable/masked
+states. Every tick also uses the existing independent physical reference:
+participating mass generates force, whole-body mass supplies inertia, the current
+brake acts once, and accepted displacement determines retained velocity. Normal
+activity selection continues after initial invalidation; the fixture does not
+force all bodies awake on every tick. Candidate copies must become stale after
+each tick. Inspection and tick allocation checks remain in place.
+
+`intent_trace` records each body's three axes before/after every tick, including
+candidate status, carried velocity, evaluated force, pre-brake proposed endpoint,
+post-brake/pre-Q endpoint, accepted position/displacement, retained velocity and
+publication delta. Proposed endpoints are **host reference calculations**, not
+native intermediate readbacks. Inactive rows report unchanged proposed endpoints;
+their force field may be cached. Candidate coordinates are meaningful only when
+the corresponding status is Supported; `comparable` marks supported pairs. Frame
+anchors must remain unchanged. The trace allows intent drift and separation to be
+computed independently of particle motion. Summary counters count body-tick events,
+not unique bodies, and zero displacement alone is not labelled convergence or sleep.
+
+Each dt uses the same number of ticks (physical durations 8 and 32), not a matched
+time integration-error experiment. There is no trajectory equality assertion
+between precisions, worker counts or paths, nor a fixed-intent convergence gate.
+At least one moving particle and moving supported candidate witness is required
+per configuration to prevent a vacuous stationary fixture. Existing production
+force/braking/activity code and all resource inventories remain unchanged.
+
+Remaining #324 work includes explicit crossing/approach controls, contact and
+focal-damping comparisons, equal-force/different-intent activity invalidation,
+longer moving-intent studies and a reviewed decision before any brake change.
+This sweep does not qualify GPU behavior, linguistic settling, orbital stability,
+performance, or full B/combined admission. Storage accounting remains separate.
+
+Executed source `0bf93258f0c2e8dee9580a1ae3215248a43f57e7`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, LLVM/Clang 15 Release, WSL Ubuntu CPU.
+The matching fork and engine rebuilt without reported compiler warnings. All ten
+focused CTests passed: four trajectory profiles (one/two workers, bulk/direct),
+four original live-candidate tests and two packet probes. Each trajectory profile
+executed six configurations/384 ticks; all four profiles total 1,536 ticks.
+No build/assertion failures. Prior lifecycle/whole-repository tests were not rerun
+or relabelled. Native Windows, GPU, database, browser and performance were not tested.
+
+All four profiles produced these summary counts (192 body-ticks per row):
+
+| Fraction bits | dt | Moving supported candidates | Moved bodies | Active with no accepted movement |
+|---|---|---|---|---|
+| 8 | 0.125 | 192 | 192 | 0 |
+| 8 | 0.5 | 24 | 24 | 3 |
+| 24 | 0.125 | 192 | 192 | 0 |
+| 24 | 0.5 | 93 | 91 | 5 |
+| 52 | 0.125 | 192 | 192 | 0 |
+| 52 | 0.5 | 93 | 91 | 5 |
+
+These observed counters are not cross-profile trajectory equality checks or
+stability classifications. In particular, candidate motion and accepted particle
+motion need not have equal counts. An unchanged active endpoint alone cannot
+identify whether braking, quantization or cancellation caused it; inspect the
+separate proposal/publication trace. Continued motion is legitimate.
+
+Local archive `intent-trajectories-0bf93258.tar.gz`: manifest SHA256
+`f112e735c9eed7b554158a97572fcb18ebc1b0248af40fdce398757afc83fe33`;
+archive SHA256 `34e308b3520a63ff04f5e044ecd3e30f6f406a041760e3e7b423f138ecc5eeae`.
+Source/config/compiler/binary pins, commands, complete CTest output and per-axis
+traces are retained locally. Raw local evidence has not been independently reviewed
+remotely. Final publication after the tested pin changes three Markdown files only;
+hosted qualification and review remain pending.
+
+## Independent motion controls — 2026-11-14
+
+The test-only `intent_controls` case follows #334 review 5904501254. Seven
+one-tick controls separate approach, a crossing **pre-brake proposal**, tangential
+carried motion, contact off/on and focal damping off/on. All use identical
+one-field/two-body source geometry and a Supported initial intent at x=2.
+Changing contact stiffness or damping must not change the initial field-only
+candidate or its force. The paired controls keep contacts/focus installed in both
+runs, varying only the corresponding parameter. No production mechanics change.
+
+Each case independently checks the native candidate against extracted sources,
+then the complete tick against the existing physical reference. The contact pair
+requires the analytically expected -0.6 X force increment; the focal pair requires
+unchanged force, reduced outward X displacement and unchanged tangential Y
+motion. The approach proposal lies between the recipient and intent plane; the
+crossing proposal passes that plane before braking. Neither assertion requires
+the accepted endpoint to cross. The tangential control requires retained sideways
+movement without sideways field force. No stability interpretation is a test gate.
+
+The per-axis output identifies candidate, field force, combined force, carried
+velocity, host-reference pre-brake/pre-Q proposals and native accepted position
+and retained velocity separately. Fresh post-tick candidate status accompanies
+its coordinates; old copied reports must be stale. References are not native
+intermediate readbacks. These test traces are groundwork for viewport-usable
+observations, not a new viewport API or UI. No-allocation query/tick checks remain.
+
+This bounded slice does not complete equal-force/different-intent **activity**
+invalidation coverage; the existing packet arithmetic controls do not substitute
+for it. That remains next under #324, followed by further integrated observations
+as needed. No new brake, sleep criterion or conceptual interpretation is selected.
+
+Qualification: source `7cf12be4a415728763e4d7335ee8ea78d7a3ee51`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL Ubuntu CPU, Clang/LLVM 15 Release.
+Matching fork/engine build and all ten focused CTests passed: four controls
+(one/two workers, bulk/direct), four original candidate and two packet tests.
+The four control profiles each execute all seven cases. No build/assertion failures
+or reported compiler warnings. The prior many-tick/lifecycle suites were not rerun.
+No GPU, native Windows, database, browser or performance qualification is claimed.
+
+Local archive `intent-controls-7cf12be4.tar.gz`: manifest SHA256
+`e3b2e88b81a9e433829cf5221bca5b9a83b437a4faea5d350e3c274f1a1adf51`;
+archive SHA256 `d9b559d73cd47ee07726e6d145dfd297a6df21f18d3618d81e9c582b72d2554d`.
+Source/config/compiler/binary pins, commands and full outputs are retained locally;
+raw archive is not independently reviewed remotely. Final delta after the tested
+source is three Markdown files. #334 remains the source-accepted parent pending
+hosted qualification; no duplicate main/parent CI or self-merge was requested.
+
+## Equal-force intent publication and activity — 2026-11-14
+
+The test-only `intent_activity` case follows #335 review 5904523468. It exercises
+two live leaf fields under one shared root, sharing one recipient, with unchanged and changed-source
+controls. Initial leaf packets have (X,mass)=(1,1),(-2,1); changed packets are
+(2,4),(-4,4). The root changes from (-0.5,2) to (-1,8). Each response force is unchanged, so the recipient's combined X force
+remains exactly 0.375 while the coefficient-weighted intent moves from 162/499 to 324/499. The recipient participates by one half in each leaf; both inherited responses are retained in the coefficient sum even though their forces cancel.
+All inputs use exact binary geometry/mass arithmetic. Five real fixture bodies
+supply those packets through ordinary native field publication, not supplied
+candidate packets or a host replacement for publication.
+
+After an initial zero-duration tick consumes body work, the test modifies source
+body masses/positions through test-only access and selects only fields. The next
+ordinary tick must evaluate zero bodies, publish the fields, and leave the shared
+recipient awake only for the changed case. The current mass-publication
+invalidation path is the expected cause: equal combined force does not suppress
+that path. **This is not proof of a candidate-aware wake predicate**, nor a test
+of geometric equal-force changes with unchanged source mass. No production
+predicate, invalidator, brake or sleep law changes.
+
+Observations match the independent source-derived reference. The unchanged case
+retains candidate values but its old copied observation still becomes stale when
+the completed tick changes; freshness is distinct from both value change and wake.
+The changed case preserves the retained native force accumulator and exact
+candidate force while changing intent. Inspection must not change the wake flag.
+The following ordinary body phase consumes the native wake and is checked against
+the existing physical reference, including retained motion. With dt=0, recipient
+position and velocity remain zero; this is activity evidence, not a trajectory
+or stability study. No-allocation query/tick checks are retained.
+
+Traces separately report source change, old/new force and intent, post-publication
+wake, following body visits, stale-copy rejection and accepted position. This
+establishes current behavior for viewport-oriented observation without treating
+conceptual interpretation as an acceptance gate. The direct source mutations are
+fixture setup, not an operational edit/refresh API qualification. Further geometric
+controls and the eventual viewport observation interface remain separate work.
+
+Qualification at `a2706e3a7f560234e2f5120e53c739fb78949d02`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL Ubuntu CPU/Clang 15 Release:
+matching build and all ten focused CTests passed (four activity profiles,
+four original candidate profiles, two packet probes). One/two workers and
+bulk/direct paths were exercised. Every activity profile reported unchanged:
+force 0.375, intent 162/499, no wake or following body visits; changed: force
+0.375, intent 324/499, recipient awake and five following body visits. Both reject
+the old observation and preserve the dt=0 recipient position/velocity. These
+are current-behavior observations, not an intent-aware activity policy.
+
+The initial source `e73cb04fb973dde060ab7a772b32f1d62d3119fc` built but failed
+all four new activity tests at installation: the fixture incorrectly supplied
+two roots. The correction adds the required shared root and includes inherited
+responses in the independent expectation. The other six checks passed in that
+initial run; it is not relabelled successful. Initial build/test logs are retained
+inside the final archive. Final build has no reported compiler warnings.
+
+Local archive `intent-activity-a2706e3a.tar.gz`: manifest SHA256
+`1cef70d9d16eaa685f506aba941480c37079dbd77aad1c5254671b38ee739d02`;
+archive SHA256 `c569a9b2a2b211b634e04626a91c07ccbc4e1797579eeb60662ba71263f96e05`.
+Source/config/compiler/binary pins, commands, full outputs and initial failure
+are retained locally, not independently reviewed remotely. Final delta after
+the tested pin is three Markdown files. Earlier trajectory/control/lifecycle
+suites were not rerun; GPU/native Windows/database/browser/performance were not
+tested. #335 remains the source-accepted parent pending hosted qualification.
