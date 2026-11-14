@@ -154,7 +154,8 @@ export function boundsFor(particles) {
 export function classifyUpdate(previous, next) {
   const a = previous?.capture, b = next.capture;
   if (!a || a.session !== b.session || a.study !== b.study) return 'replace';
-  return a.generation === b.generation && a.tick === b.tick ? 'same' : 'update';
+  return a.generation === b.generation && a.tick === b.tick &&
+    JSON.stringify(previous.intent ?? null) === JSON.stringify(next.intent ?? null) ? 'same' : 'update';
 }
 export const minPollMs = 100, defaultPollMs = 1000;
 export function pollInterval(value, fallback = defaultPollMs) {

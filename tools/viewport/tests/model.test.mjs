@@ -172,6 +172,10 @@ test('candidate observation separates status, refusal, freshness and occurrence 
     rows: f.particles.map(p => ({slot: p.slot, status: 1, relative: [1,0,0], position: [1+2**-40,0,0]}))};
   const parsed = parseSnapshot(JSON.stringify(f));
   assert.equal(parsed.intent.rows[0].position[0], 1+2**-40);
+  assert.equal(classifyUpdate(parsed, structuredClone(parsed)), 'same');
+  const changed = structuredClone(parsed); changed.intent.gravity = 2;
+  assert.equal(classifyUpdate(parsed, changed), 'update');
+  delete changed.intent; assert.equal(classifyUpdate(parsed, changed), 'update');
   assert.equal(intentDetails(parsed, parsed.particles[0])['Field intent'], 'Supported');
   const bad = edit => {const v = structuredClone(f); edit(v); assert.throws(() => validateSnapshot(v));};
   bad(v => v.intent.tick = '1'); bad(v => v.intent.generation = '8'); bad(v => v.intent.frame[0] = 1);
