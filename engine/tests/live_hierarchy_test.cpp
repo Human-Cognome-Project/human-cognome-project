@@ -3003,6 +3003,8 @@ int main(int argc, char **argv) {
       run("intent_activity", [&] { intent_activity(r, path); });
     if (only == "intent_geometry")
       run("intent_geometry", [&] { intent_geometry(r, path); });
+    if (only == "intent_geometry_motion")
+      run("intent_geometry_motion", [&] { intent_geometry(r, path, true); });
     if (wants("response_range"))
       run("response_range", [&] { response_range(r, path); });
     if (only == "response_reuse")
