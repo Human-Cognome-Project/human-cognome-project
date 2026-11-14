@@ -215,6 +215,7 @@ capture is the fixed 8-tick CPU run and file names above.
 | `--dt X` | Tick length, finite and > 0 (default 0.1). It is the engine parameter (a 32-bit float). The configured value is recorded in `native-evidence.json` as `dt`; the snapshot's existing `source.parameters.dt` carries the engine float. |
 | `--cpu-threads N` | CPU worker threads, N >= 1 (default 1). Applies to the `cpu` backend. |
 | `--every K` | Also capture every K completed ticks, K >= 1. Absent: tick 0 and the final tick only. |
+| `--intent-work-limit N` | Optional uint64 diagnostic work budget. The retained legacy flat study explicitly reports `unavailable`, including at zero; omission exports no intent payload. |
 | `--pace-ms M` | Minimum wall-clock milliseconds between successive captures, M >= 0 (default 0). The client sleeps before a capture if needed so a small study is watchable. The simulation is unchanged: same ticks and `dt`. |
 
 `--ticks` stays finite but may be large. Tick 0 is written as
@@ -463,3 +464,15 @@ invented. No request is labelled "Not requested"; failed optional observation is
 labelled separately. Watch updates also notice optional payload changes at the same
 capture tick (subject to the existing filesystem stamp detection limits). Reading
 captures remains offline/read-only; no browser action invokes engine work.
+
+### Retained-study availability
+
+Explicit intent requests now reach the retained ActiveSession producer's
+owner-checked observer. Its current legacy flat execution has no installed C3
+hierarchy, so requested observations are `unavailable`, with empty rows and zero
+diagnostic work/readback. Prepared generation is null; the checked capture still
+carries its session/study/generation UUID, completed tick and frame. The browser
+shows “Observation unavailable”, distinct from omitted requests and C3 budget
+refusal. The future retained-to-C3 execution bridge must supply real prepared
+identities and validated occurrence bindings before candidates become available.
+See [qualification and remaining scope](../../engine/docs/LIVE-INTENT-OBSERVATION.md#retained-producer-diagnostic-requests--2026-11-14).

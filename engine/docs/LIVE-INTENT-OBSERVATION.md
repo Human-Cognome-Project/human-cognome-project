@@ -571,3 +571,51 @@ Next: review the explicit C3 configuration and native file-watch evidence. The
 bounded fixture is usable for live inspection; broader owning-run/retained study
 integration remains separate. Overlays are optional; keep candidate observations,
 reference proposals and accepted motion distinct.
+
+## Retained producer diagnostic requests — 2026-11-14
+
+The retained `viewport_letter_capture` producer now accepts optional
+`--intent-work-limit N`, with the same strict unsigned decimal range (including
+zero) and duplicate-option rejection. It passes its actual run gravity into the
+owner-checked ActiveSession completed-state observer. Omission remains omission.
+
+ActiveSession currently constructs legacy flat FixedStudy execution. It cannot
+supply the C3 diagnostic: every explicit request therefore returns `unavailable`,
+even with zero budget, without invoking or replaying a C3 query. No candidate
+rows, additional numeric copies or diagnostic readbacks are claimed. Prepared
+`intent.generation` is null only for unavailable flat execution; the capture's
+existing session/study/generation UUID still identifies the checked owner report.
+Tick and frame remain explicit and checked, and schema/browser semantics reject
+null-generation successful/refused results. A prepared C3 generation is never
+fabricated. Existing prepared Harness captures retain their prior semantics.
+
+The native test covers omitted/zero/max-budget requests, unchanged physical
+snapshot/copy/readback payload, wrong owner, invalid gravity, stale frame/tick,
+refreshed handles and false legacy refusal. CLI tests cover budget boundaries,
+malformed values and duplicate options. This is request/status integration, not
+completion of the retained-to-C3 execution bridge. Next implement that bridge
+under the existing owner, with validated occurrence/record bindings and prepared
+hierarchy lifetime; then replace explicit unavailability with actual diagnostic
+inspection. Do not compute a host approximation or treat flat results as C3.
+
+Qualification: native source `008eeda1` with Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL CPU/Clang15 Release. Built retained
+capture/options/snapshot targets; both focused CTests passed. All 17 browser-model
+tests passed and pinned bundle rebuilt. Browser source
+`38e3a93d70ed3c10488a5cd7f04930146a159f18` differs only by a browser assertion:
+128 offline Chrome157.0.8103.50 checks passed, direct file navigation, no browser
+errors/network requests. SwiftShader rendering, no physical GPU computation.
+
+An actual retained letter capture used the existing read-only core/linguistics
+services and a fresh retained local warm database. Four CPU ticks completed;
+three native snapshot files validated, the final 16-object capture opened in the
+browser, and its unavailable inspector screenshot was visually inspected. This
+is static real-capture validation plus the existing browser suite, not a new
+real-picker or retained live-watch qualification. No database was reset/dropped.
+No broader numerical, GPU, native Windows engine or performance qualification.
+
+Local archive: workspace `setup-evidence/retained-intent-008eeda1.zip`, SHA256
+`b78fb115970dec4e9331d29da508a91f6d4c53dd95d53de015771d7e5eb6d24f`, contains build,
+config/compiler/binary/source pins, native logs/captures and browser evidence.
+Local evidence is contributor-reported, not independently inspected. Final delta
+after the browser test source is documentation only. Hosted review/CI pending.
