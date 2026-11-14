@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <set>
 #include <stdexcept>
 
@@ -71,8 +72,11 @@ HarnessBinding bind(field::Harness &h, assembly::ActiveReport mapping) {
             "viewport: focal mapping mismatch");
   return out;
 }
-CompletedState observe(field::Harness &h, const HarnessBinding &binding) {
+CompletedState observe(field::Harness &h, const HarnessBinding &binding,
+                       std::optional<IntentRequest> request) {
   const auto start = Clock::now();
+  if (request) require(std::isfinite(request->gravity) && request->gravity >= 0,
+                       "viewport: invalid diagnostic gravity");
   require(h.ready() && h.prepared(), "viewport: execution not ready");
   const auto &s = h.prepared_storage();
   require(binding.generation == s.generation &&
@@ -154,6 +158,47 @@ CompletedState observe(field::Harness &h, const HarnessBinding &binding) {
                   same(node.field, s.field_headers[node.field.record]),
               "viewport: stale installed comparison identity");
   }
+  if (request) {
+    out.intent = {{"status", "unavailable"}, {"gravity", request->gravity},
+                  {"generation", std::to_string(s.generation)},
+                  {"tick", std::to_string(out.tick)}, {"frame", r.frame_anchor},
+                  {"work_limit", std::to_string(request->work_limit)},
+                  {"work_required", "0"}, {"work_used", "0"},
+                  {"readback_bytes", "0"}, {"rows", Json::array()}};
+    if (binding.installed) {
+      const auto &v = h.inspect_live_intent(request->gravity, request->work_limit);
+      out.intent["work_required"] = std::to_string(v.work_required);
+      out.intent["work_used"] = std::to_string(v.work_used);
+      out.intent["readback_bytes"] = std::to_string(v.readback_bytes);
+      if (v.status == field::CascadeStatus::CapacityExhausted) {
+        out.intent["status"] = "budget_refused";
+      } else {
+        require(v.status == field::CascadeStatus::Ok && v.generation == s.generation &&
+                    v.completed_ticks == out.tick && v.frame_anchor == r.frame_anchor,
+                "viewport: inconsistent candidate observation");
+        out.intent["status"] = "ok";
+        for (const auto &body : binding.bodies) {
+          const auto slot = std::size_t(body.record), P = v.capacity;
+          require(slot < P && v.values.size() == 13*P, "viewport: candidate shape mismatch");
+          const int status = int(v.values[slot]);
+          require(status >= 0 && status <= 3, "viewport: invalid candidate status");
+          Json relative = nullptr, position = nullptr;
+          if (status == 1) {
+            relative = Json::array(); position = Json::array();
+            for (int k = 0; k < 3; ++k) {
+              const double a = v.values[(7+k)*P+slot], b = v.values[(10+k)*P+slot];
+              require(std::isfinite(a) && std::isfinite(b), "viewport: nonfinite candidate");
+              relative.push_back(a); position.push_back(b);
+            }
+            out.numeric_copy_bytes += 6*sizeof(double);
+          }
+          out.intent["rows"].push_back({{"slot", body.record}, {"status", status},
+              {"relative", relative}, {"position", position}});
+        }
+        out.requested_readback_bytes += v.readback_bytes;
+      }
+    }
+  }
   require(s.generation == binding.generation && s.completed_ticks == out.tick,
           "viewport: concurrent native mutation during observation");
   out.observation_ms = elapsed(start);
@@ -211,6 +256,14 @@ Json snapshot(const CompletedState &state, const CaptureContext &context) {
            : Json()},
       {"body_records", bodies},
       {"comparisons", nodes}};
+  if (!state.intent.is_null()) {
+    require(state.prepared_generation &&
+                state.intent.at("generation") == std::to_string(*state.prepared_generation) &&
+                state.intent.at("tick") == std::to_string(state.tick) &&
+                state.intent.at("frame") == Json(state.report.frame_anchor),
+            "viewport: stale candidate capture metadata");
+    value["intent"] = state.intent;
+  }
   return value;
 }
 }  // namespace viewport

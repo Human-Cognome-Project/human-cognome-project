@@ -2675,7 +2675,25 @@ void capture_current(engine::Runtime &r,
   std::size_t copies = 0, captures = 0, readback = 0;
   const auto capture = [&]() {
     const auto before = state_hash(f);
-    auto state = viewport::observe(f.h, binding);
+    auto state = viewport::observe(f.h, binding, viewport::IntentRequest{p.gravity, UINT64_MAX});
+    const auto native_intent = intent_reference(f, p.gravity);
+    require(state.intent["status"] == "ok" && state.intent["rows"].size() == binding.bodies.size(),
+            "capture missing optional intent");
+    for (const auto &row : state.intent["rows"]) {
+      const auto slot = row["slot"].get<std::size_t>();
+      require(row["status"] == int(native_intent.values[slot]), "capture candidate status mismatch");
+      if (row["status"] == 1)
+        for (int k = 0; k < 3; ++k)
+          require(row["position"][k] == native_intent.values[(10+k)*native_intent.capacity+slot],
+                  "capture candidate fidelity mismatch");
+      else require(row["position"].is_null() && row["relative"].is_null(), "capture exposed masked candidate");
+    }
+    const auto refused = viewport::observe(f.h, binding, viewport::IntentRequest{p.gravity, 0});
+    require(refused.intent["status"] == "budget_refused" && refused.intent["rows"].empty() &&
+                refused.intent["readback_bytes"] == "0", "capture confused budget refusal with absence");
+    const auto absent = viewport::observe(f.h, binding, viewport::IntentRequest{0, UINT64_MAX});
+    for (const auto &row : absent.intent["rows"])
+      require(row["status"] == 0 && row["position"].is_null(), "capture zero-gravity absence mismatch");
     require(state_hash(f) == before,
             "capture changed same-execution state/pending inputs/Demand");
     context.tick = state.tick;
@@ -2707,6 +2725,12 @@ void capture_current(engine::Runtime &r,
       rejected = true;
     }
     require(rejected, "capture accepted stale tick metadata");
+    auto stale_intent = state;
+    stale_intent.intent["tick"] = std::to_string(state.tick+1);
+    rejected = false;
+    try { viewport::snapshot(stale_intent, context); }
+    catch (const std::invalid_argument &) { rejected = true; }
+    require(rejected, "capture accepted stale candidate metadata");
     auto bad = binding;
     ++bad.bodies.front().incarnation;
     rejected = false;

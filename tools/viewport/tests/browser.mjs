@@ -392,6 +392,22 @@ try {
   await plain.close();
   if (!inMemory) check(remembered === '200', 'remembered poll interval restored on a new page');
 
+  const intentFixture = structuredClone(native);
+  intentFixture.numerics = {profile: 'trial_f64', storage_bits: 64, body_fraction_bits: 52, field_fraction_bits: 52};
+  const rec = n => ({context: '41', incarnation: String(n+1), address: n, record: n});
+  intentFixture.execution = {backend: 'native_cpu', mode: 'installed_hierarchy', completed_tick: native.capture.tick,
+    prepared_generation: '7', body_records: native.particles.map(p => rec(p.slot)),
+    comparisons: [{comparison: '1', field: rec(0), level: 0, calculation_bits: 64, storage_bits: 64, fraction_bits: 52}]};
+  intentFixture.intent = {status: 'ok', gravity: 1, generation: '7', tick: native.capture.tick,
+    frame: native.frame.reference, work_limit: '100', work_required: '90', work_used: '90', readback_bytes: '104',
+    rows: native.particles.map(p => ({slot: p.slot, status: 1, relative: [1,0,0], position: [1+2**-40,0,0]}))};
+  await load(intentFixture); await waitStudy(native.capture.study, native.capture.generation, native.capture.tick);
+  await page.locator('#objects button').first().click();
+  check((await page.locator('#details').textContent()).includes(String(1+2**-40)), 'candidate f64 coordinates visible in inspector');
+  intentFixture.intent.status = 'budget_refused'; intentFixture.intent.rows = [];
+  intentFixture.intent.work_used = intentFixture.intent.readback_bytes = '0';
+  await load(intentFixture); await page.locator('#objects button').first().click();
+  check((await page.locator('#details').textContent()).includes('Observation budget refused'), 'refusal displayed separately from absent intent');
   check(errors.length === 0, 'no browser exceptions'); check(externalRequests.length === 0, 'no network requests');
   const evidence = {checks, browser: browser.version(), transport: inMemory ? 'in-memory exact page assets, offline browser context' : 'file://, offline browser context',
     direct_file_navigation: inMemory ? 'unexecuted here: managed Chromium blocks file:// navigation' : 'passed',

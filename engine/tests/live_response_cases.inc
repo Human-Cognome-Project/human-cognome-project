@@ -471,6 +471,8 @@ void intent_activity(engine::Runtime &r, HostPath path) {
 }
 
 void intent_geometry(engine::Runtime &r, HostPath path, bool motion = false) {
+  const auto prior_precision = std::cout.precision();
+  std::cout << std::setprecision(std::numeric_limits<double>::max_digits10);
   for (bool changed : {false, true}) {
     Fixture f(r, path, {{}, {}, {0, 1}},
               {{1, 1, 0}, {1, 0, 1}, {0, 0, 0}},
@@ -601,6 +603,7 @@ void intent_geometry(engine::Runtime &r, HostPath path, bool motion = false) {
                 << ",ticks=32,dt=0.125,nonzero_coordinate_steps=" << moved << " PASS\n";
     }
   }
+  std::cout.precision(prior_precision);
 }
 
 void intent_observation(engine::Runtime &r, HostPath path) {

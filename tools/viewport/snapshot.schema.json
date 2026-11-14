@@ -22,6 +22,27 @@
         {"properties": {"profile": {"const": "trial_f64"}, "storage_bits": {"const": 64}}}
       ]
     },
+    "intent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "gravity", "generation", "tick", "frame", "work_limit", "work_required", "work_used", "readback_bytes", "rows"],
+      "properties": {
+        "status": {"enum": ["ok", "budget_refused", "unavailable"]},
+        "gravity": {"type": "number", "minimum": 0},
+        "generation": {"$ref": "#/$defs/decimal"}, "tick": {"$ref": "#/$defs/decimal"},
+        "frame": {"$ref": "#/$defs/point"},
+        "work_limit": {"$ref": "#/$defs/decimal"}, "work_required": {"$ref": "#/$defs/decimal"},
+        "work_used": {"$ref": "#/$defs/decimal"}, "readback_bytes": {"$ref": "#/$defs/decimal"},
+        "rows": {"type": "array", "items": {
+          "type": "object", "additionalProperties": false,
+          "required": ["slot", "status", "relative", "position"],
+          "properties": {
+            "slot": {"type": "integer", "minimum": 0}, "status": {"type": "integer", "minimum": 0, "maximum": 3},
+            "relative": {"anyOf": [{"$ref": "#/$defs/point"}, {"type": "null"}]},
+            "position": {"anyOf": [{"$ref": "#/$defs/point"}, {"type": "null"}]}
+          }
+        }}
+      }
+    },
     "capture": {
       "type": "object", "additionalProperties": false,
       "required": ["session", "study", "generation", "tick", "phase", "label"],
