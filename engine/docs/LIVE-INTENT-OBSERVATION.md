@@ -361,3 +361,66 @@ are retained locally, not independently reviewed remotely. Final delta after
 the tested pin is three Markdown files. Earlier trajectory/control/lifecycle
 suites were not rerun; GPU/native Windows/database/browser/performance were not
 tested. #335 remains the source-accepted parent pending hosted qualification.
+
+## Unchanged-mass geometric activity — 2026-11-14
+
+`intent_geometry` follows #336 review 5904575854. Two leaves and a shared root
+receive real body positions through native publication. The shared recipient has
+mass 1 and half participation in each leaf; the other two bodies retain mass 0.5.
+Initial leaf centroids are (1,4,8) and (1,-4,-8), each with mass 1 and recipient
+distance 9. Edited centroids are (8,2,16) and (8,-2,-16), with the same masses and
+distance 18. The root moves from (1,0,0) to (8,0,0), retaining mass 2. The X offset
+grows eightfold while distance doubles, preserving the local combined X force
+1/729. Symmetric Y/Z forces and inherited forces cancel analytically. Local and
+inherited coefficient sums change, producing a different candidate intent.
+
+The test verifies all body and published packet masses unchanged, native candidate
+X force exactly preserved, and native force readback against the analytical value.
+It reports per-axis native force equality separately; analytical cancellation is
+not silently promoted to bitwise equality. Independent source-derived references
+include both local and inherited responses. No supplied candidate packets replace
+the native publication mechanism.
+
+After initial work consumption, test-only position edits select only fields. The
+first ordinary tick must perform zero body evaluations and wake the recipient only
+in the changed case. Three further ordinary ticks permit parent propagation and
+consume native work, checked against the physical reference. The unchanged control
+has no wake or following body visits. Both cases reject old copied observations
+after the completed tick. dt=0 preserves recipient position and retained velocity,
+keeping freshness, activity and accepted motion separate.
+
+This records current publication behavior. Intermediate publication sets can
+change individual or combined response forces even when the final force agrees;
+the wake is not evidence of a candidate-aware predicate, nor proof that the final
+force alone selected work. No production formula, activity rule, accounting or
+viewport API changes. Direct fixture edits do not qualify an operational edit API.
+The #336 inline comment now correctly names published packet masses rather than
+each edited body mass. Viewport observation integration and positive-duration
+geometric studies remain separate follow-up work, without an interpretation gate.
+
+Qualification: `2952fa5dace693b0ad0887fdaa9c5f9df726de3b`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL Ubuntu CPU, Clang/LLVM 15 Release.
+Matching build and all ten focused CTests passed: four geometric profiles
+(one/two workers, bulk/direct), four original candidate tests and two packet probes.
+No build/assertion failures or reported compiler warnings. Prior activity/control/
+trajectory/lifecycle suites were not rerun. No GPU/native Windows/database/browser
+or performance qualification is claimed.
+
+Observed changed-case X intent: 0.32920543250580747 to 2.1151741357348248. Native
+force readback was exactly unchanged in all axes, with X=0.0013717421124828531 and
+Y=Z=0. Recipient wake was set and three following body visits were reported. The
+unchanged control preserved intent, stayed asleep and reported zero body visits.
+Both rejected stale copies and retained zero recipient position/velocity. The
+independent strict candidate reduction has small cancellation residuals in changed
+Y/Z intent (about -8.36e-17/-6.69e-16), covered by its arithmetic reference tolerance;
+these are not silently equated with the production force readback. Exact native
+force equality is reported evidence; the test separately asserts exact diagnostic
+X force equality and checks native components against the analytical reference.
+
+Local archive `intent-geometry-2952fa5d.tar.gz`: manifest SHA256
+`efe38624dfec2ac895898246e7d7e72a2918e33be2a515c15f1c4d4b499cef9c`;
+archive SHA256 `8f81f10ee38dacda9da2f7c021dd18da9fe3910a5b11b11a1ef55bb6c4bdf77e`.
+Source/config/compiler/binary pins, commands and complete outputs retained locally;
+raw evidence is not independently reviewed remotely. Final delta from tested pin
+is three Markdown files. Source-accepted #336 remains the parent pending hosted
+qualification; no duplicate parent/main CI or self-merge was requested.

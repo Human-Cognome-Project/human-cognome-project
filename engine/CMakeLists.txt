@@ -221,6 +221,10 @@ foreach(threads 1 2)
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case intent_activity)
     set_tests_properties(live_intent_activity_${threads}_${path} PROPERTIES
         ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
+    add_test(NAME live_intent_geometry_${threads}_${path}
+        COMMAND live_hierarchy_test ${live_hierarchy_args} --case intent_geometry)
+    set_tests_properties(live_intent_geometry_${threads}_${path} PROPERTIES
+        ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
     add_test(NAME live_response_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case response_observation)
     set_tests_properties(live_response_${threads}_${path} PROPERTIES
