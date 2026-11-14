@@ -1,6 +1,13 @@
 # Current implementation and work
 
+**Maintainer integration/update — 2026-11-14:** #334–#336 are integrated from qualified `9ff2a2781413eff7582b6c40a71a697c67a565a5`. All three PR native runs passed all 12 jobs; their smoke checks passed. Personally inspected #336 run 43600623148: 161 regression passes (41/40/40/40), all trajectory/control/activity profiles, database addressed_reads=24/private_reads=0. Combined-main baseline `a504af8e9d639483b1002da5ed279fcb04a9e78d` also passed all 12 native jobs. Integration preserves qualified runtime/test files; only the two handoffs are reconciled.
+
+**#338 source acceptance:** `ff28feab8e81043a0fd1781583950cb68e91e45d` accepted in review 5905114842 for positive-duration geometric observations. Contributor reports ten focused CPU CTests/256 positive-duration ticks at `1ac2838974a6db41e4bf11a3bdfab698e226b72f`; final delta is three Markdown files and raw local archive remains independently uninspected. Smoke passed; native 43606442675 and parent #337 remain pending. #337/#338 are not integrated. Held #75/#111/#123 unchanged.
+
+Next: bounded viewport observation integration through existing CompletedState/HarnessBinding and native observer. Preserve validated occurrence mapping, frame/generation/tick consistency, explicit optional gravity/work/status metadata, and coordinated schema/browser validation/display. Candidate availability, observation failure, reference proposals and native accepted motion must remain distinct; observation stays read-only. For textual geometric traces, use max_digits10 and restore stream precision when preserving f64 distinctions matters. No production brake/sleep law or interpretation gate is added. These notes supersede earlier statuses below.
+
 **Contributor follow-up — 2026-11-14 (awaiting review):** positive-duration geometric observations extend #337 through 32 ticks per staged geometry, preserving distinct candidate/reference-proposal/accepted-motion/activity records. See [motion observations](../../engine/docs/LIVE-INTENT-OBSERVATION.md#positive-duration-geometric-observations--2026-11-14), including the existing completed-state route identified for subsequent viewport integration. Production behavior and viewport interfaces are unchanged.
+
 
 
 **Maintainer update — #337, 2026-11-14:** `7ea19bef319b3f438a29abea653cc36101c94bff` source-accepted in review 5904746631 for unchanged-mass geometric activity controls. Body/packet masses, diagnostic force equality, native force readback, changed intent, publication wake, copied-report freshness and dt=0 motion are kept separate. Ordinary parent propagation is retained; wake is not attributed to an intent-aware predicate. The #336 packet-mass comment is corrected. Contributor reports ten focused CPU CTests at `2952fa5dace693b0ad0887fdaa9c5f9df726de3b`; final delta is three Markdown files and raw local archive is not independently inspected. Smoke passed; native 43601732045 is queued. #334–#336 and combined-main native runs remain incomplete; #334–#337 are not integrated. No duplicate CI requested. Held #75/#111/#123 unchanged.
@@ -16,6 +23,8 @@ Next: viewport observation integration and bounded positive-duration geometric o
 Next: geometric equal-force/different-intent controls with unchanged source mass, retaining separate freshness/activity/accepted-motion evidence and viewport-usable observations. Interpretation remains outside acceptance gates. Clarify the fixture comment that fourfold mass growth describes published field packets, not every edited body. This supersedes older next-step/status notes below where they conflict.
 
 **Contributor follow-up — 2026-11-14 (awaiting review):** integrated equal-force/different-intent controls exercise current mass-publication wake behavior, an unchanged-input negative control, copied-observation freshness and following body-phase consumption. No production predicate changes. See [activity controls](../../engine/docs/LIVE-INTENT-OBSERVATION.md#equal-force-intent-publication-and-activity--2026-11-14); geometric equal-force changes with unchanged mass remain outside this slice.
+
+
 
 
 
