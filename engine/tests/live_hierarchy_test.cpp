@@ -16,6 +16,7 @@
 #ifdef HCP_HAS_VIEWPORT
 #include <filesystem>
 #include "snapshot.h"
+#include <thread>
 #include "capture_options.h"
 #endif
 #define HCP_ALLOCATION_LIFETIME
@@ -2599,7 +2600,9 @@ void capture_current(engine::Runtime &r,
                      HostPath path,
                      const std::string &output,
                      std::uint64_t ticks,
-                     std::uint64_t every) {
+                     std::uint64_t every,
+                     std::optional<std::uint64_t> intent_work,
+                     std::uint64_t pace_ms) {
   const auto data = letter_data(r);
   std::vector<std::vector<std::uint64_t>> count(3,
                                                 std::vector<std::uint64_t>(3));
@@ -2673,9 +2676,14 @@ void capture_current(engine::Runtime &r,
   } cleanup{directory, output.empty()};
   double observation_ms = 0, export_ms = 0, engine_ms = 0;
   std::size_t copies = 0, captures = 0, readback = 0;
+  auto previous_capture = std::chrono::steady_clock::now();
   const auto capture = [&]() {
+    if (captures && pace_ms)
+      std::this_thread::sleep_until(previous_capture + std::chrono::milliseconds(pace_ms));
+    previous_capture = std::chrono::steady_clock::now();
     const auto before = state_hash(f);
-    auto state = viewport::observe(f.h, binding, viewport::IntentRequest{p.gravity, UINT64_MAX});
+    const auto checked = viewport::observe(f.h, binding, viewport::IntentRequest{p.gravity, UINT64_MAX});
+    auto state = checked;
     const auto native_intent = intent_reference(f, p.gravity);
     require(state.intent["status"] == "ok" && state.intent["rows"].size() == binding.bodies.size(),
             "capture missing optional intent");
@@ -2698,6 +2706,11 @@ void capture_current(engine::Runtime &r,
       require(row["status"] == 0 && row["position"].is_null(), "capture zero-gravity absence mismatch");
     require(state_hash(f) == before,
             "capture changed same-execution state/pending inputs/Demand");
+    // Export only the owning run's explicit request; regression probes above are separate.
+    state = viewport::observe(f.h, binding, intent_work
+        ? std::optional<viewport::IntentRequest>{{p.gravity, *intent_work}} : std::nullopt);
+    require(intent_work ? !state.intent.is_null() : state.intent.is_null(),
+            "capture ignored optional configuration");
     context.tick = state.tick;
     auto value = viewport::snapshot(state, context);
     require(viewport::Json::parse(value.dump()) == value,
@@ -2727,7 +2740,7 @@ void capture_current(engine::Runtime &r,
       rejected = true;
     }
     require(rejected, "capture accepted stale tick metadata");
-    auto stale_intent = state;
+    auto stale_intent = checked;
     stale_intent.intent["tick"] = std::to_string(state.tick+1);
     rejected = false;
     try { viewport::snapshot(stale_intent, context); }
@@ -2785,6 +2798,8 @@ void capture_current(engine::Runtime &r,
                           {"backend", r.on_cuda() ? "native_cuda" : "native_cpu"},
                           {"ticks", ticks},
                           {"captures", captures},
+                          {"intent_work_limit", intent_work ? viewport::Json(std::to_string(*intent_work)) : viewport::Json()},
+                          {"pace_ms", pace_ms},
                           {"capture_state_equivalent", true},
                           {"source_mapping_checked", true},
                           {"f64_round_trip", true},
@@ -2820,7 +2835,8 @@ int main(int argc, char **argv) {
     bool quick = false, no_unroll = false, dump_code = false;
 #ifdef HCP_HAS_VIEWPORT
     std::string capture_output;
-    std::uint64_t capture_ticks = 64, capture_every = 8;
+    std::uint64_t capture_ticks = 64, capture_every = 8, capture_pace_ms = 0;
+    std::optional<std::uint64_t> capture_intent_work;
 #endif
     std::string only, audit_ir_dir;
     for (int i = 1; i < argc; ++i) {
@@ -2845,6 +2861,11 @@ int main(int argc, char **argv) {
         capture_ticks = viewport::parse_count("--ticks", argv[++i], 1, 1000000);
       else if (std::string(argv[i]) == "--every" && i + 1 < argc)
         capture_every = viewport::parse_count("--every", argv[++i], 1, 1000000);
+      else if (std::string(argv[i]) == "--intent-work-limit" && i + 1 < argc) {
+        require(!capture_intent_work, "repeated --intent-work-limit");
+        capture_intent_work = viewport::parse_count("--intent-work-limit", argv[++i], 0, UINT64_MAX);
+      } else if (std::string(argv[i]) == "--pace-ms" && i + 1 < argc)
+        capture_pace_ms = viewport::parse_count("--pace-ms", argv[++i], 0, 86400000);
 #endif
       else if (std::string(argv[i]) == "--backend" && i + 1 < argc) {
         const std::string backend = argv[++i];
@@ -3094,7 +3115,7 @@ int main(int argc, char **argv) {
 #ifdef HCP_HAS_VIEWPORT
     if (!quick && wants("capture"))
       run("capture", [&] {
-        capture_current(r, path, capture_output, capture_ticks, capture_every);
+        capture_current(r, path, capture_output, capture_ticks, capture_every, capture_intent_work, capture_pace_ms);
       });
 #endif
     std::cout
