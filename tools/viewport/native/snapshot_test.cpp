@@ -47,6 +47,30 @@ int main() {
     auto ctx = viewport::context(logical, h, 0, "Capture \"é\"\n\\");
     auto report = session.report(h, logical.owner());
     auto first = viewport::capture(session, logical.owner(), ctx);
+    const auto plain = viewport::observe(session, logical.owner(), h);
+    check(plain.intent.is_null(), "legacy intent defaults omitted");
+    for (const auto budget : {std::uint64_t(0), UINT64_MAX}) {
+      const auto diagnostic = viewport::observe(session, logical.owner(), h, viewport::IntentRequest{parameters.gravity, budget});
+      auto value = viewport::snapshot(diagnostic, ctx);
+      check(value["intent"]["status"] == "unavailable" && value["intent"]["generation"].is_null() &&
+                value["intent"]["rows"].empty() && value["intent"]["work_limit"] == std::to_string(budget),
+            "legacy request unavailable even with zero budget");
+      check(diagnostic.numeric_copy_bytes == plain.numeric_copy_bytes &&
+                diagnostic.requested_readback_bytes == plain.requested_readback_bytes,
+            "unavailable request adds no numerical copy/readback");
+      value.erase("intent");
+      check(value == viewport::snapshot(plain, ctx), "request leaves native capture unchanged");
+      auto stale = diagnostic;
+      stale.intent["tick"] = "1";
+      rejects([&] { viewport::snapshot(stale, ctx); }, "stale unavailable tick");
+      stale = diagnostic; stale.intent["frame"][0] = 0;
+      rejects([&] { viewport::snapshot(stale, ctx); }, "stale unavailable frame");
+      stale = diagnostic; stale.intent["status"] = "budget_refused";
+      rejects([&] { viewport::snapshot(stale, ctx); }, "legacy cannot claim budget refusal");
+    }
+    rejects([&] { viewport::observe(session, warm::new_uuid(), h, viewport::IntentRequest{1, 0}); }, "request requires owner");
+    rejects([&] { viewport::observe(session, logical.owner(), h, viewport::IntentRequest{-1, 0}); }, "request rejects negative gravity");
+    rejects([&] { viewport::observe(session, logical.owner(), h, viewport::IntentRequest{std::numeric_limits<double>::infinity(), 0}); }, "request rejects infinite gravity");
     check(first["capture"]["phase"] == "published_seeded", "tick-zero phase");
     check(first["frame"]["camera_target"][0] == 4, "tick-zero centroid from current groups");
     check(first["frame"]["reference"][0] == offset, "double reference kept separate");
@@ -138,6 +162,7 @@ int main() {
     const auto revised = logical.revise({});
     const auto refreshed = session.refresh(h, revised, parameters);
     rejects([&] { viewport::capture(session, logical.owner(), viewport::context(logical, h, 1, "old")); }, "refreshed native generation rejects old capture");
+    rejects([&] { viewport::observe(session, logical.owner(), h, viewport::IntentRequest{1, 0}); }, "request rejects refreshed generation");
     const auto fresh = viewport::capture(session, logical.owner(), viewport::context(revised, refreshed, 0, "new"));
     check(fresh["capture"]["tick"] == "0" && fresh["frame"]["camera_target"][0] == 4, "refreshed generation gets seeded focus and new capture counter");
     // Atomic latest-file writer: exact final content, no temporary left, never a partial read.

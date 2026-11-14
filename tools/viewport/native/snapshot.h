@@ -50,7 +50,8 @@ struct IntentRequest { double gravity; std::uint64_t work_limit; };
 CompletedState observe(field::Harness &execution, const HarnessBinding &binding,
                        std::optional<IntentRequest> intent = std::nullopt);
 CompletedState observe(assembly::ActiveSession &session, const warm::Uuid &owner,
-                       const assembly::ExecutionHandle &handle);
+                       const assembly::ExecutionHandle &handle,
+                       std::optional<IntentRequest> intent = std::nullopt);
 Json snapshot(const CompletedState &state, const CaptureContext &capture);
 CaptureContext context(const assembly::ActiveAssembly &assembly,
                        const assembly::ExecutionHandle &handle,

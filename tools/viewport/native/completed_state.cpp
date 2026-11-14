@@ -206,7 +206,10 @@ CompletedState observe(field::Harness &h, const HarnessBinding &binding,
 }
 CompletedState observe(assembly::ActiveSession &session,
                        const warm::Uuid &owner,
-                       const assembly::ExecutionHandle &handle) {
+                       const assembly::ExecutionHandle &handle,
+                       std::optional<IntentRequest> request) {
+  if (request) require(std::isfinite(request->gravity) && request->gravity >= 0,
+                       "viewport: invalid diagnostic gravity");
   const auto start = Clock::now();
   const auto before = session.timings(handle).download_bytes;
   CompletedState out;
@@ -221,6 +224,18 @@ CompletedState observe(assembly::ActiveSession &session,
           sizeof(float) +
       (r.particles64.size() + r.groups64.size() + r.determined64.size()) *
           sizeof(double);
+  if (request) {
+    // ActiveSession currently owns legacy FixedStudy execution, not a prepared
+    // C3 hierarchy. Do not invent prepared identities or replay its geometry.
+    out.intent = {{"status", "unavailable"}, {"gravity", request->gravity},
+                  {"generation", nullptr}, {"tick", std::to_string(out.tick)},
+                  {"frame", r.frame_anchor}, {"work_limit", std::to_string(request->work_limit)},
+                  {"work_required", "0"}, {"work_used", "0"},
+                  {"readback_bytes", "0"}, {"rows", Json::array()}};
+  }
+  session.accept(out.report, owner);
+  require(session.completed_ticks(handle) == out.tick,
+          "viewport: concurrent native mutation during observation");
   out.observation_ms = elapsed(start);
   return out;
 }
@@ -257,8 +272,13 @@ Json snapshot(const CompletedState &state, const CaptureContext &context) {
       {"body_records", bodies},
       {"comparisons", nodes}};
   if (!state.intent.is_null()) {
-    require(state.prepared_generation &&
-                state.intent.at("generation") == std::to_string(*state.prepared_generation) &&
+    if (!state.prepared_generation)
+      require(state.comparisons.empty() && state.intent.at("status") == "unavailable" &&
+                  state.intent.at("rows").empty() && state.intent.at("work_required") == "0" &&
+                  state.intent.at("work_used") == "0" && state.intent.at("readback_bytes") == "0",
+              "viewport: legacy execution cannot supply hierarchy intent");
+    require(state.intent.at("generation") == (state.prepared_generation
+                    ? Json(std::to_string(*state.prepared_generation)) : Json()) &&
                 state.intent.at("tick") == std::to_string(state.tick) &&
                 state.intent.at("frame") == Json(state.report.frame_anchor),
             "viewport: stale candidate capture metadata");
