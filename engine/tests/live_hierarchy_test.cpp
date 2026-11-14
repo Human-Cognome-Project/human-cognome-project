@@ -2999,6 +2999,8 @@ int main(int argc, char **argv) {
       run("intent_trajectories", [&] { intent_trajectories(r, path); });
     if (only == "intent_controls")
       run("intent_controls", [&] { intent_controls(r, path); });
+    if (only == "intent_activity")
+      run("intent_activity", [&] { intent_activity(r, path); });
     if (wants("response_range"))
       run("response_range", [&] { response_range(r, path); });
     if (only == "response_reuse")
