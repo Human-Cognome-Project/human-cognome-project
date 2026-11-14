@@ -319,6 +319,90 @@ void intent_trajectories(engine::Runtime &r, HostPath path) {
   std::cout.precision(precision);
 }
 
+void intent_controls(engine::Runtime &r, HostPath path) {
+  struct Case { const char *name; double vx, vy, contact, damping; };
+  const Case cases[]{{"approach", .1, 0, 0, 0},
+                     {"crossing_proposal", 2, 0, 0, 0},
+                     {"tangential", 0, .2, 0, 0},
+                     {"contact_off", .1, 0, 0, 0},
+                     {"contact_on", .1, 0, .3, 0},
+                     {"damping_off", -.5, .1, 0, 0},
+                     {"damping_on", -.5, .1, 0, 8}};
+  std::array<double, 3> contact_force{}, damping_position{};
+  const auto precision = std::cout.precision();
+  std::cout << std::setprecision(17);
+  for (const auto &c : cases) {
+    // Identical sources, contacts, focus and geometry across parameter pairs.
+    Fixture f(r, path, {{}}, {{1, 1}}, {1, 1}, {1, 1}, {1, 3},
+              52, 52, false, true, true, false, 1024, {2, 2});
+    f.install();
+    f.h.inspect_prepared();
+    const int body = f.in.particle_rows[0].record;
+    f.h.particle64(kVelX, body) = c.vx;
+    f.h.particle64(kVelY, body) = c.vy;
+    no_new([&] {
+      PreparedFixtureAccess::upload_body_fixture64(f.h);
+      f.control->set(3);
+    });
+    Parameters64 p; p.gravity = .1; p.dt = 1;
+    p.contact_stiffness = c.contact; p.reach_strength = c.damping;
+    const auto candidate = intent_reference(f, p.gravity);
+    const auto P = candidate.capacity;
+    require(candidate.values[body] == 1, "control candidate unavailable");
+    near(candidate.values[10*P+body], 2, "control intent changed with independent forces");
+    near(candidate.values[4*P+body], .2, "control field force mismatch");
+    const auto old = f.h.particles64();
+    const auto expected = physical_reference(f, p, true);
+    no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+    verify_physical(f, expected, old, p);
+    require(!intent_current(f, candidate, p.gravity), "control accepted stale candidate");
+    const auto after = intent_reference(f, p.gravity);
+    Vector force{}, position{}, carried{}, origin{};
+    for (int k = 0; k < 3; ++k) {
+      force[k] = f.h.particle64(kForceX+k, body);
+      position[k] = old[(kPosX+k)*P+body];
+      carried[k] = old[(kVelX+k)*P+body];
+      origin[k] = f.h.demand().focal_origin[k];
+    }
+    const auto velocity = velocity_reference(force, position, carried, origin, 1,
+                                             f.h.universal64(), p);
+    const auto proposal_x = position[0] + carried[0] + force[0];
+    if (std::string(c.name) == "approach")
+      require(proposal_x > position[0] && proposal_x < 2, "approach control missed target interval");
+    if (std::string(c.name) == "crossing_proposal")
+      require(proposal_x > 2, "pre-brake proposal did not cross intent plane");
+    if (std::string(c.name) == "tangential") {
+      near(double(force[1]), 0, "tangential control gained field force");
+      require(f.h.particle64(kPosY, body) > 0, "tangential carried motion missing");
+    }
+    for (int k = 0; k < 3; ++k) {
+      const auto x = f.h.particle64(kPosX+k, body);
+      if (std::string(c.name) == "contact_off") contact_force[k] = double(force[k]);
+      if (std::string(c.name) == "contact_on")
+        near(double(force[k])-contact_force[k], k == 0 ? -.6 : 0,
+             "contact force was conflated with field intent");
+      if (std::string(c.name) == "damping_off") damping_position[k] = x;
+      if (std::string(c.name) == "damping_on") {
+        near(double(force[k]), k == 0 ? .2 : 0, "damping altered force generation");
+        if (k == 0) require(x > damping_position[k] && x < 1,
+                           "outward focal damping control not exercised");
+        if (k == 1) near(x, damping_position[k], "radial damping changed tangential component");
+      }
+      std::cout << "intent_control,name=" << c.name << ",body=" << body << ",axis=" << k
+                << ",intent_before=" << candidate.values[(10+k)*P+body]
+                << ",field_force=" << candidate.values[(4+k)*P+body]
+                << ",total_force=" << double(force[k]) << ",carried=" << double(carried[k])
+                << ",pre_brake_reference=" << double(position[k]+carried[k]+force[k])
+                << ",pre_q_reference=" << double(position[k]+velocity.value[k])
+                << ",accepted=" << x << ",retained=" << f.h.particle64(kVelX+k, body)
+                << ",status_after=" << after.values[body]
+                << ",intent_after=" << after.values[(10+k)*P+body] << '\n';
+    }
+  }
+  std::cout << "intent_controls,cases=7,independent_force_motion_checks=1 PASS\n";
+  std::cout.precision(precision);
+}
+
 void intent_observation(engine::Runtime &r, HostPath path) {
   Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 0}, {0, 0, 1}, {0, 0, 0}},
             {1, 1, 1}, {1, 1, 2}, {0, 2, 5}, 52, 52, false, true);
