@@ -2691,6 +2691,8 @@ void capture_current(engine::Runtime &r,
     const auto refused = viewport::observe(f.h, binding, viewport::IntentRequest{p.gravity, 0});
     require(refused.intent["status"] == "budget_refused" && refused.intent["rows"].empty() &&
                 refused.intent["readback_bytes"] == "0", "capture confused budget refusal with absence");
+    require(state.requested_readback_bytes == refused.requested_readback_bytes + native_intent.readback_bytes,
+            "capture candidate readback accounting mismatch");
     const auto absent = viewport::observe(f.h, binding, viewport::IntentRequest{0, UINT64_MAX});
     for (const auto &row : absent.intent["rows"])
       require(row["status"] == 0 && row["position"].is_null(), "capture zero-gravity absence mismatch");
