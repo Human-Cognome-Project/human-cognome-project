@@ -1,5 +1,8 @@
 # Core continuation after local CUDA corrections
 
+
+**Contributor follow-up — 2026-11-14 (awaiting review):** many-tick dt/Q observations now exercise 64 production ticks at two durations and three body/field precisions, recording candidate motion separately from reference proposals and accepted particle trajectories. Production braking remains unchanged. See the [candidate observation record](../engine/docs/LIVE-INTENT-OBSERVATION.md#many-tick-dtq-observations--2026-11-14) for scope, evidence and remaining controls.
+
 **Current maintainer handoff — 2026-11-14 (supersedes historical status below)**
 
 The accepted queue is integrated through #333, including the previously separate #322/#323/#325 native host-storage stack and #332/#333 live-candidate diagnostics/lifecycle. All five PR heads passed hosted smoke and native qualification. Previous main `3b42465499d06a61e86eaa465e5e8fa76d7caac8` also passed both overnight workflows. Held #75/#111/#123 remain unchanged; there is no remaining accepted PR backlog.
