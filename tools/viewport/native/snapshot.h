@@ -34,6 +34,8 @@ struct CompletedState {
   std::size_t numeric_copy_bytes{};
   // Requested readback API payloads, not measured PCIe/driver traffic.
   std::size_t requested_readback_bytes{};
+  // Optional field-only diagnostic, copied at the same completed boundary.
+  Json intent = nullptr;
 };
 struct HarnessBinding {
   assembly::ActiveReport mapping;
@@ -44,7 +46,9 @@ struct HarnessBinding {
 // The run owner supplies identity/source/scale metadata matching present native
 // slots. Binding rejects partial coverage; later reads reject recycled/stale maps.
 HarnessBinding bind(field::Harness &execution, assembly::ActiveReport mapping);
-CompletedState observe(field::Harness &execution, const HarnessBinding &binding);
+struct IntentRequest { double gravity; std::uint64_t work_limit; };
+CompletedState observe(field::Harness &execution, const HarnessBinding &binding,
+                       std::optional<IntentRequest> intent = std::nullopt);
 CompletedState observe(assembly::ActiveSession &session, const warm::Uuid &owner,
                        const assembly::ExecutionHandle &handle);
 Json snapshot(const CompletedState &state, const CaptureContext &capture);

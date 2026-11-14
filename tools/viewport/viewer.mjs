@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {intentDetails} from './model.mjs';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {parseSnapshot, rangesFor, massColour, selectParticles, boundsFor, classifyUpdate, referenceShift, pollInterval, fileStamp, resolveSelection, watchState, defaultPollMs} from './model.mjs';
 
@@ -72,6 +73,7 @@ function inspect(p) {
       'Numerical mass': p.mass ?? 'Unavailable', 'Exact structural mass': p.exact_mass,
       'Conceptual LoD': p.level, Binding: `${p.binding} · ${binding.role} · ${binding.units} units`,
       Exposure: p.exposure, 'Aggregate context': p.aggregate})) row($('details'), label, value);
+    for (const [label, value] of Object.entries(intentDetails(snapshot, p))) row($('details'), label, value);
     highlight.visible = p.radius !== null && p.radius > 0 && drawn.includes(p);
     highlight.position.fromArray(place(p.position)); highlight.scale.setScalar(p.radius ?? 0);
   } else highlight.visible = false;

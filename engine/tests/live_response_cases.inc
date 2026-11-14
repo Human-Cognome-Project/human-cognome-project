@@ -470,7 +470,9 @@ void intent_activity(engine::Runtime &r, HostPath path) {
   }
 }
 
-void intent_geometry(engine::Runtime &r, HostPath path) {
+void intent_geometry(engine::Runtime &r, HostPath path, bool motion = false) {
+  const auto prior_precision = std::cout.precision();
+  std::cout << std::setprecision(std::numeric_limits<double>::max_digits10);
   for (bool changed : {false, true}) {
     Fixture f(r, path, {{}, {}, {0, 1}},
               {{1, 1, 0}, {1, 0, 1}, {0, 0, 0}},
@@ -544,7 +546,64 @@ void intent_geometry(engine::Runtime &r, HostPath path) {
                 << ",awake_after_publication=" << awake << ",following_body_visits=" << body_visits
                 << ",stale_copy_rejected=1,dt=0,accepted=0 PASS\n";
     }
+    if (motion) {
+      p.dt = .125;
+      auto previous = after;
+      std::size_t moved = 0;
+      for (int tick = 0; tick < 32; ++tick) {
+        const auto old = f.h.particles64();
+        // The duration change invalidates the first body phase. Later phases
+        // use ordinary native selection; observations never select work.
+        const auto expected = physical_reference(f, p, tick == 0);
+        no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+        verify_physical(f, expected, old, p);
+        require(!intent_current(f, previous, 1), "motion retained stale geometry report");
+        const auto current = intent_reference(f, 1);
+        require(current.completed_ticks == previous.completed_ticks+1 &&
+                    current.frame_anchor == previous.frame_anchor,
+                "geometric motion mixed tick/frame observations");
+        for (int i = 0; i < 3; ++i) {
+          const int b = f.in.particle_rows[i].record;
+          const bool active = f.reference_active[b];
+          Vector force{}, x{}, carried{}, origin{};
+          for (int k = 0; k < 3; ++k) {
+            force[k] = f.h.particle64(kForceX+k, b);
+            x[k] = old[(kPosX+k)*P+b];
+            carried[k] = old[(kVelX+k)*P+b];
+            origin[k] = f.h.demand().focal_origin[k];
+          }
+          const auto step = velocity_reference(force, x, carried, origin,
+              old[kMass*P+b], f.h.universal64(), p);
+          for (int k = 0; k < 3; ++k) {
+            const auto accepted = f.h.particle64(kPosX+k, b);
+            const auto proposal = active ? x[k] +
+                (carried[k]+force[k]*p.dt/old[kMass*P+b])*p.dt : x[k];
+            const auto pre_q = active ? x[k]+step.value[k]*p.dt : x[k];
+            moved += accepted != double(x[k]);
+            std::cout << "intent_geometry_motion,changed=" << changed
+                      << ",tick=" << current.completed_ticks << ",dt=" << p.dt
+                      << ",body=" << b << ",axis=" << k << ",evaluated=" << active
+                      << ",awake_after=" << ((f.h.prepared_storage().inspection_flags[b]&2)!=0)
+                      << ",status_before=" << previous.values[b] << ",status_after=" << current.values[b]
+                      << ",intent_before=" << previous.values[(10+k)*P+b]
+                      << ",intent_after=" << current.values[(10+k)*P+b]
+                      << ",x_before=" << double(x[k]) << ",carried=" << double(carried[k])
+                      << ",diagnostic_force_before=" << previous.values[(4+k)*P+b]
+                      << ",native_force=" << double(force[k])
+                      << ",pre_brake_reference=" << double(proposal)
+                      << ",pre_q_reference=" << double(pre_q) << ",accepted=" << accepted
+                      << ",displacement=" << accepted-double(x[k])
+                      << ",retained=" << f.h.particle64(kVelX+k, b) << '\n';
+          }
+        }
+        previous = current;
+      }
+      require(moved > 0, "positive-duration geometric control did not exercise motion");
+      std::cout << "intent_geometry_motion_summary,changed=" << changed
+                << ",ticks=32,dt=0.125,nonzero_coordinate_steps=" << moved << " PASS\n";
+    }
   }
+  std::cout.precision(prior_precision);
 }
 
 void intent_observation(engine::Runtime &r, HostPath path) {

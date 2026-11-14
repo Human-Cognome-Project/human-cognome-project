@@ -158,3 +158,36 @@ test('completed native hierarchy metadata preserves backend, mappings and per-no
   bad(v => v.execution.prepared_generation = null);
   bad(v => v.numerics.profile = 'legacy_f32');
 });
+
+test('candidate observation separates status, refusal, freshness and occurrence mapping', async () => {
+  const {intentDetails} = await import('../model.mjs');
+  const f = fixture();
+  f.numerics = {profile: 'trial_f64', storage_bits: 64, body_fraction_bits: 52, field_fraction_bits: 52};
+  const record = n => ({context: '41', incarnation: String(n+1), address: n, record: n});
+  f.execution = {backend: 'native_cpu', mode: 'installed_hierarchy', completed_tick: '0',
+    prepared_generation: '7', body_records: f.particles.map(p => record(p.slot)),
+    comparisons: [{comparison: '1', field: record(0), level: 0, calculation_bits: 64, storage_bits: 64, fraction_bits: 52}]};
+  f.intent = {status: 'ok', gravity: 1, generation: '7', tick: '0', frame: [0,0,0],
+    work_limit: '100', work_required: '90', work_used: '90', readback_bytes: '520',
+    rows: f.particles.map(p => ({slot: p.slot, status: 1, relative: [1,0,0], position: [1+2**-40,0,0]}))};
+  const parsed = parseSnapshot(JSON.stringify(f));
+  assert.equal(parsed.intent.rows[0].position[0], 1+2**-40);
+  assert.equal(classifyUpdate(parsed, structuredClone(parsed)), 'same');
+  const changed = structuredClone(parsed); changed.intent.gravity = 2;
+  assert.equal(classifyUpdate(parsed, changed), 'update');
+  delete changed.intent; assert.equal(classifyUpdate(parsed, changed), 'update');
+  assert.equal(intentDetails(parsed, parsed.particles[0])['Field intent'], 'Supported');
+  const bad = edit => {const v = structuredClone(f); edit(v); assert.throws(() => validateSnapshot(v));};
+  bad(v => v.intent.tick = '1'); bad(v => v.intent.generation = '8'); bad(v => v.intent.frame[0] = 1);
+  bad(v => v.intent.rows.pop()); bad(v => v.intent.rows[1].slot = 0);
+  bad(v => v.intent.rows[0].status = 0); bad(v => v.intent.rows[0].position[0] = Infinity);
+  bad(v => v.intent.status = 'budget_refused'); bad(v => v.intent.work_used = '101');
+  for (const status of [0,2,3]) {
+    const v = structuredClone(f); v.intent.rows[0] = {slot: 0, status, position: null, relative: null};
+    validateSnapshot(v); assert.equal(intentDetails(v, v.particles[0])['Intent local position'], 'Unavailable');
+  }
+  f.intent.status = 'budget_refused'; f.intent.rows = []; f.intent.work_used = f.intent.readback_bytes = '0';
+  validateSnapshot(f); assert.equal(intentDetails(f, f.particles[0])['Field intent'], 'Observation budget refused');
+  f.intent.status = 'unavailable'; validateSnapshot(f);
+  delete f.intent; assert.equal(intentDetails(f, f.particles[0])['Field intent'], 'Not requested');
+});

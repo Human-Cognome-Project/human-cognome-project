@@ -424,3 +424,150 @@ Source/config/compiler/binary pins, commands and complete outputs retained local
 raw evidence is not independently reviewed remotely. Final delta from tested pin
 is three Markdown files. Source-accepted #336 remains the parent pending hosted
 qualification; no duplicate parent/main CI or self-merge was requested.
+
+## Positive-duration geometric observations — 2026-11-14
+
+`intent_geometry_motion` continues #337 review 5904746631 using the same accepted
+unchanged/edited geometry fixtures. It first runs their zero-duration activity
+controls, then advances each through 32 ordinary ticks at dt=0.125 (four model
+time units). The duration change invalidates the first body phase as production
+already requires; later phases follow native activity. No observation selects
+work and no stability criterion is added. A nonzero accepted-coordinate witness
+ensures this is actual motion coverage rather than a stationary replay.
+
+Every tick checks candidate arithmetic from current extracted sources, the
+independent combined-force/integration/Q reference, exact retained displacement
+velocity, unchanged frame, completed tick advancement, copied-report rejection,
+and allocation-free query/tick boundaries. The per-body/per-axis trace includes
+before/after candidate status and coordinates, prior position/carried velocity,
+diagnostic field force, native force, host-reference pre-brake/pre-Q endpoints,
+native accepted position/displacement/velocity, evaluated-body and next-awake
+flags. Candidate coordinates require Supported status; inactive native force can
+be cached. Host-reference endpoints are not native intermediate readbacks.
+
+This extends numerical observation evidence and changes no production formula,
+activity predicate, resource inventory or viewport interface. The prior equal-force
+relationship describes the staged geometric endpoints, not a constraint imposed on
+subsequent evolving trajectories. Contacts and radial damping remain disabled in
+this geometric study; they have separate controls above. This is one dt and one
+precision profile, not an accuracy sweep or performance/stability qualification.
+
+### Viewport connection identified (not implemented here)
+
+The existing [CompletedState/HarnessBinding](../../tools/viewport/native/snapshot.h)
+and [native observer](../../tools/viewport/native/completed_state.cpp) already
+capture an exclusively owned completed boundary, validate record incarnations and
+prepared generation, retain actual backend/tick/frame, and account requested
+readback separately from owned copies. Follow-on integration should reuse that
+route with explicit optional candidate inspection and its gravity/work/status
+metadata, joining by validated physical record to existing occurrence identity.
+It must not label the test-only reference proposals as engine-owned observations.
+The strict [capture schema](../../tools/viewport/snapshot.schema.json), browser
+validation and display need a coordinated extension before candidate payloads
+are exposed. No new JSON shape or browser behavior is claimed by this test slice.
+
+Qualification: source `1ac2838974a6db41e4bf11a3bdfab698e226b72f`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL Ubuntu CPU/Clang 15 Release.
+Matching build and all ten focused CTests passed: four geometric-motion profiles,
+four original candidate tests and two packet probes. Each motion profile runs both
+zero-duration geometry controls followed by 32 positive-duration ticks per case;
+256 positive-duration ticks total across one/two workers and bulk/direct paths.
+All profiles exercised nonzero accepted-coordinate steps in both cases. No build/
+assertion failures or reported compiler warnings. This does not rerun or relabel
+the earlier broader trajectory/lifecycle matrix. No GPU, native Windows, database,
+browser, viewport rendering or performance qualification is claimed.
+
+Local archive `intent-geometric-motion-1ac28389.tar.gz`: manifest SHA256
+`50b4e4bf4a7cd42fb945a462947ae69923a635b2b8417b91883228d643dd08cd`;
+archive SHA256 `65b1bf5ad406ead1d1ee753542b856925e1e954aba0b6373815981efb5968bb8`.
+Source/config/compiler/binary pins, commands and full per-axis outputs retained
+locally; raw archive is not independently reviewed remotely. Final delta after
+tested source is three Markdown files. Source-accepted #337 remains the parent
+pending hosted qualification; no duplicate parent/main CI or self-merge requested.
+
+## Viewport candidate integration — 2026-11-14
+
+The optional completed-state candidate capture now follows #338 review direction
+through the existing validated HarnessBinding observer. See the viewport's
+[optional intent contract](../../tools/viewport/README.md#optional-field-intent-in-completed-captures)
+for status, mapping, coordinate, budget and failure semantics. The schema, browser
+validator, selected-object inspector and offline bundle change together. Same-tick
+optional payload changes refresh the watch display; legacy snapshots remain valid.
+The letter ActiveSession producer does not automatically request this optional
+Harness diagnostic. Test-only proposals remain outside this native payload.
+
+Native qualification at `2c5478f38f5f8ccbf1f4b82763173c7db9a7762a`, unchanged
+Taichi tree `8b31651be07d8bad0b2a6a261369e8690b9c3b53`: matching build,
+`viewport_snapshot_test` and four direct native capture profiles passed (one/two
+CPU workers, bulk/direct, tick 0 through 2). Each generated capture checks source
+candidate fidelity, absent/null coordinates, budget refusal, state neutrality,
+readback accounting and stale tick/record identity. Native query exceptions are
+not silently converted into absence. The geometric trace precision cleanup uses
+max_digits10 and restores the previous stream precision.
+
+Final browser source `9e159d1c9f1f8a30b5c5da3f3cd873a169f31163` differs from the
+native qualification source only in browser slot validation and its rebuilt bundle.
+Windows Node 22.13.0: all 16 model tests and 127 offline browser checks passed
+(Chrome 157.0.8103.50, configured SwiftShader, no browser errors/network requests).
+Three actual native JSON snapshots passed the browser validator; the generated
+latest snapshot was loaded and selected in the browser and visually inspected.
+The inspector showed Supported intent and the native local/relative coordinates.
+No physical-GPU engine, native Windows engine, database or performance qualification.
+The retained bundle was rebuilt from the pinned dependencies.
+
+Local wrapper issues were corrected without relabelling tests: trailing CR caused
+an initial final-log command and an exit command to fail after native tests passed;
+wrappers now use LF. A first JSON validation helper mistakenly included the evidence
+manifest as a snapshot; filtering was corrected and its failure log retained.
+No native build/assertion or browser/model-test failures occurred.
+
+Local archive `viewport-intent-2c5478f3.tar.gz`: manifest SHA256
+`21340d6f7df9f6ff86add0a43b7e8a0e538faa6262c3f885e9135931bb0cd2fb`;
+archive SHA256 `eb86ae54778cdfc6d24a440b4aeb769a2928700e76f70c8863960c002085e1dd`.
+Native source/config/compiler/binary pins, captures/logs, browser results/screenshot
+and helper notes retained locally, not independently reviewed remotely. Final
+publication after the browser source changes Markdown only. Hosted review/CI remain
+pending; no self-merge or duplicate parent CI. No new engine force/brake/activity,
+resource inventory or reference-proposal implementation is introduced.
+
+## Owning-run capture configuration — 2026-11-14
+
+Source `6f4e53829a0f3a73f4c23e403161a8ca36426f04`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`. Stacked on source-accepted #339,
+with qualified main `1541729b` merged; no self-merge or inference of parent acceptance
+from CI. The C3 capture runner now exports intent only with explicit
+`--intent-work-limit N`, using its own gravity and the existing validated completed
+boundary. Omission and zero-budget refusal remain distinct. Optional pacing leaves
+model ticks unchanged. Legacy ActiveSession capture is unchanged.
+
+Local qualification on WSL Ubuntu, CPU-only Clang 15 Release: matching native
+build and viewport_snapshot_test passed. Windows Node 22.13.0: all 16 model tests
+passed. Three actual finite native runs (ticks 0–4) fed the offline Chrome
+157.0.8103.50 watch reader: successful intent (one worker/bulk), omitted intent and
+zero-budget refusal (two workers/direct). Each applied all five captures,
+preserved selection, matched final JSON exactly, and displayed the expected
+inspector status with no browser errors or network requests. Native reference,
+f64, state-neutrality and stale-binding checks ran within each capture case.
+Four malformed budgets and a repeated budget option rejected before engine setup.
+The enabled run screenshot was visually inspected.
+
+The adapter reads bytes and metadata from one opened native file on every poll;
+it does not fabricate snapshots. It substitutes for the directory picker, so
+real picker/handle support remains unqualified. Browser rendering is SwiftShader;
+no physical GPU engine, native Windows engine, database, or dedicated performance
+qualification is claimed. Regression diagnostic probes are separate from the
+configured export's accounting. No formula, activity or accepted-motion changes.
+
+Local raw evidence: workspace `setup-evidence/intent-config-6f4e5382.zip` contains
+native source/build/config/compiler/binary pins, option failures, three sets of
+native files/logs, watch results and screenshots. Archive SHA256:
+`0ca0833726a6461a8b3375f15a32230c54fa84591621629bc027d1ea15914ec0`.
+Adjacent `intent-config-manifest.sha256` SHA256:
+`369c5c98c65784f3bf57721916ddc5d91239b3829fa6c7fc3a6e52da57faced3`.
+These are contributor-reported local observations, not independently inspected
+hosted qualification. Final source delta after the tested pin is documentation only.
+
+Next: review the explicit C3 configuration and native file-watch evidence. The
+bounded fixture is usable for live inspection; broader owning-run/retained study
+integration remains separate. Overlays are optional; keep candidate observations,
+reference proposals and accepted motion distinct.

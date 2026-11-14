@@ -360,6 +360,46 @@ engine/build/live_hierarchy_test --backend cpu --threads 1 --case capture \
   --capture-output /tmp/hcp-current-hierarchy --ticks 1024 --every 16
 ```
 
+The C3 run owner can opt into candidate capture with `--intent-work-limit N`.
+Omitting it exports no `intent` payload; `N` is a strict unsigned decimal uint64
+(including zero). The request uses the run's own gravity at each completed
+capture boundary. An insufficient budget exports `budget_refused`, not absent
+intent. `--pace-ms M` (0–86400000, default 0) sets a minimum wall-clock gap
+between capture starts; it changes neither tick length nor the tick schedule.
+For a watchable finite CPU run, add `--intent-work-limit 18446744073709551615
+--pace-ms 1500 --every 1`. Stop the finite run by choosing an appropriate
+`--ticks`; this test runner does not add the legacy client's signal protocol.
+
+This configuration belongs to the existing bounded C3 fixture runner, not the
+legacy flat `viewport_letter_capture` producer. The runner still performs its
+independent candidate/refusal/absence regression probes even when exported intent
+is omitted. Export accounting describes the configured observation, not those
+test probes or total process work. No browser action requests native computation.
+
+### Native capture-to-watch integration check
+
+`tests/capture-watch.mjs` starts a supplied finite native command and watches its
+actual atomically replaced `latest.json` through the page's existing watch reader.
+Use a fresh output directory and the same path in both arguments:
+
+```sh
+cd tools/viewport
+node tests/capture-watch.mjs /tmp/hcp-watch ok \
+  ../../engine/build/live_hierarchy_test --case capture --threads 1 \
+  --capture-output /tmp/hcp-watch --ticks 4 --every 1 --pace-ms 1500 \
+  --intent-work-limit 18446744073709551615
+```
+
+Source `engine/build/engine-env.sh` before changing directory; install the pinned
+viewport dependencies and provide Playwright Chromium or `HCP_CHROMIUM` as for
+the browser tests below. Use expected mode `omitted` without the intent option,
+or `budget_refused` with limit `0`. Each run must observe tick zero, an intermediate
+tick and the final tick, preserve selection, show the expected inspector status,
+and exactly match the final native file. It retains native logs, browser evidence
+and a screenshot in the output directory. The read-only filesystem bridge replaces
+only the picker: it is not proof of native FileSystemDirectoryHandle support.
+Rendering uses SwiftShader; this check is not physical GPU qualification.
+
 The run owner configures/reserves/installs the hierarchy and advances it. The
 shared [native interface](native/snapshot.h) only binds supplied identity/slot
 metadata and reads completed state. `observe(Harness&, binding)` and the
@@ -392,3 +432,34 @@ CUDA publication/activity/f64 qualification is supported. See the
 [pinned handoff](../../docs/c3-cpu-capture-handoff.md) for executed CPU/capture work,
 CUDA compile preparation, remaining local work and exact commands. Full #156
 completion is not a prerequisite for this bounded observation milestone.
+
+## Optional field intent in completed captures
+
+The native Harness observer accepts an optional `IntentRequest{gravity, work_limit}`.
+It validates the existing occurrence/record binding, captures the completed state,
+and copies field-only candidate observations from `inspect_live_intent` at the same
+prepared generation, tick and frame. The ordinary observer call remains unchanged.
+The ActiveSession/letter producer does not automatically request this diagnostic.
+
+The optional `intent` payload records gravity, generation/tick/frame, work limit,
+required/used work and requested readback bytes. Each row names a validated physical
+slot already mapped to a captured occurrence. Supported rows carry relative offset
+and operative local position. Absent, unresolved coincidence and unsupported rows
+have null coordinates. A refused budget or unavailable hierarchy yields a distinct
+observation status and no rows, rather than a fabricated absent candidate. Other
+inspection exceptions fail the capture; they are not converted into absent intent.
+Only the existing observer's host copies/JSON are allocated; no new engine storage,
+force, integration, activity or numerical selection is introduced. Candidate
+readback is included in the observer's requested-readback accounting, and copied
+coordinate doubles in numeric-copy accounting; metadata/JSON overhead is not a
+claim of full allocator or hardware traffic measurement.
+
+The strict schema and browser validate matching generation, tick, frame and complete
+unique slot mapping, finite supported coordinates and null unavailable coordinates.
+The selected-object inspector shows the field-intent status, requested gravity,
+local candidate position and relative offset. These are diagnostic observations,
+not reference proposals or accepted endpoints. No candidate sphere/trajectory is
+invented. No request is labelled "Not requested"; failed optional observation is
+labelled separately. Watch updates also notice optional payload changes at the same
+capture tick (subject to the existing filesystem stamp detection limits). Reading
+captures remains offline/read-only; no browser action invokes engine work.

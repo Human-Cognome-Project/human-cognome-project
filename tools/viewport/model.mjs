@@ -42,6 +42,27 @@ export function validateSnapshot(value) {
       requireValue(value.numerics?.profile === 'trial_f64' && e.prepared_generation !== null, 'Missing hierarchy precision/generation.');
   }
   requireValue((capture.tick === '0') === (capture.phase === 'published_seeded'), 'Tick and capture phase disagree.');
+  if (value.intent) {
+    const q = value.intent, e = value.execution;
+    for (const key of ['generation', 'tick', 'work_limit', 'work_required', 'work_used', 'readback_bytes']) decimal(q[key]);
+    requireValue(e && q.generation === e.prepared_generation && q.tick === capture.tick &&
+      q.frame.every((x, i) => Number.isFinite(x) && x === frame.reference[i]), 'Candidate frame/generation/tick mismatch.');
+    requireValue(Number.isFinite(q.gravity), 'Invalid candidate gravity.');
+    if (q.status === 'ok') {
+      requireValue(e.mode === 'installed_hierarchy' && BigInt(q.work_used) === BigInt(q.work_required) &&
+        BigInt(q.work_used) <= BigInt(q.work_limit), 'Invalid candidate work metadata.');
+      const slots = new Set(), occurrenceSlots = new Set(particles.map(p => p.slot));
+      for (const row of q.rows) {
+        requireValue(!slots.has(row.slot) && occurrenceSlots.has(row.slot), 'Invalid candidate occurrence mapping.');
+        slots.add(row.slot);
+        requireValue(row.status === 1 ? Array.isArray(row.position) && Array.isArray(row.relative) &&
+          [...row.position, ...row.relative].every(Number.isFinite) : row.position === null && row.relative === null,
+        'Unsupported candidate coordinates must be unavailable.');
+      }
+      requireValue(slots.size === particles.length, 'Incomplete candidate mapping.');
+    } else requireValue(q.rows.length === 0 && q.work_used === '0' && q.readback_bytes === '0',
+      'Failed candidate observation contains results.');
+  }
   bindings.forEach((b, i) => {
     requireValue(b.id === i, 'Binding IDs must be contiguous and ordered.');
     if (i === 0) requireValue(b.role === 'root' && b.parent === -1 && b.level === 0, 'Invalid conceptual root.');
@@ -79,6 +100,15 @@ export function validateSnapshot(value) {
   return value;
 }
 export function parseSnapshot(text) { return validateSnapshot(JSON.parse(text)); }
+export function intentDetails(snapshot, particle) {
+  const q = snapshot.intent;
+  if (!q) return {'Field intent': 'Not requested'};
+  if (q.status !== 'ok') return {'Field intent': q.status === 'budget_refused' ? 'Observation budget refused' : 'Observation unavailable'};
+  const r = q.rows.find(r => r.slot === particle.slot);
+  return {'Field intent': ['Absent', 'Supported', 'Unresolved coincidence', 'Unsupported'][r.status],
+    'Intent gravity': q.gravity, 'Intent local position': r.position?.join(', ') ?? 'Unavailable',
+    'Intent relative offset': r.relative?.join(', ') ?? 'Unavailable'};
+}
 export function rangesFor(snapshot) {
   const ranges = new Map();
   for (const p of snapshot.particles) {
@@ -124,7 +154,8 @@ export function boundsFor(particles) {
 export function classifyUpdate(previous, next) {
   const a = previous?.capture, b = next.capture;
   if (!a || a.session !== b.session || a.study !== b.study) return 'replace';
-  return a.generation === b.generation && a.tick === b.tick ? 'same' : 'update';
+  return a.generation === b.generation && a.tick === b.tick &&
+    JSON.stringify(previous.intent ?? null) === JSON.stringify(next.intent ?? null) ? 'same' : 'update';
 }
 export const minPollMs = 100, defaultPollMs = 1000;
 export function pollInterval(value, fallback = defaultPollMs) {
