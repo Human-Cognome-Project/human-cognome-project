@@ -408,6 +408,12 @@ try {
   intentFixture.intent.work_used = intentFixture.intent.readback_bytes = '0';
   await load(intentFixture); await page.locator('#objects button').first().click();
   check((await page.locator('#details').textContent()).includes('Observation budget refused'), 'refusal displayed separately from absent intent');
+  intentFixture.execution = {backend: 'native_cpu', mode: 'flat', completed_tick: native.capture.tick,
+    prepared_generation: null, body_records: [], comparisons: []};
+  intentFixture.intent.status = 'unavailable'; intentFixture.intent.generation = null;
+  intentFixture.intent.work_required = '0';
+  await load(intentFixture); await page.locator('#objects button').first().click();
+  check((await page.locator('#details').textContent()).includes('Observation unavailable'), 'legacy unavailability displayed separately from refusal and absence');
   check(errors.length === 0, 'no browser exceptions'); check(externalRequests.length === 0, 'no network requests');
   const evidence = {checks, browser: browser.version(), transport: inMemory ? 'in-memory exact page assets, offline browser context' : 'file://, offline browser context',
     direct_file_navigation: inMemory ? 'unexecuted here: managed Chromium blocks file:// navigation' : 'passed',
