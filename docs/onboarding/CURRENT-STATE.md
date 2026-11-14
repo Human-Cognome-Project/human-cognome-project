@@ -1,5 +1,8 @@
 # Current implementation and work
 
+**Contributor follow-up — 2026-11-14 (awaiting review):** optional candidate observations now flow through the validated completed-state Harness observer, strict capture schema and browser object inspector. Refusal/unavailability remain distinct from absent intent; supported coordinates retain f64 fidelity. See [viewport integration evidence](../../engine/docs/LIVE-INTENT-OBSERVATION.md#viewport-candidate-integration--2026-11-14). Captures are read-only and engine mechanics are unchanged.
+
+
 **Maintainer integration/update — 2026-11-14:** #334–#336 are integrated from qualified `9ff2a2781413eff7582b6c40a71a697c67a565a5`. All three PR native runs passed all 12 jobs; their smoke checks passed. Personally inspected #336 run 43600623148: 161 regression passes (41/40/40/40), all trajectory/control/activity profiles, database addressed_reads=24/private_reads=0. Combined-main baseline `a504af8e9d639483b1002da5ed279fcb04a9e78d` also passed all 12 native jobs. Integration preserves qualified runtime/test files; only the two handoffs are reconciled.
 
 **#338 source acceptance:** `ff28feab8e81043a0fd1781583950cb68e91e45d` accepted in review 5905114842 for positive-duration geometric observations. Contributor reports ten focused CPU CTests/256 positive-duration ticks at `1ac2838974a6db41e4bf11a3bdfab698e226b72f`; final delta is three Markdown files and raw local archive remains independently uninspected. Smoke passed; native 43606442675 and parent #337 remain pending. #337/#338 are not integrated. Held #75/#111/#123 unchanged.

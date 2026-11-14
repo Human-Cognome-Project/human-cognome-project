@@ -392,3 +392,34 @@ CUDA publication/activity/f64 qualification is supported. See the
 [pinned handoff](../../docs/c3-cpu-capture-handoff.md) for executed CPU/capture work,
 CUDA compile preparation, remaining local work and exact commands. Full #156
 completion is not a prerequisite for this bounded observation milestone.
+
+## Optional field intent in completed captures
+
+The native Harness observer accepts an optional `IntentRequest{gravity, work_limit}`.
+It validates the existing occurrence/record binding, captures the completed state,
+and copies field-only candidate observations from `inspect_live_intent` at the same
+prepared generation, tick and frame. The ordinary observer call remains unchanged.
+The ActiveSession/letter producer does not automatically request this diagnostic.
+
+The optional `intent` payload records gravity, generation/tick/frame, work limit,
+required/used work and requested readback bytes. Each row names a validated physical
+slot already mapped to a captured occurrence. Supported rows carry relative offset
+and operative local position. Absent, unresolved coincidence and unsupported rows
+have null coordinates. A refused budget or unavailable hierarchy yields a distinct
+observation status and no rows, rather than a fabricated absent candidate. Other
+inspection exceptions fail the capture; they are not converted into absent intent.
+Only the existing observer's host copies/JSON are allocated; no new engine storage,
+force, integration, activity or numerical selection is introduced. Candidate
+readback is included in the observer's requested-readback accounting, and copied
+coordinate doubles in numeric-copy accounting; metadata/JSON overhead is not a
+claim of full allocator or hardware traffic measurement.
+
+The strict schema and browser validate matching generation, tick, frame and complete
+unique slot mapping, finite supported coordinates and null unavailable coordinates.
+The selected-object inspector shows the field-intent status, requested gravity,
+local candidate position and relative offset. These are diagnostic observations,
+not reference proposals or accepted endpoints. No candidate sphere/trajectory is
+invented. No request is labelled "Not requested"; failed optional observation is
+labelled separately. Watch updates also notice optional payload changes at the same
+capture tick (subject to the existing filesystem stamp detection limits). Reading
+captures remains offline/read-only; no browser action invokes engine work.

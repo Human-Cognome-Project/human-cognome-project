@@ -484,3 +484,48 @@ Source/config/compiler/binary pins, commands and full per-axis outputs retained
 locally; raw archive is not independently reviewed remotely. Final delta after
 tested source is three Markdown files. Source-accepted #337 remains the parent
 pending hosted qualification; no duplicate parent/main CI or self-merge requested.
+
+## Viewport candidate integration — 2026-11-14
+
+The optional completed-state candidate capture now follows #338 review direction
+through the existing validated HarnessBinding observer. See the viewport's
+[optional intent contract](../../tools/viewport/README.md#optional-field-intent-in-completed-captures)
+for status, mapping, coordinate, budget and failure semantics. The schema, browser
+validator, selected-object inspector and offline bundle change together. Same-tick
+optional payload changes refresh the watch display; legacy snapshots remain valid.
+The letter ActiveSession producer does not automatically request this optional
+Harness diagnostic. Test-only proposals remain outside this native payload.
+
+Native qualification at `2c5478f38f5f8ccbf1f4b82763173c7db9a7762a`, unchanged
+Taichi tree `8b31651be07d8bad0b2a6a261369e8690b9c3b53`: matching build,
+`viewport_snapshot_test` and four direct native capture profiles passed (one/two
+CPU workers, bulk/direct, tick 0 through 2). Each generated capture checks source
+candidate fidelity, absent/null coordinates, budget refusal, state neutrality,
+readback accounting and stale tick/record identity. Native query exceptions are
+not silently converted into absence. The geometric trace precision cleanup uses
+max_digits10 and restores the previous stream precision.
+
+Final browser source `9e159d1c9f1f8a30b5c5da3f3cd873a169f31163` differs from the
+native qualification source only in browser slot validation and its rebuilt bundle.
+Windows Node 22.13.0: all 16 model tests and 127 offline browser checks passed
+(Chrome 157.0.8103.50, configured SwiftShader, no browser errors/network requests).
+Three actual native JSON snapshots passed the browser validator; the generated
+latest snapshot was loaded and selected in the browser and visually inspected.
+The inspector showed Supported intent and the native local/relative coordinates.
+No physical-GPU engine, native Windows engine, database or performance qualification.
+The retained bundle was rebuilt from the pinned dependencies.
+
+Local wrapper issues were corrected without relabelling tests: trailing CR caused
+an initial final-log command and an exit command to fail after native tests passed;
+wrappers now use LF. A first JSON validation helper mistakenly included the evidence
+manifest as a snapshot; filtering was corrected and its failure log retained.
+No native build/assertion or browser/model-test failures occurred.
+
+Local archive `viewport-intent-2c5478f3.tar.gz`: manifest SHA256
+`21340d6f7df9f6ff86add0a43b7e8a0e538faa6262c3f885e9135931bb0cd2fb`;
+archive SHA256 `eb86ae54778cdfc6d24a440b4aeb769a2928700e76f70c8863960c002085e1dd`.
+Native source/config/compiler/binary pins, captures/logs, browser results/screenshot
+and helper notes retained locally, not independently reviewed remotely. Final
+publication after the browser source changes Markdown only. Hosted review/CI remain
+pending; no self-merge or duplicate parent CI. No new engine force/brake/activity,
+resource inventory or reference-proposal implementation is introduced.
