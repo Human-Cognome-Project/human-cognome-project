@@ -1,5 +1,15 @@
 # Core continuation after local CUDA corrections
 
+**Contributor continuation proposal — 2026-11-15 (awaiting review):** #343's first
+[responsibility map](../engine/docs/RESPONSIBILITY-MAP.md) traces retained ownership
+and C3 execution at main `22851781`, records the focused/controlled #342 failure
+diagnosis and proposes a separate test correction followed by an ActiveSession
+implementation split. Local repeated passes and a permitted mixed-publication
+counterexample do not clear the failed hosted run or establish its exact
+schedule. No runtime source moved or mathematical behavior changed. Review the
+map/evidence before extracting code; retained prepared admission remains later
+owner integration.
+
 **Next coding context — phased refactoring, 2026-11-15:** follow [the refactoring plan](engine-refactoring-plan.md) under #343. First establish/preserve the actual checkout and current refs, diagnose #342's recorded two-worker bulk failure, and submit a source-pinned responsibility/dependency map with a short sequence of bounded PRs before code moves. Map Analyst-facing operations and temporary viewport/API controls separately from execution ownership and mechanics. Plan behaviour-preserving splits and evidence-backed native Taichi reuse in focused passes; numerical changes remain separate under #324. No final Analyst API or replacement framework is prescribed. This task ordering supersedes the older instruction to proceed directly with prepared admission; coordinate admission with the ownership map rather than duplicating it.
 
 **Current handoff — 2026-11-15, coding-agent transition (supersedes prior status):** main contains #341 plus documentation updates. Runtime merge `64fd23d02eb33fa00129ce78bd20fc5ad225f8e5` passed smoke 43713977016 and all 12 native jobs in 43713977014. Current pre-handoff main `1a5843e2e20f07477323351e2841eb1358b1c8d2` only adds review documentation. No history rewrite or source reset is needed. Fetch current main and inspect local status/uncommitted work before switching the replacement coding environment; this remote reconciliation does not inspect or certify the local/WSL checkout.

@@ -77,4 +77,15 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-Plan established 2026-11-15. Responsibility map, native-reuse audit and implementation passes are pending. No runtime code changed by this plan.
+Plan established 2026-11-15. The first [source-pinned responsibility map](../engine/docs/RESPONSIBILITY-MAP.md)
+is proposed for review against main `22851781`. It traces the retained legacy
+lifecycle and a completed C3 tick, separates temporary controls from ownership,
+and proposes a mechanical ActiveSession implementation split after a separate
+qualification correction. Twenty focused two-worker bulk repetitions passed
+locally; a controlled native leaf/root/leaf order demonstrates the test's
+one-poll equality premise can reject a permitted mixed complete publication,
+with exact final equality restored by the following root publication. This is
+not proof of the hosted run's exact schedule or a fix/acceptance of #342.
+The map records evidence, dependencies and the next test correction. The full
+native-reuse audit and all code moves remain pending maintainer review. No
+runtime code changed by this plan or its first map.

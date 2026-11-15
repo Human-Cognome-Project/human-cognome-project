@@ -1,5 +1,16 @@
 # Current implementation and work
 
+**Contributor map proposal — 2026-11-15 (awaiting review):** [Pass 1 responsibility map](../../engine/docs/RESPONSIBILITY-MAP.md)
+inspects main `22851781` and proposes a bounded PR sequence under #343. Twenty
+focused `live_intent_activity_2_bulk` repetitions passed locally. A separate
+native ordered-publication probe exposes a permitted intermediate root that
+fails the final-force equality premise, then restores exact equality with the
+following root publication while retaining body wake. The original #342 hosted
+failure remains unresolved; its exact schedule is not established. Next is a
+separate test-boundary correction before mechanical extraction, not a new
+numerical law or direct prepared-admission implementation. Runtime source is
+unchanged; the map and its evidence await maintainer review.
+
 **Next coding context — phased refactoring, 2026-11-15:** follow [the refactoring plan](../engine-refactoring-plan.md) under #343. First establish/preserve the actual checkout and current refs, diagnose #342's recorded two-worker bulk failure, and submit a source-pinned responsibility/dependency map with a short sequence of bounded PRs before code moves. Map Analyst-facing operations and temporary viewport/API controls separately from execution ownership and mechanics. Plan behaviour-preserving splits and evidence-backed native Taichi reuse in focused passes; numerical changes remain separate under #324. No final Analyst API or replacement framework is prescribed. This task ordering supersedes the older instruction to proceed directly with prepared admission; coordinate admission with the ownership map rather than duplicating it.
 
 **Current handoff — 2026-11-15, coding-agent transition (supersedes prior status):** main contains #341 plus documentation updates. Runtime merge `64fd23d02eb33fa00129ce78bd20fc5ad225f8e5` passed smoke 43713977016 and all 12 native jobs in 43713977014. Current pre-handoff main `1a5843e2e20f07477323351e2841eb1358b1c8d2` only adds review documentation. No history rewrite or source reset is needed. Fetch current main and inspect local status/uncommitted work before switching the replacement coding environment; this remote reconciliation does not inspect or certify the local/WSL checkout.
