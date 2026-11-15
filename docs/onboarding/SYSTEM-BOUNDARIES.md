@@ -18,6 +18,10 @@ Read before changing component responsibilities, runtime languages, privacy or c
 - `kernels/database/`, `kernels/wal/`, and `network/endpoint/` are peers. Do not collapse WAL or shared endpoint infrastructure back under the database/cache hierarchy.
 
 
+## Temporary Analyst controls and refactoring
+
+The viewport and temporary API front end let a human or agent emulate Analyst functions while its concrete implementation is formalized. The viewport may remain useful longer. Their existence does not establish a finished Analyst interface or decision-making implementation. Identify Analyst-facing operations separately from engine-owned validation, numerical authority and lifecycle; keep observations read-only. Refactoring should create coherent units of responsibility and reuse native Taichi machinery where verified, without prematurely prescribing the final Analyst API. See the [phased refactoring plan](../engine-refactoring-plan.md) for inspection, pass boundaries and handoff requirements.
+
 ## Do not reintroduce
 
 - Do not infer conceptual scale from raw SNode depth or secondary compression nesting.
