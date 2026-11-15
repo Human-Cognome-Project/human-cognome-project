@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -19,6 +20,7 @@ struct UsageError : std::runtime_error {
 };
 struct Options {
   std::string output;
+  std::optional<std::uint64_t> intent_work_limit;
   bool cuda{false};
   std::uint64_t ticks{8};
   double dt{0.1};
@@ -34,6 +36,7 @@ inline const char *usage() {
     "  --cpu-threads N     CPU worker threads, N >= 1 (default 1; used by the cpu backend)\n"
     "  --every K           also capture every K completed ticks, K >= 1 (default: tick 0 and the final tick only)\n"
     "  --pace-ms M         minimum wall-clock ms between captures, M >= 0 (default 0; does not change the simulation)\n"
+    "  --intent-work-limit N  request field diagnostic with unsigned work budget (legacy study reports unavailable)\n"
     "SIGINT/SIGTERM stop after the current tick with a final capture and exit 0.\n"
     "HCP_WARM_TEST_CONNINFO: fresh warm DB with schema.sql; "
     "HCP_CORE_TEST_CONNINFO/HCP_LING_TEST_CONNINFO: retained read-only sources\n";
@@ -89,6 +92,7 @@ inline Options parse_options(const std::vector<std::string> &args) {
       if (value != "cpu" && value != "cuda") throw UsageError("invalid value for --backend: '" + value + "'");
       o.cuda = value == "cuda";
     } else if (name == "--ticks") o.ticks = parse_count(name, value, 1, UINT64_MAX);
+    else if (name == "--intent-work-limit") o.intent_work_limit = parse_count(name, value, 0, UINT64_MAX);
     else if (name == "--dt") o.dt = parse_positive(name, value);
     else if (name == "--cpu-threads") o.cpu_threads = int(parse_count(name, value, 1, 4096));
     else if (name == "--every") o.every = parse_count(name, value, 1, UINT64_MAX);

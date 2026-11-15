@@ -44,7 +44,10 @@ export function validateSnapshot(value) {
   requireValue((capture.tick === '0') === (capture.phase === 'published_seeded'), 'Tick and capture phase disagree.');
   if (value.intent) {
     const q = value.intent, e = value.execution;
-    for (const key of ['generation', 'tick', 'work_limit', 'work_required', 'work_used', 'readback_bytes']) decimal(q[key]);
+    for (const key of ['tick', 'work_limit', 'work_required', 'work_used', 'readback_bytes']) decimal(q[key]);
+    if (q.generation !== null) decimal(q.generation);
+    else requireValue(e?.mode === 'flat' && q.status === 'unavailable' && q.work_required === '0',
+      'Unprepared execution cannot supply candidate results.');
     requireValue(e && q.generation === e.prepared_generation && q.tick === capture.tick &&
       q.frame.every((x, i) => Number.isFinite(x) && x === frame.reference[i]), 'Candidate frame/generation/tick mismatch.');
     requireValue(Number.isFinite(q.gravity), 'Invalid candidate gravity.');

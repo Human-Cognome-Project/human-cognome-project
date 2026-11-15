@@ -18,6 +18,12 @@ int main() {
   try {
     const auto d = viewport::parse_options({"out"});
     check(d.output == "out" && !d.cuda && d.ticks == 8 && d.dt == 0.1 && d.cpu_threads == 1, "defaults reproduce the fixed capture");
+    check(!d.intent_work_limit, "intent default omitted");
+    check(viewport::parse_options({"out", "--intent-work-limit", "0"}).intent_work_limit == 0, "explicit zero budget");
+    check(viewport::parse_options({"out", "--intent-work-limit=18446744073709551615"}).intent_work_limit == UINT64_MAX, "maximum budget");
+    for (const char *bad : {"-1", "+1", "1.5", "", " 1", "18446744073709551616"})
+      check(rejected({"out", "--intent-work-limit", bad}), "invalid diagnostic budget");
+    check(rejected({"out", "--intent-work-limit", "0", "--intent-work-limit", "1"}), "duplicate diagnostic budget");
     const auto o = viewport::parse_options({"out", "--backend", "cuda", "--ticks", "200", "--dt=0.25", "--cpu-threads", "4"});
     check(o.cuda && o.ticks == 200 && o.dt == 0.25 && o.cpu_threads == 4, "all options");
     check(!viewport::parse_options({"out", "--backend=cpu"}).cuda, "explicit cpu");
