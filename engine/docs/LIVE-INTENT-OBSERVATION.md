@@ -571,3 +571,49 @@ Next: review the explicit C3 configuration and native file-watch evidence. The
 bounded fixture is usable for live inspection; broader owning-run/retained study
 integration remains separate. Overlays are optional; keep candidate observations,
 reference proposals and accepted motion distinct.
+
+## Active coordinate-free handoff — 2026-11-15
+
+First retained-to-C3 bridge step, proposed independently from pending #341 on
+main `6f72bd42`: `ActiveAssembly::bind_structure(nodes)` now exposes the existing
+v2 membership/projection structural handoff. It preserves source definitions,
+occurrence identity/path/roles, selections, contacts, memberships and recipe focus.
+No positions, velocities, numerical slots, record claims, hierarchy or runtime
+are created by this call. Native admission remains the numerical authority.
+
+An explicit `focus()` override replaces recipe focus, including an explicit empty
+selection. Revision and logical restart preserve that distinction. An empty
+selection is only a structural handoff, not populated admission readiness; D1's
+nonempty positive focal selection remains required at native bootstrap. Legacy
+`bind` behavior stays unchanged. V1 recipes reject on the structural path, and
+v2 recipes reject on the legacy path. Required missing private input and any
+present local overlay reject explicitly: private structural overlays are not yet
+implemented and must not be silently omitted.
+
+The next bridge step is owned prepared admission: reserve a trial-profile Harness,
+translate exact structural masses/counts and intrinsic geometry into native
+commands, resolve comparison/focus identities against the same prospective source,
+and call the accepted generated-placement/bootstrap boundary. Do not import
+`PreparedFixtureAccess`, guessed slots, legacy f32 shares/radii as original f64
+source data, or caller world starts. Publish occurrence bindings only after native
+admission commits; then expose completed observations through the existing owner.
+This handoff does not implement those steps or change the retained producer mode.
+
+Validation source `e0155331aaaa815bebbb71a246486e4ee4dfe355`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL CPU/Clang15 Release:
+`structural_recipe_test` and `active_workbench_test` built and passed. The source
+checks exercise inherited/replaced/cleared focus, revision/restart, missing/local
+input rejection and legacy/structural separation. Source-path comparison explicitly
+respects independent projections' distinct study UUIDs. Legacy workbench execution
+remains covered. No physical GPU, database or browser run was needed for this scope.
+
+Earlier test development failures are retained: ambiguous FocalField and colliding
+legacy fixture variable names, then an incorrect cross-projection identity check.
+The latter first tried full IDs despite independently generated study UUIDs; final
+checks retain each owner's study prefix and compare structural source paths. These
+were corrected, not relabelled successful. Local archive
+`setup-evidence/active-structural-e0155331.tar.gz` SHA256
+`5dbc5370d68222c323808fc69d6c567faf7b2acf2d17092934244fceb3f90e17`
+contains final source/config/compiler/binary pins, logs and prior failed attempts.
+Final delta after tested source is documentation only; hosted CI/review pending.
+No acceptance of #341 or full retained C3 execution is inferred.
