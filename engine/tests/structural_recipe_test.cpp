@@ -239,9 +239,9 @@ int main() {
     local.source = {object("00.00.00.00.01", active.instance()), warm::new_uuid(), active.owner()};
     rejects([&] { active.revise(local).bind_structure(nodes); },
             "present local overlays reject rather than disappearing from structural source");
-    const auto legacy = ActiveAssembly::assemble(normalize_letters(f.base,
+    const auto legacy_active = ActiveAssembly::assemble(normalize_letters(f.base,
         {f.request(f.english, 0, warm::Exposure::Aggregate)}), warm::new_uuid(), false);
-    rejects([&] { legacy.bind_structure(nodes); }, "legacy recipe cannot silently enter structural binding");
+    rejects([&] { legacy_active.bind_structure(nodes); }, "legacy recipe cannot silently enter structural binding");
     std::set<std::string> expected_definitions;
     for (const auto &row : b.structural_occurrences)
       expected_definitions.insert(warm::key(row.definition));
