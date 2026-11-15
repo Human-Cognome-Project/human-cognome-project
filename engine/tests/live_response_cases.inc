@@ -404,7 +404,13 @@ void intent_controls(engine::Runtime &r, HostPath path) {
 }
 
 void intent_activity(engine::Runtime &r, HostPath path) {
-  for (bool changed : {false, true}) {
+  // Ordinary sparse traversal need not finish a multilevel cascade in one
+  // poll. The ordered controls reproduce complete, mixed-generation packets;
+  // none imposes an order on production traversal or clears recipient wake.
+  const char *orders[]{"ordinary", "parent_first", "parent_between"};
+  for (int order = 0; order < 3; ++order) for (bool changed : {false, true}) {
+    std::cout << "intent_activity_start,order=" << orders[order]
+              << ",changed_mass_publication=" << changed << '\n';
     Fixture f(r, path, {{}, {}, {0, 1}}, {{1, 1, 1, 0, 0}, {1, 0, 0, 1, 1}, {0, 0, 0, 0, 0}},
               {2, 1, 1, 1, 1}, {1, .25, .25, .25, .25}, {0, 2, 2, -4, -4});
     f.install();
@@ -416,6 +422,20 @@ void intent_activity(engine::Runtime &r, HostPath path) {
             "activity control recipient did not consume initial work");
     const auto before = intent_reference(f, p.gravity);
     const auto P = before.capacity;
+    const auto initial_tree = f.h.inspect_live_hierarchy();
+    const int left = initial_tree.order[0], right = initial_tree.order[1],
+              root = initial_tree.order[2];
+    const auto awake = [&] {
+      return (f.h.prepared_storage().inspection_flags[body] & 2) != 0;
+    };
+    const auto field_pending = [&](int logical) {
+      return (f.h.prepared_storage().inspection_flags[
+                  P + f.nodes[logical].field.record] & 2) != 0;
+    };
+    const auto fields_pending = [&] {
+      return field_pending(0) || field_pending(1) || field_pending(2);
+    };
+    require(!fields_pending(), "activity control did not start at held-input completion");
     near(before.values[4*P+body], .375, "initial activity force mismatch");
     near(before.values[10*P+body], 162./499, "initial activity intent mismatch");
     const auto retained_force = f.h.particle64(kForceX, body);
@@ -433,39 +453,102 @@ void intent_activity(engine::Runtime &r, HostPath path) {
         LiveHierarchyAccess::mass_total(f.h, 8);
       });
     }
-    no_new([&] {
-      f.control->set(3); // select fields only; do not activate the recipient
-      f.h.tick64(p);
+    no_new([&] { f.control->set(3); }); // fields only, without clearing body work
+    if (order == 0) {
+      no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
+      require(f.h.demand().particles_evaluated == 0,
+              "publication control evaluated bodies before wake");
+      require(!intent_current(f, before, p.gravity), "completed tick retained stale observation");
+    } else {
+      const auto step = [&](int node) {
+        no_new([&] { LiveHierarchyAccess::poll(f.h, p.gravity, node); });
+      };
+      if (order == 1) { step(root); step(left); step(right); }
+      else { step(left); step(root); step(right); }
       f.h.inspect_prepared();
-    });
-    require(f.h.demand().particles_evaluated == 0,
-            "publication control evaluated bodies before wake");
-    const bool awake = (f.h.prepared_storage().inspection_flags[body] & 2) != 0;
-    require(awake == changed, "current mass-publication wake behavior changed");
-    require(!intent_current(f, before, p.gravity), "completed tick retained stale observation");
+      const auto packet = selected(f.h.inspect_live_hierarchy(), root);
+      const auto intermediate = intent_reference(f, p.gravity);
+      std::cout << "intent_activity_intermediate,order=" << orders[order]
+                << ",changed_mass_publication=" << changed
+                << ",root_x=" << packet[0] << ",root_mass=" << packet[3]
+                << ",force=" << intermediate.values[4*P+body]
+                << ",retained_force=" << f.h.particle64(kForceX, body)
+                << ",parent_pending=" << field_pending(2)
+                << ",body_pending=" << awake() << '\n';
+      near(packet[0], changed && order == 2 ? 1.2 : -.5,
+           "ordered publication did not expose expected complete root");
+      require(packet[1] == 0 && packet[2] == 0 &&
+                  packet[3] == (changed && order == 2 ? 5 : 2),
+              "ordered root packet mass/components mismatch");
+      require(field_pending(2) == changed,
+              "late child publication lost pending parent work");
+      require((intermediate.values[4*P+body] != before.values[4*P+body]) == changed,
+              "ordered control missed intermediate force difference");
+      if (changed)
+        near(intermediate.values[4*P+body], order == 1
+                 ? .375 - 1/6.25 + 1/12.25
+                 : .375 - 2.5/.64 + 2.5/27.04,
+             "intermediate force differs from independent packet calculation");
+    }
+    require(awake() == changed, "current mass-publication wake behavior changed");
+    require(f.h.particle64(kForceX, body) == retained_force,
+            "field publication changed retained body force");
+    // Held source bodies and this two-level tree require at most two further polls
+    // in this fixture. Follow existing native work only: no reactivation,
+    // body phase, sleep, or fixed-point operation enters the production tick.
+    const auto completed_tick = f.h.prepared_storage().completed_ticks;
+    int completion_polls = 0;
+    while (fields_pending() && completion_polls < 2) {
+      no_new([&] { LiveHierarchyAccess::poll(f.h, p.gravity); f.h.inspect_prepared(); });
+      ++completion_polls;
+      require(awake() == changed, "held-input completion changed pending body wake");
+      require(f.h.particle64(kForceX, body) == retained_force,
+              "held-input completion evaluated the body");
+    }
+    const auto packet = selected(f.h.inspect_live_hierarchy(), root);
     const auto published = intent_reference(f, p.gravity);
+    std::cout << "intent_activity_completion,order=" << orders[order]
+              << ",changed_mass_publication=" << changed
+              << ",polls=" << completion_polls << ",fields_pending=" << fields_pending()
+              << ",root_x=" << packet[0] << ",root_mass=" << packet[3]
+              << ",force_before=" << before.values[4*P+body]
+              << ",force_after=" << published.values[4*P+body]
+              << ",retained_force=" << f.h.particle64(kForceX, body)
+              << ",body_pending=" << awake() << '\n';
+    require(!fields_pending(), "held-input field completion exceeded bounded polls");
+    require(f.h.prepared_storage().completed_ticks == completed_tick,
+            "field-only completion advanced a body tick");
+    require(packet[0] == (changed ? -1 : -.5) && packet[1] == 0 && packet[2] == 0 &&
+                packet[3] == (changed ? 8 : 2),
+            "held-input completion did not reach expected final root packet");
     require(published.values[4*P+body] == before.values[4*P+body] &&
                 f.h.particle64(kForceX, body) == retained_force,
             "equal-force publication control changed force");
     near(published.values[10*P+body], changed ? 324./499 : 162./499,
          "published intent mismatch");
-    require(((f.h.prepared_storage().inspection_flags[body] & 2) != 0) == awake,
+    require(awake() == changed,
             "candidate observation changed activity");
+    const bool awake_after_publication = awake();
     const auto old = f.h.particles64();
     const auto expected = physical_reference(f, p, false);
     no_new([&] { f.h.tick64(p); f.h.inspect_prepared(); });
     verify_physical(f, expected, old, p);
+    require(!intent_current(f, published, p.gravity), "following body tick retained stale observation");
     require((f.h.demand().particles_evaluated > 0) == changed,
             "native wake not consumed on following body phase");
+    require(!awake(), "following body phase did not consume recipient wake");
     require(f.h.particle64(kPosX, body) == 0 && f.h.particle64(kVelX, body) == 0,
             "zero-duration activity control moved recipient");
-    std::cout << "intent_activity,changed_mass_publication=" << changed
+    std::cout << "intent_activity,order=" << orders[order]
+              << ",changed_mass_publication=" << changed
               << ",force_before=" << before.values[4*P+body]
               << ",force_after=" << published.values[4*P+body]
               << ",intent_before=" << before.values[10*P+body]
               << ",intent_after=" << published.values[10*P+body]
-              << ",awake_after_publication=" << awake
+              << ",awake_after_publication=" << awake_after_publication
+              << ",completion_polls=" << completion_polls
               << ",following_body_visits=" << f.h.demand().particles_evaluated
+              << ",recipient_pending_after_body=" << awake()
               << ",stale_copy_rejected=1,dt=0,accepted_x=0 PASS\n";
   }
 }
