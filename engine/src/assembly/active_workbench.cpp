@@ -72,6 +72,7 @@ ActiveAssembly ActiveAssembly::assemble(warm::Bundle shared, warm::Uuid owner,
 ActiveAssembly ActiveAssembly::revise(std::optional<LocalInput> local) const {
   auto revised = ActiveAssembly(projection_, owner_, requires_local_, std::move(local));
   revised.focal_fields_ = focal_fields_;
+  revised.focus_override_ = focus_override_;
   return revised;
 }
 ActiveAssembly ActiveAssembly::restart() const {
@@ -82,6 +83,7 @@ ActiveAssembly ActiveAssembly::restart() const {
 ActiveAssembly ActiveAssembly::focus(std::vector<FocalField> fields) const {
   auto focused = revise(local_);
   focused.focal_fields_ = std::move(fields);
+  focused.focus_override_ = true;
   return focused;
 }
 std::vector<Origin> ActiveAssembly::origins() const {
@@ -92,6 +94,16 @@ std::vector<Origin> ActiveAssembly::origins() const {
     for (const auto &v : local_->values)
       out.push_back({{study(), {v.entry, {}}}, v.ref.object, {}, v.ref});
   return out;
+}
+StructuralStudyInput ActiveAssembly::bind_structure(const std::vector<StudyNode> &nodes) const {
+  require(inputs_available());
+  if (local_)
+    throw warm::Error("structural active binding does not yet support local overlays");
+  auto input = memberships_.bind_structure(projection_, nodes);
+  // An explicit empty override clears recipe focus. No override preserves it.
+  if (focus_override_)
+    input.focal_fields.assign(focal_fields_.begin(), focal_fields_.end());
+  return input;
 }
 StudyInput ActiveAssembly::bind(const std::vector<StudyNode> &nodes) const {
   require(inputs_available());

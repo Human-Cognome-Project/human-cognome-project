@@ -422,7 +422,7 @@ add_executable(letter_projection_test tests/letter_projection_test.cpp)
 target_link_libraries(letter_projection_test PRIVATE letter_projection)
 add_test(NAME letter_projection_test COMMAND letter_projection_test)
 add_executable(structural_recipe_test tests/structural_recipe_test.cpp)
-target_link_libraries(structural_recipe_test PRIVATE membership_fields)
+target_link_libraries(structural_recipe_test PRIVATE active_workbench)
 add_test(NAME structural_recipe_test COMMAND structural_recipe_test)
 
 add_executable(letter_projection_native_test tests/letter_projection_native_test.cpp)

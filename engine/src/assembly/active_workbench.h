@@ -68,6 +68,9 @@ class ActiveAssembly {
   const std::optional<LocalInput> &local() const { return local_; }
   std::vector<Origin> origins() const;
   StudyInput bind(const std::vector<StudyNode> &nodes) const;
+  // Coordinate-free v2 handoff for native prepared admission. No live slots,
+  // starts or native execution are created. Local overlays are not supported yet.
+  StructuralStudyInput bind_structure(const std::vector<StudyNode> &nodes) const;
 
  private:
   ActiveAssembly(LetterProjection projection, warm::Uuid owner, bool required,
@@ -78,6 +81,7 @@ class ActiveAssembly {
   bool requires_local_;
   std::optional<LocalInput> local_;
   std::vector<FocalField> focal_fields_;
+  bool focus_override_{false};
 };
 
 struct ExecutionHandle {
