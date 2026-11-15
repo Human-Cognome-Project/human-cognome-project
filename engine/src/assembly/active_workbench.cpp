@@ -78,6 +78,7 @@ ActiveAssembly ActiveAssembly::revise(std::optional<LocalInput> local) const {
 ActiveAssembly ActiveAssembly::restart() const {
   auto rebuilt = assemble(projection_.recipe(), owner_, requires_local_, local_);
   rebuilt.focal_fields_ = focal_fields_;
+  rebuilt.focus_override_ = focus_override_;
   return rebuilt;
 }
 ActiveAssembly ActiveAssembly::focus(std::vector<FocalField> fields) const {

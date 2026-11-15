@@ -225,6 +225,8 @@ int main() {
           "structural active binding inherits recipe focus");
     check(active.focus({}).revise({}).bind_structure(nodes).focal_fields.empty(),
           "explicit empty focus survives revision and clears recipe focus");
+    check(active.focus({}).restart().bind_structure(nodes).focal_fields.empty(),
+          "explicit empty focus survives logical restart");
     const auto replacement = FocalField{GroupKind::ParentValue, InputText(warm::key(f.ref(f.english).object))};
     const auto focused = active.focus({replacement}).bind_structure(nodes);
     check(focused.focal_fields.size() == 1 && focused.focal_fields[0].value == replacement.value,
@@ -233,6 +235,13 @@ int main() {
     rejects([&] { active.bind_structure({}); }, "structural active binding validates layout");
     rejects([&] { ActiveAssembly::assemble(b, warm::new_uuid(), true).bind_structure(nodes); },
             "required missing local inputs cannot be bypassed");
+    LocalInput local;
+    local.source = {object("00.00.00.00.01", active.instance()), warm::new_uuid(), active.owner()};
+    rejects([&] { active.revise(local).bind_structure(nodes); },
+            "present local overlays reject rather than disappearing from structural source");
+    const auto legacy = ActiveAssembly::assemble(normalize_letters(f.base,
+        {f.request(f.english, 0, warm::Exposure::Aggregate)}), warm::new_uuid(), false);
+    rejects([&] { legacy.bind_structure(nodes); }, "legacy recipe cannot silently enter structural binding");
     std::set<std::string> expected_definitions;
     for (const auto &row : b.structural_occurrences)
       expected_definitions.insert(warm::key(row.definition));
