@@ -214,11 +214,15 @@ int main() {
               owned.contacts.size() == input.contacts.size() &&
               owned.selections.size() == input.selections.size(),
           "active owner exposes the complete structural source");
-    for (std::size_t i = 0; i < owned.occurrences.size(); ++i)
-      check(owned.occurrences[i].id == input.occurrences[i].id &&
-                owned.occurrences[i].definition == input.occurrences[i].definition &&
-                owned.occurrences[i].study_node == input.occurrences[i].study_node,
+    // The earlier source-death fixture deliberately reversed source order.
+    // Compare stable occurrence identities rather than unrelated vector indexes.
+    for (const auto &row : owned.occurrences) {
+      const auto found = std::find_if(input.occurrences.begin(), input.occurrences.end(),
+          [&](const auto &expected) { return expected.id == row.id; });
+      check(found != input.occurrences.end() && row.definition == found->definition &&
+                row.study_node == found->study_node,
             "active structural occurrence identity and conceptual role unchanged");
+    }
     check(owned.focal_fields.size() == 1 &&
               owned.focal_fields[0].value == input.focal_fields[0].value &&
               owned.focal_fields[0].kind == input.focal_fields[0].kind,
