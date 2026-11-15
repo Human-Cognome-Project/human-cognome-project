@@ -1,6 +1,21 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+
+test('legacy optional request is explicitly unavailable without a fabricated prepared generation', () => {
+  const f = fixture();
+  f.execution = {backend: 'native_cpu', mode: 'flat', completed_tick: '0',
+    prepared_generation: null, body_records: [], comparisons: []};
+  f.intent = {status: 'unavailable', gravity: 1, generation: null, tick: '0', frame: [0,0,0],
+    work_limit: '0', work_required: '0', work_used: '0', readback_bytes: '0', rows: []};
+  validateSnapshot(f);
+  const bad = edit => {const v = structuredClone(f); edit(v); assert.throws(() => validateSnapshot(v));};
+  bad(v => v.intent.status = 'ok'); bad(v => v.intent.status = 'budget_refused');
+  bad(v => v.intent.generation = '1'); bad(v => v.intent.tick = '1');
+  bad(v => v.intent.frame[0] = 1); bad(v => v.intent.work_required = '1');
+  bad(v => v.intent.work_used = '1'); bad(v => v.intent.readback_bytes = '1');
+  bad(v => delete v.execution);
+});
 import {parseSnapshot, validateSnapshot, rangesFor, massColour, selectParticles, boundsFor, classifyUpdate, referenceShift, pollInterval, fileStamp, resolveSelection, watchState} from '../model.mjs';
 const study = '12345678-1234-1234-1234-123456789abc';
 export function fixture() {
