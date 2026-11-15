@@ -215,11 +215,12 @@ int main() {
               owned.selections.size() == input.selections.size(),
           "active owner exposes the complete structural source");
     // The earlier source-death fixture deliberately reversed source order.
-    // Compare stable occurrence identities rather than unrelated vector indexes.
+    // Independent projections also have different study UUIDs: compare source paths.
     for (const auto &row : owned.occurrences) {
       const auto found = std::find_if(input.occurrences.begin(), input.occurrences.end(),
-          [&](const auto &expected) { return expected.id == row.id; });
-      check(found != input.occurrences.end() && row.definition == found->definition &&
+          [&](const auto &expected) { return expected.id.substr(expected.id.find('/')) == row.id.substr(row.id.find('/')); });
+      check(std::string(row.id).rfind(std::string(active.study().str()) + "/", 0) == 0 &&
+                found != input.occurrences.end() && row.definition == found->definition &&
                 row.study_node == found->study_node,
             "active structural occurrence identity and conceptual role unchanged");
     }
