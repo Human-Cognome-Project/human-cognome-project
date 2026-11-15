@@ -227,7 +227,7 @@ int main() {
           "explicit empty focus survives revision and clears recipe focus");
     check(active.focus({}).restart().bind_structure(nodes).focal_fields.empty(),
           "explicit empty focus survives logical restart");
-    const auto replacement = FocalField{GroupKind::ParentValue, InputText(warm::key(f.ref(f.english).object))};
+    const auto replacement = assembly::FocalField{GroupKind::SiblingDefinition, InputText(warm::key(f.ref(f.english).object))};
     const auto focused = active.focus({replacement}).bind_structure(nodes);
     check(focused.focal_fields.size() == 1 && focused.focal_fields[0].value == replacement.value,
           "explicit focus replaces rather than appends to recipe focus");
