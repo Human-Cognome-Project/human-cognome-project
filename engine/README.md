@@ -29,6 +29,12 @@ engine/taichi/
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) before changing boundaries.
 
+The active workbench keeps logical `ActiveAssembly` implementation in
+`src/assembly/active_workbench.cpp` and native `ActiveSession` lifetime/reporting
+implementation in `src/assembly/active_session.cpp`. They retain one public
+header and the same library target; see the
+[ownership contract and split evidence](docs/ACTIVE-WORKBENCH.md#native-implementation-split--2026-11-15).
+
 ## Python boundary
 
 Taichi upstream ships a primarily Python-facing abstraction layer for arbitrary

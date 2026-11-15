@@ -1,5 +1,14 @@
 # Core continuation after local CUDA corrections
 
+**Contributor Pass 2 slice — 2026-11-15 (awaiting review):** the
+[ActiveSession implementation move](../engine/docs/ACTIVE-WORKBENCH.md#native-implementation-split--2026-11-15)
+at public `7b998501` is stacked on #342's `9b5c1926`. Source identity and focused
+local CI preserve logical focus/restart, native lifetime/reporting, public
+interfaces and the standalone projection boundary. #342 remains a pending
+integration dependency; the split awaits its own review/hosted qualification.
+Reviewed local evidence can permit bounded follow-on work. No new Analyst API,
+numerical behavior, complete reuse audit or prepared-admission owner is implied.
+
 **Maintainer integration — 2026-11-15:** #344 responsibility map and #345 publication-cut correction are integrated from qualified heads df49cc1c and 84045373. #345 accepted in review 5913048028. Both PR smoke/native workflows passed all 12 native jobs. Personally inspected #345 run 43756584784: 169 regression passes (43/42/42/42), all four intent activity profiles, database addressed_reads=24/private_reads=0. Correction preserves exact final equality, intermediate native order controls, unchanged retained force, bounded held-input completion and pending/consumed recipient work; production mathematics/traversal are unchanged. Local archives remain contributor-reported. The original #342 failed run is retained as failed, with its exact schedule unknown.
 
 #342 remains unmerged pending qualification with this correction incorporated. Next: combined branch qualification and the bounded mechanical ActiveSession implementation split from the accepted map, using explicit dependencies and preserving #342's focus/restart distinction. No new Analyst API, structural-intent formula, scheduler or numerical behavior is authorized by the file split. Main's resulting merge has normal push CI still to qualify; no duplicate workflow is needed. Held #75/#111/#123 unchanged.

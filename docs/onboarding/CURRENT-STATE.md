@@ -1,5 +1,15 @@
 # Current implementation and work
 
+**Contributor ActiveSession split — 2026-11-15 (awaiting review):** public source
+`7b998501` moves native session implementation into `active_session.cpp`, with
+the logical implementation, public header, target and behavior preserved. It
+depends explicitly on #342 at `9b5c1926`, including the integrated #345 correction;
+#342 is not treated as merged. Quick CI, byte-identity witnesses, two native
+owner/observer tests and four standalone GCC 11 tests passed locally. See the
+[implementation/evidence record](../../engine/docs/ACTIVE-WORKBENCH.md#native-implementation-split--2026-11-15).
+Maintainer review and authoritative hosted qualification remain pending; this
+does not complete native reuse, retained C3 admission or #324 mathematics.
+
 **Maintainer integration — 2026-11-15:** #344 responsibility map and #345 publication-cut correction are integrated from qualified heads df49cc1c and 84045373. #345 accepted in review 5913048028. Both PR smoke/native workflows passed all 12 native jobs. Personally inspected #345 run 43756584784: 169 regression passes (43/42/42/42), all four intent activity profiles, database addressed_reads=24/private_reads=0. Correction preserves exact final equality, intermediate native order controls, unchanged retained force, bounded held-input completion and pending/consumed recipient work; production mathematics/traversal are unchanged. Local archives remain contributor-reported. The original #342 failed run is retained as failed, with its exact schedule unknown.
 
 #342 remains unmerged pending qualification with this correction incorporated. Next: combined branch qualification and the bounded mechanical ActiveSession implementation split from the accepted map, using explicit dependencies and preserving #342's focus/restart distinction. No new Analyst API, structural-intent formula, scheduler or numerical behavior is authorized by the file split. Main's resulting merge has normal push CI still to qualify; no duplicate workflow is needed. Held #75/#111/#123 unchanged.
