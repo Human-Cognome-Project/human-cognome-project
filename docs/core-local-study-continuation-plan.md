@@ -1,5 +1,15 @@
 # Core continuation after local CUDA corrections
 
+**Contributor correction — 2026-11-15 (awaiting review):** #344's authorized
+[publication-cut correction](../engine/docs/LIVE-INTENT-OBSERVATION.md#publication-cut-correction--2026-11-15)
+is implemented at public source `e314eff7`, with local quick CI and ten focused
+native tests passing. The native order controls and bounded completion retain
+exact final equality, unchanged force and pending/consumed work. Production
+ordering and mathematics are unchanged. Original hosted failure 43715143149
+remains failed; #342 is not integrated. Maintainer-reviewed local evidence can
+permit bounded continuation to the mechanical ActiveSession split with its
+explicit #342 dependency; final integration awaits authoritative hosted checks.
+
 **Maintainer protocol/map review — 2026-11-15:** #344 head `df49cc1c874f69341b11fa9897978310d7b10d4c` is source-accepted for bounded continuation in review 5912507243. It starts directly from main 22851781 and changes only four documentation files; no premature extraction, numerical change or merge was made. Its responsibility map and small ActiveSession implementation split follow #343. Smoke passed; native run 43753124068 had passed build/projection/database while regression/compiler jobs remained running. #344 is not yet integrated. No duplicate CI requested.
 
 Next authorized slice: a separate test-boundary correction for #342's unresolved activity case, committing reproducible deterministic native publication-order controls. Source inspection confirms the current one-poll final-equality expectation conflicts with the contract permitting mixed complete sibling generations. Preserve exact final equality, unchanged retained force, pending parent/body work and a bounded held-input completion check; do not clear wake, loosen comparisons or serialize production traversal. Contributor reports 20 local passes and an ordered native counterexample, but the raw archive/probe and local tested commit were not independently inspected. The original hosted schedule is unknown and its failure remains recorded. #342 stays unmerged; any production defect found must be handled separately. Mechanical extraction follows qualified correction, with explicit #342 dependency. Held #75/#111/#123 unchanged.

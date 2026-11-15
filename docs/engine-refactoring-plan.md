@@ -77,4 +77,16 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-Plan established 2026-11-15. Responsibility map, native-reuse audit and implementation passes are pending. No runtime code changed by this plan.
+Plan established 2026-11-15. [#344](https://github.com/Human-Cognome-Project/human-cognome-project/pull/344)
+is source-accepted for bounded continuation in review 5912507243; its map is not
+yet integrated. The separately reviewable
+[publication-cut test correction](../engine/docs/LIVE-INTENT-OBSERVATION.md#publication-cut-correction--2026-11-15)
+implements native deterministic order controls and bounded held-input completion.
+At public source `e314eff7`, local quick CI and ten focused CTests passed across
+the affected worker/path matrix. Production code and formulas are unchanged;
+the correction awaits maintainer review and authoritative hosted qualification.
+The original failed run and #342's pending integration remain explicit.
+Maintainer-reviewed local qualification permits provisional continuation to the
+proposed mechanical ActiveSession implementation split, preserving #342 through
+an explicit dependency; final integration awaits authoritative hosted checks.
+No code move or complete native-reuse audit is claimed here.

@@ -304,7 +304,7 @@ hosted qualification; no duplicate main/parent CI or self-merge was requested.
 The test-only `intent_activity` case follows #335 review 5904523468. It exercises
 two live leaf fields under one shared root, sharing one recipient, with unchanged and changed-source
 controls. Initial leaf packets have (X,mass)=(1,1),(-2,1); changed packets are
-(2,4),(-4,4). The root changes from (-0.5,2) to (-1,8). Each response force is unchanged, so the recipient's combined X force
+(2,4),(-4,4). At held-input completion the root changes from (-0.5,2) to (-1,8). Each response force is unchanged, so the recipient's combined X force
 remains exactly 0.375 while the coefficient-weighted intent moves from 162/499 to 324/499. The recipient participates by one half in each leaf; both inherited responses are retained in the coefficient sum even though their forces cancel.
 All inputs use exact binary geometry/mass arithmetic. Five real fixture bodies
 supply those packets through ordinary native field publication, not supplied
@@ -312,8 +312,11 @@ candidate packets or a host replacement for publication.
 
 After an initial zero-duration tick consumes body work, the test modifies source
 body masses/positions through test-only access and selects only fields. The next
-ordinary tick must evaluate zero bodies, publish the fields, and leave the shared
-recipient awake only for the changed case. The current mass-publication
+ordinary tick evaluates zero bodies and performs one native centroid poll. A
+parent may retain work after that poll: complete sibling publications need not
+all belong to the same generation. The correction below establishes bounded
+held-input field completion before checking final force equality, while leaving
+the shared recipient awake only for the changed case. The current mass-publication
 invalidation path is the expected cause: equal combined force does not suppress
 that path. **This is not proof of a candidate-aware wake predicate**, nor a test
 of geometric equal-force changes with unchanged source mass. No production
@@ -361,6 +364,75 @@ are retained locally, not independently reviewed remotely. Final delta after
 the tested pin is three Markdown files. Earlier trajectory/control/lifecycle
 suites were not rerun; GPU/native Windows/database/browser/performance were not
 tested. #335 remains the source-accepted parent pending hosted qualification.
+
+### Publication-cut correction — 2026-11-15
+
+Contributor implementation awaiting review, following #344 review 5912507243
+under #343. The original hosted failure remains recorded at
+[run 43715143149/job 132815906747](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/43715143149/job/132815906747):
+`live_intent_activity_2_bulk`, `equal-force publication control changed force`.
+Its exact schedule is unknown; the following controls do not relabel that run or
+accept/integrate #342. The original a2706e3a qualification above describes its
+own one-poll test source.
+
+The committed `intent_activity` case now runs ordinary traversal, parent-first
+and parent-between-child native publication controls, each with unchanged and
+changed sources. Existing test-only `LiveHierarchyAccess::poll` selects the
+deterministic order; production kernels, traversal and mathematical expressions
+are unchanged. Intermediate observations assert complete root packets, an
+independent packet-derived force, unchanged retained body force and pending
+parent/body bits. The unchanged controls require no pending work or force change.
+
+| Changed-source control | Intermediate root X / mass | Diagnostic X force | Parent/body work |
+| --- | --- | --- | --- |
+| Root → left → right | -0.5 / 2 | 0.29663265306122444 | Both pending |
+| Left → root → right | 1.2 / 5 | -3.4387943786982245 | Both pending |
+
+These intermediate forces must differ from the original 0.375. The independent
+expectations are `0.375 - 1/6.25 + 1/12.25` and
+`0.375 - 2.5/0.64 + 2.5/27.04`. The latter root is the complete reduction
+`(4*2 + 1*(-2))/5`; it is an allowed mixed-generation packet, not evidence of a
+torn publication.
+
+Before final equality, the fixture follows existing pending field bits for at
+most two further native polls with held source bodies. It performs no body
+phase, reactivation or sleep in that loop. It fails if field work remains,
+the final root differs from exactly (-1,0,0,8), a body tick advances, the retained
+force changes or the pending body wake disappears. The unchanged source must
+retain exactly (-0.5,0,0,2). The original exact diagnostic-force equality and
+unchanged native accumulator assertion remain intact. The next ordinary body
+tick must consume the recipient wake, reject the copied observation, match the
+physical reference and preserve the dt=0 position/velocity. Ordered partial
+polls are not presented as completed ticks. Packet/force/pending diagnostics
+precede the final assertions for future failure inspection.
+
+Personally executed at public source
+`e314eff72e015130b915546d1311c53d231548c2`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, Clang/LLVM 15 Release, actual x64:
+
+- Local CI `quick` passed: three CTests, 632 independent placement-math samples
+  and the placement-capacity case, including a rebuild of the matching substrate.
+- Ten focused CTests passed in 117.41 seconds: two native packet probes, four
+  original candidate profiles and four revised activity profiles. The activity
+  profiles exercise one/two workers × bulk/direct, with 24 order/source controls.
+- All forced changed-source cases retained parent/body work and completed in
+  one continuation poll. Unchanged cases needed none. All final recipient
+  diagnostic X forces were exactly 0.375, with unchanged retained force, the expected intent and consumed
+  recipient wake after the following body phase. Existing installation IR
+  audits and guarded no-allocation paths ran in these fixtures.
+
+Evidence directories: `/tmp/hcp-activity-quick-e314eff7` and
+`/tmp/hcp-activity-focused-e314eff7`. Both checksum manifests verified. Archive
+`/tmp/hcp-intent-activity-e314eff7.tar.gz`, SHA256
+`a149fcd62110e6bea58ec1706e8728450483afcc523bb8fc1df66d6113386b05`,
+retains exact commands, source/submodule/configuration and binary pins, full
+outputs and post-PASS offline-cache warnings. This is local contributor evidence,
+not independently inspected hosted evidence. Final follow-up changes only
+documentation. Full local regression, extra compiler modes, GPU, database,
+browser and performance profiles were not run for this test-only correction;
+authoritative hosted qualification and maintainer review remain pending.
+Maintainer-reviewed local evidence can permit bounded follow-on work while
+hosted checks run; final integration requires their disposition.
 
 ## Unchanged-mass geometric activity — 2026-11-14
 
