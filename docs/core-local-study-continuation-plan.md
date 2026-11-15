@@ -1,5 +1,8 @@
 # Core continuation after local CUDA corrections
 
+**#342 correction — 2026-11-15 (awaiting re-review):** restored the runtime-independent structural projection suite and moved ActiveAssembly checks to native active_workbench_test, addressing review 5910700086. A fresh standalone build passed all four tests; the affected native test also passed at 33081aaa. Production handoff behavior is unchanged. Hosted correction qualification remains pending.
+
+
 **Contributor follow-up — 2026-11-15 (awaiting review):** ActiveAssembly now exposes coordinate-free v2 structural binding, with inherited/explicit focus and fail-closed unsupported private overlays. CPU structural/legacy-workbench checks passed. [Bridge boundary and evidence](../engine/docs/LIVE-INTENT-OBSERVATION.md#active-coordinate-free-handoff--2026-11-15). Owned native admission, prepared record/hierarchy mapping and retained C3 execution remain next; this independent step does not assume acceptance of #341.
 
 

@@ -617,3 +617,27 @@ were corrected, not relabelled successful. Local archive
 contains final source/config/compiler/binary pins, logs and prior failed attempts.
 Final delta after tested source is documentation only; hosted CI/review pending.
 No acceptance of #341 or full retained C3 execution is inferred.
+
+### Review correction: standalone projection boundary — 2026-11-15
+
+Review 5910700086 identified a real hosted regression: structural_recipe_test is
+also built by the standalone letter_projection project without Taichi/PostgreSQL.
+The initial PR added an ActiveAssembly header to that shared source, accidentally
+pulling in the native runtime. Earlier top-level native passes did not cover this
+build route and do not clear that failure.
+
+The original structural_recipe_test source and membership_fields link dependency
+are restored exactly. All new ActiveAssembly checks moved to
+`active_structural_checks.h`, invoked by native active_workbench_test. No Taichi or
+PostgreSQL dependency was added to the standalone project; production code is
+unchanged by this correction.
+
+At `33081aaa76c741a4d172097be840fda5e6e72191`, a fresh standalone configure/build
+(`cmake -S engine/tests/letter_projection`) and all four CTests passed. The native
+active_workbench_test rebuilt and passed with the moved binding/focus/revision/
+restart/local-input checks. Local evidence includes commands, logs, both build
+configurations/compiler versions, source/Taichi pins and binary hashes in
+`setup-evidence/structural-boundary-33081aaa.tar.gz`, SHA256
+`f3025e1452885a92ce328b009461b453ae16ec6d97dbd51affe55e06cf89f85a`.
+Final delta after this tested pin is documentation only. This supersedes the prior
+qualification scope for #342; hosted rerun/review of the correction remain pending.
