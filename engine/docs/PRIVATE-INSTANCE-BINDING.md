@@ -1,5 +1,14 @@
 # Private instance-binding contract proposal
 
+**Bounded implementation follow-up — 2026-11-16 (awaiting review):**
+the [checked prepared associations and observation evidence](PREPARED-ASSOCIATIONS.md)
+implement the first consumer slice accepted in #351 review 5925874274, starting
+from integrated `677d151f`. Existing source/plan/claim storage is borrowed through
+a checked generation/tick stamp; one observer consumes detached metadata after
+the same validation as retained bindings. Actual claim arrays, candidate state
+and owner operation sets remain intact. The broader indexed adapter and
+representation changes below remain unimplemented.
+
 Proposed under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
 2026-11-16, awaiting review. Production source inspected:
 `fa7f09e4fa0598ac74e0ba9fa93d050881e7d44f`, including integrated #349.

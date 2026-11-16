@@ -1,5 +1,22 @@
 # Current implementation and work
 
+**Contributor checked-association slice — 2026-11-16 (awaiting review):**
+public implementation `33cffcb3` on integrated main `677d151f` adds a checked
+borrowed PreparedStudyOwner source/plan view and one prepared observer consumer.
+Current native handles remain authoritative; old generation/tick stamps refuse.
+The consuming observation path avoids one detached metadata copy while retaining
+identical snapshots/readback. Measured fixture saving: 39 C++ allocation requests
+and 3,847 requested bytes; view/loan use 24/40 stack bytes with no new owning
+storage or source-owner reference. Local quick CI, all 11 owner/observer matrix
+CTests and four fresh GCC wrapper checks passed. See
+[scope, controls and raw evidence](../../engine/docs/PREPARED-ASSOCIATIONS.md).
+Review/hosted CI remain pending; no maps, candidate buffers, native guard or
+operation set were replaced. Next comparison should measure specific remaining
+duplicate associations before proposing removal. Broader indexed execution,
+mixed-revision/schema changes, producer migration, full accounting and #324
+math remain separate. Main `677d151f` subsequently passed smoke 43936858958 and
+all 12 native jobs in 43936859174; this is distinct from this contribution's CI.
+
 **Maintainer integration — 2026-11-16 (supersedes older status below):** #350 `9e0307587dde72e793a4b661bc86f20ccb0cc654` and #351 `071ac31818c4a6694881c35a5f10e38e6f3596d7` are integrated by this merge. Reviews 5923994794 and 5925874274 accepted their scope. #350 smoke 43910777706 and all 12 native jobs in 43910777722 passed; inspected logs confirm 172 regression passes including both new native-instance tests. #351 smoke 43915843667 and all 12 native jobs in 43915843738 passed. Main fa7f09e4 also passed smoke/native 43913630873/43913630852. The combined merge preserves #349 production code and adds #350's exact witness/build additions plus documentation; its normal CI is separate combined qualification.
 
 Next authorized slice: implement the private instance-binding contract in engine/docs/PRIVATE-INSTANCE-BINDING.md through one checked association view over existing PreparedStudyOwner source/plan and one observer/validator consumer. Prefer existing accessors; preserve handle arrays, candidate/committed state and both owners' operation sets. Prove exact source/role/field association, refusal/lifetime/generation equivalence and measure copy savings versus sharing overhead. Native coordinate reuse alone is not a semantic lifetime guard. Direct indexed adoption, mixed-revision provenance, heterogeneous schemas, public producer migration, full accounting and #324 mathematics remain separate. Preserve minimal catalogue disruption and Analyst/control/engine separation.
