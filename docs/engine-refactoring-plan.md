@@ -10,6 +10,119 @@ The viewport and temporary API front end are controls through which a human or a
 
 This plan authorizes inspection and bounded proposals, followed by focused reviewed implementation. It does not fix a final module layout, select a new intent formula, or declare an SNode storage relationship to be a composition relationship. Preserve [system boundaries](onboarding/SYSTEM-BOUNDARIES.md), [work discipline](onboarding/WORK-DISCIPLINE.md), and applicable component contracts.
 
+## Agent focus: coherence frames and Analyst control
+
+User clarification, 2026-11-16. Parent values begin at smaller constituent levels
+and aggregate through the composition hierarchy up to the top. This prior
+structure establishes the frame required for coherence. Whole-particle fields
+can affect the degrees of freedom available within that frame. "Free space"
+here means mathematical degrees of freedom, not merely unoccupied spatial volume.
+
+Under #324, inspect how accumulated parent structure defines that freedom and
+how whole-particle response operates within it. Merely separating two additive
+force totals does not establish this relationship. Trace a nested/repeated
+composition from parent contributions to the whole-particle response, identifying
+where the current implementation preserves, loses or has not yet implemented
+the distinction. State the mathematical representation and supported conditions
+before proposing an algorithm; do not silently choose projection, clipping,
+rigidity or a new constraint solver. This is the intended model to investigate,
+not a claim that existing code already enforces it. Keep structural intent,
+contextual influence and actual tick trajectory separately observable.
+
+The Analyst occupies the player/controller role in the gaming-engine structure.
+Humans (currently the user) and LLM agents exercise or supplement that role while
+the concrete Analyst implementation is developed. The viewport and temporary API
+are control/observation interfaces for that role, not the Analyst itself and not
+numerical authority. Preserve three explicit responsibilities:
+
+| Responsibility | Owned decisions or behavior |
+| --- | --- |
+| Analyst/player/controller | Select the study, focus and interventions through the applicable operations. |
+| Viewport/API/harness controls | Translate authorized requests and expose completed observations; keep display and request handling separate from simulation policy. |
+| Engine execution | Own validated composition/instances, lifecycle, coherence mechanics and numerical response; enforce supported-operation boundaries. |
+
+For the next inspection, map an Analyst request through its control adapter into
+engine execution and back to completed observation. Identify any decisions or
+state that sit in the wrong layer. Pair that trace with the native nested-instance
+and accounting comparison below. Propose focused changes by responsibility;
+keep mathematical changes, native replacements and mechanical moves separately
+reviewable. Do not implement speculative Analyst decision-making to complete
+this separation.
+
+## Inspection clarification: nested assemblies and live instances
+
+Maintainer direction, 2026-11-16, following the user's clarification. The intended
+object model is reusable structural assemblies instantiated within an active
+study, with scene/instance-dependent attachments distinguished from primary
+composition. One resulting active SNode tree is compatible with construction
+from nested assemblies. Distinct identity for each live occurrence does not by
+itself require flattening the object into a separately owned host ledger for
+every constituent. Rollup is intended to enable this compositional use, retaining
+the object's internal structure while exposing the selected operating level.
+
+The user's coherence framing is explicit: structure is the frame of what is
+required for coherence; additional elements supply the degrees of freedom within
+those frames. Degrees of freedom is intended in its mathematical sense, not merely
+as spatial movement. Inspect how that relationship is represented and maintained across
+nested instances and rollups. Do not reduce this distinction to a catalogue of
+attachment types, or assume that a coherence frame means a fixed spatial origin,
+a rigid body, or a newly selected constraint/force law.
+
+This is the inspection target, not a finding that Taichi supplies a game-engine
+object-class or scene-attachment API. Verify the pinned fork's exact construction,
+compilation, storage-instance and ownership mechanisms. Distinguish an SNode
+layout node, a compiled layout/tree, runtime storage cells/instances, and an HCP
+conceptual object occurrence. Establish their actual mappings rather than
+assuming either equivalence or incompatibility from terminology.
+
+The native-reuse pass must cover:
+
+- Trace a reusable composed definition instantiated twice in one study, including
+  a nested repeated subassembly. Identify which layout/compilation can be reused,
+  which storage/state is per instance, and how the native path identifies,
+  activates, updates, releases and reuses each instance. Determine whether
+  subtree construction/reuse requires cloning, indexed storage, separate trees,
+  or another existing mechanism; document actual support and limitations.
+- Attach a contextual relationship to only one instance. Show how primary
+  composition remains distinct from that attachment and whether Taichi directly
+  represents the relationship or HCP must supply explicit typed metadata.
+  Neither raw SNode parentage nor an arbitrary membership edge establishes
+  semantic composition without the validated mapping.
+- Trace aggregate/parts exposure and rollup through those same structures.
+  Determine what remains nested, what is exposed for execution, what is merely
+  navigation, and which identities survive exposure changes. Do not expand
+  hidden participants or create additional physical mass merely to navigate.
+- Compare current occurrence maps, claim/recycle tables, generation/lifetime
+  guards, reservation and capacity ledgers against native structure/runtime
+  ownership. For each, name the native authority, HCP-specific semantics still
+  needed, redundant state that can be removed, and missing native support.
+  Include resource backing and release accounting, not only particle kernels
+  and compiler dispatch. Preserve exact provenance and stale-reference protection
+  while assessing whether they can attach to native instances.
+- Separate upstream Taichi mechanisms, fork extensions and existing HCP wrappers
+  in the evidence. Reusing our bootstrap is useful but does not complete the
+  inspection of Taichi itself. Use exact paths/symbols and a focused instance/
+  attachment/lifetime witness; inspect emitted artifacts when making claims
+  about compilation reuse or execution behavior.
+
+Treat the current framework as a concrete comparison surface that can be
+simplified or replaced. Its existence is not justification for retaining
+parallel lifecycle/accounting machinery. Do not add Python to operational paths
+to obtain a convenient abstraction. Setup expense alone is not a soft gate
+against reuse that benefits sustained operation.
+
+Connect the resulting structural-versus-contextual mapping to #324: primary
+identity/composition supplies the proposed structural-intent accounting;
+nonstructural influences and the actual tick trajectory remain separately
+observable. This inspection selects no force, brake or orbital-stability law and
+does not relabel the existing combined candidate as structural intent.
+
+Deliver a bounded source-pinned comparison under #343 before treating additional
+object-instance/lifecycle wrappers as necessary. Existing accepted work remains
+accepted; coordinate the inspection with owner integration and propose any
+replacement as a separate reviewed change. A complete mathematical redesign is
+not a prerequisite for this structural inspection.
+
 ## First task for the fresh coding context
 
 1. Establish the actual workspace/repository, local changes, branch and submodule pins. Fetch current main and inspect open PRs/reviews before selecting work. Preserve existing work; do not reset a checkout or retained database to obtain a clean start. Maintainer remote checks do not certify the local/WSL checkout.

@@ -1,5 +1,7 @@
 # Prepared admission: native reuse and retained ownership seam
 
+**Inspection direction — 2026-11-16:** the [nested-assembly and live-instance inspection brief](../../docs/engine-refactoring-plan.md#inspection-clarification-nested-assemblies-and-live-instances) sharpens #343's native-reuse pass. Inspect reusable structural assemblies, distinct nested runtime instances and contextual attachments, including lifecycle/resource accounting already supplied by the Taichi fork. One active tree can be the assembled result; do not assume a parallel flat occurrence/lifecycle framework is necessary. Verify actual native mechanisms and HCP-specific gaps with source evidence; this is a requirement to inspect, not a claim of an existing Taichi object/attachment API. Relate the mapping to #324's structural-intent separation without changing formulas. Coordinate with owner integration; earlier source acceptance stands. CI statements below retain their recorded observation time.
+
 Contributor inspection/proposal under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
 2026-11-16. Inspected main: `ee31e88a16d9e641311da523f3b9a7c455601e75`;
 Taichi tree: `8b31651be07d8bad0b2a6a261369e8690b9c3b53`, with matching
