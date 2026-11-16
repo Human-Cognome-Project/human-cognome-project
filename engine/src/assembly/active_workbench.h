@@ -7,6 +7,7 @@
 #include "assembly/study.h"
 
 namespace assembly {
+namespace detail { class StructuralAdmissionPlan; }
 struct LocalRef {
   warm::ObjectKey object;
   warm::Uuid version, owner;
@@ -73,6 +74,7 @@ class ActiveAssembly {
   StructuralStudyInput bind_structure(const std::vector<StudyNode> &nodes) const;
 
  private:
+  friend class detail::StructuralAdmissionPlan;
   ActiveAssembly(LetterProjection projection, warm::Uuid owner, bool required,
                  std::optional<LocalInput> local);
   LetterProjection projection_;

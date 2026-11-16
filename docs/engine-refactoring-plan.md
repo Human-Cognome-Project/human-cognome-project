@@ -77,6 +77,16 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 contributor implementation (awaiting review): the
+[bounded structural plan builder](../engine/docs/STRUCTURAL-ADMISSION-PLAN.md)
+implements the source-accepted #347 next slice at public `7bb1e670`, with main
+`6641e032` and #347's `13d08f37` dependency preserved. It validates one pinned
+prospective source and explicit owner bindings, then emits existing native
+command types with bounded work/allocation and owned lifetimes. No retained
+commit/ticking is enabled. Clang/GCC local controls pass after a preserved GCC
+cleanup failure was corrected. Owner bootstrap/actual map publication follows
+after review; broader accounting and #324 remain separate.
+
 2026-11-16 contributor inspection (awaiting review): the
 [prepared-admission seam map](../engine/docs/PREPARED-ADMISSION-SEAM.md) is pinned
 to current main `ee31e88a`. It identifies the existing atomic native bootstrap,

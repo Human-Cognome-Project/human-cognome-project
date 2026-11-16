@@ -6,9 +6,32 @@
 
 Next authorized bounded slice under #343: prepare owner metadata before native claims, reuse existing combined native bootstrap, resolve actual claims and publish maps without fallible allocation under the exclusive owner boundary. Keep #348 explicit as a source dependency until hosted qualification and integration; preserve its supported subset and native preflight requirements. No speculative public Analyst API or scheduler; complete accounting, additional operations and #324 mathematical work remain distinct. Held #75/#111/#123 unchanged. These remote checks do not certify the local/WSL checkout.
 
+**Contributor structural plan builder — 2026-11-16 (awaiting review):** public
+`7bb1e670` implements #343's accepted bounded metadata slice from main `6641e032`,
+with #347's source-accepted `13d08f37` as an explicit dependency. See the
+[implementation/evidence record](../../engine/docs/STRUCTURAL-ADMISSION-PLAN.md).
+Exact source and owner-supplied layout/geometry/comparison/focus associations
+produce symbolic native commands only; no claims, retained commit/tick or public
+API are enabled. Quick CI, eight focused native CTests, GCC 11 builder controls
+and four standalone tests pass after a preserved GCC cleanup failure was fixed.
+Review this slice before owner integration. Hosted qualification remains
+authoritative; complete accounting and #324 remain separate.
+
 **Maintainer #347 review — 2026-11-16:** prepared-admission seam map at `13d08f37ffa6ca1be0cdba46e5aa84a5831c2992` source-accepted in review 5920157778. Source inspection confirms combined native bootstrap and the fallible/allocating nature of postcommit ExchangeOwner adoption. The next authorized bounded slice under #343 is a private structural command-plan builder using existing native command types and reservation/work helpers, with explicit owner-supplied comparison/layout/geometry/focus bindings and no retained commit/ticking or new public API. Follow the proposal's exact-source, numeric ordering, lifetime, refusal/unwind and capacity/work acceptance controls. Do not invent comparison policy from storage depth or arbitrary memberships. Owner commit/map publication follows separately; complete accounting and #324 mathematics remain distinct.
 
 Smoke passed; #347 native 43864232274 and main native 43860820217 remain pending. #347 is not integrated. Contributor-local quick checks/archive remain reported evidence, not independently inspected. Bounded implementation may continue with the source dependency explicit; reconcile hosted results before final integration. No duplicate CI requested. Held #75/#111/#123 unchanged.
+
+
+**Contributor prepared-admission inspection — 2026-11-16 (awaiting review):**
+the [source-pinned seam map](../../engine/docs/PREPARED-ADMISSION-SEAM.md) extends
+#343 on main `ee31e88a` after #342/#346 integration. Native D1 bootstrap already
+combines placement/source/hierarchy/focus/contact commit; retained translation
+and owner publication remain missing. The proposal identifies explicit
+comparison/layout binding and precommit metadata reservation as prerequisites,
+then proposes a bounded private structural plan builder as the next code slice.
+No runtime wrapper, retained C3, complete accounting or #324 formula is added.
+Review the proposal before its implementation; local checks and authoritative
+hosted status are recorded in its PR.
 
 **Start-of-day maintainer handoff — 2026-11-16 (supersedes older status below):** #342 and #346 are integrated through qualified descendant `8c429d18a2374c88d60b9339087318097185ff60`; #346 accepted in review 5919444522. Main a2f192cf, corrected #342 (43764784579), and #346 (43766773433) all passed smoke and all 12 native jobs. Personally inspected #346 logs: 169 regression passes (43/42/42/42), active_workbench_test, viewport_snapshot_test, all four corrected activity profiles, and database addressed_reads=24/private_reads=0. Earlier failed #342 runs remain recorded as failures; the corrected descendants now qualify the work. No accepted PR backlog remains. Held #75/#111/#123 are unchanged.
 

@@ -58,6 +58,15 @@ target_compile_options(exchange_coordination PRIVATE -Wall -Wextra -Wno-unused-p
 target_link_libraries(active_workbench PUBLIC membership_fields study_assembly)
 target_compile_options(active_workbench PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
+# Private structural preparation only; retained native commit is a later slice.
+add_library(structural_admission_plan STATIC src/assembly/structural_admission_plan.cpp)
+target_link_libraries(structural_admission_plan PUBLIC active_workbench)
+target_compile_options(structural_admission_plan PRIVATE -Wall -Wextra -Werror)
+add_executable(structural_admission_plan_test tests/structural_admission_plan_test.cpp)
+target_link_libraries(structural_admission_plan_test PRIVATE structural_admission_plan)
+target_compile_options(structural_admission_plan_test PRIVATE -Wall -Wextra -Werror)
+add_test(NAME structural_admission_plan_test COMMAND structural_admission_plan_test)
+
 add_executable(active_workbench_test tests/active_workbench_test.cpp)
 target_link_libraries(active_workbench_test PRIVATE active_workbench)
 add_test(NAME active_workbench_test COMMAND active_workbench_test)
