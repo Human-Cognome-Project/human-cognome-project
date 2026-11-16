@@ -47,6 +47,17 @@ OccurrenceKey copy_occurrence(const OccurrenceKey &key,
       SharedReservationAllocator<std::uint32_t>(domain));
   return {std::move(study),{key.source.entry,std::move(path)}};
 }
+AdmissionSource empty_source(const std::shared_ptr<ReservationDomain> &domain) {
+  // GCC 11 does not fully unwind allocating nested aggregate temporaries.
+  // Construct independent owners first; only nonallocating moves form the row.
+  auto owner = warm::Uuid(domain);
+  auto study = warm::Uuid(domain);
+  auto generation = warm::Uuid(domain);
+  auto selection = warm::Uuid(domain);
+  auto revision = warm::Uuid(domain);
+  warm::BundleRef recipe{std::move(selection),std::move(revision)};
+  return {std::move(owner),std::move(study),std::move(generation),std::move(recipe)};
+}
 // Compare the existing scope/address encoding without an unaccounted temporary
 // std::string from warm::key. Both spelling and field kind must match.
 bool same_focus(const FocalField &request, const FieldKey &key, PreparationWork &w) {
@@ -75,8 +86,7 @@ template<class T> void reserve(ReservedVector<T> &v, std::uint64_t count, Prepar
 }
 
 StructuralAdmissionPlan::StructuralAdmissionPlan(const std::shared_ptr<ReservationDomain> &domain)
-    : domain_(domain), source_{warm::Uuid(domain),warm::Uuid(domain),warm::Uuid(domain),
-                              {warm::Uuid(domain),warm::Uuid(domain)}},
+    : domain_(domain), source_(empty_source(domain)),
       commands_(ReservationAllocator<field::UpdateCommand>(domain.get())),
       intrinsics_(ReservationAllocator<field::PlacementIntrinsic>(domain.get())),
       occurrences_(ReservationAllocator<AdmissionOccurrenceCommand>(domain.get())),

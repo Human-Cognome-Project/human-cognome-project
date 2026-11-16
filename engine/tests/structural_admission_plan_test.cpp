@@ -375,6 +375,11 @@ void bounded_setup() {
       auto d = domain({byte_limit ? allowance : UINT64_MAX,byte_limit ? UINT64_MAX : allowance});
       auto r = e.build(d);
       const auto next = byte_limit ? d->result().required_bytes : d->result().required_work;
+      if (r.status != Status::AllocationExhausted || r.plan || d->result().live_bytes ||
+          next <= allowance || next > ceiling)
+        std::cerr << "refusal mode=" << (byte_limit ? "bytes" : "work")
+                  << " allowance=" << allowance << " next=" << next << " ceiling=" << ceiling
+                  << " status=" << int(r.status) << " live=" << d->result().live_bytes << '\n';
       check(r.status == Status::AllocationExhausted && !r.plan && !d->result().live_bytes &&
             next > allowance && next <= ceiling, "every request refusal fully unwinds");
       allowance = next;
