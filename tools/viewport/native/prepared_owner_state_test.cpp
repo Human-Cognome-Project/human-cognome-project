@@ -1,5 +1,6 @@
 #include "snapshot.h"
 #include "prepared_owner_fixture.h"
+#define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
 #include <iostream>
 
@@ -27,6 +28,92 @@ template<class F> Measured measured(F action) {
     allocation_observation::enabled = false;
     return {std::move(state),allocation_observation::calls.load(),allocation_observation::bytes.load()};
   } catch (...) { allocation_observation::enabled = false; throw; }
+}
+const allocation_lifetime::Entry *tracked(const void *pointer) {
+  if (!pointer) return nullptr;
+  auto *p = const_cast<void *>(pointer);
+  for (std::size_t n=0, i=allocation_lifetime::bucket(p); n<65536; ++n, i=(i+1)%65536) {
+    const auto &entry = allocation_lifetime::table[i];
+    if (!entry.used) return nullptr;
+    if (entry.pointer == p) return &entry;
+  }
+  return nullptr;
+}
+void origin_association_cost(PreparedStudyOwner &owner, const warm::Uuid &authorization,
+                             const ExecutionHandle &handle) {
+  const auto view = owner.associations(authorization,handle);
+  const auto rows = view.read();
+  const auto *plan = &rows.plan;
+  std::vector<Origin> origins;
+  allocation_lifetime::begin();
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  try { origins = rows.source.origins(); }
+  catch (...) {
+    allocation_observation::enabled = false;
+    origins.clear(); std::vector<Origin>().swap(origins);
+    allocation_lifetime::end(); throw;
+  }
+  allocation_observation::enabled = false;
+  const auto calls = allocation_observation::calls.load(), requested = allocation_observation::bytes.load();
+  const auto count = origins.size(), capacity = origins.capacity();
+  const auto retained = allocation_lifetime::counts;
+  std::size_t duplicate_bytes = 0, pin_bytes = 0, duplicate_blocks = 0;
+  bool exact = true, distinct = true, attributed = true;
+  // Inspect actual producer-owned requests, rather than estimating a key copy.
+  // This fixture has heap-backed UUID text and nonempty full addresses.
+  for (const auto &origin : origins) {
+    if (!origin.shared || origin.local) { exact = false; continue; }
+    const auto &pin = origin.shared->object;
+    exact &= origin.definition == pin;
+    const auto *text = tracked(origin.definition.scope.str().data());
+    const auto *address = tracked(origin.definition.address.data());
+    const auto *pin_text = tracked(pin.scope.str().data());
+    const auto *pin_address = tracked(pin.address.data());
+    attributed &= text && address && pin_text && pin_address;
+    distinct &= origin.definition.scope.str().data() != pin.scope.str().data() &&
+                origin.definition.address.data() != pin.address.data();
+    if (text && address) { duplicate_bytes += text->bytes + address->bytes; duplicate_blocks += 2; }
+    if (pin_text && pin_address) pin_bytes += pin_text->bytes + pin_address->bytes;
+  }
+  for (std::size_t i=0; i<rows.bodies.size(); ++i) {
+    const auto body = rows.body(i);
+    const auto found = std::find_if(origins.begin(),origins.end(),
+        [&](const auto &v) { return v.occurrence == body.source.occurrence; });
+    exact &= found != origins.end() && found->shared && *found->shared == body.source.definition;
+  }
+  const auto *outer = tracked(origins.data());
+  attributed &= outer && outer->bytes == capacity*sizeof(Origin);
+  const auto outer_bytes = outer ? outer->bytes : 0;
+  // Borrowing the existing pin member is a comparison, not a new production
+  // accessor or a removal of Origin::definition.
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  for (const auto &origin : origins)
+    if (origin.shared) exact &= origin.definition == origin.shared->object;
+  allocation_observation::enabled = false;
+  const auto borrow_calls = allocation_observation::calls.load(), borrow_bytes = allocation_observation::bytes.load();
+  origins.clear();
+  const auto after_clear = allocation_lifetime::counts;
+  std::vector<Origin>().swap(origins);
+  const auto released = allocation_lifetime::end();
+  check(exact && distinct && attributed,"origin definition and exact pin own equal keys with distinct tracked backing");
+  check(count == 4 && rows.bodies.size() == 2 && duplicate_blocks == 2*count &&
+        duplicate_bytes && duplicate_bytes == pin_bytes,
+        "duplicate cost covers all source alternatives independently of exposed bodies");
+  check(retained.acquired == calls && after_clear.live == outer_bytes && !released.live && !released.blocks &&
+        released.acquired == released.released,
+        "row destruction releases both key copies while only vector capacity remains");
+  check(!borrow_calls && !borrow_bytes && &view.read().plan == plan,
+        "pin-member comparison allocates nothing and preserves checked execution associations");
+  std::cout << "origin_association_cost,rows=" << count << ",exposed=" << rows.bodies.size()
+            << ",construction_calls=" << calls << ",construction_requested=" << requested
+            << ",retained_requested=" << retained.live << ",peak_requested=" << retained.peak
+            << ",duplicate_blocks=" << duplicate_blocks << ",duplicate_requested=" << duplicate_bytes
+            << ",pin_object_requested=" << pin_bytes << ",key_object_bytes=" << sizeof(warm::ObjectKey)
+            << ",origin_object_bytes=" << sizeof(Origin) << ",outer_capacity_bytes=" << outer_bytes
+            << ",after_clear_requested=" << after_clear.live << ",after_destroy_requested=" << released.live
+            << ",borrow_calls=" << borrow_calls << ",borrow_requested=" << borrow_bytes << '\n';
 }
 void transfer_equivalence(field::Harness &h, const viewport::CompletedState &completed,
                           const viewport::CaptureContext &context) {
@@ -78,6 +165,7 @@ void run(engine::Runtime &runtime, field::HostPath path) {
   rejects([&] { viewport::observe(owner,authorization,handle); },"unpublished owner observation is unavailable");
   const auto committed = owner.bootstrap(authorization,handle,UINT64_MAX,UINT64_MAX,UINT64_MAX);
   check(committed.status == field::UpdateStatus::Ok,"observer uses production generated bootstrap");
+  origin_association_cost(owner,authorization,handle);
   const auto verify = [&](std::uint64_t tick) {
     const auto omitted = viewport::observe(owner,authorization,handle);
     const auto observed = viewport::observe(owner,authorization,handle,viewport::IntentRequest{1,UINT64_MAX});
