@@ -22,8 +22,9 @@ every constituent. Rollup is intended to enable this compositional use, retainin
 the object's internal structure while exposing the selected operating level.
 
 The user's coherence framing is explicit: structure is the frame of what is
-required for coherence; additional elements supply the degrees of movement within
-those frames. Inspect how that relationship is represented and maintained across
+required for coherence; additional elements supply the degrees of freedom within
+those frames. Degrees of freedom is intended in its mathematical sense, not merely
+as spatial movement. Inspect how that relationship is represented and maintained across
 nested instances and rollups. Do not reduce this distinction to a catalogue of
 attachment types, or assume that a coherence frame means a fixed spatial origin,
 a rigid body, or a newly selected constraint/force law.
