@@ -27,6 +27,21 @@ std::string occurrence(const warm::Uuid &study, warm::OccurrenceId id) {
 }
 }  // namespace
 
+const warm::ObjectKey &Origin::definition() const {
+  if (shared.has_value() == local.has_value())
+    throw warm::Error("origin requires exactly one provenance pin");
+  const auto &object = shared ? shared->object : local->object;
+  const auto complete = [](const warm::Uuid &v) { return v.str().size() == 36 && !v.nil(); };
+  if ((shared && (!object.scope.nil() || !complete(shared->revision))) ||
+      (local && (!complete(object.scope) || !complete(local->version) || !complete(local->owner))) ||
+      object.address.size() != 5)
+    throw warm::Error("origin requires a complete provenance pin");
+  for (const auto &part : object.address)
+    if (part.partial || !codec::is_valid_element(part))
+      throw warm::Error("origin requires a complete definition address");
+  return object;
+}
+
 ActiveAssembly::ActiveAssembly(LetterProjection p, warm::Uuid owner,
                                bool required, std::optional<LocalInput> local)
     : projection_(std::move(p)),
@@ -89,10 +104,10 @@ ActiveAssembly ActiveAssembly::focus(std::vector<FocalField> fields) const {
 std::vector<Origin> ActiveAssembly::origins() const {
   std::vector<Origin> out;
   for (const auto &o : projection_.occurrences())
-    out.push_back({o.key, o.definition.object, o.definition, {}});
+    out.push_back({o.key, o.definition, {}});
   if (local_)
     for (const auto &v : local_->values)
-      out.push_back({{study(), {v.entry, {}}}, v.ref.object, {}, v.ref});
+      out.push_back({{study(), {v.entry, {}}}, {}, v.ref});
   return out;
 }
 StructuralStudyInput ActiveAssembly::bind_structure(const std::vector<StudyNode> &nodes) const {

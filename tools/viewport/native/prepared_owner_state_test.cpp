@@ -54,7 +54,7 @@ void transfer_equivalence(field::Harness &h, const viewport::CompletedState &com
         "transfer savings preserve native readback/numerical copy scope and retained binding");
   for (std::size_t i=0; i<completed.report.origins.size(); ++i) {
     const auto &a = moved.state.report.origins[i], &b = completed.report.origins[i];
-    check(a.occurrence == b.occurrence && a.definition == b.definition && a.shared == b.shared &&
+    check(a.occurrence == b.occurrence && a.definition() == b.definition() && a.shared == b.shared &&
           !a.local && !b.local,"consuming report retains exact detached source pins");
   }
   // Both overloads must reject invalid/stale mappings before a completed read.
