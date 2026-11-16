@@ -10,6 +10,72 @@ The viewport and temporary API front end are controls through which a human or a
 
 This plan authorizes inspection and bounded proposals, followed by focused reviewed implementation. It does not fix a final module layout, select a new intent formula, or declare an SNode storage relationship to be a composition relationship. Preserve [system boundaries](onboarding/SYSTEM-BOUNDARIES.md), [work discipline](onboarding/WORK-DISCIPLINE.md), and applicable component contracts.
 
+## Inspection clarification: nested assemblies and live instances
+
+Maintainer direction, 2026-11-16, following the user's clarification. The intended
+object model is reusable structural assemblies instantiated within an active
+study, with scene/instance-dependent attachments distinguished from primary
+composition. One resulting active SNode tree is compatible with construction
+from nested assemblies. Distinct identity for each live occurrence does not by
+itself require flattening the object into a separately owned host ledger for
+every constituent. Rollup is intended to enable this compositional use, retaining
+the object's internal structure while exposing the selected operating level.
+
+This is the inspection target, not a finding that Taichi supplies a game-engine
+object-class or scene-attachment API. Verify the pinned fork's exact construction,
+compilation, storage-instance and ownership mechanisms. Distinguish an SNode
+layout node, a compiled layout/tree, runtime storage cells/instances, and an HCP
+conceptual object occurrence. Establish their actual mappings rather than
+assuming either equivalence or incompatibility from terminology.
+
+The native-reuse pass must cover:
+
+- Trace a reusable composed definition instantiated twice in one study, including
+  a nested repeated subassembly. Identify which layout/compilation can be reused,
+  which storage/state is per instance, and how the native path identifies,
+  activates, updates, releases and reuses each instance. Determine whether
+  subtree construction/reuse requires cloning, indexed storage, separate trees,
+  or another existing mechanism; document actual support and limitations.
+- Attach a contextual relationship to only one instance. Show how primary
+  composition remains distinct from that attachment and whether Taichi directly
+  represents the relationship or HCP must supply explicit typed metadata.
+  Neither raw SNode parentage nor an arbitrary membership edge establishes
+  semantic composition without the validated mapping.
+- Trace aggregate/parts exposure and rollup through those same structures.
+  Determine what remains nested, what is exposed for execution, what is merely
+  navigation, and which identities survive exposure changes. Do not expand
+  hidden participants or create additional physical mass merely to navigate.
+- Compare current occurrence maps, claim/recycle tables, generation/lifetime
+  guards, reservation and capacity ledgers against native structure/runtime
+  ownership. For each, name the native authority, HCP-specific semantics still
+  needed, redundant state that can be removed, and missing native support.
+  Include resource backing and release accounting, not only particle kernels
+  and compiler dispatch. Preserve exact provenance and stale-reference protection
+  while assessing whether they can attach to native instances.
+- Separate upstream Taichi mechanisms, fork extensions and existing HCP wrappers
+  in the evidence. Reusing our bootstrap is useful but does not complete the
+  inspection of Taichi itself. Use exact paths/symbols and a focused instance/
+  attachment/lifetime witness; inspect emitted artifacts when making claims
+  about compilation reuse or execution behavior.
+
+Treat the current framework as a concrete comparison surface that can be
+simplified or replaced. Its existence is not justification for retaining
+parallel lifecycle/accounting machinery. Do not add Python to operational paths
+to obtain a convenient abstraction. Setup expense alone is not a soft gate
+against reuse that benefits sustained operation.
+
+Connect the resulting structural-versus-contextual mapping to #324: primary
+identity/composition supplies the proposed structural-intent accounting;
+nonstructural influences and the actual tick trajectory remain separately
+observable. This inspection selects no force, brake or orbital-stability law and
+does not relabel the existing combined candidate as structural intent.
+
+Deliver a bounded source-pinned comparison under #343 before treating additional
+object-instance/lifecycle wrappers as necessary. Existing accepted work remains
+accepted; coordinate the inspection with owner integration and propose any
+replacement as a separate reviewed change. A complete mathematical redesign is
+not a prerequisite for this structural inspection.
+
 ## First task for the fresh coding context
 
 1. Establish the actual workspace/repository, local changes, branch and submodule pins. Fetch current main and inspect open PRs/reviews before selecting work. Preserve existing work; do not reset a checkout or retained database to obtain a clean start. Maintainer remote checks do not certify the local/WSL checkout.
