@@ -6,6 +6,8 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#define HCP_ALLOCATION_LIFETIME
+#include "allocation_observation.h"
 
 namespace {
 using namespace assembly;
@@ -425,6 +427,103 @@ void bounded_setup() {
   }
 }
 
+const allocation_lifetime::Entry *tracked(const void *pointer) {
+  if (!pointer) return nullptr;
+  auto *p = const_cast<void *>(pointer);
+  for (std::size_t n=0, i=allocation_lifetime::bucket(p); n<65536; ++n, i=(i+1)%65536) {
+    const auto &entry = allocation_lifetime::table[i];
+    if (!entry.used) return nullptr;
+    if (entry.pointer == p) return &entry;
+  }
+  return nullptr;
+}
+// Attribute the actual builder's repeated study UUIDs. The plan already owns
+// the same UUID in source(); no source borrowing or production removal occurs.
+void study_identity_cost(bool parts) {
+  auto input = std::make_unique<Example>(parts,true);
+  const auto stamps = input->bindings.source;
+  auto expected = input->bindings.bodies;
+  std::sort(expected.begin(),expected.end(),[](const auto &a, const auto &b) {
+    return a.occurrence.source < b.occurrence.source;
+  });
+  auto d = domain();
+  allocation_lifetime::begin();
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  auto result = input->build(d);
+  allocation_observation::enabled = false;
+  const auto calls = allocation_observation::calls.load(), requested = allocation_observation::bytes.load();
+  if (!result.plan) {
+    allocation_lifetime::end();
+    throw std::runtime_error("study identity measurement requires a supported plan");
+  }
+  const auto &plan = *result.plan;
+  const auto count = plan.occurrences().size(), capacity = plan.occurrences().capacity();
+  const auto retained = allocation_lifetime::counts;
+  const auto domain_retained = d->result().live_bytes;
+  const auto *header = tracked(plan.source().study.str().data());
+  const auto *outer = tracked(plan.occurrences().data());
+  const auto header_bytes = header ? header->bytes : 0;
+  const auto outer_bytes = outer ? outer->bytes : 0;
+  std::size_t duplicate_bytes = 0, duplicate_blocks = 0;
+  bool exact = count == expected.size(), distinct = true;
+  bool attributed = header && outer && plan.source().study.str().get_allocator().domain == d;
+  for (std::size_t i=0; i<count; ++i) {
+    const auto &key = plan.occurrences()[i].occurrence;
+    const auto *copy = tracked(key.study.str().data());
+    attributed &= copy && key.study.str().get_allocator().domain == d;
+    if (copy) { duplicate_bytes += copy->bytes; ++duplicate_blocks; }
+    distinct &= key.study.str().data() != plan.source().study.str().data();
+    for (std::size_t j=0; j<i; ++j)
+      distinct &= key.study.str().data() != plan.occurrences()[j].occurrence.study.str().data();
+    exact &= key.study == plan.source().study;
+  }
+  // The existing header is the comparison accessor. Keep numeric entry/path and
+  // full ToolRefs independent; no temporary owning OccurrenceKey is constructed.
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  for (std::size_t i=0; i<count && i<expected.size(); ++i) {
+    const auto &row = plan.occurrences()[i];
+    exact &= plan.source().study == expected[i].occurrence.study &&
+             row.occurrence.source == expected[i].occurrence.source && row.definition == expected[i].definition;
+  }
+  allocation_observation::enabled = false;
+  const auto borrow_calls = allocation_observation::calls.load(), borrow_bytes = allocation_observation::bytes.load();
+  const auto *header_address = &plan.source().study;
+  const auto *row_address = plan.occurrences().data();
+  auto owned = std::move(result.plan);
+  input.reset(); // Caller assembly, bindings, source stamps and real SNodes die.
+  const bool independent = &owned->source().study == header_address && owned->occurrences().data() == row_address &&
+      owned->source().study == stamps.study && owned->source().owner == stamps.owner &&
+      owned->source().generation == stamps.generation &&
+      owned->source().recipe.selection == stamps.recipe.selection && owned->source().recipe.revision == stamps.recipe.revision &&
+      allocation_lifetime::counts.live == retained.live;
+  for (std::size_t i=0; i<count && i<expected.size(); ++i)
+    exact &= owned->source().study == expected[i].occurrence.study &&
+             owned->occurrences()[i].occurrence == expected[i].occurrence &&
+             owned->occurrences()[i].definition == expected[i].definition;
+  owned.reset();
+  const auto released = allocation_lifetime::end();
+  check(exact && independent,"existing owned header preserves full study identity after source death and plan-handle move");
+  check(count == (parts ? 24U : 2U) && distinct && attributed && duplicate_blocks == count &&
+        header_bytes && duplicate_bytes == count*header_bytes,
+        "every selected occurrence owns an equal study UUID with distinct tracked backing");
+  check(outer_bytes == capacity*sizeof(AdmissionOccurrenceCommand) && capacity >= count,
+        "row UUID member extent is inside existing occurrence vector capacity");
+  check(!borrow_calls && !borrow_bytes,"existing source header and numeric occurrence comparison allocate nothing");
+  check(retained.acquired == calls && !released.live && !released.blocks &&
+        released.acquired == released.released && !d->result().live_bytes,
+        "actual build scratch and retained plan allocations release completely");
+  std::cout << "study_identity_cost,parts=" << parts << ",rows=" << count << ",capacity=" << capacity
+            << ",construction_calls=" << calls << ",construction_requested=" << requested
+            << ",retained_requested=" << retained.live << ",peak_requested=" << retained.peak
+            << ",domain_retained=" << domain_retained << ",duplicate_blocks=" << duplicate_blocks
+            << ",duplicate_requested=" << duplicate_bytes << ",header_requested=" << header_bytes
+            << ",uuid_object_bytes=" << sizeof(warm::Uuid) << ",row_object_bytes=" << sizeof(AdmissionOccurrenceCommand)
+            << ",outer_capacity_bytes=" << outer_bytes << ",borrow_calls=" << borrow_calls
+            << ",after_destroy_requested=" << released.live << '\n';
+}
+
 void independent_lifetimes() {
   std::weak_ptr<ReservationDomain> weak;
   auto result = [&] {
@@ -451,6 +550,7 @@ int main() {
   try {
     source_and_symbols(false); source_and_symbols(true);
     refusals(); mixed_scale(); bounded_setup(); independent_lifetimes();
+    study_identity_cost(false); study_identity_cost(true);
     std::cout << "structural_admission_plan,checks=" << checks
               << ",native_claims=0,retained_execution=0 PASS\n";
     return 0;

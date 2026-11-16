@@ -84,6 +84,10 @@ endforeach()
 add_executable(active_workbench_test tests/active_workbench_test.cpp)
 target_link_libraries(active_workbench_test PRIVATE active_workbench)
 add_test(NAME active_workbench_test COMMAND active_workbench_test)
+add_executable(origin_provenance_test tests/origin_provenance_test.cpp)
+target_link_libraries(origin_provenance_test PRIVATE prepared_study_owner)
+target_compile_options(origin_provenance_test PRIVATE -Wall -Wextra -Werror)
+add_test(NAME origin_provenance_test COMMAND origin_provenance_test)
 set_tests_properties(active_workbench_test PROPERTIES
     ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
 

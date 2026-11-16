@@ -210,6 +210,18 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 contributor (awaiting review):
+[plan study-identity cost comparison](../engine/docs/PLAN-STUDY-IDENTITY-COST.md)
+at `52be505c` attributes actual per-occurrence UUID buffers that repeat the
+existing owned plan source-header study. Two/24 rows retain 74/888 nested
+requested bytes plus in-vector member extent; existing header access is free
+of allocation and preserves standalone lifetime. Local quick CI and all 4,465
+builder checks passed under Clang/fresh GCC. The proposed coordinated row
+cleanup awaits review; no production representation changes. Explicit dependency
+#354 is reconciled at `eff64deb` with main `1337bbcc`, preserving #353 ancestry
+and #354's reviewed runtime/tests. Native guards/maps, candidate state and #324
+remain separate.
+
 2026-11-16 contributor (awaiting review): the
 [origin definition-key comparison](../engine/docs/ORIGIN-ASSOCIATION-COST.md)
 at `fcef214c` uses current main `9518d043` and explicit source-accepted #352
@@ -221,6 +233,18 @@ rows releases both copies, and direct pin-member access allocates nothing.
 Quick/focused Clang and fresh GCC checks passed. No production field/map is
 removed; the comparison specifies current readers and invalid-provenance
 questions for a separately reviewed accessor/removal with equivalence controls.
+
+2026-11-16 contributor (awaiting review):
+[Origin pin authority](../engine/docs/ORIGIN-PIN-AUTHORITY.md) at `417aed19`
+implements #353's accepted duplicate-key removal on main `5f45f566`. The complete
+shared/local pin supplies the definition through a checked borrowed accessor;
+all producers/readers preserve alternatives, occurrence identity and detached
+lifetime. Actual producer requests, retained bytes and scoped peak decrease
+against both the old-shaped reference and an isolated historical producer.
+Local quick CI, 16 focused Clang tests and five fresh GCC tests passed, including
+shared/local snapshot/label equivalence and invalid provenance refusal. Review
+and authoritative hosted CI remain pending. #353's old-member witness requires
+integration reconciliation; native claims, candidate state and #324 are unchanged.
 
 2026-11-16 contributor (awaiting review):
 [checked prepared associations](../engine/docs/PREPARED-ASSOCIATIONS.md) at

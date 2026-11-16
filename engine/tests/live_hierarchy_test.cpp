@@ -2243,7 +2243,7 @@ LetterData letter_data(engine::Runtime &r) {
     scale.node.layout = nullptr;
   for (const auto &o : projection.occurrences())
     if (o.active)
-      out.origins.push_back({o.key, o.definition.object, o.definition, {}});
+      out.origins.push_back({o.key, o.definition, {}});
 #endif
   for (const auto &p : prepared.particles) {
     require(p.exact_mass > 0 && p.mass > 0 && p.radius > 0,
