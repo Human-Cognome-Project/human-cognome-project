@@ -193,6 +193,12 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
         "invalid tick parameters remain a healthy native refusal");
   tick = no_new([&] { return owner.tick(authorization,handle,p); });
   check(tick.status == field::TickStatus::Ok && tick.completed_ticks == 1 && owner.ready(),"native owner tick after generated bootstrap");
+  const auto generation = owner.generation();
+  p.gravity = 0.025;
+  tick = no_new([&] { return owner.tick(authorization,handle,p); });
+  check(tick.status == field::TickStatus::Ok && tick.coverage_changed && tick.completed_ticks == 2 &&
+        tick.generation == generation+1 && owner.generation() == tick.generation && owner.ready(),
+        "owner follows a native contact-changing tick without replacing identity maps");
   std::weak_ptr<const ActiveAssembly> source_lifetime = input.source;
   input.source.reset();
   check(!source_lifetime.expired() && owner.source(authorization,handle).study() == handle.study,"owner retains immutable source pins");

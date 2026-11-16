@@ -193,6 +193,14 @@ field::TickResult PreparedStudyOwner::tick(const warm::Uuid &owner,
   if (!ready()) { field::TickResult out; out.status = field::TickStatus::Unready; return out; }
   try {
     const auto result = h_.tick_prepared(generation_,parameters,tick_work,geometry_work);
+    if (result.status == field::TickStatus::Ok) {
+      if (result.context != context_ || result.generation != h_.prepared_storage().generation)
+        throw std::runtime_error("prepared owner: inconsistent completed tick identity");
+      // Contact coverage is native source state: a successful candidate tick
+      // can advance its generation while preserving occurrence/field handles.
+      generation_ = result.generation;
+      if (!ready()) throw std::runtime_error("prepared owner: stale maps after completed tick");
+    }
     if (!h_.ready()) phase_ = PreparedOwnerPhase::Failed;
     return result;
   } catch (...) {

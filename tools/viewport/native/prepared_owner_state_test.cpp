@@ -64,6 +64,12 @@ void run(engine::Runtime &runtime, field::HostPath path) {
   field::Parameters64 p; p.gravity = p.contact_stiffness = p.reach_strength = 0; p.dt = 0.125;
   check(owner.tick(authorization,handle,p).status == field::TickStatus::Ok,"observer follows an actual native tick");
   verify(1);
+  const auto generation = owner.generation();
+  p.gravity = 0.025;
+  const auto moving = owner.tick(authorization,handle,p);
+  check(moving.status == field::TickStatus::Ok && moving.coverage_changed &&
+        owner.generation() == generation+1 && owner.ready(),"native contact publication updates the owner's completed generation");
+  verify(2);
 }
 }
 int main(int argc, char **argv) {
