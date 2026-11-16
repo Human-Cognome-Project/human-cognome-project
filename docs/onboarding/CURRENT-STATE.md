@@ -1,16 +1,55 @@
 # Current implementation and work
 
+**Maintainer #354 review — 2026-11-16 (supersedes older status below):** #353 at `9bf2b956e6d9dc21d3bb239a5d31f0ebfa1495fd` is integrated by this merge after smoke 43958409053, viewport 43958409063 and all 12 native jobs in 43958409039 passed. Inspected logs confirm 180 regression passes (45 per shard), all four owner/observer profiles and database addressed_reads=24/private_reads=0. Main 5f45f566 combined smoke/native 43962490566/43962490573 also passed. This merge's combined qualification remains separate.
+
+#354 at `eddd4f3507dc6484bd9d72d37af12be58c592ade` is source-accepted in review 5929111772, not integrated. It removes Origin's duplicate ObjectKey, using exactly one complete shared/local provenance pin as definition authority. All alternatives, full pins and detached lifetime remain; every origin is validated and exposed encoded-key disagreements refuse. Production authorization, native claims, candidate state, JSON schema and mathematics are unchanged. Shared/local controls and accounting distinguish vector extent, nested requests and scoped peak; local archives and the independent historical execution remain contributor-reported. Smoke 43970206393 and viewport 43970206514 passed; native 43970206467 build/projection/database passed, matrix pending at review. No duplicate CI requested.
+
+Integration must preserve #353 ancestry and its historical comparison, while superseding its duplicate-member observer witness with #354's reviewed observer and new explicit legacy-reference/provenance controls. Do not restore the removed member or lose maintainer notes. Once qualified, the next bounded comparison may inspect one concrete remaining duplicate immutable association against existing/native accessors, with measured ownership/cost and a scoped removal proposal. Direct indexed guards, catalogue/schema work, producer migration and #324 mathematics remain separate. Held #75/#111/#123 unchanged.
+
 **Maintainer #353 review — 2026-11-16 (supersedes older status below):** #352 at `9a86962e46735a2ae6c80dc0f928f703cfb5ff32` is integrated by this merge after smoke 43949822858, viewport 43949822810 and all 12 native jobs in 43949823568 passed. Independently inspected 180 regression passes (45 per shard), all four owner and observer profiles, and database addressed_reads=24/private_reads=0. Combined postmerge CI remains a separate check.
 
 #353 at `9bf2b956e6d9dc21d3bb239a5d31f0ebfa1495fd` is source-accepted in review 5928222116, not integrated. Relative to #352 it changes only the observer test and five Markdown files. Actual origins() producer allocation attribution identifies the duplicate definition ObjectKey inside each row beside the same key in its full provenance pin; all alternatives and repeated occurrences remain intact. Reported eight allocations/208 retained requested bytes are a candidate cost, not a realized removal saving or total-memory claim. Local archives remain contributor-reported. Smoke 43958409053 and viewport 43958409063 passed; native 43958409039 build/projection/database passed, matrix pending at review. No duplicate CI requested.
 
 Next accepted implementation: make exactly one complete shared/local provenance pin the definition authority, use a small checked accessor to its owned object, remove the redundant Origin ObjectKey, and update all producers/readers together. Preserve full revision/owner/version, occurrence identity, hidden alternatives, privacy and detached lifetime. Prove shared/local snapshot and label equivalence, no/dual-pin refusal, and reject mismatched legacy duplicate keys wherever a transition boundary still accepts them. Measure actual producer before/after request, retained and peak effects. This scoped removal needs no further planning layer or new registry/cache/owner. Direct indexed guards, catalogue/schema work, producer migration and #324 mathematics remain separate. Held #75/#111/#123 unchanged.
 
+**Contributor origin-cost comparison — 2026-11-16 (awaiting review):**
+`fcef214c` starts from main `9518d043` with source-accepted, unmerged #352
+`9a86962e` explicitly merged into the comparison branch. Production code is
+unchanged relative to that dependency. The
+[source-pinned ownership/cost comparison](../../engine/docs/ORIGIN-ASSOCIATION-COST.md)
+identifies `Origin.definition` as a duplicate of the ObjectKey already owned by
+its full provenance pin. In the four-origin/two-body fixture, the duplicate's
+backing occupies eight C++ requests / 208 retained requested bytes; row release
+and allocation-free pin-member access are verified. Quick CI, all five focused
+Clang tests and two fresh GCC tests passed. This is a measured candidate,
+not a realized removal saving. Proposed next: review valid provenance cases,
+then reuse the existing pin object and remove the extra member with coordinated
+producer/consumer, snapshot/refusal/lifetime controls. Candidate/committed maps,
+full claims, source revisions and numerical policy remain intact. #352 hosted
+native qualification/integration and this comparison's review/CI remain pending.
+
 **Maintainer #352 review — 2026-11-16:** head `9a86962e46735a2ae6c80dc0f928f703cfb5ff32` is source-accepted in review 5927235088, not integrated. Checked associations borrow the existing immutable source/plan/scales and actual claim arrays; generation/tick/full-handle validation precedes row loans, whose lifetime ends before mutation or owner teardown. The prepared observer consumes temporary detached metadata through shared validation, avoiding a redundant deep copy while preserving native readback and complete snapshot/source-pin equivalence. No new owning allocation, source owner, claim ledger, numerical policy or native indexed guard protocol is introduced.
 
 Tested `33cffcb3` differs from head only in five Markdown files. Reported local savings (39 new/new[] requests and 3,847 requested bytes per two-instance fixture observation) concern metadata transfer, not total memory or latency; raw Clang/GCC evidence remains contributor-reported. Main 677d151f combined smoke/native 43936858958/43936859174 passed all gates. #352 smoke 43949822858 and optional viewport 43949822810 passed; native 43949823568 build/projection/database passed, with regression/compiler matrix still pending at review. Reconcile final hosted results before integration; no duplicate CI requested.
 
 Next bounded comparison: identify a specific remaining duplicate immutable association, establish its actual lifetime/ownership and measured cost, then propose removal using the checked boundary and existing accessors. Preserve candidate/committed transaction state and full native claims; avoid growing wrappers without a concrete eliminated responsibility or cost. Direct indexed guard protocol, mixed-revision provenance, producer migration and #324 coherence mathematics remain separately scoped. Held #75/#111/#123 unchanged.
+
+**Contributor checked-association slice — 2026-11-16 (awaiting review):**
+public implementation `33cffcb3` on integrated main `677d151f` adds a checked
+borrowed PreparedStudyOwner source/plan view and one prepared observer consumer.
+Current native handles remain authoritative; old generation/tick stamps refuse.
+The consuming observation path avoids one detached metadata copy while retaining
+identical snapshots/readback. Measured fixture saving: 39 C++ allocation requests
+and 3,847 requested bytes; view/loan use 24/40 stack bytes with no new owning
+storage or source-owner reference. Local quick CI, all 11 owner/observer matrix
+CTests and four fresh GCC wrapper checks passed. See
+[scope, controls and raw evidence](../../engine/docs/PREPARED-ASSOCIATIONS.md).
+Review/hosted CI remain pending; no maps, candidate buffers, native guard or
+operation set were replaced. Next comparison should measure specific remaining
+duplicate associations before proposing removal. Broader indexed execution,
+mixed-revision/schema changes, producer migration, full accounting and #324
+math remain separate. Main `677d151f` subsequently passed smoke 43936858958 and
+all 12 native jobs in 43936859174; this is distinct from this contribution's CI.
 
 **Maintainer integration — 2026-11-16 (supersedes older status below):** #350 `9e0307587dde72e793a4b661bc86f20ccb0cc654` and #351 `071ac31818c4a6694881c35a5f10e38e6f3596d7` are integrated by this merge. Reviews 5923994794 and 5925874274 accepted their scope. #350 smoke 43910777706 and all 12 native jobs in 43910777722 passed; inspected logs confirm 172 regression passes including both new native-instance tests. #351 smoke 43915843667 and all 12 native jobs in 43915843738 passed. Main fa7f09e4 also passed smoke/native 43913630873/43913630852. The combined merge preserves #349 production code and adds #350's exact witness/build additions plus documentation; its normal CI is separate combined qualification.
 
