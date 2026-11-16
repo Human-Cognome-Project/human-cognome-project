@@ -1,5 +1,21 @@
 # Current implementation and work
 
+**Contributor origin-pin authority — 2026-11-16 (awaiting review):** public
+`417aed199079050d40db67967e4cf06b06ce13a1`, based on main `5f45f566`, implements
+the removal accepted in #353 review 5928222116. Origin now derives its definition
+from exactly one complete shared/local pin; all producers/readers migrate
+together. Shared/local snapshots, labels, detached lifetime and malformed-pin
+refusal are covered, with encoded occurrence-key mismatches explicitly rejected.
+Local quick CI, 16 focused Clang CTests, five fresh GCC CTests and an isolated
+actual historical-producer comparison passed. See
+[implementation and source-pinned evidence](../../engine/docs/ORIGIN-PIN-AUTHORITY.md)
+for realized producer request/retained/peak reductions and limits. #353 now
+reports all 12 native jobs successful as well as smoke/viewport; it remains
+unmerged. This implementation also awaits review and authoritative hosted CI.
+Reconcile the old duplicate-member witness during integration; preserve its
+historical evidence without restoring the removed member. Direct indexed guards,
+catalogue/schema adoption, producer migration and #324 remain separate.
+
 **Maintainer #353 review — 2026-11-16 (supersedes older status below):** #352 at `9a86962e46735a2ae6c80dc0f928f703cfb5ff32` is integrated by this merge after smoke 43949822858, viewport 43949822810 and all 12 native jobs in 43949823568 passed. Independently inspected 180 regression passes (45 per shard), all four owner and observer profiles, and database addressed_reads=24/private_reads=0. Combined postmerge CI remains a separate check.
 
 #353 at `9bf2b956e6d9dc21d3bb239a5d31f0ebfa1495fd` is source-accepted in review 5928222116, not integrated. Relative to #352 it changes only the observer test and five Markdown files. Actual origins() producer allocation attribution identifies the duplicate definition ObjectKey inside each row beside the same key in its full provenance pin; all alternatives and repeated occurrences remain intact. Reported eight allocations/208 retained requested bytes are a candidate cost, not a realized removal saving or total-memory claim. Local archives remain contributor-reported. Smoke 43958409053 and viewport 43958409063 passed; native 43958409039 build/projection/database passed, matrix pending at review. No duplicate CI requested.
