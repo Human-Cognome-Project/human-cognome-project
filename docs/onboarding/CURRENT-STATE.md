@@ -1,5 +1,17 @@
 # Current implementation and work
 
+**Contributor private prepared owner — 2026-11-16 (awaiting review):** public
+`a97b6049` connects #348's source-accepted plan to existing combined native
+bootstrap and completed observation. Metadata is reserved before claims; actual
+handles publish after commit, and contact-changing ticks advance owner generation.
+See [scope, corrections and evidence](../../engine/docs/PREPARED-STUDY-OWNER.md).
+Quick CI, 11 Clang CTests across both workers/I/O paths, fresh GCC owner/observer
+controls and four standalone tests pass locally. #348 remains explicit and
+unmerged; its native run now reports success. GitHub CI is authoritative. Main's
+coherence/controller/native-instance directions are preserved; that inspection
+precedes further wrappers/public expansion. ActiveSession remains legacy; full
+accounting, other operations and #324 mathematics remain separate.
+
 **Agent focus clarification — 2026-11-16:** read [coherence frames and Analyst control](../engine-refactoring-plan.md#agent-focus-coherence-frames-and-analyst-control). Parent contributions aggregate through prior composition to establish the coherence frame; whole-particle fields act within its mathematical degrees of freedom. Inspect how the code represents/enforces this relationship under #324 rather than assuming two additive totals implement it. The Analyst occupies the player/controller role, currently exercised or supplemented by the user and LLM agents. Keep its decisions, viewport/API/harness controls and engine execution distinct. Pair the control-to-execution trace with #343's native nested-instance/accounting inspection; do not implement new mathematics or speculative Analyst policy inside a mechanical refactor.
 
 **Inspection direction — 2026-11-16:** the [nested-assembly and live-instance inspection brief](../engine-refactoring-plan.md#inspection-clarification-nested-assemblies-and-live-instances) sharpens #343's native-reuse pass. Inspect reusable structural assemblies, distinct nested runtime instances and contextual attachments, including lifecycle/resource accounting already supplied by the Taichi fork. One active tree can be the assembled result; do not assume a parallel flat occurrence/lifecycle framework is necessary. Verify actual native mechanisms and HCP-specific gaps with source evidence; this is a requirement to inspect, not a claim of an existing Taichi object/attachment API. Relate the mapping to #324's structural-intent separation without changing formulas. Coordinate with owner integration; earlier source acceptance stands. CI statements below retain their recorded observation time.

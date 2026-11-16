@@ -190,6 +190,17 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 contributor owner slice (awaiting review):
+[private owner/observation implementation](../engine/docs/PREPARED-STUDY-OWNER.md)
+at public `a97b6049` preserves #348 as a source dependency, reserves metadata
+before claims and delegates bootstrap/tick to native execution. Actual-handle
+publication, scratch independence, contact-changing generation and completed
+observation qualify locally under Clang/GCC. The field-declaration bound is
+corrected separately. Documentation-only main `f34afd62` is reconciled after
+source-frozen checks. This is a bounded current-path bridge, not completion of
+the native nested-instance/accounting audit or #324 coherence mathematics.
+The updated inspection brief governs further wrappers/public expansion.
+
 2026-11-16 contributor implementation (awaiting review): the
 [bounded structural plan builder](../engine/docs/STRUCTURAL-ADMISSION-PLAN.md)
 implements the source-accepted #347 next slice at public `7bb1e670`, with main

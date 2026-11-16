@@ -1,5 +1,15 @@
 # Core continuation after local CUDA corrections
 
+**Contributor private prepared owner — 2026-11-16 (awaiting review):** public
+`a97b6049`, with #348 explicit, adds preclaim metadata reservation, existing native
+bootstrap, actual-claim publication and completed owner observation. Native
+contact changes correctly advance owner generation. [Evidence and limits](../engine/docs/PREPARED-STUDY-OWNER.md):
+quick CI, 11 native CTests, GCC owner/observer controls and four standalone tests
+passed locally. #348's native run now reports success, not integration. Review
+this slice and follow the coherence/controller/native-instance/accounting
+inspection before further wrappers or public producer expansion. Legacy
+ActiveSession, full accounting, other operations and #324 retain their boundaries.
+
 **Agent focus clarification — 2026-11-16:** read [coherence frames and Analyst control](engine-refactoring-plan.md#agent-focus-coherence-frames-and-analyst-control). Parent contributions aggregate through prior composition to establish the coherence frame; whole-particle fields act within its mathematical degrees of freedom. Inspect how the code represents/enforces this relationship under #324 rather than assuming two additive totals implement it. The Analyst occupies the player/controller role, currently exercised or supplemented by the user and LLM agents. Keep its decisions, viewport/API/harness controls and engine execution distinct. Pair the control-to-execution trace with #343's native nested-instance/accounting inspection; do not implement new mathematics or speculative Analyst policy inside a mechanical refactor.
 
 **Inspection direction — 2026-11-16:** the [nested-assembly and live-instance inspection brief](engine-refactoring-plan.md#inspection-clarification-nested-assemblies-and-live-instances) sharpens #343's native-reuse pass. Inspect reusable structural assemblies, distinct nested runtime instances and contextual attachments, including lifecycle/resource accounting already supplied by the Taichi fork. One active tree can be the assembled result; do not assume a parallel flat occurrence/lifecycle framework is necessary. Verify actual native mechanisms and HCP-specific gaps with source evidence; this is a requirement to inspect, not a claim of an existing Taichi object/attachment API. Relate the mapping to #324's structural-intent separation without changing formulas. Coordinate with owner integration; earlier source acceptance stands. CI statements below retain their recorded observation time.

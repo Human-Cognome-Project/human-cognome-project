@@ -1,5 +1,13 @@
 # Prepared admission: native reuse and retained ownership seam
 
+**Contributor owner integration — 2026-11-16 (awaiting review):**
+[bounded private owner evidence](PREPARED-STUDY-OWNER.md) at public `a97b6049`
+reserves metadata before native bootstrap, publishes actual claims, follows
+contact-changing tick generations and reuses completed observation. No public
+ActiveSession migration, additional instance framework or new mathematics is
+implemented. The native nested-instance/control/accounting inspection below
+remains required before further wrappers.
+
 **Inspection direction — 2026-11-16:** the [nested-assembly and live-instance inspection brief](../../docs/engine-refactoring-plan.md#inspection-clarification-nested-assemblies-and-live-instances) sharpens #343's native-reuse pass. Inspect reusable structural assemblies, distinct nested runtime instances and contextual attachments, including lifecycle/resource accounting already supplied by the Taichi fork. One active tree can be the assembled result; do not assume a parallel flat occurrence/lifecycle framework is necessary. Verify actual native mechanisms and HCP-specific gaps with source evidence; this is a requirement to inspect, not a claim of an existing Taichi object/attachment API. Relate the mapping to #324's structural-intent separation without changing formulas. Coordinate with owner integration; earlier source acceptance stands. CI statements below retain their recorded observation time.
 
 Contributor inspection/proposal under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
