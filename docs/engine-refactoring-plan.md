@@ -77,6 +77,15 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 contributor inspection (awaiting review): the
+[prepared-admission seam map](../engine/docs/PREPARED-ADMISSION-SEAM.md) is pinned
+to current main `ee31e88a`. It identifies the existing atomic native bootstrap,
+record/dispatch/reservation mechanisms, missing explicit comparison bindings and
+fallible postcommit adoption risk. Proposed next slice: bounded structural
+command-plan preparation with explicit owner bindings, before retained commit
+or a new wrapper. Runtime behavior and #324 mathematics remain unchanged;
+retained C3 and combined accounting remain incomplete.
+
 2026-11-16 maintainer update: #342's corrected structural handoff and #346's mechanical ActiveSession implementation split are integrated after successful combined qualification. The moved session block/helper and retained logical code were independently compared against the reviewed dependency. Next is a focused native-reuse and ownership inspection at the prepared-admission seam, proposing the smallest bounded implementation before introducing wrappers. Retained C3 execution, the broader reuse audit and #324 mathematics remain incomplete. Older progress entries below retain their historical context.
 
 2026-11-15: [the responsibility map](../engine/docs/RESPONSIBILITY-MAP.md) from #344 and the publication-cut correction from #345 are accepted and integrated after successful hosted qualification. The correction retains exact equality and native pending-work controls; no production formula/traversal changed. #342 still requires combined qualification with the correction before integration. The next bounded implementation is the mechanical ActiveSession split described in the map, preserving explicit dependencies. The broader native-reuse audit, retained C3 bridge and #324 mathematics remain separate pending work.
