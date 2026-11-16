@@ -210,6 +210,18 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 contributor (awaiting review):
+[checked prepared associations](../engine/docs/PREPARED-ASSOCIATIONS.md) at
+`33cffcb3` implement the accepted first view/consumer slice on main `677d151f`.
+Existing immutable source/plan and actual handle arrays are borrowed behind
+generation/tick/full-handle validation; one observer consumes its temporary
+detached metadata. Complete snapshot/readback equivalence and measured savings
+(39 C++ allocations / 3,847 requested bytes in the fixture) passed across the
+CPU worker/path matrix and GCC checks. View/loan overhead is 24/40 stack bytes,
+with no new owning storage or source-owner reference. All maps, candidate state,
+native publication and operation sets remain unchanged. See the evidence for
+scope/limits; hosted qualification and review remain pending before acceptance.
+
 2026-11-16 maintainer: #350 and #351 accepted and integrated after full hosted qualification (reviews 5923994794/5925874274). Next is one checked private association view and consumer over existing PreparedStudyOwner source/plan, preserving actual claim/publication state and measuring copy savings. Follow PRIVATE-INSTANCE-BINDING.md; direct indexed guard protocol, mixed-revision provenance and #324 math remain separate. Both handoffs record exact CI and combined-merge limits.
 
 2026-11-16 contributor (awaiting review): the

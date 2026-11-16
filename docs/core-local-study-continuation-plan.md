@@ -6,6 +6,19 @@ Tested `33cffcb3` differs from head only in five Markdown files. Reported local 
 
 Next bounded comparison: identify a specific remaining duplicate immutable association, establish its actual lifetime/ownership and measured cost, then propose removal using the checked boundary and existing accessors. Preserve candidate/committed transaction state and full native claims; avoid growing wrappers without a concrete eliminated responsibility or cost. Direct indexed guard protocol, mixed-revision provenance, producer migration and #324 coherence mathematics remain separately scoped. Held #75/#111/#123 unchanged.
 
+**Contributor checked-association slice — 2026-11-16 (awaiting review):**
+the [implementation and evidence](../engine/docs/PREPARED-ASSOCIATIONS.md) at
+`33cffcb3` on main `677d151f` supply the first checked source/plan view and
+prepared observer consumer. Full native handles and generation/tick stamps
+guard loans; consuming detached metadata preserves complete snapshots while
+avoiding 39 C++ allocations / 3,847 requested bytes in the fixture. Quick CI,
+11 focused worker/path CTests and four fresh GCC checks passed locally.
+Owner arrays, transaction buffers and operation sets are unchanged. Review and
+authoritative hosted CI remain pending. Measure specific remaining duplicate
+associations before proposing map removal; broader indexed/provenance/schema,
+producer, accounting and #324 changes remain separate. Combined main `677d151f`
+now passed smoke/native (43936858958/43936859174), separately from this slice.
+
 **Maintainer integration — 2026-11-16 (supersedes older status below):** #350 `9e0307587dde72e793a4b661bc86f20ccb0cc654` and #351 `071ac31818c4a6694881c35a5f10e38e6f3596d7` are integrated by this merge. Reviews 5923994794 and 5925874274 accepted their scope. #350 smoke 43910777706 and all 12 native jobs in 43910777722 passed; inspected logs confirm 172 regression passes including both new native-instance tests. #351 smoke 43915843667 and all 12 native jobs in 43915843738 passed. Main fa7f09e4 also passed smoke/native 43913630873/43913630852. The combined merge preserves #349 production code and adds #350's exact witness/build additions plus documentation; its normal CI is separate combined qualification.
 
 Next authorized slice: implement the private instance-binding contract in engine/docs/PRIVATE-INSTANCE-BINDING.md through one checked association view over existing PreparedStudyOwner source/plan and one observer/validator consumer. Prefer existing accessors; preserve handle arrays, candidate/committed state and both owners' operation sets. Prove exact source/role/field association, refusal/lifetime/generation equivalence and measure copy savings versus sharing overhead. Native coordinate reuse alone is not a semantic lifetime guard. Direct indexed adoption, mixed-revision provenance, heterogeneous schemas, public producer migration, full accounting and #324 mathematics remain separate. Preserve minimal catalogue disruption and Analyst/control/engine separation.

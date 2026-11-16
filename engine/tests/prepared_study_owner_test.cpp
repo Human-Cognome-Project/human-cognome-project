@@ -4,6 +4,7 @@
 #include "prepared_metrics.h"
 #include <cstring>
 #include <iostream>
+#include <type_traits>
 
 namespace {
 using namespace prepared_owner_fixture;
@@ -105,6 +106,7 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
   check(competitor.status == AdmissionPlanStatus::Ok,"second pending view for stale-generation control");
   check(!owner.ready() && owner.phase() == PreparedOwnerPhase::Prepared,"metadata preparation publishes no model");
   rejects([&] { owner.bodies(authorization,handle); },"unpublished maps unavailable");
+  rejects([&] { owner.associations(authorization,handle); },"unpublished association view unavailable");
   const auto call = [&](std::uint64_t placement = UINT64_MAX, std::uint64_t hierarchy = UINT64_MAX) {
     return owner.bootstrap(authorization,handle,placement,UINT64_MAX,hierarchy);
   };
@@ -143,11 +145,42 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
         owner.ready() && committed_before_stale == state(h),"stale pending owner cannot replace the committed generation");
   competitor.owner.reset();
   check(!competitor_domain->result().live_bytes && owner.ready(),"stale borrower teardown leaves the current execution intact");
+  std::weak_ptr<const ActiveAssembly> source_lifetime = input.source;
+  {
   const auto &plan = owner.plan(authorization,handle);
   const auto &bodies = owner.bodies(authorization,handle);
   const auto &fields = owner.fields(authorization,handle);
   const auto &s = h.prepared_storage();
+  static_assert(std::is_trivially_copyable_v<PreparedStudyOwner::AssociationView>);
+  const auto source_owners = input.source.use_count();
+  const auto view = no_new([&] { return owner.associations(authorization,handle); });
+  const auto associations = no_new([&] { return view.read(); });
+  check(input.source.use_count() == source_owners && &associations.source == input.source.get() &&
+        &associations.plan == &plan && &associations.bodies == &bodies && &associations.fields == &fields &&
+        associations.plan.source().recipe.selection == input.bindings.source.recipe.selection &&
+        associations.plan.source().recipe.revision == input.bindings.source.recipe.revision,
+        "checked view shares exact source/plan/claim storage without another source owner");
+  rejects([&] { owner.associations(warm::new_uuid(),handle); },"association view requires owner authorization");
+  for (int part=0; part<3; ++part) {
+    auto foreign = handle;
+    if (part == 0) foreign.session = warm::new_uuid();
+    if (part == 1) foreign.study = warm::new_uuid();
+    if (part == 2) foreign.generation = warm::new_uuid();
+    rejects([&] { owner.associations(authorization,foreign); },"association view rejects foreign logical identity");
+  }
   for (std::size_t i=0; i<bodies.size(); ++i) {
+    const auto association = no_new([&] { return associations.body(i); });
+    const auto expected = std::find_if(input.bindings.bodies.begin(),input.bindings.bodies.end(),
+        [&](const auto &v) { return v.address == bodies[i].address; });
+    check(expected != input.bindings.bodies.end(),"actual claim has an independently supplied source binding");
+    const auto &layout = input.bindings.layout.at(expected->node);
+    check(&association.source == &plan.occurrences()[i] && &association.claim == &bodies[i] &&
+          association.source.occurrence == expected->occurrence && association.source.definition == expected->definition &&
+          association.source.node == expected->node &&
+          association.scale.node.layout == nullptr && association.scale.node.parent == layout.node.parent &&
+          association.scale.node.role == layout.node.role && association.scale.units == layout.units &&
+          association.source.units == layout.units && association.exact_mass == 2,
+          "body ordinal preserves exact definition, source mass, semantic role and units");
     const auto &v = bodies[i];
     check(v.context == s.particles.context() && v.incarnation && v.address == 40+int(i) &&
           v.record >= 0 && v.record < h.particle_capacity() && v.record != v.address &&
@@ -155,9 +188,42 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
           plan.occurrences()[i].occurrence.source.entry == (i ? 10U : 2U),
           "typed occurrence map uses actual claims rather than addresses or future slots");
   }
-  for (std::size_t i=0; i<fields.size(); ++i)
+  for (std::size_t i=0; i<fields.size(); ++i) {
+    const auto association = no_new([&] { return associations.field(i); });
+    const auto expected = std::find_if(input.bindings.fields.begin(),input.bindings.fields.end(),
+        [&](const auto &v) { return v.address == fields[i].address; });
+    check(expected != input.bindings.fields.end(),"actual field claim has an independently supplied typed binding");
+    check(&association.source == &plan.fields()[i] && &association.claim == &fields[i] &&
+          association.source.field.kind == expected->field.kind &&
+          association.source.field.object == expected->field.object,
+          "field ordinal preserves complete typed key and actual claim");
     check(fields[i].context == s.fields.context() && fields[i].incarnation && fields[i].address == int(i),
           "complete typed field map uses actual claims");
+  }
+  for (bool body : {true,false}) {
+    bool refused = false;
+    try { if (body) associations.body(bodies.size()); else associations.field(fields.size()); }
+    catch (const std::out_of_range &) { refused = true; }
+    check(refused,"association ordinal bounds reject before exposing a row");
+  }
+  // Test-only committed-header fault injection, not an alternate mutation API.
+  for (bool body : {true,false}) {
+    auto &storage = const_cast<field::detail::PreparedStorage &>(s);
+    auto &header = body ? storage.particle_headers[bodies.front().record]
+                        : storage.field_headers[fields.front().record];
+    const auto saved = header;
+    for (int part=0; part<4; ++part) {
+      if (part == 0) ++header.context;
+      if (part == 1) ++header.incarnation;
+      if (part == 2) ++header.address;
+      if (part == 3) ++header.record;
+      rejects([&] { view.read(); },"association read rejects every mismatched full-handle component");
+      header = saved;
+    }
+  }
+  check(&view.read().plan == &plan,"restored headers retain the same immutable association");
+  std::cout << "association_storage,view_bytes=" << sizeof(view)
+            << ",loan_bytes=" << sizeof(associations) << ",extra_shared_owners=0,owning_allocations=0\n";
   h.inspect_prepared();
   const auto anchor = bodies.front().record;
   check(h.particle64(field::kPosX,anchor) == 0 && h.particle64(field::kPosY,anchor) == 0 &&
@@ -180,6 +246,7 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
         "later scratch reuse cannot change the published actual-claim map");
   r = no_new([&] { return call(); });
   check(r.status == field::UpdateStatus::NoChange && committed == state(h) && owner.ready(),"authorized repeat bootstrap is a healthy no-op");
+  check(&view.read().bodies == &bodies,"scratch reuse and no-op retain current association view");
   auto denied = prepare(h,input,d);
   check(denied.status == AdmissionPlanStatus::InvalidInput && !denied.owner && committed == state(h),
         "a populated execution cannot be adopted as an empty bootstrap target");
@@ -191,17 +258,23 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
   tick = owner.tick(authorization,handle,invalid);
   check(tick.status == field::TickStatus::InvalidInput && owner.ready() && committed == state(h),
         "invalid tick parameters remain a healthy native refusal");
+  check(&view.read().plan == &plan,"healthy tick refusals preserve current association view");
   tick = no_new([&] { return owner.tick(authorization,handle,p); });
   check(tick.status == field::TickStatus::Ok && tick.completed_ticks == 1 && owner.ready(),"native owner tick after generated bootstrap");
+  rejects([&] { view.read(); },"completed quiet tick invalidates an old association stamp");
+  const auto after_tick = owner.associations(authorization,handle);
   const auto generation = owner.generation();
   p.gravity = 0.025;
   tick = no_new([&] { return owner.tick(authorization,handle,p); });
   check(tick.status == field::TickStatus::Ok && tick.coverage_changed && tick.completed_ticks == 2 &&
         tick.generation == generation+1 && owner.generation() == tick.generation && owner.ready(),
         "owner follows a native contact-changing tick without replacing identity maps");
-  std::weak_ptr<const ActiveAssembly> source_lifetime = input.source;
+  rejects([&] { after_tick.read(); },"contact-changing tick invalidates an old native generation stamp");
+  const auto current = owner.associations(authorization,handle);
   input.source.reset();
-  check(!source_lifetime.expired() && owner.source(authorization,handle).study() == handle.study,"owner retains immutable source pins");
+  check(!source_lifetime.expired() && current.read().source.study() == handle.study &&
+        &current.read().plan == &plan,"owner retains immutable pins after caller release and view reacquisition");
+  } // All association views/loans end before owner teardown.
   prepared.owner.reset();
   check(source_lifetime.expired() && !d->result().live_bytes && h.ready() && h.present_particles() == 2,
         "borrower teardown releases metadata without retiring retained native state");
@@ -219,6 +292,7 @@ void failed_publication(engine::Runtime &runtime, field::HostPath path, int poin
   check(failed && !h.ready() && !owner.ready() && owner.phase() == PreparedOwnerPhase::Failed,
         "postclaim native/publication failure makes execution unready");
   rejects([&] { owner.bodies(input.source->owner(),handle); },"half-published claims remain unavailable");
+  rejects([&] { owner.associations(input.source->owner(),handle); },"failed publication cannot expose an association view");
   check(owner.bootstrap(input.source->owner(),handle,UINT64_MAX,UINT64_MAX,UINT64_MAX).status == field::UpdateStatus::Unready,
         "failed publication cannot be retried as a healthy empty owner");
   prepared.owner.reset(); check(!d->result().live_bytes,"failed publication metadata teardown");
