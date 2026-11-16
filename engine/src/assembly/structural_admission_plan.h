@@ -24,7 +24,7 @@ struct AdmissionBody {
 };
 struct AdmissionField {
   FieldKey field;
-  int kind{1}, address{-1};
+  int kind{1}, address{-1}; // Native field declaration extent is Fields, not Potential.
 };
 struct AdmissionComparison {
   FieldKey field;

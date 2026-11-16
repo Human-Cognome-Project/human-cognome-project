@@ -245,6 +245,14 @@ void refusals() {
   reject([](auto &b) { b.fields.pop_back(); });
   reject([](auto &b) { b.fields[0].address = b.fields[1].address; });
   reject([](auto &b) { b.fields[0].field.kind = GroupKind::Membership; });
+  {
+    auto b = e.bindings;
+    b.fields[0].address = int(limits()[Budget::Fields]);
+    auto d = domain(); auto denied = e.build(b,d);
+    check(denied.status == Status::CapacityExhausted && denied.failure.budget == Budget::Fields &&
+          !denied.plan && !d->result().live_bytes,
+          "field declaration addresses obey native Fields extent rather than Potential");
+  }
   reject([](auto &b) { b.comparisons.pop_back(); });
   reject([](auto &b) { b.comparisons[1].comparison = b.comparisons[0].comparison; });
   reject([](auto &b) { b.comparisons[1].children = {1}; });
