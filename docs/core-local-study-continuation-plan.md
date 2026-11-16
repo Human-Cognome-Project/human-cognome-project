@@ -1,5 +1,17 @@
 # Core continuation after local CUDA corrections
 
+**Contributor origin-cost comparison — 2026-11-16 (awaiting review):**
+the [comparison/evidence](../engine/docs/ORIGIN-ASSOCIATION-COST.md) at `fcef214c`
+uses main `9518d043` plus source-accepted unmerged #352 `9a86962e`, preserving
+both histories. One test-only witness attributes duplicate `Origin.definition`
+key storage to eight allocations / 208 retained requested bytes across four
+origin alternatives and two exposed bodies. Quick CI, five focused Clang CTests
+and two fresh GCC checks passed. No production field or map is removed; a
+reviewed pin-object accessor/removal must coordinate current consumers and
+define invalid provenance refusal before changing which key they read. Keep
+full source pins, native claims, candidate state and all #352 qualification
+limits explicit; direct indexed/provenance/schema/producer/#324 work is separate.
+
 **Maintainer #352 review — 2026-11-16:** head `9a86962e46735a2ae6c80dc0f928f703cfb5ff32` is source-accepted in review 5927235088, not integrated. Checked associations borrow the existing immutable source/plan/scales and actual claim arrays; generation/tick/full-handle validation precedes row loans, whose lifetime ends before mutation or owner teardown. The prepared observer consumes temporary detached metadata through shared validation, avoiding a redundant deep copy while preserving native readback and complete snapshot/source-pin equivalence. No new owning allocation, source owner, claim ledger, numerical policy or native indexed guard protocol is introduced.
 
 Tested `33cffcb3` differs from head only in five Markdown files. Reported local savings (39 new/new[] requests and 3,847 requested bytes per two-instance fixture observation) concern metadata transfer, not total memory or latency; raw Clang/GCC evidence remains contributor-reported. Main 677d151f combined smoke/native 43936858958/43936859174 passed all gates. #352 smoke 43949822858 and optional viewport 43949822810 passed; native 43949823568 build/projection/database passed, with regression/compiler matrix still pending at review. Reconcile final hosted results before integration; no duplicate CI requested.

@@ -1,5 +1,10 @@
 # Checked prepared associations and consuming observation
 
+The subsequent [origin association cost comparison](ORIGIN-ASSOCIATION-COST.md)
+uses this checked boundary to measure one duplicate ObjectKey inside each
+detached provenance row. It proposes a separate removal boundary; this
+comparison does not remove the field or alter the qualified consumer below.
+
 Contributor implementation under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
 2026-11-16, awaiting review. Base: integrated main
 `677d151f17080eefb4c3ad9e1e5ccb0cdaf7b831`; public tested implementation:

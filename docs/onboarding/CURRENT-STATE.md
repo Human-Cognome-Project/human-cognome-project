@@ -1,5 +1,21 @@
 # Current implementation and work
 
+**Contributor origin-cost comparison — 2026-11-16 (awaiting review):**
+`fcef214c` starts from main `9518d043` with source-accepted, unmerged #352
+`9a86962e` explicitly merged into the comparison branch. Production code is
+unchanged relative to that dependency. The
+[source-pinned ownership/cost comparison](../../engine/docs/ORIGIN-ASSOCIATION-COST.md)
+identifies `Origin.definition` as a duplicate of the ObjectKey already owned by
+its full provenance pin. In the four-origin/two-body fixture, the duplicate's
+backing occupies eight C++ requests / 208 retained requested bytes; row release
+and allocation-free pin-member access are verified. Quick CI, all five focused
+Clang tests and two fresh GCC tests passed. This is a measured candidate,
+not a realized removal saving. Proposed next: review valid provenance cases,
+then reuse the existing pin object and remove the extra member with coordinated
+producer/consumer, snapshot/refusal/lifetime controls. Candidate/committed maps,
+full claims, source revisions and numerical policy remain intact. #352 hosted
+native qualification/integration and this comparison's review/CI remain pending.
+
 **Maintainer #352 review — 2026-11-16:** head `9a86962e46735a2ae6c80dc0f928f703cfb5ff32` is source-accepted in review 5927235088, not integrated. Checked associations borrow the existing immutable source/plan/scales and actual claim arrays; generation/tick/full-handle validation precedes row loans, whose lifetime ends before mutation or owner teardown. The prepared observer consumes temporary detached metadata through shared validation, avoiding a redundant deep copy while preserving native readback and complete snapshot/source-pin equivalence. No new owning allocation, source owner, claim ledger, numerical policy or native indexed guard protocol is introduced.
 
 Tested `33cffcb3` differs from head only in five Markdown files. Reported local savings (39 new/new[] requests and 3,847 requested bytes per two-instance fixture observation) concern metadata transfer, not total memory or latency; raw Clang/GCC evidence remains contributor-reported. Main 677d151f combined smoke/native 43936858958/43936859174 passed all gates. #352 smoke 43949822858 and optional viewport 43949822810 passed; native 43949823568 build/projection/database passed, with regression/compiler matrix still pending at review. Reconcile final hosted results before integration; no duplicate CI requested.
