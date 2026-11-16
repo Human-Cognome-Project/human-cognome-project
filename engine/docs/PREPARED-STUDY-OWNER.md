@@ -1,5 +1,10 @@
 # Private prepared study bootstrap owner
 
+The subsequent [private instance-binding proposal](PRIVATE-INSTANCE-BINDING.md)
+compares this owner with ExchangeOwner and defines the source/lifetime/publication
+requirements for sharing associations. It is a contract proposal; the existing
+owner implementation and qualified scope recorded below are unchanged.
+
 Contributor slice under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
 2026-11-16, awaiting review. Starts from main `422a32e1`, explicitly dependent on
 source-accepted [#348](https://github.com/Human-Cognome-Project/human-cognome-project/pull/348)

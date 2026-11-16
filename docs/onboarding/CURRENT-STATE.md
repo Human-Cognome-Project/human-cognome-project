@@ -1,5 +1,17 @@
 # Current implementation and work
 
+**Contributor binding contract — 2026-11-16 (awaiting review):** current main
+`fa7f09e4` is the source for the
+[private instance-binding proposal](../../engine/docs/PRIVATE-INSTANCE-BINDING.md).
+It compares PreparedStudyOwner and ExchangeOwner, specifies immutable exact
+source/role associations versus current/candidate claims, and requires native
+lifetime/generation/incarnation validation before exposing indexed cells.
+Native coordinate reuse alone remains insufficient. Source-accepted #350 at
+`9e030758` is an explicit unmerged inspection dependency. This slice adds no
+runtime interface, map removal, mixed-revision policy or #324 mathematics.
+The proposed first implementation reuses the existing prepared plan/source for
+one checked private consumer before any broader representation change.
+
 **Maintainer review — 2026-11-16 (supersedes older status below):** #349 at `da865d3cc8fbc2bbb42731957ec89cc8c055d42c` is integrated by this merge after smoke 43897644051, optional viewport 43897644060 and all 12 native jobs in 43897644203 passed. Independently inspected logs show 178 regression passes (45/45/44/44), all four prepared-owner and all four observer profiles, and database addressed_reads=24/private_reads=0. Main cf352531 also passed smoke/native (43901876229/43901876288). The Fields-address correction and contact-changing tick generation tracking are now integrated. ActiveSession/letter capture remains legacy.
 
 #350 at `9e0307587dde72e793a4b661bc86f20ccb0cc654` is source-accepted in review 5923994794, not integrated. The bounded native witness demonstrates shared compiled nested layout with independent indexed cells, selective value/attachment updates, unrelated tree lifetime and native retirement/reuse. Synthetic revision/attachment data does not implement production adoption, D7 rollup or #324 mathematics. The inspection confirms current Bundle/projection permits only one revision per ObjectKey; native coordinate reuse lacks semantic incarnation. Tested f0b40962 differs from head only in five Markdown files. Smoke 43910777706 passed; native 43910777722 build/projection/database passed and regression/compiler matrix remained pending at review. Local execution and IR archive remain contributor-reported, not independently executed or inspected. No duplicate CI requested.
