@@ -1,5 +1,6 @@
 #include "snapshot.h"
 #include "prepared_owner_fixture.h"
+#include "allocation_observation.h"
 #include <iostream>
 
 namespace {
@@ -13,6 +14,59 @@ template<class F> void rejects(F action, const char *label) {
   bool rejected = false;
   try { action(); } catch (const warm::Error &) { rejected = true; }
   check(rejected,label);
+}
+struct Measured {
+  viewport::CompletedState state;
+  std::uint64_t calls{}, bytes{};
+};
+template<class F> Measured measured(F action) {
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  try {
+    auto state = action();
+    allocation_observation::enabled = false;
+    return {std::move(state),allocation_observation::calls.load(),allocation_observation::bytes.load()};
+  } catch (...) { allocation_observation::enabled = false; throw; }
+}
+void transfer_equivalence(field::Harness &h, const viewport::CompletedState &completed,
+                          const viewport::CaptureContext &context) {
+  // Reconstitute only identity/scale metadata, as in the production binding.
+  // Numerical state is always obtained again by the real native observer.
+  auto metadata = completed.report;
+  metadata.particles.clear(); metadata.groups.clear(); metadata.determined.clear();
+  metadata.particles64.clear(); metadata.groups64.clear(); metadata.determined64.clear();
+  auto retained = viewport::bind(h,std::move(metadata));
+  auto consumed = retained; // Fixture preparation is outside the measurements.
+  const auto request = viewport::IntentRequest{1,UINT64_MAX};
+  const auto copied = measured([&] { return viewport::observe(h,retained,request); });
+  const auto moved = measured([&] { return viewport::observe(h,std::move(consumed),request); });
+  std::cout << "observer_metadata_transfer,tick=" << completed.tick
+            << ",copy_calls=" << copied.calls << ",copy_bytes=" << copied.bytes
+            << ",move_calls=" << moved.calls << ",move_bytes=" << moved.bytes << '\n';
+  check(copied.calls > moved.calls && copied.bytes > moved.bytes,
+        "consuming observer avoids measured detached metadata copies");
+  check(viewport::snapshot(copied.state,context) == viewport::snapshot(moved.state,context) &&
+        viewport::snapshot(moved.state,context) == viewport::snapshot(completed,context),
+        "retained and consuming bindings produce exactly the same complete snapshot");
+  check(copied.state.numeric_copy_bytes == moved.state.numeric_copy_bytes &&
+        copied.state.requested_readback_bytes == moved.state.requested_readback_bytes &&
+        retained.mapping.origins.size() == completed.report.origins.size(),
+        "transfer savings preserve native readback/numerical copy scope and retained binding");
+  for (std::size_t i=0; i<completed.report.origins.size(); ++i) {
+    const auto &a = moved.state.report.origins[i], &b = completed.report.origins[i];
+    check(a.occurrence == b.occurrence && a.definition == b.definition && a.shared == b.shared &&
+          !a.local && !b.local,"consuming report retains exact detached source pins");
+  }
+  // Both overloads must reject invalid/stale mappings before a completed read.
+  auto stale = retained; ++stale.generation;
+  for (bool consume : {false,true}) {
+    bool refused = false;
+    try {
+      if (consume) viewport::observe(h,std::move(stale),request);
+      else viewport::observe(h,stale,request);
+    } catch (const std::invalid_argument &) { refused = true; }
+    check(refused,"both observer overloads reject the same stale generation");
+  }
 }
 void run(engine::Runtime &runtime, field::HostPath path) {
   Input input(true); input.install_layout(runtime);
@@ -54,6 +108,7 @@ void run(engine::Runtime &runtime, field::HostPath path) {
     check(snapshot.at("capture").at("tick") == std::to_string(tick) &&
           snapshot.at("particles").size() == 2 && snapshot.at("numerics").at("profile") == "trial_f64",
           "existing snapshot serialization consumes the completed owner state");
+    transfer_equivalence(h,observed,context);
     const auto refused = viewport::observe(owner,authorization,handle,viewport::IntentRequest{1,0});
     check(refused.intent.at("status") == "budget_refused" && owner.ready(),"diagnostic refusal remains read-only");
   };
