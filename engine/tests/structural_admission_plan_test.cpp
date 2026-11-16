@@ -151,7 +151,7 @@ void source_and_symbols(bool parts) {
         "source stamps retain selected-domain ownership");
   for (std::size_t i=0; i<p.occurrences().size(); ++i) {
     const auto &o = p.occurrences()[i];
-    if (i) check(p.occurrences()[i-1].occurrence.source < o.occurrence.source,
+    if (i) check(p.occurrences()[i-1].occurrence < o.occurrence,
                  "numeric occurrence entry/path order");
     check(o.command == int(i) && commands[i].operation == field::UpdateOp::DefineParticle &&
               commands[i].exact_mass == (parts ? 2U : 24U), "exact denominator and command index");
@@ -159,16 +159,16 @@ void source_and_symbols(bool parts) {
               p.intrinsics()[i].mass == 1.25, "physical mass is not the exact denominator");
     check(p.intrinsics()[i].radius == (parts ? 0.5+std::ldexp(1.0,-40) : 1+std::ldexp(1.0,-40)),
           "original double geometry survives before any f32 staging");
-    check(o.occurrence.study.str().get_allocator().domain == d &&
-          o.occurrence.source.path.get_allocator().domain == d &&
+    check(p.source().study.str().get_allocator().domain == d &&
+          o.occurrence.path.get_allocator().domain == d &&
           o.definition.object.address.get_allocator().domain == d &&
           o.definition.revision.str().get_allocator().domain == d, "nested identities use the selected domain");
   }
-  if (parts) check(p.occurrences()[2].occurrence.source.path[0] == 2 &&
-                   p.occurrences()[10].occurrence.source.path[0] == 10,
+  if (parts) check(p.occurrences()[2].occurrence.path[0] == 2 &&
+                   p.occurrences()[10].occurrence.path[0] == 10,
                    "path 2 precedes path 10 despite lexical spelling");
-  check(p.occurrences().front().occurrence.source.entry == 2 &&
-        p.occurrences().back().occurrence.source.entry == 10, "entry 2 precedes entry 10");
+  check(p.occurrences().front().occurrence.entry == 2 &&
+        p.occurrences().back().occurrence.entry == 10, "entry 2 precedes entry 10");
   std::size_t edges = 0, contacts = 0;
   for (const auto &c : commands) {
     check(!c.first.handle.context && !c.second.handle.context, "no guessed native handle");
@@ -227,6 +227,7 @@ void refusals() {
           "invalid binding refuses without a partial plan or retained allocation");
   };
   reject([](auto &b) { b.source.study = warm::new_uuid(); });
+  reject([](auto &b) { b.bodies[0].occurrence.study = warm::new_uuid(); });
   reject([](auto &b) { b.source.owner = warm::new_uuid(); });
   reject([](auto &b) { b.source.generation = warm::new_uuid(); });
   reject([](auto &b) { b.source.recipe.revision = warm::new_uuid(); });
@@ -437,9 +438,9 @@ const allocation_lifetime::Entry *tracked(const void *pointer) {
   }
   return nullptr;
 }
-// Attribute the actual builder's repeated study UUIDs. The plan already owns
-// the same UUID in source(); no source borrowing or production removal occurs.
-void study_identity_cost(bool parts) {
+// Measure the actual changed producer with the same fixtures as #355. The
+// source-pinned old binaries/evidence retain the complete before measurement.
+std::size_t study_identity_cost(bool parts) {
   auto input = std::make_unique<Example>(parts,true);
   const auto stamps = input->bindings.source;
   auto expected = input->bindings.bodies;
@@ -465,19 +466,8 @@ void study_identity_cost(bool parts) {
   const auto *outer = tracked(plan.occurrences().data());
   const auto header_bytes = header ? header->bytes : 0;
   const auto outer_bytes = outer ? outer->bytes : 0;
-  std::size_t duplicate_bytes = 0, duplicate_blocks = 0;
-  bool exact = count == expected.size(), distinct = true;
+  bool exact = count == expected.size();
   bool attributed = header && outer && plan.source().study.str().get_allocator().domain == d;
-  for (std::size_t i=0; i<count; ++i) {
-    const auto &key = plan.occurrences()[i].occurrence;
-    const auto *copy = tracked(key.study.str().data());
-    attributed &= copy && key.study.str().get_allocator().domain == d;
-    if (copy) { duplicate_bytes += copy->bytes; ++duplicate_blocks; }
-    distinct &= key.study.str().data() != plan.source().study.str().data();
-    for (std::size_t j=0; j<i; ++j)
-      distinct &= key.study.str().data() != plan.occurrences()[j].occurrence.study.str().data();
-    exact &= key.study == plan.source().study;
-  }
   // The existing header is the comparison accessor. Keep numeric entry/path and
   // full ToolRefs independent; no temporary owning OccurrenceKey is constructed.
   allocation_observation::calls = allocation_observation::bytes = 0;
@@ -485,7 +475,7 @@ void study_identity_cost(bool parts) {
   for (std::size_t i=0; i<count && i<expected.size(); ++i) {
     const auto &row = plan.occurrences()[i];
     exact &= plan.source().study == expected[i].occurrence.study &&
-             row.occurrence.source == expected[i].occurrence.source && row.definition == expected[i].definition;
+             row.occurrence == expected[i].occurrence.source && row.definition == expected[i].definition;
   }
   allocation_observation::enabled = false;
   const auto borrow_calls = allocation_observation::calls.load(), borrow_bytes = allocation_observation::bytes.load();
@@ -500,16 +490,15 @@ void study_identity_cost(bool parts) {
       allocation_lifetime::counts.live == retained.live;
   for (std::size_t i=0; i<count && i<expected.size(); ++i)
     exact &= owned->source().study == expected[i].occurrence.study &&
-             owned->occurrences()[i].occurrence == expected[i].occurrence &&
+             owned->occurrences()[i].occurrence == expected[i].occurrence.source &&
              owned->occurrences()[i].definition == expected[i].definition;
   owned.reset();
   const auto released = allocation_lifetime::end();
   check(exact && independent,"existing owned header preserves full study identity after source death and plan-handle move");
-  check(count == (parts ? 24U : 2U) && distinct && attributed && duplicate_blocks == count &&
-        header_bytes && duplicate_bytes == count*header_bytes,
-        "every selected occurrence owns an equal study UUID with distinct tracked backing");
+  check(count == (parts ? 24U : 2U) && attributed && header_bytes,
+        "one domain-owned plan header supplies study identity to every numeric row");
   check(outer_bytes == capacity*sizeof(AdmissionOccurrenceCommand) && capacity >= count,
-        "row UUID member extent is inside existing occurrence vector capacity");
+        "numeric-only rows occupy the actual reserved occurrence vector");
   check(!borrow_calls && !borrow_bytes,"existing source header and numeric occurrence comparison allocate nothing");
   check(retained.acquired == calls && !released.live && !released.blocks &&
         released.acquired == released.released && !d->result().live_bytes,
@@ -517,11 +506,53 @@ void study_identity_cost(bool parts) {
   std::cout << "study_identity_cost,parts=" << parts << ",rows=" << count << ",capacity=" << capacity
             << ",construction_calls=" << calls << ",construction_requested=" << requested
             << ",retained_requested=" << retained.live << ",peak_requested=" << retained.peak
-            << ",domain_retained=" << domain_retained << ",duplicate_blocks=" << duplicate_blocks
-            << ",duplicate_requested=" << duplicate_bytes << ",header_requested=" << header_bytes
+            << ",domain_retained=" << domain_retained << ",header_requested=" << header_bytes
             << ",uuid_object_bytes=" << sizeof(warm::Uuid) << ",row_object_bytes=" << sizeof(AdmissionOccurrenceCommand)
             << ",outer_capacity_bytes=" << outer_bytes << ",borrow_calls=" << borrow_calls
-            << ",after_destroy_requested=" << released.live << '\n';
+            << ",after_destroy_requested=" << released.live << ",preparation_work=" << result.work.charged << '\n';
+  return calls;
+}
+
+void allocation_failures(bool parts, std::size_t requests) {
+  Example input(parts,true);
+  for (std::size_t fail=1; fail<=requests; ++fail) {
+    auto d = domain();
+    allocation_lifetime::begin(fail);
+    auto refused = input.build(d);
+    const bool unavailable = refused.status == Status::AllocationExhausted && !refused.plan;
+    refused.plan.reset();
+    const auto released = allocation_lifetime::end();
+    check(unavailable && released.attempts == fail && !released.live && !released.blocks &&
+          released.acquired == released.released && !d->result().live_bytes,
+          "every actual C++ allocation failure unwinds the numeric-only plan");
+  }
+}
+
+void study_scoping() {
+  for (bool parts : {false,true}) {
+    Example a(parts,true), b(parts,true);
+    auto da = domain(), db = domain();
+    auto first = a.build(da), second = b.build(db);
+    check(first.status == Status::Ok && second.status == Status::Ok &&
+          first.plan->source().study != second.plan->source().study,"separate plans own distinct study scopes");
+    for (std::size_t i=0; i<first.plan->occurrences().size(); ++i) {
+      const auto &id = first.plan->occurrences()[i].occurrence;
+      check(id == second.plan->occurrences()[i].occurrence,"equal numeric paths remain reusable across studies");
+      const OccurrenceKey full{first.plan->source().study,id}; // Expected owner prepared outside counters.
+      allocation_observation::calls = allocation_observation::bytes = 0;
+      allocation_observation::enabled = true;
+      const auto expected = occurrence_text(full);
+      allocation_observation::enabled = false;
+      const auto full_calls = allocation_observation::calls.load(), full_bytes = allocation_observation::bytes.load();
+      allocation_observation::calls = allocation_observation::bytes = 0;
+      allocation_observation::enabled = true;
+      const auto actual = occurrence_text(first.plan->source().study,id);
+      allocation_observation::enabled = false;
+      check(actual == expected && allocation_observation::calls == full_calls && allocation_observation::bytes == full_bytes,
+            "split rendering preserves full text without allocating a temporary owning key");
+      check(actual != occurrence_text(second.plan->source().study,id),"rendered identities retain separate-study distinction");
+    }
+  }
 }
 
 void independent_lifetimes() {
@@ -534,7 +565,7 @@ void independent_lifetimes() {
     return r;
   }(); // ActiveAssembly, caller vectors, real SNodes and caller domain handle die.
   check(!weak.expired() && result.plan->occurrences().size() == 24 &&
-        result.plan->occurrences()[10].occurrence.source.path[0] == 10 &&
+        result.plan->occurrences()[10].occurrence.path[0] == 10 &&
         result.plan->hierarchy().contributions[0].source_command >= 0,
         "owned plan values survive all borrowed source/layout inputs");
   result.plan.reset();
@@ -550,7 +581,9 @@ int main() {
   try {
     source_and_symbols(false); source_and_symbols(true);
     refusals(); mixed_scale(); bounded_setup(); independent_lifetimes();
-    study_identity_cost(false); study_identity_cost(true);
+    allocation_failures(false,study_identity_cost(false));
+    allocation_failures(true,study_identity_cost(true));
+    study_scoping();
     std::cout << "structural_admission_plan,checks=" << checks
               << ",native_claims=0,retained_execution=0 PASS\n";
     return 0;

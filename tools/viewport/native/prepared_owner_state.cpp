@@ -36,7 +36,7 @@ struct PreparedOwnerAccess {
       const auto &entry = body.source;
       // Identity/scale metadata only. All physical values are subsequently read
       // from the authoritative wide execution by the existing Harness observer.
-      assembly::Occurrence occurrence{assembly::InputText(assembly::occurrence_text(entry.occurrence)),
+      assembly::Occurrence occurrence{assembly::InputText(assembly::occurrence_text(plan.source().study,entry.occurrence)),
           assembly::InputText(warm::key(entry.definition.object)),body.claim.record,entry.node,{},{}};
       mapping.particles.push_back({std::move(occurrence),body.exact_mass,{},{},0,0});
     }

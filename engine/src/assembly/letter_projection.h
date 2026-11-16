@@ -47,6 +47,7 @@ struct OccurrenceKey {
 };
 bool operator==(const OccurrenceKey &a, const OccurrenceKey &b);
 std::string occurrence_text(const OccurrenceKey &key);
+std::string occurrence_text(const warm::Uuid &study, const warm::OccurrenceId &source);
 struct FieldKey {
   GroupKind kind;
   warm::ObjectKey object;

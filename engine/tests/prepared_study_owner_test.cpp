@@ -175,7 +175,8 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
     check(expected != input.bindings.bodies.end(),"actual claim has an independently supplied source binding");
     const auto &layout = input.bindings.layout.at(expected->node);
     check(&association.source == &plan.occurrences()[i] && &association.claim == &bodies[i] &&
-          association.source.occurrence == expected->occurrence && association.source.definition == expected->definition &&
+          plan.source().study == expected->occurrence.study &&
+          association.source.occurrence == expected->occurrence.source && association.source.definition == expected->definition &&
           association.source.node == expected->node &&
           association.scale.node.layout == nullptr && association.scale.node.parent == layout.node.parent &&
           association.scale.node.role == layout.node.role && association.scale.units == layout.units &&
@@ -185,7 +186,7 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
     check(v.context == s.particles.context() && v.incarnation && v.address == 40+int(i) &&
           v.record >= 0 && v.record < h.particle_capacity() && v.record != v.address &&
           s.particle_headers[v.record].incarnation == v.incarnation &&
-          plan.occurrences()[i].occurrence.source.entry == (i ? 10U : 2U),
+          plan.occurrences()[i].occurrence.entry == (i ? 10U : 2U),
           "typed occurrence map uses actual claims rather than addresses or future slots");
   }
   for (std::size_t i=0; i<fields.size(); ++i) {
