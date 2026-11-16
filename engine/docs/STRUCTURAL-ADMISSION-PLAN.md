@@ -1,5 +1,13 @@
 # Private structural admission plan builder
 
+**Subsequent ownership comparison — 2026-11-16 (awaiting review):**
+[study-identity cost attribution](PLAN-STUDY-IDENTITY-COST.md) at `52be505c`
+measures per-occurrence UUID copies equal to this plan's existing owned source
+header. It proposes reusing that header while retaining numeric identity/full
+definition pins and the standalone lifetime contract below. Production is
+unchanged; removal and its resource/consumer controls await review. The expanded
+builder test passes 4,465 checks under local Clang and fresh GCC.
+
 **Subsequent contributor owner integration — 2026-11-16 (awaiting review):** the
 [private bootstrap owner](PREPARED-STUDY-OWNER.md) connects this metadata to native
 commit and completed observation at public `a97b6049`. Its separate field-address

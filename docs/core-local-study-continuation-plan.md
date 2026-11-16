@@ -1,5 +1,21 @@
 # Core continuation after local CUDA corrections
 
+**Contributor next comparison — 2026-11-16 (awaiting review):**
+[plan study-identity attribution](../engine/docs/PLAN-STUDY-IDENTITY-COST.md)
+at public `52be505c` measures one remaining duplicate immutable association:
+per-occurrence study UUIDs equal the plan's existing owned source header.
+Actual two/24-row producer fixtures, selected-domain ownership, allocation-free
+header comparison, caller teardown and complete release passed with all 4,465
+builder checks under Clang/fresh GCC and local quick CI. The proposed removal
+reuses that header and retains numeric paths/full definition pins; it is not
+implemented. Review the bounded proposal before changing representation.
+
+This branch explicitly depends on source-accepted, unmerged #354 at `eff64deb`,
+reconciled with main `1337bbcc` per maintainer instructions. #353 history and
+historical comparison are retained; #354's reviewed runtime/tests are exact.
+Hosted qualification remains separate. No native maps, candidate state,
+authorization, producer adoption or #324 mathematics change in this comparison.
+
 **Maintainer #354 review — 2026-11-16 (supersedes older status below):** #353 at `9bf2b956e6d9dc21d3bb239a5d31f0ebfa1495fd` is integrated by this merge after smoke 43958409053, viewport 43958409063 and all 12 native jobs in 43958409039 passed. Inspected logs confirm 180 regression passes (45 per shard), all four owner/observer profiles and database addressed_reads=24/private_reads=0. Main 5f45f566 combined smoke/native 43962490566/43962490573 also passed. This merge's combined qualification remains separate.
 
 #354 at `eddd4f3507dc6484bd9d72d37af12be58c592ade` is source-accepted in review 5929111772, not integrated. It removes Origin's duplicate ObjectKey, using exactly one complete shared/local provenance pin as definition authority. All alternatives, full pins and detached lifetime remain; every origin is validated and exposed encoded-key disagreements refuse. Production authorization, native claims, candidate state, JSON schema and mathematics are unchanged. Shared/local controls and accounting distinguish vector extent, nested requests and scoped peak; local archives and the independent historical execution remain contributor-reported. Smoke 43970206393 and viewport 43970206514 passed; native 43970206467 build/projection/database passed, matrix pending at review. No duplicate CI requested.

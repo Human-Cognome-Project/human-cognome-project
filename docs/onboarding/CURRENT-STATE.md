@@ -1,5 +1,24 @@
 # Current implementation and work
 
+**Contributor plan study-identity comparison — 2026-11-16 (awaiting review):**
+public `52be505c5830e74a6ffd8dab10894538671b258e` adds test-only attribution of
+the study UUID repeated in every admission-plan occurrence, beside the existing
+owned source-header UUID. See
+[ownership, measurements and bounded removal proposal](../../engine/docs/PLAN-STUDY-IDENTITY-COST.md).
+The actual builder's two/24-row fixtures retain 74/888 nested requested bytes
+for these copies, plus 48 bytes of in-vector UUID member extent per row.
+Header access allocates nothing and survives caller teardown with the plan.
+These are candidate costs; production still retains the copies. Local quick
+CI and all 4,465 builder checks passed under Clang and fresh GCC.
+
+The explicit source dependency is #354 at reconciled `eff64deb`, which merges
+main `1337bbcc`, preserves #353 ancestry/historical comparison, and retains
+#354's reviewed production/tests byte-for-byte. #354 is source-accepted but
+unmerged; its reconciled smoke/viewport passed while native CI is separate.
+Review this comparison before removing row study UUIDs; preserve full identity,
+numeric paths, definition pins, independent plan lifetime and native claims.
+Direct indexed/catalogue/producer/#324 work remains separate.
+
 **Maintainer #354 review — 2026-11-16 (supersedes older status below):** #353 at `9bf2b956e6d9dc21d3bb239a5d31f0ebfa1495fd` is integrated by this merge after smoke 43958409053, viewport 43958409063 and all 12 native jobs in 43958409039 passed. Inspected logs confirm 180 regression passes (45 per shard), all four owner/observer profiles and database addressed_reads=24/private_reads=0. Main 5f45f566 combined smoke/native 43962490566/43962490573 also passed. This merge's combined qualification remains separate.
 
 #354 at `eddd4f3507dc6484bd9d72d37af12be58c592ade` is source-accepted in review 5929111772, not integrated. It removes Origin's duplicate ObjectKey, using exactly one complete shared/local provenance pin as definition authority. All alternatives, full pins and detached lifetime remain; every origin is validated and exposed encoded-key disagreements refuse. Production authorization, native claims, candidate state, JSON schema and mathematics are unchanged. Shared/local controls and accounting distinguish vector extent, nested requests and scoped peak; local archives and the independent historical execution remain contributor-reported. Smoke 43970206393 and viewport 43970206514 passed; native 43970206467 build/projection/database passed, matrix pending at review. No duplicate CI requested.

@@ -210,6 +210,18 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 contributor (awaiting review):
+[plan study-identity cost comparison](../engine/docs/PLAN-STUDY-IDENTITY-COST.md)
+at `52be505c` attributes actual per-occurrence UUID buffers that repeat the
+existing owned plan source-header study. Two/24 rows retain 74/888 nested
+requested bytes plus in-vector member extent; existing header access is free
+of allocation and preserves standalone lifetime. Local quick CI and all 4,465
+builder checks passed under Clang/fresh GCC. The proposed coordinated row
+cleanup awaits review; no production representation changes. Explicit dependency
+#354 is reconciled at `eff64deb` with main `1337bbcc`, preserving #353 ancestry
+and #354's reviewed runtime/tests. Native guards/maps, candidate state and #324
+remain separate.
+
 2026-11-16 contributor (awaiting review): the
 [origin definition-key comparison](../engine/docs/ORIGIN-ASSOCIATION-COST.md)
 at `fcef214c` uses current main `9518d043` and explicit source-accepted #352
