@@ -10,6 +10,45 @@ The viewport and temporary API front end are controls through which a human or a
 
 This plan authorizes inspection and bounded proposals, followed by focused reviewed implementation. It does not fix a final module layout, select a new intent formula, or declare an SNode storage relationship to be a composition relationship. Preserve [system boundaries](onboarding/SYSTEM-BOUNDARIES.md), [work discipline](onboarding/WORK-DISCIPLINE.md), and applicable component contracts.
 
+## Agent focus: coherence frames and Analyst control
+
+User clarification, 2026-11-16. Parent values begin at smaller constituent levels
+and aggregate through the composition hierarchy up to the top. This prior
+structure establishes the frame required for coherence. Whole-particle fields
+can affect the degrees of freedom available within that frame. "Free space"
+here means mathematical degrees of freedom, not merely unoccupied spatial volume.
+
+Under #324, inspect how accumulated parent structure defines that freedom and
+how whole-particle response operates within it. Merely separating two additive
+force totals does not establish this relationship. Trace a nested/repeated
+composition from parent contributions to the whole-particle response, identifying
+where the current implementation preserves, loses or has not yet implemented
+the distinction. State the mathematical representation and supported conditions
+before proposing an algorithm; do not silently choose projection, clipping,
+rigidity or a new constraint solver. This is the intended model to investigate,
+not a claim that existing code already enforces it. Keep structural intent,
+contextual influence and actual tick trajectory separately observable.
+
+The Analyst occupies the player/controller role in the gaming-engine structure.
+Humans (currently the user) and LLM agents exercise or supplement that role while
+the concrete Analyst implementation is developed. The viewport and temporary API
+are control/observation interfaces for that role, not the Analyst itself and not
+numerical authority. Preserve three explicit responsibilities:
+
+| Responsibility | Owned decisions or behavior |
+| --- | --- |
+| Analyst/player/controller | Select the study, focus and interventions through the applicable operations. |
+| Viewport/API/harness controls | Translate authorized requests and expose completed observations; keep display and request handling separate from simulation policy. |
+| Engine execution | Own validated composition/instances, lifecycle, coherence mechanics and numerical response; enforce supported-operation boundaries. |
+
+For the next inspection, map an Analyst request through its control adapter into
+engine execution and back to completed observation. Identify any decisions or
+state that sit in the wrong layer. Pair that trace with the native nested-instance
+and accounting comparison below. Propose focused changes by responsibility;
+keep mathematical changes, native replacements and mechanical moves separately
+reviewable. Do not implement speculative Analyst decision-making to complete
+this separation.
+
 ## Inspection clarification: nested assemblies and live instances
 
 Maintainer direction, 2026-11-16, following the user's clarification. The intended

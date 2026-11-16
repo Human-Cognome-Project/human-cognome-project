@@ -20,6 +20,8 @@ Read before changing component responsibilities, runtime languages, privacy or c
 
 ## Temporary Analyst controls and refactoring
 
+The Analyst occupies the player/controller role: selecting studies, focus and interventions. Humans and LLM agents currently exercise or supplement that role. Viewport/API/harness controls adapt requests and expose observations; engine execution owns validated structures, lifecycle and numerical response. Keep Analyst decisions, control interfaces and engine execution as distinct responsibilities. The coherence-frame and degrees-of-freedom inspection is specified in the [agent focus brief](../engine-refactoring-plan.md#agent-focus-coherence-frames-and-analyst-control).
+
 The viewport and temporary API front end let a human or agent emulate Analyst functions while its concrete implementation is formalized. The viewport may remain useful longer. Their existence does not establish a finished Analyst interface or decision-making implementation. Identify Analyst-facing operations separately from engine-owned validation, numerical authority and lifecycle; keep observations read-only. Refactoring should create coherent units of responsibility and reuse native Taichi machinery where verified, without prematurely prescribing the final Analyst API. See the [phased refactoring plan](../engine-refactoring-plan.md) for inspection, pass boundaries and handoff requirements.
 
 ## Do not reintroduce
