@@ -1,5 +1,16 @@
 # Core continuation after local CUDA corrections
 
+**Contributor structural plan builder — 2026-11-16 (awaiting review):** the
+[implementation/evidence record](../engine/docs/STRUCTURAL-ADMISSION-PLAN.md)
+describes public `7bb1e670`, from main `6641e032` with source-accepted #347 as an
+explicit dependency. The bounded private builder prepares symbolic commands and
+validates one pinned prospective source; it does not enable retained execution.
+Local quick CI, eight focused native CTests, GCC 11 refusal/lifetime controls and
+four standalone tests pass. Original GCC cleanup failure remains recorded.
+Next, after review: reserve owner metadata before claims, reuse existing native
+bootstrap, and publish actual claim maps under the exclusive owner boundary.
+Full accounting, other operations and #324 retain their separate scope.
+
 **Maintainer #347 review — 2026-11-16:** prepared-admission seam map at `13d08f37ffa6ca1be0cdba46e5aa84a5831c2992` source-accepted in review 5920157778. Source inspection confirms combined native bootstrap and the fallible/allocating nature of postcommit ExchangeOwner adoption. The next authorized bounded slice under #343 is a private structural command-plan builder using existing native command types and reservation/work helpers, with explicit owner-supplied comparison/layout/geometry/focus bindings and no retained commit/ticking or new public API. Follow the proposal's exact-source, numeric ordering, lifetime, refusal/unwind and capacity/work acceptance controls. Do not invent comparison policy from storage depth or arbitrary memberships. Owner commit/map publication follows separately; complete accounting and #324 mathematics remain distinct.
 
 Smoke passed; #347 native 43864232274 and main native 43860820217 remain pending. #347 is not integrated. Contributor-local quick checks/archive remain reported evidence, not independently inspected. Bounded implementation may continue with the source dependency explicit; reconcile hosted results before final integration. No duplicate CI requested. Held #75/#111/#123 unchanged.

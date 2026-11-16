@@ -8,6 +8,15 @@ initialized recursive submodules. This extends the historical
 It implements no admission adapter or retained C3 execution. Symbol references
 describe the inspected source; the next slice below is proposed for review.
 
+**Subsequent contributor implementation — 2026-11-16 (awaiting review):** the
+[private structural plan builder](STRUCTURAL-ADMISSION-PLAN.md) implements the
+accepted next metadata-preparation slice at public `7bb1e670`, explicitly
+dependent on #347. Exact source/binding, refusal/unwind and lifetime controls
+pass locally under Clang 15 and GCC 11 after a retained GCC cleanup failure was
+corrected. Native commit, actual claim/map publication and retained C3 execution
+remain subsequent work. The original inspection/proposal below retains its
+source pin and historical status.
+
 ## Finding and governing boundaries
 
 The engine already has a private, combined D1 bootstrap transaction. The missing

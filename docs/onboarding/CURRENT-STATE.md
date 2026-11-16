@@ -1,5 +1,16 @@
 # Current implementation and work
 
+**Contributor structural plan builder — 2026-11-16 (awaiting review):** public
+`7bb1e670` implements #343's accepted bounded metadata slice from main `6641e032`,
+with #347's source-accepted `13d08f37` as an explicit dependency. See the
+[implementation/evidence record](../../engine/docs/STRUCTURAL-ADMISSION-PLAN.md).
+Exact source and owner-supplied layout/geometry/comparison/focus associations
+produce symbolic native commands only; no claims, retained commit/tick or public
+API are enabled. Quick CI, eight focused native CTests, GCC 11 builder controls
+and four standalone tests pass after a preserved GCC cleanup failure was fixed.
+Review this slice before owner integration. Hosted qualification remains
+authoritative; complete accounting and #324 remain separate.
+
 **Maintainer #347 review — 2026-11-16:** prepared-admission seam map at `13d08f37ffa6ca1be0cdba46e5aa84a5831c2992` source-accepted in review 5920157778. Source inspection confirms combined native bootstrap and the fallible/allocating nature of postcommit ExchangeOwner adoption. The next authorized bounded slice under #343 is a private structural command-plan builder using existing native command types and reservation/work helpers, with explicit owner-supplied comparison/layout/geometry/focus bindings and no retained commit/ticking or new public API. Follow the proposal's exact-source, numeric ordering, lifetime, refusal/unwind and capacity/work acceptance controls. Do not invent comparison policy from storage depth or arbitrary memberships. Owner commit/map publication follows separately; complete accounting and #324 mathematics remain distinct.
 
 Smoke passed; #347 native 43864232274 and main native 43860820217 remain pending. #347 is not integrated. Contributor-local quick checks/archive remain reported evidence, not independently inspected. Bounded implementation may continue with the source dependency explicit; reconcile hosted results before final integration. No duplicate CI requested. Held #75/#111/#123 unchanged.
