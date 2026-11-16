@@ -210,6 +210,21 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 contributor (awaiting review): the
+[native nested-instance/catalogue/accounting comparison](../engine/docs/NATIVE-INSTANCE-INSPECTION.md)
+is pinned to main `cf352531`, with executable source `f0b40962`. Two nested
+instances reuse native layout/kernels and native cell recycling; one-instance
+compatible value/attachment updates preserve the sibling. Emitted LLVM and
+local quick/focused CPU results support that bounded finding. Catalogue
+publication does not call engine rebuilds, but one bundle/projection cannot
+represent two revisions of one definition identity. The comparison maps native
+ownership against occurrence/claim/generation/reservation state and traces
+controller requests through capture to completed observation. Proposed next:
+an exact private instance-binding contract with shared immutable provenance,
+then separately reviewed equivalence before removing redundant maps. No new
+wrapper, public Analyst API, production migration or coherence law is added.
+#349 native CI now passed all 12 jobs; source acceptance still awaits merge.
+
 2026-11-16 maintainer: #347 is integrated; #348 is integrated by this merge after full hosted qualification. #349 is source-accepted in review 5923001157 with hosted native matrix pending. Its private owner bridge does not complete the broader native-instance/accounting inspection. The next task is that inspection, including catalogue-update dependency scope above, before more lifecycle wrappers or public expansion. See the handoffs for the pending Fields-address correction and exact CI evidence.
 
 2026-11-16 contributor inspection (awaiting review): the

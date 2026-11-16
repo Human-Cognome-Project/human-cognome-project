@@ -1,5 +1,17 @@
 # Core continuation after local CUDA corrections
 
+**Contributor native-instance inspection — 2026-11-16 (awaiting review):**
+the [comparison and executable evidence](../engine/docs/NATIVE-INSTANCE-INSPECTION.md)
+at `f0b40962` on main `cf352531` cover nested indexed instances, selective
+value/attachment changes, release/reuse, catalogue dependency limits and
+controller/execution ownership. Quick CI and one/two-worker CPU witnesses
+passed; emitted compiler artifacts are retained. Native reuse is demonstrated,
+while per-instance mixed revisions in one bundle remain a provenance gap.
+Review the proposed private instance-binding contract before replacing maps or
+adding wrappers; production representation, full accounting and #324 math are
+unchanged. #349 is still unmerged; its native 43897644203 now passed all 12
+jobs, updating the pending status at the earlier review. No duplicate run.
+
 **Maintainer review — 2026-11-16 (supersedes older status below):** #348 at `9221599ac2bd7f697e329cc72d0d698d52724f8c` is integrated by this merge after smoke 43875676457 and all 12 native jobs in 43875676396 passed. Inspected regression shards total 170 passes (43/43/42/42), including the builder, workbench and viewport; database reported addressed_reads=24/private_reads=0. #347 is already integrated. Existing main native runs 43883007836 and 43886766404 passed.
 
 #349 at `da865d3cc8fbc2bbb42731957ec89cc8c055d42c` is source-accepted in review 5923001157, not integrated. Its private borrowed-Harness owner reserves metadata before native bootstrap, publishes actual claims, follows contact-changing tick generations and reuses completed observation. Tested `a97b6049` differs only in seven Markdown files. Smoke 43897644051 and optional viewport 43897644060 passed; native 43897644203 build/projection/database passed, regression/compiler matrix pending at review. Contributor-local evidence is reported, not independently executed. No duplicate CI requested.

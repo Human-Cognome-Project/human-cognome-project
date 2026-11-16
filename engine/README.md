@@ -35,6 +35,11 @@ implementation in `src/assembly/active_session.cpp`. They retain one public
 header and the same library target; see the
 [ownership contract and split evidence](docs/ACTIVE-WORKBENCH.md#native-implementation-split--2026-11-15).
 
+The [native nested-instance inspection](docs/NATIVE-INSTANCE-INSPECTION.md)
+compares compiled layouts, indexed runtime cells and HCP occurrences, including
+catalogue revision boundaries, native recycling and accounting limits. Its
+focused witness is an inspection fixture, not a production object-model migration.
+
 ## Python boundary
 
 Taichi upstream ships a primarily Python-facing abstraction layer for arbitrary
