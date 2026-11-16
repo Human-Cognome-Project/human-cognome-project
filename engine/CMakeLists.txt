@@ -67,6 +67,20 @@ target_link_libraries(structural_admission_plan_test PRIVATE structural_admissio
 target_compile_options(structural_admission_plan_test PRIVATE -Wall -Wextra -Werror)
 add_test(NAME structural_admission_plan_test COMMAND structural_admission_plan_test)
 
+add_library(prepared_study_owner STATIC src/assembly/prepared_study_owner.cpp)
+target_link_libraries(prepared_study_owner PUBLIC structural_admission_plan)
+target_compile_options(prepared_study_owner PRIVATE -Wall -Wextra -Werror)
+add_executable(prepared_study_owner_test tests/prepared_study_owner_test.cpp)
+target_link_libraries(prepared_study_owner_test PRIVATE prepared_study_owner)
+target_compile_options(prepared_study_owner_test PRIVATE -Wall -Wextra -Werror)
+foreach(workers 1 2)
+  foreach(path bulk direct)
+    add_test(NAME prepared_study_owner_${workers}_${path} COMMAND prepared_study_owner_test ${workers} ${path})
+    set_tests_properties(prepared_study_owner_${workers}_${path} PROPERTIES
+        ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
+  endforeach()
+endforeach()
+
 add_executable(active_workbench_test tests/active_workbench_test.cpp)
 target_link_libraries(active_workbench_test PRIVATE active_workbench)
 add_test(NAME active_workbench_test COMMAND active_workbench_test)

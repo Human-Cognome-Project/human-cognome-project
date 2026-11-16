@@ -1,5 +1,13 @@
 # Private structural admission plan builder
 
+**Subsequent contributor owner integration — 2026-11-16 (awaiting review):** the
+[private bootstrap owner](PREPARED-STUDY-OWNER.md) connects this metadata to native
+commit and completed observation at public `a97b6049`. Its separate field-address
+correction enforces native Fields extent; particle declarations retain Potential.
+Original qualification/status below remains source-pinned history. ActiveSession
+producer migration, native nested-instance/accounting inspection and #324 remain
+separate work.
+
 Contributor implementation under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
 2026-11-16, awaiting review. Governing proposal:
 [prepared-admission seam](PREPARED-ADMISSION-SEAM.md), source-accepted in

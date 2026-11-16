@@ -210,6 +210,8 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 maintainer: #349 is integrated by this merge after full hosted qualification (178 regression passes and all native gates). #350 native nested-instance inspection is source-accepted in review 5923994794, hosted matrix pending. Next is a private instance-binding contract, comparing current owners against native indexed storage and preserving exact provenance, semantic incarnation and atomic publication. Its bounded integer witness does not implement production mixed-revision adoption, D7 rollup or coherence mathematics. Broader catalogue/provenance and producer changes remain separately reviewed. See both handoffs for exact source and CI status.
+
 2026-11-16 maintainer: #347 is integrated; #348 is integrated by this merge after full hosted qualification. #349 is source-accepted in review 5923001157 with hosted native matrix pending. Its private owner bridge does not complete the broader native-instance/accounting inspection. The next task is that inspection, including catalogue-update dependency scope above, before more lifecycle wrappers or public expansion. See the handoffs for the pending Fields-address correction and exact CI evidence.
 
 2026-11-16 contributor inspection (awaiting review): the

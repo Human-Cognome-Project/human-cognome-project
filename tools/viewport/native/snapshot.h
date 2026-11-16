@@ -8,6 +8,7 @@
 #include "assembly/active_workbench.h"
 #include "json.hpp"
 
+namespace assembly::detail { class PreparedStudyOwner; }
 namespace viewport {
 using Json = nlohmann::json;
 struct DisplayContext {
@@ -51,6 +52,9 @@ CompletedState observe(field::Harness &execution, const HarnessBinding &binding,
                        std::optional<IntentRequest> intent = std::nullopt);
 CompletedState observe(assembly::ActiveSession &session, const warm::Uuid &owner,
                        const assembly::ExecutionHandle &handle,
+                       std::optional<IntentRequest> intent = std::nullopt);
+CompletedState observe(assembly::detail::PreparedStudyOwner &, const warm::Uuid &owner,
+                       const assembly::ExecutionHandle &,
                        std::optional<IntentRequest> intent = std::nullopt);
 Json snapshot(const CompletedState &state, const CaptureContext &capture);
 CaptureContext context(const assembly::ActiveAssembly &assembly,

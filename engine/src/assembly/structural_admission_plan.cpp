@@ -275,7 +275,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     w.charge(1); const auto &f = b.fields[i];
     need(f.kind > 0 && f.kind <= 255 && f.address >= 0 &&
          f.field.kind >= GroupKind::SiblingDefinition && f.field.kind <= GroupKind::Membership);
-    cap(Budget::Potential,std::uint64_t(f.address)+1);
+    cap(Budget::Fields,std::uint64_t(f.address)+1);
     for (std::size_t j=0; j<i; ++j) {
       w.charge(1); need(b.fields[j].address != f.address && !same_field(b.fields[j].field,f.field,w));
     }
