@@ -32,6 +32,37 @@ class PreparedStudyOwner {
   const StructuralAdmissionPlan &plan(const warm::Uuid &, const ExecutionHandle &) const;
   const ReservedVector<engine::RecordHandle> &bodies(const warm::Uuid &, const ExecutionHandle &) const;
   const ReservedVector<engine::RecordHandle> &fields(const warm::Uuid &, const ExecutionHandle &) const;
+  // Loans into existing immutable source/plan and committed claim tables. The
+  // owner outlives the view. Rows/references from read() expire at the next
+  // mutation; retain the stamped view, not its rows, to check again afterwards.
+  struct AssociationRows {
+    const ActiveAssembly &source;
+    const StructuralAdmissionPlan &plan;
+    const ReservedVector<engine::RecordHandle> &bodies, &fields;
+    const ReservedVector<ScaleBinding> &scales;
+    struct Body {
+      const AdmissionOccurrenceCommand &source;
+      const engine::RecordHandle &claim;
+      const ScaleBinding &scale;
+      std::uint64_t exact_mass;
+    };
+    struct Field {
+      const AdmissionFieldCommand &source;
+      const engine::RecordHandle &claim;
+    };
+    Body body(std::size_t ordinal) const;
+    Field field(std::size_t ordinal) const;
+  };
+  class AssociationView {
+   public:
+    AssociationRows read() const;
+   private:
+    friend class PreparedStudyOwner;
+    explicit AssociationView(const PreparedStudyOwner &, std::uint64_t tick);
+    const PreparedStudyOwner *owner_;
+    std::uint64_t generation_, tick_;
+  };
+  AssociationView associations(const warm::Uuid &, const ExecutionHandle &) const;
  private:
   friend struct viewport::PreparedOwnerAccess;
   PreparedStudyOwner(field::Harness &, const std::shared_ptr<const ActiveAssembly> &,

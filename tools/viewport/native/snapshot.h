@@ -50,6 +50,9 @@ HarnessBinding bind(field::Harness &execution, assembly::ActiveReport mapping);
 struct IntentRequest { double gravity; std::uint64_t work_limit; };
 CompletedState observe(field::Harness &execution, const HarnessBinding &binding,
                        std::optional<IntentRequest> intent = std::nullopt);
+// Consume detached metadata after the same validation as the retained binding.
+CompletedState observe(field::Harness &execution, HarnessBinding &&binding,
+                       std::optional<IntentRequest> intent = std::nullopt);
 CompletedState observe(assembly::ActiveSession &session, const warm::Uuid &owner,
                        const assembly::ExecutionHandle &handle,
                        std::optional<IntentRequest> intent = std::nullopt);

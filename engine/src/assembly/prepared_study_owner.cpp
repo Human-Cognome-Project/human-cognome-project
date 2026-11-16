@@ -126,6 +126,30 @@ const ReservedVector<engine::RecordHandle> &PreparedStudyOwner::fields(const war
   require_published(owner,handle); return fields_;
 }
 
+PreparedStudyOwner::AssociationRows::Body PreparedStudyOwner::AssociationRows::body(std::size_t ordinal) const {
+  const auto &entry = plan.occurrences().at(ordinal);
+  return {entry,bodies.at(ordinal),scales.at(entry.node),
+          plan.commands().at(entry.command).exact_mass.value()};
+}
+PreparedStudyOwner::AssociationRows::Field PreparedStudyOwner::AssociationRows::field(std::size_t ordinal) const {
+  return {plan.fields().at(ordinal),fields.at(ordinal)};
+}
+PreparedStudyOwner::AssociationView::AssociationView(const PreparedStudyOwner &owner, std::uint64_t tick)
+    : owner_(&owner), generation_(owner.generation_), tick_(tick) {}
+PreparedStudyOwner::AssociationRows PreparedStudyOwner::AssociationView::read() const {
+  // All lifetime/currentness checks precede loaning source or plan references.
+  // ready() retains full context/incarnation/address/record validation.
+  if (generation_ != owner_->generation_ || !owner_->ready() ||
+      tick_ != owner_->h_.prepared_storage().completed_ticks)
+    throw warm::Stale("prepared owner: stale association view");
+  return {*owner_->source_,*owner_->plan_,owner_->bodies_,owner_->fields_,owner_->scales_};
+}
+PreparedStudyOwner::AssociationView PreparedStudyOwner::associations(const warm::Uuid &owner,
+    const ExecutionHandle &handle) const {
+  require_published(owner,handle);
+  return AssociationView(*this,h_.prepared_storage().completed_ticks);
+}
+
 field::UpdateResult PreparedStudyOwner::bootstrap(const warm::Uuid &owner,
     const ExecutionHandle &handle, std::uint64_t placement_work,
     std::uint64_t cells, std::uint64_t hierarchy_work) {

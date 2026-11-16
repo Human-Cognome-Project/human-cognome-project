@@ -5,6 +5,7 @@
 #include <cmath>
 #include <set>
 #include <stdexcept>
+#include <utility>
 
 #include "field/prepared_storage.h"
 
@@ -72,8 +73,10 @@ HarnessBinding bind(field::Harness &h, assembly::ActiveReport mapping) {
             "viewport: focal mapping mismatch");
   return out;
 }
-CompletedState observe(field::Harness &h, const HarnessBinding &binding,
-                       std::optional<IntentRequest> request) {
+namespace {
+template<class Binding>
+CompletedState observe_prepared(field::Harness &h, Binding &&binding,
+                                std::optional<IntentRequest> request) {
   const auto start = Clock::now();
   if (request) require(std::isfinite(request->gravity) && request->gravity >= 0,
                        "viewport: invalid diagnostic gravity");
@@ -100,7 +103,7 @@ CompletedState observe(field::Harness &h, const HarnessBinding &binding,
   const auto primary_before = h.timings().download_bytes;
   h.inspect_prepared();  // Synchronizes and reads this execution, including
                          // sleepers.
-  out.report = binding.mapping;
+  out.report = std::forward<Binding>(binding).mapping;
   auto &r = out.report;
   r.numerical_profile = h.numerical_profile();
   r.frame_anchor = h.frame_anchor();
@@ -126,7 +129,6 @@ CompletedState observe(field::Harness &h, const HarnessBinding &binding,
         (r.particles.size() + r.groups.size() + r.determined.size()) *
         sizeof(float);
   }
-  out.body_records = binding.bodies;
   const auto primary_bytes = h.timings().download_bytes - primary_before;
   const auto P = std::size_t(std::max(h.particle_capacity(), 1));
   const auto G = std::size_t(std::max(h.field_capacity(), 1));
@@ -201,8 +203,18 @@ CompletedState observe(field::Harness &h, const HarnessBinding &binding,
   }
   require(s.generation == binding.generation && s.completed_ticks == out.tick,
           "viewport: concurrent native mutation during observation");
+  out.body_records = std::forward<Binding>(binding).bodies;
   out.observation_ms = elapsed(start);
   return out;
+}
+}  // namespace
+CompletedState observe(field::Harness &h, const HarnessBinding &binding,
+                       std::optional<IntentRequest> request) {
+  return observe_prepared(h,binding,request);
+}
+CompletedState observe(field::Harness &h, HarnessBinding &&binding,
+                       std::optional<IntentRequest> request) {
+  return observe_prepared(h,std::move(binding),request);
 }
 CompletedState observe(assembly::ActiveSession &session,
                        const warm::Uuid &owner,
