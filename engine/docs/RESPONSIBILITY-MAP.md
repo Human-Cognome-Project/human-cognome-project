@@ -1,5 +1,13 @@
 # Engine responsibility map and first bounded extraction
 
+**2026-11-16 extension:** #342/#346 are integrated on inspected main
+`ee31e88a16d9e641311da523f3b9a7c455601e75`; the mechanical session split is
+complete. The [prepared-admission seam inspection](PREPARED-ADMISSION-SEAM.md)
+maps existing native bootstrap/reservation/claim machinery, retained ownership
+gaps and the next proposed bounded plan-builder slice. It adds no runtime
+behavior and awaits review. The original source-pinned map/diagnosis below is
+historical; its then-pending statuses do not override current handoff notes.
+
 Pass 1 proposal under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343)
 and the [refactoring plan](../../docs/engine-refactoring-plan.md). Inspected source:
 `22851781cd0477a445e571d1c446f3f094f0047b` (2026-11-15), Taichi tree

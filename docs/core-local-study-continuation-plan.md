@@ -4,6 +4,16 @@
 
 Smoke passed; #347 native 43864232274 and main native 43860820217 remain pending. #347 is not integrated. Contributor-local quick checks/archive remain reported evidence, not independently inspected. Bounded implementation may continue with the source dependency explicit; reconcile hosted results before final integration. No duplicate CI requested. Held #75/#111/#123 unchanged.
 
+**Contributor prepared-admission inspection — 2026-11-16 (awaiting review):**
+the [seam map](../engine/docs/PREPARED-ADMISSION-SEAM.md) records exact native
+reuse/ownership boundaries at main `ee31e88a`. Existing bootstrap is already a
+combined transaction; the retained bridge needs explicit prospective comparison
+bindings and owner metadata reserved before native claims. The proposed next
+code slice builds a bounded private structural command plan without enabling
+retained execution. Review this proposal before implementation. Runtime behavior,
+held work, incomplete accounting and #324 mathematics retain their boundaries;
+local/hosted evidence is recorded in the proposal PR.
+
 **Start-of-day maintainer handoff — 2026-11-16 (supersedes older status below):** #342 and #346 are integrated through qualified descendant `8c429d18a2374c88d60b9339087318097185ff60`; #346 accepted in review 5919444522. Main a2f192cf, corrected #342 (43764784579), and #346 (43766773433) all passed smoke and all 12 native jobs. Personally inspected #346 logs: 169 regression passes (43/42/42/42), active_workbench_test, viewport_snapshot_test, all four corrected activity profiles, and database addressed_reads=24/private_reads=0. Earlier failed #342 runs remain recorded as failures; the corrected descendants now qualify the work. No accepted PR backlog remains. Held #75/#111/#123 are unchanged.
 
 The first mechanical split is complete: ActiveAssembly logical implementation and native ActiveSession implementation have separate source files, retaining the public header, library/dependencies and behavior. Independent comparison verified the moved session block and helper byte-identical to #342, and logical code identical except for the relocated chrono include. Structural focus/revision/restart semantics and native test boundaries are preserved. Only handoff/progress documentation differs from the qualified descendant. Normal CI on this integration commit remains to qualify; do not duplicate it. Contributor-local archives remain independently uninspected.
