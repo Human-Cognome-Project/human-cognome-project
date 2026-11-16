@@ -77,4 +77,18 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 maintainer update: #342's corrected structural handoff and #346's mechanical ActiveSession implementation split are integrated after successful combined qualification. The moved session block/helper and retained logical code were independently compared against the reviewed dependency. Next is a focused native-reuse and ownership inspection at the prepared-admission seam, proposing the smallest bounded implementation before introducing wrappers. Retained C3 execution, the broader reuse audit and #324 mathematics remain incomplete. Older progress entries below retain their historical context.
+
 2026-11-15: [the responsibility map](../engine/docs/RESPONSIBILITY-MAP.md) from #344 and the publication-cut correction from #345 are accepted and integrated after successful hosted qualification. The correction retains exact equality and native pending-work controls; no production formula/traversal changed. #342 still requires combined qualification with the correction before integration. The next bounded implementation is the mechanical ActiveSession split described in the map, preserving explicit dependencies. The broader native-reuse audit, retained C3 bridge and #324 mathematics remain separate pending work.
+
+**Contributor Pass 2 implementation (awaiting review):** the
+[mechanical session split](../engine/docs/ACTIVE-WORKBENCH.md#native-implementation-split--2026-11-15)
+is implemented at public source `7b998501`, explicitly dependent on #342's
+`9b5c1926` combined head. Session methods move unchanged to `active_session.cpp`;
+the public header, target/dependencies and logical focus/restart behavior are
+preserved. Quick local CI, source-identity witnesses, two native owner/observer
+tests and four GCC 11 standalone tests passed. No behavior refactor, new logical
+library, native replacement or completed admission bridge is claimed. The move
+awaits maintainer review and hosted qualification; reviewed local evidence can
+support provisional continuation. Subsequent reuse/ownership work remains
+bounded by this plan rather than implied by the file split.

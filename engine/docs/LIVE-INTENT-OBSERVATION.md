@@ -691,3 +691,73 @@ Local archive: workspace `setup-evidence/retained-intent-008eeda1.zip`, SHA256
 config/compiler/binary/source pins, native logs/captures and browser evidence.
 Local evidence is contributor-reported, not independently inspected. Final delta
 after the browser test source is documentation only. Hosted review/CI pending.
+
+## Active coordinate-free handoff — 2026-11-15
+
+First retained-to-C3 bridge step, proposed independently from pending #341 on
+main `6f72bd42`: `ActiveAssembly::bind_structure(nodes)` now exposes the existing
+v2 membership/projection structural handoff. It preserves source definitions,
+occurrence identity/path/roles, selections, contacts, memberships and recipe focus.
+No positions, velocities, numerical slots, record claims, hierarchy or runtime
+are created by this call. Native admission remains the numerical authority.
+
+An explicit `focus()` override replaces recipe focus, including an explicit empty
+selection. Revision and logical restart preserve that distinction. An empty
+selection is only a structural handoff, not populated admission readiness; D1's
+nonempty positive focal selection remains required at native bootstrap. Legacy
+`bind` behavior stays unchanged. V1 recipes reject on the structural path, and
+v2 recipes reject on the legacy path. Required missing private input and any
+present local overlay reject explicitly: private structural overlays are not yet
+implemented and must not be silently omitted.
+
+The next bridge step is owned prepared admission: reserve a trial-profile Harness,
+translate exact structural masses/counts and intrinsic geometry into native
+commands, resolve comparison/focus identities against the same prospective source,
+and call the accepted generated-placement/bootstrap boundary. Do not import
+`PreparedFixtureAccess`, guessed slots, legacy f32 shares/radii as original f64
+source data, or caller world starts. Publish occurrence bindings only after native
+admission commits; then expose completed observations through the existing owner.
+This handoff does not implement those steps or change the retained producer mode.
+
+Validation source `e0155331aaaa815bebbb71a246486e4ee4dfe355`, Taichi tree
+`8b31651be07d8bad0b2a6a261369e8690b9c3b53`, WSL CPU/Clang15 Release:
+`structural_recipe_test` and `active_workbench_test` built and passed. The source
+checks exercise inherited/replaced/cleared focus, revision/restart, missing/local
+input rejection and legacy/structural separation. Source-path comparison explicitly
+respects independent projections' distinct study UUIDs. Legacy workbench execution
+remains covered. No physical GPU, database or browser run was needed for this scope.
+
+Earlier test development failures are retained: ambiguous FocalField and colliding
+legacy fixture variable names, then an incorrect cross-projection identity check.
+The latter first tried full IDs despite independently generated study UUIDs; final
+checks retain each owner's study prefix and compare structural source paths. These
+were corrected, not relabelled successful. Local archive
+`setup-evidence/active-structural-e0155331.tar.gz` SHA256
+`5dbc5370d68222c323808fc69d6c567faf7b2acf2d17092934244fceb3f90e17`
+contains final source/config/compiler/binary pins, logs and prior failed attempts.
+Final delta after tested source is documentation only; hosted CI/review pending.
+No acceptance of #341 or full retained C3 execution is inferred.
+
+### Review correction: standalone projection boundary — 2026-11-15
+
+Review 5910700086 identified a real hosted regression: structural_recipe_test is
+also built by the standalone letter_projection project without Taichi/PostgreSQL.
+The initial PR added an ActiveAssembly header to that shared source, accidentally
+pulling in the native runtime. Earlier top-level native passes did not cover this
+build route and do not clear that failure.
+
+The original structural_recipe_test source and membership_fields link dependency
+are restored exactly. All new ActiveAssembly checks moved to
+`active_structural_checks.h`, invoked by native active_workbench_test. No Taichi or
+PostgreSQL dependency was added to the standalone project; production code is
+unchanged by this correction.
+
+At `33081aaa76c741a4d172097be840fda5e6e72191`, a fresh standalone configure/build
+(`cmake -S engine/tests/letter_projection`) and all four CTests passed. The native
+active_workbench_test rebuilt and passed with the moved binding/focus/revision/
+restart/local-input checks. Local evidence includes commands, logs, both build
+configurations/compiler versions, source/Taichi pins and binary hashes in
+`setup-evidence/structural-boundary-33081aaa.tar.gz`, SHA256
+`f3025e1452885a92ce328b009461b453ae16ec6d97dbd51affe55e06cf89f85a`.
+Final delta after this tested pin is documentation only. This supersedes the prior
+qualification scope for #342; hosted rerun/review of the correction remain pending.

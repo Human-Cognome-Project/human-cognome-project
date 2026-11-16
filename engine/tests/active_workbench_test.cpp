@@ -1,9 +1,11 @@
 #include "active_workbench_checks.h"
+#include "active_structural_checks.h"
 #include "membership_fixture.h"
 
 int main(int argc, char **argv) {
   try {
     const bool cuda = argc == 2 && std::string(argv[1]) == "--cuda";
+    active_checks::structural_binding();
     membership_fixture::Fixture f;
     auto a = f.request(f.english, 0, warm::Exposure::Aggregate);
     auto b = f.request(f.english, 1, warm::Exposure::Parts);

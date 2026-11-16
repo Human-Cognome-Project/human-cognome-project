@@ -83,6 +83,63 @@ outer client and remain held across teardown. Missing local inputs keep the
 joint study incomplete. This is controlled component restart, not arbitrary
 checkpoint recovery or isolation from a process-fatal native/GPU fault.
 
+## Native implementation split — 2026-11-15
+
+Contributor implementation under #343, awaiting review. Public source
+`7b998501d07c85384c827d4768a7cfc120f38035` builds on #342 at
+`9b5c19261998a146b9152904fb948913bd509f5f`, which incorporates main
+`a2f192cf` and #345's qualified publication correction. #342's structural source
+is accepted for bounded continuation but remains a separate pending integration
+dependency; this move does not accept or merge it.
+
+[`active_workbench.cpp`](../src/assembly/active_workbench.cpp) now contains the
+logical `ActiveAssembly` implementation, including #342's inherited/replaced/
+cleared focus and revision/restart distinction.
+[`active_session.cpp`](../src/assembly/active_session.cpp) contains
+`ActiveSession::Execution` and all session methods. The `active_workbench` target
+builds both files with the same dependencies and flags. The public header,
+class layouts, function signatures, handle/report rules and teardown order are
+unchanged. The internal validation helper is copied with identical behavior;
+`<chrono>` moves with its users.
+
+This is an implementation-file boundary. The public header still includes the
+native study interface, and logical geometry validation still uses
+`enclosing_radius` in study preparation. No runtime-free logical target, new
+Analyst API, prepared admission bridge, scheduler or numerical change follows
+from the move. In particular, retained session execution still uses FixedStudy;
+#342's structural handoff is not an implicit C3 execution migration.
+
+Local qualification at the public source above, actual x64, Clang/LLVM 15
+Release:
+
+- Quick local CI passed: three CTests, 632 independent placement-math samples
+  and placement capacity, using the matching CPU-only Taichi build.
+- Source comparisons prove the complete moved session block is byte-identical
+  to the #342 base, logical implementation is identical apart from the relocated
+  include, and the validation helper is identical. Public header, tests, field
+  code and substrate are unchanged. This is source identity evidence, not a
+  claim of identical linked binaries or performance.
+- `active_workbench_test` passed its 165 checks, including the inherited
+  structural/focus/private-input controls and the existing native lifecycle,
+  owner, stale-handle/report and restart checks. `viewport_snapshot_test` passed.
+  The two native CTests completed in 21.02 seconds.
+- A fresh GCC 11 standalone configure/build passed all four projection,
+  membership, structural recipe and bootstrap-reservation CTests in 1.03 seconds,
+  without Taichi/PostgreSQL dependencies.
+
+Evidence directories: `/tmp/hcp-session-quick-7b998501` and
+`/tmp/hcp-session-focused-7b998501`. Both checksum manifests verified. Archive
+`/tmp/hcp-active-session-7b998501.tar.gz`, SHA256
+`84844fc0bbfde352c4c0e1b5279f317c5b7462c62d16296f0123fcf0f3bf1879`,
+retains the source/base pins, exact comparison/build/test commands, before/after
+source blocks, toolchain/configuration and binary pins, complete test logs and
+post-PASS offline-cache warnings. This is contributor-local evidence, not
+independently inspected hosted evidence. Final follow-up changes documentation
+only. Full local regression, DB, browser, GPU, extra compiler modes, pinning and
+performance qualification were not run. Maintainer-reviewed local evidence may
+permit bounded continuation; authoritative hosted disposition still governs
+final integration.
+
 ## Scalar transfer and measurement
 
 The accepted ABI is unchanged: f32 particles `{11,P*}`, groups `{8,G*}`, edge
