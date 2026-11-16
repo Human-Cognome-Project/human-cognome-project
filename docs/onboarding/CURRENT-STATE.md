@@ -1,5 +1,23 @@
 # Current implementation and work
 
+**Maintainer integration — 2026-11-16 (supersedes older status below):** #350 `9e0307587dde72e793a4b661bc86f20ccb0cc654` and #351 `071ac31818c4a6694881c35a5f10e38e6f3596d7` are integrated by this merge. Reviews 5923994794 and 5925874274 accepted their scope. #350 smoke 43910777706 and all 12 native jobs in 43910777722 passed; inspected logs confirm 172 regression passes including both new native-instance tests. #351 smoke 43915843667 and all 12 native jobs in 43915843738 passed. Main fa7f09e4 also passed smoke/native 43913630873/43913630852. The combined merge preserves #349 production code and adds #350's exact witness/build additions plus documentation; its normal CI is separate combined qualification.
+
+Next authorized slice: implement the private instance-binding contract in engine/docs/PRIVATE-INSTANCE-BINDING.md through one checked association view over existing PreparedStudyOwner source/plan and one observer/validator consumer. Prefer existing accessors; preserve handle arrays, candidate/committed state and both owners' operation sets. Prove exact source/role/field association, refusal/lifetime/generation equivalence and measure copy savings versus sharing overhead. Native coordinate reuse alone is not a semantic lifetime guard. Direct indexed adoption, mixed-revision provenance, heterogeneous schemas, public producer migration, full accounting and #324 mathematics remain separate. Preserve minimal catalogue disruption and Analyst/control/engine separation.
+
+No accepted PR backlog remains after this merge; held #75/#111/#123 unchanged. Local archives remain contributor-reported; remote review does not certify local/WSL state.
+
+**Contributor binding contract — 2026-11-16 (awaiting review):** current main
+`fa7f09e4` is the source for the
+[private instance-binding proposal](../../engine/docs/PRIVATE-INSTANCE-BINDING.md).
+It compares PreparedStudyOwner and ExchangeOwner, specifies immutable exact
+source/role associations versus current/candidate claims, and requires native
+lifetime/generation/incarnation validation before exposing indexed cells.
+Native coordinate reuse alone remains insufficient. Source-accepted #350 at
+`9e030758` is an explicit unmerged inspection dependency. This slice adds no
+runtime interface, map removal, mixed-revision policy or #324 mathematics.
+The proposed first implementation reuses the existing prepared plan/source for
+one checked private consumer before any broader representation change.
+
 **Maintainer review — 2026-11-16 (supersedes older status below):** #349 at `da865d3cc8fbc2bbb42731957ec89cc8c055d42c` is integrated by this merge after smoke 43897644051, optional viewport 43897644060 and all 12 native jobs in 43897644203 passed. Independently inspected logs show 178 regression passes (45/45/44/44), all four prepared-owner and all four observer profiles, and database addressed_reads=24/private_reads=0. Main cf352531 also passed smoke/native (43901876229/43901876288). The Fields-address correction and contact-changing tick generation tracking are now integrated. ActiveSession/letter capture remains legacy.
 
 #350 at `9e0307587dde72e793a4b661bc86f20ccb0cc654` is source-accepted in review 5923994794, not integrated. The bounded native witness demonstrates shared compiled nested layout with independent indexed cells, selective value/attachment updates, unrelated tree lifetime and native retirement/reuse. Synthetic revision/attachment data does not implement production adoption, D7 rollup or #324 mathematics. The inspection confirms current Bundle/projection permits only one revision per ObjectKey; native coordinate reuse lacks semantic incarnation. Tested f0b40962 differs from head only in five Markdown files. Smoke 43910777706 passed; native 43910777722 build/projection/database passed and regression/compiler matrix remained pending at review. Local execution and IR archive remain contributor-reported, not independently executed or inspected. No duplicate CI requested.

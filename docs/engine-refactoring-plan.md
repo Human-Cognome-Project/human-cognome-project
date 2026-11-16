@@ -210,6 +210,19 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 maintainer: #350 and #351 accepted and integrated after full hosted qualification (reviews 5923994794/5925874274). Next is one checked private association view and consumer over existing PreparedStudyOwner source/plan, preserving actual claim/publication state and measuring copy savings. Follow PRIVATE-INSTANCE-BINDING.md; direct indexed guard protocol, mixed-revision provenance and #324 math remain separate. Both handoffs record exact CI and combined-merge limits.
+
+2026-11-16 contributor (awaiting review): the
+[private instance-binding contract](../engine/docs/PRIVATE-INSTANCE-BINDING.md)
+is pinned to main `fa7f09e4` and explicitly depends on source-accepted unmerged
+#350. It compares both current owners and specifies exact source/role pins,
+indexed-storage lifetime/ABA guards, shared immutable associations, preserved
+candidate state and commit-before-publication. It proposes one checked consumer
+of the existing prepared plan/source before any map removal. This is a
+documentation proposal, not an implemented binding or representation migration;
+mixed revisions, heterogeneous layouts, producer migration, full accounting and
+#324 math remain separate.
+
 2026-11-16 maintainer: #349 is integrated by this merge after full hosted qualification (178 regression passes and all native gates). #350 native nested-instance inspection is source-accepted in review 5923994794, hosted matrix pending. Next is a private instance-binding contract, comparing current owners against native indexed storage and preserving exact provenance, semantic incarnation and atomic publication. Its bounded integer witness does not implement production mixed-revision adoption, D7 rollup or coherence mathematics. Broader catalogue/provenance and producer changes remain separately reviewed. See both handoffs for exact source and CI status.
 
 2026-11-16 maintainer: #347 is integrated; #348 is integrated by this merge after full hosted qualification. #349 is source-accepted in review 5923001157 with hosted native matrix pending. Its private owner bridge does not complete the broader native-instance/accounting inspection. The next task is that inspection, including catalogue-update dependency scope above, before more lifecycle wrappers or public expansion. See the handoffs for the pending Fields-address correction and exact CI evidence.
