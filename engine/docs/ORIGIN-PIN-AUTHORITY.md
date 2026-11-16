@@ -1,5 +1,14 @@
 # Origin definition from one complete provenance pin
 
+**Integration preparation — 2026-11-16:** main `1337bbcc` integrates #353.
+This branch preserves that ancestry and its historical comparison document,
+retaining #354's reviewed observer/provenance tests in place of the old
+duplicate-member witness, as instructed in review 5929111772. Production and
+test files remain byte-identical to reviewed `eddd4f35` and tested `417aed19`;
+the merge adds/reconciles only Markdown. #354 remains source-accepted, awaiting
+hosted qualification and integration. Older dependency/status statements below
+describe the original implementation source.
+
 Contributor implementation under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
 2026-11-16, awaiting review. Base: main
 `5f45f5669da902072cfb312e43f2153b517f61d8`; public tested source:

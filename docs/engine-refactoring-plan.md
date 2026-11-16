@@ -210,6 +210,18 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-16 contributor (awaiting review): the
+[origin definition-key comparison](../engine/docs/ORIGIN-ASSOCIATION-COST.md)
+at `fcef214c` uses current main `9518d043` and explicit source-accepted #352
+dependency `9a86962e`. The checked boundary confirms one concrete within-row
+duplicate: `Origin.definition` equals the object owned by its full pin, with
+independent backing and the same lifetime. Actual attribution finds eight
+allocations / 208 retained requested bytes in the four-origin fixture; clearing
+rows releases both copies, and direct pin-member access allocates nothing.
+Quick/focused Clang and fresh GCC checks passed. No production field/map is
+removed; the comparison specifies current readers and invalid-provenance
+questions for a separately reviewed accessor/removal with equivalence controls.
+
 2026-11-16 contributor (awaiting review):
 [Origin pin authority](../engine/docs/ORIGIN-PIN-AUTHORITY.md) at `417aed19`
 implements #353's accepted duplicate-key removal on main `5f45f566`. The complete
