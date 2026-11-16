@@ -1,4 +1,5 @@
 #include "assembly/study.h"
+#include "assembly/intrinsic_geometry.h"
 
 #include <algorithm>
 #include <cmath>
@@ -87,21 +88,7 @@ std::vector<ScaleBinding> scale_bindings(const InputTable<StudyNode> &nodes) {
 
 namespace {
 template<class A> double enclosing_radius_impl(Point centroid, const std::vector<Sphere,A> &components) {
-  finite(centroid);
-  require(!components.empty(), "assembly: supplied component geometry required");
-  double radius = 0;
-  for (const auto &component : components) {
-    finite(component.centre);
-    require(std::isfinite(component.radius) && component.radius >= 0,
-            "assembly: invalid component radius");
-    const double distance = std::hypot(component.centre.x - centroid.x,
-                                       component.centre.y - centroid.y,
-                                       component.centre.z - centroid.z);
-    const double extent = distance + component.radius;
-    require(std::isfinite(extent), "assembly: enclosure overflow");
-    radius = std::max(radius, extent);
-  }
-  return radius;
+  return detail::intrinsic_enclosing_radius(centroid, components);
 }
 
 } // namespace
