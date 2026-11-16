@@ -49,6 +49,26 @@ keep mathematical changes, native replacements and mechanical moves separately
 reviewable. Do not implement speculative Analyst decision-making to complete
 this separation.
 
+### Catalogue updates and minimal disruption
+
+User clarification, 2026-11-16: the Minecraft comparison also expresses an update
+boundary. As far as supported dependencies allow, the shared catalogue, active
+instances, engine execution and Analyst controls should evolve with minimal
+disruption to the combined experience. Publishing a new reusable item or
+interaction changes availability; it should not inherently rebuild unrelated
+active instances or restart the whole study. Existing pinned instances must
+remain coherent; adoption of a changed definition is a distinct operation.
+
+Inspect catalogue publication, revision pins, native compilation/layout reuse,
+instance adoption and invalidation separately. Trace an unused catalogue
+addition, a revision used by one of two instances, and an interaction introduced
+for only one instance. Identify exactly which state or compiled artifact must
+change and why. Verify actual Taichi restrictions; this requirement does not
+assert arbitrary mutation of a compiled SNode layout. Prefer the smallest
+supported update/rebuild boundary and document unavoidable wider invalidation.
+Do not introduce automatic migration policy or a new hot-reload framework as
+part of the inspection.
+
 ## Inspection clarification: nested assemblies and live instances
 
 Maintainer direction, 2026-11-16, following the user's clarification. The intended
@@ -189,6 +209,8 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-16 maintainer: #347 is integrated; #348 is integrated by this merge after full hosted qualification. #349 is source-accepted in review 5923001157 with hosted native matrix pending. Its private owner bridge does not complete the broader native-instance/accounting inspection. The next task is that inspection, including catalogue-update dependency scope above, before more lifecycle wrappers or public expansion. See the handoffs for the pending Fields-address correction and exact CI evidence.
 
 2026-11-16 contributor inspection (awaiting review): the
 [prepared-admission seam map](../engine/docs/PREPARED-ADMISSION-SEAM.md) is pinned
