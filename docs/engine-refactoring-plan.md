@@ -21,6 +21,13 @@ itself require flattening the object into a separately owned host ledger for
 every constituent. Rollup is intended to enable this compositional use, retaining
 the object's internal structure while exposing the selected operating level.
 
+The user's coherence framing is explicit: structure is the frame of what is
+required for coherence; additional elements supply the degrees of movement within
+those frames. Inspect how that relationship is represented and maintained across
+nested instances and rollups. Do not reduce this distinction to a catalogue of
+attachment types, or assume that a coherence frame means a fixed spatial origin,
+a rigid body, or a newly selected constraint/force law.
+
 This is the inspection target, not a finding that Taichi supplies a game-engine
 object-class or scene-attachment API. Verify the pinned fork's exact construction,
 compilation, storage-instance and ownership mechanisms. Distinguish an SNode
