@@ -4,6 +4,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <type_traits>
 
 #include "assembly/membership_fields.h"
 #include "assembly/exchange_contract.h"
@@ -29,6 +30,15 @@ struct ExchangeContractAccess {
     std::swap(result.from_,result.to_);
     result.outgoing_.swap(result.incoming_);
     return result;
+  }
+  static auto retained_reverse(const LetterExchangeContract &c,
+      const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork &work) {
+    // Same private copy, swaps and shared allocation used by owner adoption.
+    work.charge(sizeof(LetterExchangeContract));
+    auto result = reverse(c,domain,work);
+    work.charge(sizeof(LetterExchangeContract));
+    return std::allocate_shared<const LetterExchangeContract>(
+        detail::SharedReservationAllocator<LetterExchangeContract>(domain),std::move(result));
   }
 };
 }
@@ -304,10 +314,161 @@ void declaration_allocation_failures(bool mixed, int mode, std::size_t requests)
           "every actual declaration C++ allocation refusal releases scratch and output");
   }
 }
+template<class A, class B> bool same_source_rows(const A &a, const B &b) {
+  if (a.size() != b.size()) return false;
+  for (std::size_t i=0; i<a.size(); ++i) {
+    if (!(a[i].occurrence == b[i].occurrence) || !(a[i].definition == b[i].definition) ||
+        a[i].mass != b[i].mass || a[i].node != b[i].node || a[i].parents.size() != b[i].parents.size()) return false;
+    for (std::size_t j=0; j<a[i].parents.size(); ++j) {
+      const auto &x=a[i].parents[j], &y=b[i].parents[j];
+      if (!(x.target == y.target) || x.ordinal != y.ordinal ||
+          x.stored_mass != y.stored_mass || x.contribution != y.contribution) return false;
+    }
+  }
+  return true;
+}
+void reverse_payload_cost(int sample, bool bounded) {
+  using namespace assembly::detail;
+  using Access = assembly::testing::ExchangeContractAccess;
+  auto fixture = std::make_unique<Fixture>();
+  auto projection = [&] {
+    if (sample != 2) return leaf_projection(*fixture);
+    fixture->base.focal_fields = {{warm::FieldKind::SiblingDefinition,fixture->english}};
+    return std::make_unique<LetterProjection>(project_letters(normalize_structural_letters(fixture->base,
+        {{13,fixture->ref(fixture->english),warm::Exposure::Aggregate}})));
+  }();
+  const OccurrenceKey owner{projection->study(),{sample == 0 ? UINT64_MAX : sample == 1 ? 7 : 13,{}}};
+  const auto target = sample == 1 ? warm::Exposure::Aggregate : warm::Exposure::Parts;
+  auto forward = std::make_shared<const LetterExchangeContract>(declare_letter_exchange(*projection,owner,target));
+  std::weak_ptr<const LetterExchangeContract> source_watch = forward;
+  const auto expected_outgoing = forward->incoming(), expected_incoming = forward->outgoing();
+  auto stale = expected_outgoing, foreign = expected_outgoing;
+  stale.front().parents.front().target.revision = warm::new_uuid();
+  foreign.front().occurrence.study = warm::new_uuid();
+  const auto recipe_pin = forward->recipe();
+  const auto from = forward->to(), to = forward->from();
+  const auto mass = forward->mass(), matching_work = forward->match_work();
+  auto domain = bounded ? std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX}) :
+      std::shared_ptr<ReservationDomain>{};
+  std::weak_ptr<ReservationDomain> domain_watch = domain;
+  PreparationWork work(UINT64_MAX);
+  allocation_lifetime::begin();
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  auto reverse = Access::retained_reverse(*forward,domain,work);
+  allocation_observation::enabled = false;
+  const auto calls = allocation_observation::calls.load(), requested = allocation_observation::bytes.load();
+  const auto retained = allocation_lifetime::counts;
+  const auto address = reinterpret_cast<std::uintptr_t>(reverse.get());
+  std::size_t object_request = 0;
+  for (const auto &entry : allocation_lifetime::table) {
+    const auto base = reinterpret_cast<std::uintptr_t>(entry.pointer);
+    if (entry.pointer && address >= base && address-base < entry.bytes) object_request = entry.bytes;
+  }
+  std::size_t payload_bytes = 0, payload_blocks = 0;
+  bool attributed = true, distinct = true;
+  const auto buffer = [&](const void *value, std::size_t bytes, const void *source) {
+    if (!bytes) return;
+    const auto *request = declaration_request(value);
+    attributed &= request && request->bytes == bytes;
+    distinct &= value != source;
+    if (request) { payload_bytes += request->bytes; ++payload_blocks; }
+  };
+  const auto table = [&](const auto &value, const auto &source) {
+    using T = typename std::decay_t<decltype(value)>::value_type;
+    attributed &= value.get_allocator().domain == domain;
+    buffer(value.data(),value.capacity()*sizeof(T),source.data());
+  };
+  const auto uuid = [&](const auto &value, const auto &source) {
+    attributed &= value.str().get_allocator().domain == domain;
+    buffer(value.str().data(),warm::recipe_text_backing(value.str()),source.str().data());
+  };
+  const auto reference = [&](const auto &value, const auto &source) {
+    uuid(value.object.scope,source.object.scope);
+    table(value.object.address,source.object.address);
+    uuid(value.revision,source.revision);
+  };
+  const auto sources = [&](const auto &value, const auto &source) {
+    table(value,source);
+    if (value.size() != source.size()) { attributed = false; return; }
+    for (std::size_t i=0; i<value.size(); ++i) {
+      uuid(value[i].occurrence.study,source[i].occurrence.study);
+      table(value[i].occurrence.source.path,source[i].occurrence.source.path);
+      reference(value[i].definition,source[i].definition);
+      table(value[i].parents,source[i].parents);
+      if (value[i].parents.size() != source[i].parents.size()) { attributed = false; return; }
+      for (std::size_t j=0; j<value[i].parents.size(); ++j)
+        reference(value[i].parents[j].target,source[i].parents[j].target);
+    }
+  };
+  uuid(reverse->owner().study,forward->owner().study);
+  table(reverse->owner().source.path,forward->owner().source.path);
+  uuid(reverse->recipe().selection,forward->recipe().selection);
+  uuid(reverse->recipe().revision,forward->recipe().revision);
+  sources(reverse->outgoing(),forward->incoming());
+  sources(reverse->incoming(),forward->outgoing());
+  const auto domain_live = domain ? domain->result().live_bytes : 0;
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  auto alias = forward; // Prototype: existing immutable ownership, explicit reversed roles.
+  const bool roles = reverse->from() == alias->to() && reverse->to() == alias->from() &&
+      same_source_rows(reverse->outgoing(),alias->incoming()) && same_source_rows(reverse->incoming(),alias->outgoing());
+  const bool matching = alias->matches(reverse->incoming().data(),reverse->incoming().size(),
+      reverse->outgoing().data(),reverse->outgoing().size(),matching_work);
+  const bool wrong_role = !alias->matches(reverse->outgoing().data(),reverse->outgoing().size(),
+      reverse->incoming().data(),reverse->incoming().size(),matching_work);
+  const bool short_work = !alias->matches(reverse->incoming().data(),reverse->incoming().size(),
+      reverse->outgoing().data(),reverse->outgoing().size(),matching_work-1);
+  const bool stale_refused = !alias->matches(expected_incoming.data(),expected_incoming.size(),stale.data(),stale.size(),matching_work);
+  const bool foreign_refused = !alias->matches(expected_incoming.data(),expected_incoming.size(),foreign.data(),foreign.size(),matching_work);
+  const auto alias_calls = allocation_observation::calls.load(), alias_bytes = allocation_observation::bytes.load();
+  allocation_observation::enabled = false;
+  forward.reset(); projection.reset(); fixture.reset();
+  bool detached = !source_watch.expired() && roles && same_source_rows(reverse->outgoing(),alias->incoming()) &&
+      same_source_rows(reverse->incoming(),alias->outgoing());
+  alias.reset();
+  detached &= source_watch.expired() && reverse->owner() == owner && reverse->recipe().selection == recipe_pin.selection &&
+      reverse->recipe().revision == recipe_pin.revision && reverse->from() == from && reverse->to() == to && reverse->mass() == mass &&
+      reverse->matches(expected_outgoing.data(),expected_outgoing.size(),expected_incoming.data(),expected_incoming.size(),matching_work);
+  source_watch.reset();
+  std::weak_ptr<const LetterExchangeContract> weak = reverse;
+  reverse.reset();
+  const auto weak_requested = allocation_lifetime::counts.live;
+  const bool weak_lifetime = weak.expired() && allocation_lifetime::counts.blocks == 1 && weak_requested == object_request &&
+      (!domain || domain->result().live_bytes == object_request);
+  domain.reset();
+  const bool domain_held = !bounded || !domain_watch.expired();
+  weak.reset();
+  const bool domain_released = !bounded || domain_watch.expired();
+  const auto released = allocation_lifetime::end();
+  check(attributed && distinct && payload_blocks+1 == retained.blocks && payload_bytes+object_request == retained.live &&
+            object_request >= sizeof(LetterExchangeContract) && (!bounded || domain_live == retained.live),
+        "actual retained reverse snapshot owns separately attributed copies of every immutable source buffer");
+  check(roles && matching && wrong_role && short_work && stale_refused && foreign_refused,
+        "explicit reversed roles preserve full source matching, revisions, owner identity and work refusal");
+  check(sample != 2 || (expected_outgoing.size() == expected_incoming.size() && wrong_role),
+        "equal one-byte row counts cannot determine semantic exchange direction");
+  check(!alias_calls && !alias_bytes && detached,
+        "a const payload alias serves both explicit roles without allocations after projection/source teardown");
+  check(weak_lifetime && domain_held && domain_released,
+        "weak references retain the shared object request/domain after data destruction until final weak release");
+  check(retained.acquired == calls && !released.live && !released.blocks && released.acquired == released.released,
+        "retained reverse factory and weak teardown release every observed C++ request");
+  std::cout << "reverse_payload_cost,sample=" << sample << ",bounded=" << bounded
+            << ",construction_calls=" << calls << ",construction_requested=" << requested
+            << ",retained_requested=" << retained.live << ",peak_requested=" << retained.peak
+            << ",payload_blocks=" << payload_blocks << ",payload_requested=" << payload_bytes
+            << ",object_request=" << object_request << ",contract_object_bytes=" << sizeof(LetterExchangeContract)
+            << ",weak_requested=" << weak_requested << ",domain_live=" << domain_live
+            << ",alias_calls=" << alias_calls << ",after_destroy_requested=" << released.live
+            << ",preparation_work=" << work.result().charged << '\n';
+}
 }  // namespace
 
 int main() {
   try {
+    for (int sample=0; sample<3; ++sample)
+      for (bool bounded : {false,true}) reverse_payload_cost(sample,bounded);
     for (bool mixed : {false,true})
       for (int mode=0; mode<3; ++mode)
         declaration_allocation_failures(mixed,mode,leaf_inventory_cost(mixed,mode));
