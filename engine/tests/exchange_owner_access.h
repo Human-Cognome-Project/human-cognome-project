@@ -347,11 +347,14 @@ struct ExchangeOwnerAccess {
       {c.outgoing_.data(),c.outgoing_.capacity()*sizeof(ExchangeSource)},
       {c.incoming_.data(),c.incoming_.capacity()*sizeof(ExchangeSource)}}};
   }
-  static bool equivalent(const LetterExchangeContract &a, const LetterExchangeContract &b) {
+  static bool equivalent(const LetterExchangeContract &a, const LetterExchangeContract &b, bool reverse = false) {
+    const auto &outgoing = reverse ? a.incoming() : a.outgoing();
+    const auto &incoming = reverse ? a.outgoing() : a.incoming();
     if (!(a.owner() == b.owner()) || a.recipe().selection != b.recipe().selection ||
-        a.recipe().revision != b.recipe().revision || a.from() != b.from() || a.to() != b.to() ||
+        a.recipe().revision != b.recipe().revision || (reverse ? a.to() : a.from()) != b.from() ||
+        (reverse ? a.from() : a.to()) != b.to() ||
         a.mass() != b.mass() || a.match_work() != b.match_work() ||
-        !a.matches(b.outgoing().data(),b.outgoing().size(),b.incoming().data(),b.incoming().size(),UINT64_MAX))
+        !b.matches(outgoing.data(),outgoing.size(),incoming.data(),incoming.size(),UINT64_MAX))
       return false;
     // Bijections accept caller permutations; immutable declaration copies also
     // retain canonical source/parent order, which now supplies nibble provenance.
@@ -368,7 +371,7 @@ struct ExchangeOwnerAccess {
       }
       return true;
     };
-    return ordered(a.outgoing(),b.outgoing()) && ordered(a.incoming(),b.incoming());
+    return ordered(outgoing,b.outgoing()) && ordered(incoming,b.incoming());
   }
   static const auto &declarations(const detail::ExchangeOwner &o) { return o.declarations_; }
   static auto declaration(const detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target) {

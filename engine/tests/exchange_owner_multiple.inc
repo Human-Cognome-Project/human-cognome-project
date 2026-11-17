@@ -42,14 +42,19 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   auto owner = Access::adopt(f.h,initial,rows,fields);
   const auto memberships = Access::memberships(*owner);
   const auto declarations = Access::declarations(*owner);
-  require(declarations.size() == 8, "owner did not retain both alternatives for every copy");
+  require(declarations.size() == 4, "owner did not retain one complete payload for every copy");
+  for (std::size_t i=0; i<declarations.size(); ++i)
+    for (std::size_t j=0; j<i; ++j)
+      require(declarations[i].get() != declarations[j].get() &&
+                  !(declarations[i]->owner() == declarations[j]->owner()),
+              "distinct selected owners share a semantic payload");
   const auto *reserved_plan = &Access::plan(*owner);
   const auto plan_backing = Plan::backing(*reserved_plan);
   const auto *reserved_binding = Plan::binding(*reserved_plan);
   const auto binding_backing = Plan::binding_backing(*reserved_plan);
   const auto reserved = Access::storage(*owner);
   const auto resources = Access::resources(*owner);
-  require(resources.shared_allocations == 9, "shared declarations/catalogue counted per alias");
+  require(resources.shared_allocations == 5, "shared declarations/catalogue counted per alias");
   const auto map_backing = Access::map_backing(*owner);
   require(reserved.parent_slots == 40, "multiple owner omitted inactive parent storage");
   prepared_test::Metrics metrics(r,PreparedFixtureAccess::nodes(f.h));
@@ -84,7 +89,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
             "multi-occurrence projection preparation published or grew storage");
     std::shared_ptr<const assembly::LetterExchangeContract> selected;
     no_new([&] { selected = Access::declaration(*owner,key,target); });
-    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,Access::fields(*owner)); });
+    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,Access::fields(*owner),target); });
     no_new([&] { Plan::capture(Access::plan(*owner),*before_view); });
     require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok,
             "multi-occurrence source capture failed");
@@ -111,7 +116,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
             "multi-owner staging rejection changed completed state");
     require(Plan::declaration(Access::plan(*owner)) == selected.get() &&
                 Plan::memberships(Access::plan(*owner)) == memberships.get() &&
-                Access::equivalent(*selected,declaration) &&
+                Plan::target(Access::plan(*owner)) == target &&
+                Access::equivalent(*selected,declaration,target == selected->from()) &&
                 std::find(declarations.begin(),declarations.end(),selected) != declarations.end(),
             "multi-occurrence binding did not reuse its exact retained declaration");
     require(&Access::plan(*owner) == reserved_plan && Plan::backing(*reserved_plan) == plan_backing,

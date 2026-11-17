@@ -71,8 +71,16 @@ class ExchangeBindings {
                std::shared_ptr<const MembershipFields>,
                const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &,
                std::uint64_t capture_work);
-  void stage(std::shared_ptr<const LetterExchangeContract>, std::shared_ptr<const MembershipFields>,
+  void stage(std::shared_ptr<const LetterExchangeContract>, warm::Exposure target, std::shared_ptr<const MembershipFields>,
              const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &, PreparationWork &);
+  // The payload retains its original one-way meaning; only this pending
+  // operation selects which immutable side is outgoing/incoming.
+  const auto &outgoing_sources() const {
+    return target_ == contract_->to() ? contract_->outgoing() : contract_->incoming();
+  }
+  const auto &incoming_sources() const {
+    return target_ == contract_->to() ? contract_->incoming() : contract_->outgoing();
+  }
   CaptureResult capture(const LetterProjection &, std::uint64_t capture_work);
   CaptureResult capture(const LetterProjection &, PreparationWork &);
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
@@ -98,6 +106,7 @@ class ExchangeBindings {
   ReservedVector<bool> outgoing_rows_, edge_rows_;
   std::uint64_t generation_{}, work_{};
   std::size_t source_edges_{};
+  warm::Exposure target_{};
   bool valid_{};
 };
 }  // namespace detail
