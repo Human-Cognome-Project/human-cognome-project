@@ -1,5 +1,10 @@
 # Duplicate immutable recipe backing in exchange projection views
 
+Historical inspection at the pinned source below. The subsequent
+[owner-local sharing implementation](EXCHANGE-RECIPE-SHARING.md) supplies the
+measured removal, coordinated admission/census and value/lifetime qualification.
+The separate copies and candidate-only costs below describe the before source.
+
 Contributor inspection under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
 2026-11-17, awaiting review. Public tested source:
 `ac4ab9cf3690a24004532674fe509e3bfb27c789`.

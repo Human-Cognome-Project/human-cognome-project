@@ -7,6 +7,20 @@ It does not implement or accept a combined admission limit. Audited runtime:
 `c118e6efea6902a3996af126e67840f5c4e7da1a`. Main `5ef632f2` adds current handoff
 notes; normal merge `46e7d1ad` preserves them in this continuation.
 
+## Owner-local recipe sharing (awaiting review)
+
+[The recipe-sharing implementation](EXCHANGE-RECIPE-SHARING.md) at `6be856c7`
+keeps initial admission at **one** detached complete projection snapshot. Its
+object plus separate Bundle payload header are counted once, with the new pointer
+representation; control-block bytes remain outside this conservative snapshot
+census. Actual payload/control and nested requests use the selected domain.
+Only the explicit owner-spare path shares that already-retained const Bundle.
+Spare inspection/copy meters its independent mutable view and one fixed recipe/
+domain association, removing the eliminated recipe traversal/copy/backing only.
+Full pin/live-state/binding checks and both parent reservations remain metered.
+No second complete initial snapshot or combined requested-allocation peak is
+introduced into C/S. Public/domain copies and assignment still deep-copy recipes.
+
 ## Checked map prepayment implementation (awaiting review)
 
 Following #296 review 5877302279, input admission now computes separate
@@ -81,7 +95,7 @@ storage; caller inputs and native execution remain borrowed.
 | Collect membership catalogue | Membership meter charges fixed admission, pin copies, graph traversal/comparison, frames and output/relocation | Graph/output backing selected. `allocate_shared` uses the selected allocator for the actual rebound shared request. Fixed shared-object publication has no distinct `sizeof(MembershipFields)` setup fee. |
 | Collect/copy declarations and publish table | Declarations meter covers lookups, payloads, row growth, reverse copy and fixed shared-object/table work | Actual shared object/control-block and vector requests selected. Binding aliases are not additional pointees. |
 | Validate each temporary binding | Bindings meter covers buffers, packed-mask initialization, trusted/staged maps, staging and adoption capture | All temporary backing selected and released before leaving its loop iteration. It overlaps retained projection/catalogue/declarations while alive. |
-| Inspect/copy spare projection | Separate inspection and logical-copy charge in setup meter | A second real projection exists, so its selected requests are distinct. Do not add its logical copy charge to D as bytes. |
+| Inspect/copy spare projection | Separate mutable-view inspection/logical-copy charge plus one fixed retained recipe/domain association | A second mutable projection exists, sharing the initial owner's immutable Bundle. Only new requests are selected charges. Do not add logical copy work to D as bytes. |
 | Reserve both exposure pools | CommittedParents / SpareParents charge scans, equality, slots and nested copies | Both projections' active/spare backing selected, including growth overlap. |
 | Construct retained coordinator and binding | Bindings charges fixed objects, buffer reservations and mask initialization | Unique objects and all reserved backing selected. |
 | Reserve owner/binding/coordinator maps | Bindings charges inventory scans, slot growth, nil initialization and nested capacity | Six retained map stores selected, including inactive constructed slots. These are extensions/reuse of initial owner maps, not another full initial snapshot. |

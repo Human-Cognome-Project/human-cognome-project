@@ -276,7 +276,11 @@ void validate(const Bundle &b) {
     for (const auto &o : b.occurrences) {
       point(o.position);
       point(o.velocity);
-      add({o.id, o.definition, o.node});
+      // Stage allocating members before aggregate conversion: supported GCC 11
+      // must unwind the copied path if the definition copy throws.
+      auto id = o.id;
+      auto definition = o.definition;
+      add({std::move(id),std::move(definition),o.node});
     }
   else
     for (const auto &o : b.structural_occurrences)

@@ -23,10 +23,12 @@ projection consequently follow the current alternative and exact source masses.
 Exchange declarations use the current exposure while their alternatives still
 come from the immutable recipe. No new projection UUID is minted between exchanges.
 
-[Recipe backing inspection](EXCHANGE-RECIPE-COPY-COST.md) measures the identical
-immutable Bundles currently copied into both views. It proposes owner-private
-recipe sharing while retaining independent live view state and detached public/
-domain copies. This is awaiting review; both views still own complete recipes.
+[Owner-local recipe sharing](EXCHANGE-RECIPE-SHARING.md), awaiting review, replaces
+the duplicate immutable Bundles identified by the
+[recipe backing inspection](EXCHANGE-RECIPE-COPY-COST.md). Initial adoption detaches
+from the caller; only the explicit private spare path retains the same const
+Bundle. Public/domain copies and assignment retain independent values and
+selected allocators. Every mutable view family remains independent.
 
 ## Preparation and publication
 
@@ -189,14 +191,16 @@ ownership overhead and borrowed native surfaces. Caller-built inputs and hierarc
 adoption, standalone adapter construction and exception construction may allocate.
 No allocator/RSS, GPU, performance or other-operation qualification follows.
 
-Projection reservation occurs at adoption: both complete views and their immutable
-recipe copies remain allocated until owner teardown. Repeated projection staging
+Projection reservation occurs at adoption: both mutable views retain one shared
+immutable recipe until their teardown (or the final permitted recipe alias).
+Repeated projection staging
 does not copy the recipe or allocate nested parent storage. After publication the
 previous committed view becomes the spare, to be overwritten on the next
 preparation; references to an old view do not remain current or immutable across
 that preparation. Initial reservation still allocates and copies host data.
 
-`projection_storage()` reports both views' fixed object bytes, vector capacities
+`projection_storage()` reports both views' fixed object bytes, one shared Bundle
+header/body, and independent mutable vector capacities
 (including unused element slots, object addresses and occurrence paths), string capacities plus
 terminators (including UUIDs), and constructed active-plus-spare parent rows.
 `charged_bytes()` is their checked sum. String capacity is conservatively charged
