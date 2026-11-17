@@ -41,8 +41,7 @@ struct Census {
   void contract(const LetterExchangeContract &c) {
     add(result.object_bytes,sizeof(c)); key(c.owner());
     uuid(c.recipe().selection); uuid(c.recipe().revision);
-    sources(c.outgoing()); sources(c.incoming()); buffer(c.leaves());
-    for (const auto &leaf : c.leaves()) ref(leaf.definition);
+    sources(c.outgoing()); sources(c.incoming());
   }
 };
 }

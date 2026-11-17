@@ -12,6 +12,52 @@ Next implementation is authorized without another planning round: remove the sep
 
 #359 smoke 44099141184 and projection-values passed; native 44099141583 is running. #358 native 44089456571 has all compiler jobs and three regression shards passed, with regression shard 1 still pending at review; build/projection/database and smoke passed. Both remain unmerged pending hosted/dependency qualification. No duplicate CI dispatch. Taichi handles structure; HCP owns meaning. Direct indexed guards, catalogue/mixed revisions, public producer adoption, full accounting and #324 remain separately scoped. Held #75/#111/#123 unchanged.
 
+**Contributor exchange leaf authority — 2026-11-17 (awaiting review):**
+public `0750a2cd` implements the removal authorized in #359 review 5939931047.
+Declarations retain canonical outgoing/incoming source rows and complete ordered
+parents; the separate leaf vector/export/copies are removed. Existing byte-side
+paths and parent pins/counts supply all nibble provenance without a new wrapper.
+Matching, validation work, source/node/stored-mass provenance, both directions,
+detached/shared lifetime and native claims/publication remain. See
+[implementation and actual before/after evidence](../../engine/docs/EXCHANGE-LEAF-AUTHORITY.md).
+Actual repeated/mixed collectors retain 1,992/3,450 fewer requested bytes;
+mixed reverse copy saves 2,490. The native owner fixture saves 2,072 including
+the two smaller object headers. These are scoped C++ request measurements.
+
+Final local quick CI, 16 focused Clang CTests, eight fresh GCC CTests, both
+four-test standalone suites and single/multiple-owner bulk/direct exchanges
+passed. Value controls include all 448 C++ allocation failures; native owner
+controls retain all 3,239 reached failure sites and independent census/lifetime.
+Main `d1139a89` and source-accepted, unmerged #359/#358 are preserved in normal
+merge `e2730f98`. #358 native CI now reports success; #359 native is still
+running. Review and this implementation's authoritative hosted CI remain pending.
+Indexed guards, catalogue/mixed revisions, public producer adoption, full
+accounting and #324 remain separate. Held #75/#111/#123 are unchanged.
+
+**Maintainer #359 review — 2026-11-17 (supersedes older status below):** #359 `69edf33ae128d02b066c1a96a26b6e82aec726fb` is source-accepted in review 5939931047, not integrated. Relative to source-accepted #358 `3b570a4f09ff68239df6ea423404dcd7074a28bd`, only the structural recipe test and five Markdown files differ; tested 87061d3b differs from head only in those five Markdown files. Actual public/bounded collection and owner-style reverse-copy witnesses show the flat leaf inventory duplicates canonical byte-source path/direct-parent information. Full pins, order/counts and detached lifetime are verified; native records cannot replace these meanings. Nested requested bytes of 712/890 plus separately measured vector capacity are candidate costs, not realized savings. Local archives remain contributor-reported.
+
+Next implementation is authorized without another planning round: remove the separate leaf vector/copies and read existing const source/parent rows on the byte side selected by exposure direction. Coordinate census and tests. Preserve owner/study/recipe pins, complete revisions/stored-mass provenance, character/byte/parent order, repeated contributions, exact counts/mass, nodes, both directions, descriptor bijection/permutation and stale/foreign/duplicate refusal. Retain comparison work, detached/shared lifetime and native claim/candidate/publication state. No replacement owning leaf array, registry, generic range wrapper or compatibility fallback. Remove only actual leaf construction/relocation/copy/census charges; keep source/traversal/association validation. Measure actual public/bounded/reverse producer before/after including object/header/capacity effects, and run native owner/exchange/lifetime plus exact-budget/unwind controls.
+
+#359 smoke 44099141184 and projection-values passed; native 44099141583 is running. #358 native 44089456571 has all compiler jobs and three regression shards passed, with regression shard 1 still pending at review; build/projection/database and smoke passed. Both remain unmerged pending hosted/dependency qualification. No duplicate CI dispatch. Taichi handles structure; HCP owns meaning. Direct indexed guards, catalogue/mixed revisions, public producer adoption, full accounting and #324 remain separately scoped. Held #75/#111/#123 unchanged.
+
+**Contributor exchange-leaf inspection — 2026-11-17 (awaiting review):**
+public `87061d3b` measures the flat leaf inventory duplicated by the same
+declaration's canonical byte-source parents. All five leaf fields are available
+from existing paths, ordinals, complete target pins and exact contributions;
+execution uses those parent rows. See
+[owner/native boundary, actual cost and proposal](../../engine/docs/EXCHANGE-LEAF-INVENTORY-COST.md).
+Eight/ten leaves duplicate 712/890 nested requested bytes, plus actual vector
+capacity. Reverse-copy capacity differs from collection. These are candidate
+costs; production still retains and charges the leaf table.
+
+Local quick CI, the engine-build value test and both fresh four-test Clang/GCC
+suites passed, including 4,048 structural recipe checks. Borrowed traversal
+allocates nothing and preserves complete pins/counts after source teardown.
+Main `67861a37` and explicit source-accepted, unmerged #358 are preserved by
+normal merge `b59a54c3`; production is identical to #358. Review the scoped
+proposal before removal. Native claims/candidate state and the separate indexed,
+catalogue/producer/accounting/#324 work remain unchanged.
+
 **Maintainer #358 review — 2026-11-17 (supersedes older status below):** #358 `3b570a4f09ff68239df6ea423404dcd7074a28bd` is source-accepted in review 5939303910, not integrated. The authorized membership duplicate-key removal keeps explicit kind, full occurrence/target pins and count; collector/bind/exchange/plan/census readers use target.object directly. Short group addresses, context/revision/dedup validation, detached/shared-catalogue lifetime and native claim/candidate state remain. Storage/relocation/census reflect actual smaller rows; validation work remains charged. Qualification-driven audit range-lifetime and projection-copy unwind repairs were reviewed separately; original guards/quotas remain and allocation-refusal controls cover v1/v2/reserved copies. Local historical binaries, sanitizer probes and Clang/GCC archives remain contributor-reported. Scoped retained reductions of 1,084/2,168 requested bytes include vector extent and nested storage.
 
 Tested 4f27d26d differs from head only in six Markdown files. Smoke 44089456736 passed; native 44089456571 build/projection/database passed, with the remaining regression/compiler matrix pending. Inspected standalone four-test suite and database addressed_reads=24/private_reads=0. Main fd0817f6 combined smoke/native 44000323894/44000324524 passed. Reconcile this head's remaining qualification before integration; no duplicate CI dispatch.

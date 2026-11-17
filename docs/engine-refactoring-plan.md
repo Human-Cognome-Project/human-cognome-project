@@ -211,6 +211,19 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[exchange leaf authority](../engine/docs/EXCHANGE-LEAF-AUTHORITY.md) at `0750a2cd`
+implements #359's authorized second-inventory removal. Canonical byte-source
+paths and parents retain all ordered semantic pins/counts, while the separate
+leaf vector/copy/export and actual construction/census charges disappear.
+Complete source validation, matching/permutation, stored-mass provenance,
+detached/shared lifetime and native state remain. Actual collector retained
+requests fall by 1,992/3,450 bytes; mixed reverse copy by 2,490; the native owner
+fixture by 2,072 including headers. Quick CI, 16 Clang/eight fresh GCC CTests,
+both standalone suites and selected single/multiple-owner exchanges passed.
+Main `d1139a89` and unmerged source-accepted #359/#358 are preserved. Review/
+hosted qualification and indexed/catalogue/producer/accounting/#324 remain separate.
+
+2026-11-17 contributor (awaiting review):
 [exchange leaf-inventory cost](../engine/docs/EXCHANGE-LEAF-INVENTORY-COST.md)
 at `87061d3b` selects a concrete second structural view: each flat leaf repeats
 fields already owned by canonical byte-source paths and direct parents. Runtime

@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+**Contributor declaration census update — 2026-11-17 (awaiting review):**
+[Exchange leaf authority](EXCHANGE-LEAF-AUTHORITY.md) at `0750a2cd` removes the
+flat leaf table and its pin copies. Census counts the actual smaller declaration
+object, source capacities and complete ordered parents once. Independent request,
+domain, snapshot/shared lifetime and refusal controls remain. The native owner
+fixture saves 2,072 requested/capacity bytes, including two 40-byte headers;
+these overlapping reports are not summed. Complete B/admission remains open.
+
 **Contributor membership census update — 2026-11-17 (awaiting review):**
 [Membership pin authority](MEMBERSHIP-PIN-AUTHORITY.md) at `4f27d26d` removes
 the duplicate row field object. Census counts actual smaller vector capacity,
@@ -43,7 +51,7 @@ not an operational memory-budget policy or a second state authority.
 | `maps` | Outer capacity of all six stores: occurrence/field maps in owner, binding and coordinator; nested UUID/path/address storage of **every constructed slot**, including inactive slots |
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
 | `coordinator` | Coordinator object; command, intrinsic, field-command-index, hierarchy-node, child and contribution buffers |
-| `declarations` | Shared-pointer table capacity; both declaration objects per selection; owner/recipe pins; incoming/outgoing descriptors, their parents, ordered leaves and nested keys/pins |
+| `declarations` | Shared-pointer table capacity; both declaration objects per selection; owner/recipe pins; incoming/outgoing descriptors and their ordered parent provenance with complete nested keys/pins; nibble provenance reads the byte-side rows directly |
 | `memberships` | One catalogue object, study/recipe pins, all-alternative contribution capacity and constructed rows' full occurrence identities and target pins; explicit kind is inline and the field object comes from the target pin |
 
 Object sizes include embedded member objects. Vector capacity is multiplied by
