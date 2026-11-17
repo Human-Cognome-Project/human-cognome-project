@@ -13,11 +13,6 @@ struct ExchangeSource {
   int node{-1};
   detail::SharedReservedVector<warm::Parent> parents;
 };
-struct ExchangeLeaf {
-  std::uint32_t character{}, byte{}, nibble{};
-  warm::ToolRef definition;
-  std::uint64_t count{};
-};
 
 // Prepared from one immutable validated v2 projection. This is a declaration,
 // not proof of a current native binding or a reusable publication authority.
@@ -30,7 +25,8 @@ class LetterExchangeContract {
   std::uint64_t mass() const { return mass_; }
   const auto &outgoing() const { return outgoing_; }
   const auto &incoming() const { return incoming_; }
-  const auto &leaves() const { return leaves_; }
+  // Ordered nibble provenance is already owned by the byte side's paths/parents.
+  // That side is outgoing for from()==Parts, incoming for from()==Aggregate.
   std::uint64_t match_work() const { return match_work_; }
   // Exact bijections, independent of adapter row order. No allocation/mutation.
   bool matches(const ExchangeSource *outgoing, std::size_t outgoing_count,
@@ -54,7 +50,6 @@ class LetterExchangeContract {
   warm::Exposure from_{}, to_{};
   std::uint64_t mass_{}, match_work_{};
   detail::SharedReservedVector<ExchangeSource> outgoing_, incoming_;
-  detail::SharedReservedVector<ExchangeLeaf> leaves_;
 };
 
 // Preparation operation. Target must be the other declared alternative of the

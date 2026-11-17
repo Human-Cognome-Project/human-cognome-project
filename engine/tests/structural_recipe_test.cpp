@@ -59,7 +59,7 @@ void bounded_declaration(const LetterProjection &p, const OccurrenceKey &owner,
     if (!(actual.owner() == expected.owner()) || actual.recipe().selection != expected.recipe().selection ||
         actual.recipe().revision != expected.recipe().revision || actual.from() != expected.from() ||
         actual.to() != expected.to() || actual.mass() != expected.mass() ||
-        actual.match_work() != expected.match_work() || actual.leaves().size() != expected.leaves().size()) return false;
+        actual.match_work() != expected.match_work()) return false;
     const auto rows = [](const auto &a, const auto &b) {
       if (a.size() != b.size()) return false;
       for (std::size_t i=0; i<a.size(); ++i) {
@@ -73,13 +73,8 @@ void bounded_declaration(const LetterProjection &p, const OccurrenceKey &owner,
       }
       return true;
     };
-    if (!rows(actual.outgoing(),expected.outgoing()) || !rows(actual.incoming(),expected.incoming())) return false;
-    for (std::size_t i=0; i<actual.leaves().size(); ++i) {
-      const auto &a=actual.leaves()[i], &b=expected.leaves()[i];
-      if (a.character != b.character || a.byte != b.byte || a.nibble != b.nibble ||
-          !(a.definition == b.definition) || a.count != b.count) return false;
-    }
-    return true;
+    // Complete canonical paths/parents also retain every ordered nibble field.
+    return rows(actual.outgoing(),expected.outgoing()) && rows(actual.incoming(),expected.incoming());
   };
   for (const bool copying : {false,true}) {
     const auto run = [&](const auto &domain, auto &work) {
@@ -161,23 +156,30 @@ const allocation_lifetime::Entry *declaration_request(const void *pointer) {
   }
   return nullptr;
 }
-void leaf_inventory_cost(bool mixed, int mode) {
+// Independent expected values only, outside the measured producer window.
+struct ExpectedLeaf {
+  std::uint32_t character{}, byte{}, nibble{};
+  warm::ToolRef definition;
+  std::uint64_t count{};
+};
+auto leaf_projection(Fixture &fixture) {
+  fixture.base.focal_fields = {{warm::FieldKind::SiblingDefinition,fixture.repeated}};
+  const auto recipe = normalize_structural_letters(fixture.base,
+      {{UINT64_MAX,fixture.ref(fixture.repeated),warm::Exposure::Aggregate},
+       {7,fixture.ref(fixture.dutch),warm::Exposure::Parts}});
+  return std::make_unique<LetterProjection>(project_letters(recipe));
+}
+std::size_t leaf_inventory_cost(bool mixed, int mode) {
   using namespace assembly::detail;
   using Access = assembly::testing::ExchangeContractAccess;
   auto fixture = std::make_unique<Fixture>();
-  fixture->base.focal_fields = {{warm::FieldKind::SiblingDefinition,fixture->repeated}};
   const auto max_entry = std::numeric_limits<std::uint64_t>::max();
-  auto projection = [&] {
-    const auto recipe = normalize_structural_letters(fixture->base,
-        {{max_entry,fixture->ref(fixture->repeated),warm::Exposure::Aggregate},
-         {7,fixture->ref(fixture->dutch),warm::Exposure::Parts}});
-    return std::make_unique<LetterProjection>(project_letters(recipe));
-  }();
+  auto projection = leaf_projection(*fixture);
   const OccurrenceKey owner{projection->study(),{mixed ? 7 : max_entry,{}}};
   const auto target = mixed ? warm::Exposure::Aggregate : warm::Exposure::Parts;
   // Independent expected leaves come from the validated immutable recipe,
-  // rather than the declaration's duplicated inventory.
-  std::vector<ExchangeLeaf> expected;
+  // independent of the declaration's retained source/parent descriptors.
+  std::vector<ExpectedLeaf> expected;
   const auto &recipe = projection->recipe();
   const auto &selection = *std::find_if(recipe.selections.begin(),recipe.selections.end(),
       [&](const auto &s) { return s.entry == owner.source.entry; });
@@ -211,31 +213,24 @@ void leaf_inventory_cost(bool mixed, int mode) {
   allocation_observation::enabled = false;
   const auto calls = allocation_observation::calls.load(), requested = allocation_observation::bytes.load();
   const auto retained = allocation_lifetime::counts;
-  const auto rows = contract->leaves().size(), capacity = contract->leaves().capacity();
-  const auto header_bytes = sizeof(contract->leaves());
-  const auto *backing = contract->leaves().data();
-  const auto *outer = declaration_request(backing);
-  const auto outer_bytes = outer ? outer->bytes : 0;
-  std::size_t duplicate_bytes = 0, duplicate_blocks = 0, parent_bytes = 0, index = 0;
-  bool exact = rows == expected.size(), distinct = true, attributed = outer;
+  const auto &parts = contract->from() == warm::Exposure::Parts ? contract->outgoing() : contract->incoming();
+  const auto part_rows = parts.size(), part_capacity = parts.capacity();
+  const auto *backing = parts.data();
+  std::size_t parent_bytes = 0, parent_blocks = 0, rows = 0;
+  bool exact = true, attributed = declaration_request(backing);
   const auto association = parent_leaves(*contract,[&](auto character,auto byte,auto nibble,const auto &pin,auto count) {
-    if (index >= rows || index >= expected.size()) { exact = false; return; }
-    const auto &leaf = contract->leaves()[index], &input = expected[index];
-    exact &= leaf.character == character && leaf.byte == byte && leaf.nibble == nibble && leaf.definition == pin && leaf.count == count &&
-        leaf.character == input.character && leaf.byte == input.byte && leaf.nibble == input.nibble && leaf.definition == input.definition && leaf.count == input.count;
-    const void *leaf_buffers[]{leaf.definition.object.scope.str().data(),leaf.definition.object.address.data(),leaf.definition.revision.str().data()};
+    const auto index = rows++;
+    if (index >= expected.size()) { exact = false; return; }
+    const auto &input = expected[index];
+    exact &= character == input.character && byte == input.byte && nibble == input.nibble && pin == input.definition && count == input.count;
     const void *parent_buffers[]{pin.object.scope.str().data(),pin.object.address.data(),pin.revision.str().data()};
-    for (int i=0; i<3; ++i) {
-      const auto *duplicate = declaration_request(leaf_buffers[i]), *original = declaration_request(parent_buffers[i]);
-      attributed &= duplicate && original;
-      distinct &= leaf_buffers[i] != parent_buffers[i];
-      if (duplicate) { duplicate_bytes += duplicate->bytes; ++duplicate_blocks; }
-      if (original) parent_bytes += original->bytes;
+    for (const auto *buffer : parent_buffers) {
+      const auto *request = declaration_request(buffer);
+      attributed &= request != nullptr;
+      if (request) { parent_bytes += request->bytes; ++parent_blocks; }
     }
-    attributed &= leaf.definition.object.scope.str().get_allocator().domain == domain &&
-        leaf.definition.object.address.get_allocator().domain == domain && leaf.definition.revision.str().get_allocator().domain == domain &&
-        pin.object.scope.str().get_allocator().domain == domain && pin.object.address.get_allocator().domain == domain && pin.revision.str().get_allocator().domain == domain;
-    ++index;
+    attributed &= pin.object.scope.str().get_allocator().domain == domain &&
+        pin.object.address.get_allocator().domain == domain && pin.revision.str().get_allocator().domain == domain;
   });
   allocation_observation::calls = allocation_observation::bytes = 0;
   allocation_observation::enabled = true;
@@ -248,10 +243,10 @@ void leaf_inventory_cost(bool mixed, int mode) {
   const auto borrow_calls = allocation_observation::calls.load(), borrow_bytes = allocation_observation::bytes.load();
   allocation_observation::enabled = false;
   forward.reset(); projection.reset(); fixture.reset();
-  bool detached = contract->leaves().data() == backing && contract->owner() == owner && contract->recipe().selection == recipe_pin.selection &&
+  bool detached = parts.data() == backing && contract->owner() == owner && contract->recipe().selection == recipe_pin.selection &&
       contract->recipe().revision == recipe_pin.revision && contract->from() == from && contract->to() == to && contract->mass() == mass &&
       contract->match_work() == match_work && contract->matches(outgoing.data(),outgoing.size(),incoming.data(),incoming.size(),match_work);
-  index = 0;
+  std::size_t index = 0;
   const auto detached_visit = parent_leaves(*contract,[&](auto character,auto byte,auto nibble,const auto &pin,auto count) {
     if (index >= expected.size()) { detached = false; return; }
     const auto &leaf = expected[index++];
@@ -263,31 +258,59 @@ void leaf_inventory_cost(bool mixed, int mode) {
   contract.reset();
   const auto released = allocation_lifetime::end();
   check(exact && association && borrow && index == rows && visited == rows && detached,
-        "actual leaf inventory and borrowed parents preserve ordered complete pins/counts after all sources die");
-  check(rows == (mixed ? 10U : 8U) && attributed && distinct && duplicate_blocks == 3*rows && duplicate_bytes && duplicate_bytes == parent_bytes,
-        "actual factory retains distinct equal leaf and parent pin buffers for repeated and multibyte paths");
-  check(outer_bytes == capacity*sizeof(ExchangeLeaf) && (!domain || domain_live == retained.live),
-        "actual leaf capacity and complete retained declaration requests are independently observed");
+        "actual source parents preserve every ordered complete nibble pin/count after all sources die");
+  check(rows == (mixed ? 10U : 8U) && attributed && parent_blocks == 3*rows && parent_bytes,
+        "actual factory retains complete parent pin backing for repeated and multibyte paths");
+  check(!domain || domain_live == retained.live,
+        "selected domain equals the complete actual retained declaration requests");
   check(!borrow_calls && !borrow_bytes,"existing source parents supply every ordered leaf without allocation");
-  check(stale_refused,"full parent target revision remains required despite an unchanged leaf inventory");
+  check(stale_refused,"full parent target revision remains required with borrowed nibble provenance");
   check(retained.acquired == calls && !released.live && !released.blocks && released.acquired == released.released && (!domain || !domain->result().live_bytes),
         "actual factory scratch and detached declaration release every tracked request");
-  std::cout << "exchange_leaf_cost,mixed=" << mixed << ",mode=" << mode << ",rows=" << rows << ",capacity=" << capacity
+  std::cout << "exchange_leaf_cost,mixed=" << mixed << ",mode=" << mode << ",rows=" << rows
+            << ",part_rows=" << part_rows << ",part_capacity=" << part_capacity
             << ",construction_calls=" << calls << ",construction_requested=" << requested
             << ",retained_requested=" << retained.live << ",peak_requested=" << retained.peak
-            << ",duplicate_blocks=" << duplicate_blocks << ",duplicate_requested=" << duplicate_bytes
-            << ",parent_pin_requested=" << parent_bytes << ",leaf_object_bytes=" << sizeof(ExchangeLeaf)
-            << ",leaf_header_bytes=" << header_bytes << ",outer_capacity_bytes=" << outer_bytes
+            << ",parent_pin_blocks=" << parent_blocks << ",parent_pin_requested=" << parent_bytes
             << ",contract_object_bytes=" << sizeof(LetterExchangeContract) << ",domain_live=" << domain_live
             << ",borrow_calls=" << borrow_calls << ",after_destroy_requested=" << released.live
             << ",preparation_work=" << work.result().charged << '\n';
+  return calls;
+}
+void declaration_allocation_failures(bool mixed, int mode, std::size_t requests) {
+  using namespace assembly::detail;
+  using Access = assembly::testing::ExchangeContractAccess;
+  Fixture fixture;
+  const auto projection = leaf_projection(fixture);
+  const OccurrenceKey owner{projection->study(),{mixed ? 7 : UINT64_MAX,{}}};
+  const auto target = mixed ? warm::Exposure::Aggregate : warm::Exposure::Parts;
+  const auto forward = declare_letter_exchange(*projection,owner,target);
+  for (std::size_t fail=1; fail<=requests; ++fail) {
+    auto domain = mode == 0 ? std::shared_ptr<ReservationDomain>{} :
+        std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+    PreparationWork work(UINT64_MAX);
+    std::optional<LetterExchangeContract> contract;
+    bool refused = false;
+    allocation_lifetime::begin(fail);
+    try {
+      if (mode == 0) contract.emplace(declare_letter_exchange(*projection,owner,target));
+      else if (mode == 1) contract.emplace(Access::collect(*projection,owner,target,domain,work));
+      else contract.emplace(Access::reverse(forward,domain,work));
+    } catch (const std::bad_alloc &) { refused = true; }
+    contract.reset();
+    const auto released = allocation_lifetime::end();
+    check(refused && released.attempts == fail && !released.live && !released.blocks &&
+              released.acquired == released.released && (!domain || !domain->result().live_bytes),
+          "every actual declaration C++ allocation refusal releases scratch and output");
+  }
 }
 }  // namespace
 
 int main() {
   try {
     for (bool mixed : {false,true})
-      for (int mode=0; mode<3; ++mode) leaf_inventory_cost(mixed,mode);
+      for (int mode=0; mode<3; ++mode)
+        declaration_allocation_failures(mixed,mode,leaf_inventory_cost(mixed,mode));
     Fixture f;
     auto base = f.base;
     base.focal_fields = {
@@ -472,14 +495,19 @@ int main() {
       std::uint64_t out_mass = 0, in_mass = 0, leaf_mass = 0;
       for (const auto &s : outgoing) out_mass += s.mass;
       for (const auto &s : incoming) in_mass += s.mass;
-      for (const auto &s : contract.leaves()) leaf_mass += s.count;
-      check(out_mass == contract.mass() && in_mass == out_mass && leaf_mass == out_mass,
+      std::size_t leaf_count = 0;
+      bool repeated_paths = true;
+      const auto walked = parent_leaves(contract,[&](auto character,auto byte,auto,const auto &,auto count) {
+        leaf_mass += count;
+        if (entry == 8 && (leaf_count == 4 || leaf_count == 6))
+          repeated_paths &= character == 2 && byte == (leaf_count == 4 ? 0U : 1U);
+        ++leaf_count;
+      });
+      check(walked && out_mass == contract.mass() && in_mass == out_mass && leaf_mass == out_mass,
             "both alternatives retain exact ordered leaf mass");
       if (entry == 8)
         check(outgoing.size() == 4 && outgoing[0].definition == outgoing[1].definition &&
-                  !(outgoing[0].occurrence == outgoing[1].occurrence) && contract.leaves().size() == 8 &&
-                  contract.leaves()[4].character == 2 && contract.leaves()[4].byte == 0 &&
-                  contract.leaves()[6].character == 2 && contract.leaves()[6].byte == 1,
+                  !(outgoing[0].occurrence == outgoing[1].occurrence) && leaf_count == 8 && repeated_paths,
               "repeated bytes retain distinct occurrence paths and contributions");
       std::reverse(outgoing.begin(), outgoing.end());
       std::reverse(incoming.begin(), incoming.end());
@@ -538,8 +566,9 @@ int main() {
     const auto unicode = project_letters(expanded_recipe);
     const auto unicode_exchange = declare_letter_exchange(unicode, {unicode.study(), {11, {}}},
                                                          warm::Exposure::Aggregate);
-    check(unicode_exchange.outgoing().size() == 2 &&
-              unicode_exchange.leaves().size() == unicode_exchange.mass(),
+    std::size_t unicode_leaves = 0;
+    const auto unicode_walked = parent_leaves(unicode_exchange,[&](auto,auto,auto,const auto &,auto) { ++unicode_leaves; });
+    check(unicode_walked && unicode_exchange.outgoing().size() == 2 && unicode_leaves == unicode_exchange.mass(),
           "multibyte UTF-8 alternative retains every ordered nibble contribution");
     check(p.parents().size() == 14 && p.recipe().selections[0].exposure == b.selections[0].exposure &&
               p.recipe().ref.revision == b.ref.revision,

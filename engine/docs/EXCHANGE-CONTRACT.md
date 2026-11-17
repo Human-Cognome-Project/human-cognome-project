@@ -1,5 +1,14 @@
 # Prepared logical declaration for letter exchange
 
+**Contributor implementation — 2026-11-17 (awaiting review):**
+[Retained parent authority](EXCHANGE-LEAF-AUTHORITY.md) at `0750a2cd` implements
+the leaf-vector removal authorized by #359. Canonical byte-source paths and
+ordered direct parents now supply every nibble's ordinals, full pin and exact
+count through existing const accessors. Matching and source provenance remain;
+no replacement owning array or wrapper is added. Actual before/after producers,
+census, lifetime and Clang/GCC qualification are recorded there. Review and
+authoritative hosted qualification remain pending.
+
 **Contributor ownership comparison — 2026-11-17 (awaiting review):**
 [Leaf-inventory attribution](EXCHANGE-LEAF-INVENTORY-COST.md) at `87061d3b`
 measures the flat leaf rows copied from the declaration's existing byte-source
@@ -27,13 +36,19 @@ The contract retains the recipe revision and separate canonical outgoing and
 incoming descriptors: occurrence key, pinned definition revision, exact integer
 mass, study-node binding and ordered direct parent rows, including stored source
 mass provenance. The existing projection validates letter source form through
-character/byte/nibble construction. Preparation records every ordered nibble
-contribution with character and byte ordinals, and checks the aggregate/parts
+character/byte/nibble construction. On this contribution, preparation retains
+every ordered nibble contribution in byte-source parents and occurrence paths,
+and checks the aggregate/parts
 integer mass totals with overflow rejection. Repeated bytes and repeated nibble
 definitions remain distinct occurrences/contributions; they are not deduplicated.
 Direct aggregate parent fields and byte parent fields are deliberately distinct.
-The leaf declaration is common construction provenance, not a claim that those
+The derived nibble provenance is common construction provenance, not a claim that those
 different live field ledgers are interchangeable.
+
+Read the byte side from outgoing rows for `from()==Parts`, incoming rows for
+`from()==Aggregate`. Each two-element path gives character/byte ordinals; each
+ordered parent gives its ordinal, complete target ToolRef and contribution.
+There is no separate `ExchangeLeaf` vector or `leaves()` export on this branch.
 
 `matches` checks complete outgoing/incoming descriptor bijections while allowing
 adapter row permutations. It rejects duplicate/missing/foreign copies, changed
