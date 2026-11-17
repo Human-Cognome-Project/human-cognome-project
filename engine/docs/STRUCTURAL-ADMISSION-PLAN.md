@@ -1,5 +1,14 @@
 # Private structural admission plan builder
 
+**Study identity implementation — 2026-11-16 (awaiting review):**
+[owned header authority](PLAN-STUDY-AUTHORITY.md) at `57615368` implements the
+removal accepted in #355 review 5929836328. Occurrence commands now retain numeric
+entry/path and full definition pins; the existing owned source header supplies
+study identity. Full-key validation, selected-domain/standalone lifetime,
+command/claim alignment and detached output are preserved. Actual producer
+savings and 4,708 builder controls, worker/path and compiler qualification are
+recorded there. The earlier comparison below remains pinned historical evidence.
+
 **Subsequent ownership comparison — 2026-11-16 (awaiting review):**
 [study-identity cost attribution](PLAN-STUDY-IDENTITY-COST.md) at `52be505c`
 measures per-occurrence UUID copies equal to this plan's existing owned source

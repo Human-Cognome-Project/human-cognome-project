@@ -1,5 +1,21 @@
 # Core continuation after local CUDA corrections
 
+**Contributor implementation — 2026-11-16 (awaiting review):**
+[plan study authority](../engine/docs/PLAN-STUDY-AUTHORITY.md) at `57615368`
+implements the removal accepted in #355 review 5929836328. One existing owned
+header study scopes numeric-only rows; producers/readers and rendering migrate
+together while full source validation, detached output, standalone lifetime,
+roles/units and native claims remain intact. Actual before/after producer
+measurements show 170/2,040-byte reductions for two/24 rows. Local quick CI,
+12 focused native tests, five fresh GCC tests and four standalone tests passed,
+including 4,708 builder controls and all 162 C++ allocation-failure points.
+
+Current main `a06362be` is preserved with explicit source-accepted #355/#354
+dependencies in merge `52a10bd0`; neither dependency is labelled integrated.
+Main `1337bbcc` native CI now reports success. Review this implementation and
+reconcile its own authoritative hosted checks before integration; no native
+execution policy, public producer, catalogue or #324 mathematical change follows.
+
 **Maintainer #355 review — 2026-11-16 (supersedes older status below):** #355 `93dcd711f9c6b601b0b669ffa4639888355d944f` is source-accepted in review 5929836328, not integrated. It is stacked on source-accepted #354 `eff64deb977839d8f9d719c93e6645fc99bfe3e0`. The actual builder witness attributes per-row study UUID copies equal to the already owned plan source header, proves allocation-free header comparison and standalone lifetime, and distinguishes nested requests from in-vector member extent. Production is unchanged relative to #354; measured 74/888 nested requested bytes for two/24 rows are candidate costs, not realized savings. Tested 52be505c differs only in five Markdown files; local archives remain contributor-reported.
 
 The bounded removal is authorized without another planning round: use existing plan.source().study as sole per-plan study authority, retain numeric occurrence identity and full definition pins in each row, and update producers/readers together. Keep full foreign-study/source validation before numeric-only emission, separate-study identity, ordering/mixed exposure, domain/lifetime, checked owner authorization/stale-view refusal, command/native-claim alignment, exact versus physical mass and explicit units. Render header plus numeric identity without an owning temporary; detached reports retain complete owned identity. Recalculate legitimate reservation/copy-work charges, preserve validation work and exact/one-short/allocation-unwind controls, and measure actual before/after producer cost. No new registry, owner or accounting layer. Direct indexed guards, catalogue/mixed revisions, public producer migration and #324 remain separate.

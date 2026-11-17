@@ -1,5 +1,24 @@
 # Current implementation and work
 
+**Contributor plan study authority — 2026-11-16 (awaiting review):** public
+`576153688eeed29183097e930f3fb7d89e8c7a51` implements #355's accepted removal.
+The existing owned plan source header now supplies study identity; rows retain
+numeric entry/path and full definition pins. Full supplied-key validation,
+charged header equality, numeric order, independent lifetime and native claim
+alignment remain. The viewport renders borrowed header + numeric identity while
+detached output still owns complete keys. See
+[implementation and actual before/after evidence](../../engine/docs/PLAN-STUDY-AUTHORITY.md).
+Local quick CI, 12 focused Clang CTests, five fresh GCC CTests and four standalone
+tests passed, including 4,708 builder controls and every C++ allocation-failure
+point. Two/24-row actual producers save 170/2,040 cumulative, retained and scoped
+peak requested bytes across both compilers; these are host-plan measurements.
+
+This branch starts from main `a06362be` with explicit source-accepted, unmerged
+#355/#354 ancestry preserved by merge `52a10bd0`. Main `1337bbcc` native run
+43972037837 has now passed; stack/integration gates remain separate. Review the
+implementation and reconcile authoritative hosted CI before integration. Native
+guards/maps, candidate state, catalogue/producer adoption and #324 are unchanged.
+
 **Maintainer #355 review — 2026-11-16 (supersedes older status below):** #355 `93dcd711f9c6b601b0b669ffa4639888355d944f` is source-accepted in review 5929836328, not integrated. It is stacked on source-accepted #354 `eff64deb977839d8f9d719c93e6645fc99bfe3e0`. The actual builder witness attributes per-row study UUID copies equal to the already owned plan source header, proves allocation-free header comparison and standalone lifetime, and distinguishes nested requests from in-vector member extent. Production is unchanged relative to #354; measured 74/888 nested requested bytes for two/24 rows are candidate costs, not realized savings. Tested 52be505c differs only in five Markdown files; local archives remain contributor-reported.
 
 The bounded removal is authorized without another planning round: use existing plan.source().study as sole per-plan study authority, retain numeric occurrence identity and full definition pins in each row, and update producers/readers together. Keep full foreign-study/source validation before numeric-only emission, separate-study identity, ordering/mixed exposure, domain/lifetime, checked owner authorization/stale-view refusal, command/native-claim alignment, exact versus physical mass and explicit units. Render header plus numeric identity without an owning temporary; detached reports retain complete owned identity. Recalculate legitimate reservation/copy-work charges, preserve validation work and exact/one-short/allocation-unwind controls, and measure actual before/after producer cost. No new registry, owner or accounting layer. Direct indexed guards, catalogue/mixed revisions, public producer migration and #324 remain separate.

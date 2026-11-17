@@ -211,6 +211,18 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-16 contributor (awaiting review):
+[owned plan study authority](../engine/docs/PLAN-STUDY-AUTHORITY.md) at `57615368`
+implements #355's accepted row-UUID removal. Full supplied source/occurrence
+validation precedes numeric-only emission; existing header + numeric rendering
+preserves detached identity, independent lifetime and native claim alignment.
+Actual historical/new producers show 170/2,040 fewer requested bytes for two/24
+rows in cumulative, retained and scoped peak measurements, matching Clang/GCC.
+Local quick CI, 12 focused native tests, five fresh GCC tests and four standalone
+tests passed; builder checks include all 162 C++ allocation failures. Main
+`a06362be` and explicit source-accepted #355/#354 history are preserved. Hosted
+qualification/review remain separate; claims/candidate state and #324 are intact.
+
+2026-11-16 contributor (awaiting review):
 [plan study-identity cost comparison](../engine/docs/PLAN-STUDY-IDENTITY-COST.md)
 at `52be505c` attributes actual per-occurrence UUID buffers that repeat the
 existing owned plan source-header study. Two/24 rows retain 74/888 nested
