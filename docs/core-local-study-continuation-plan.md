@@ -1,5 +1,26 @@
 # Core continuation after local CUDA corrections
 
+**Contributor next inspection — 2026-11-17 (awaiting review):**
+[exchange leaf-inventory attribution](../engine/docs/EXCHANGE-LEAF-INVENTORY-COST.md)
+at `87061d3b` proves the current flat leaves duplicate the canonical byte-source
+parent rows in the same declaration. Existing parent rows retain the required
+HCP meanings; native handles do not supply full semantic pins or character/byte
+ordinals. Actual public/bounded collection and owner-style reverse copies
+attribute 712/890 nested requested bytes plus vector capacity for eight/ten
+leaves. A test-only borrowed walk allocates nothing and survives source teardown.
+
+The proposal removes that second inventory through existing const source
+accessors while preserving full parent provenance/order/counts, matching,
+lifetime and native state. It is not implemented. Local quick CI, one focused
+engine-build value test and both standalone four-test compiler suites passed;
+all 4,048 structural recipe controls remain active. Current main `67861a37` and
+source-accepted, unmerged #358 are preserved in normal merge `b59a54c3`.
+Production is unchanged relative to #358. Review this candidate before removal;
+its implementation must coordinate census/consumers, preserve validation work,
+measure actual before/after and run native owner/exchange/lifetime controls.
+Reconcile #358's pending hosted qualification before integration; complete
+accounting, indexed guards, catalogue/producer adoption and #324 remain separate.
+
 **Maintainer #358 review — 2026-11-17 (supersedes older status below):** #358 `3b570a4f09ff68239df6ea423404dcd7074a28bd` is source-accepted in review 5939303910, not integrated. The authorized membership duplicate-key removal keeps explicit kind, full occurrence/target pins and count; collector/bind/exchange/plan/census readers use target.object directly. Short group addresses, context/revision/dedup validation, detached/shared-catalogue lifetime and native claim/candidate state remain. Storage/relocation/census reflect actual smaller rows; validation work remains charged. Qualification-driven audit range-lifetime and projection-copy unwind repairs were reviewed separately; original guards/quotas remain and allocation-refusal controls cover v1/v2/reserved copies. Local historical binaries, sanitizer probes and Clang/GCC archives remain contributor-reported. Scoped retained reductions of 1,084/2,168 requested bytes include vector extent and nested storage.
 
 Tested 4f27d26d differs from head only in six Markdown files. Smoke 44089456736 passed; native 44089456571 build/projection/database passed, with the remaining regression/compiler matrix pending. Inspected standalone four-test suite and database addressed_reads=24/private_reads=0. Main fd0817f6 combined smoke/native 44000323894/44000324524 passed. Reconcile this head's remaining qualification before integration; no duplicate CI dispatch.
