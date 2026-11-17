@@ -1,4 +1,4 @@
-void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false) {
+void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
@@ -51,8 +51,9 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false)
   std::vector<assembly::detail::OccurrenceBinding> rows{{key, f.in.particle_rows[0]}};
   std::vector<assembly::detail::ExchangeFieldBinding> fields;
   for (int i = 0; i < 3; ++i) fields.push_back({keys[6+i], f.in.field_rows[i]});
-  exchange_recipe_cost(f,initial,rows,fields);
-  if (recipe_only) return;
+  if (!map_only) exchange_recipe_cost(f,initial,rows,fields);
+  if (!recipe_only) exchange_binding_map_cost(f,initial,rows,fields);
+  if (recipe_only || map_only) return;
   owner_lifetime(f,initial,rows,fields);
   {
     auto probe = Access::adopt(f.h,initial,rows,fields);
@@ -518,10 +519,12 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false)
       require(run(generation).status == UpdateStatus::Unready, "unready owner allowed another operation");
       break;
     }
+    const auto map_rotation = map_rotation_before(*owner);
     const auto result = run(generation);
     require(result.status == UpdateStatus::Ok && result.generation == generation+1 &&
                 s.completed_ticks == ticks && Access::generation(*owner) == result.generation &&
                 !Access::pending(*owner), "owner did not publish one complete unticked exchange");
+    map_rotation_after(*owner,s,map_rotation);
     const auto &current = Access::projection(*owner);
     require(Access::map_backing(*owner) == map_backing,
             "exchange map publication changed reserved nested backing");

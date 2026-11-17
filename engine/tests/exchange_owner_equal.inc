@@ -1,6 +1,6 @@
 // Both alternatives have one body and mass two. Untouched aggregate and byte
 // copies retain every field, so repeated publication isolates semantic direction.
-void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = false) {
+void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
@@ -30,8 +30,9 @@ void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = 
     rows.push_back({o.key,f.in.particle_rows[o.key.source.entry]});
   std::vector<ExchangeFieldBinding> fields;
   for (std::size_t i=0; i<keys.size(); ++i) fields.push_back({keys[i],f.in.field_rows[i]});
-  exchange_recipe_cost(f,initial,rows,fields);
-  if (recipe_only) return;
+  if (!map_only) exchange_recipe_cost(f,initial,rows,fields);
+  if (!recipe_only) exchange_binding_map_cost(f,initial,rows,fields);
+  if (recipe_only || map_only) return;
   owner_lifetime(f,initial,rows,fields);
   auto owner = Access::adopt(f.h,initial,rows,fields);
   const assembly::OccurrenceKey key{initial.study(),{0,{}}};
@@ -122,6 +123,7 @@ void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = 
     const auto spec = request.spec();
     no_new([&] { Access::seal(*owner,spec); });
     UpdateResult result;
+    const auto map_rotation = map_rotation_before(*owner);
     no_new([&] { result = Access::execute(*owner,generation); });
     require(result.status == UpdateStatus::Ok && result.generation == generation+1 &&
                 Access::projection(*owner).exposure(0) == target &&
@@ -129,6 +131,7 @@ void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = 
                 Access::projection(*owner).exposure(2) == warm::Exposure::Parts &&
                 Access::map_backing(*owner) == map_backing,
             "equal-alternative publication changed direction, other copies or backing");
+    map_rotation_after(*owner,f.h.prepared_storage(),map_rotation);
     Parameters64 parameters;
     parameters.dt = parameters.gravity = parameters.contact_stiffness = parameters.reach_strength = 0;
     TickResult tick;
