@@ -154,9 +154,11 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
       work.copy_key(o.key);
       need(out.contributions_.size() < std::size_t(INT32_MAX),
            "membership: native contribution count overflow");
-      OccurrenceKey occurrence{warm::Uuid(o.key.study,domain),{o.key.source.entry,
-          {o.key.source.path.begin(),o.key.source.path.end(),
-           detail::SharedReservationAllocator<std::uint32_t>(domain)}}};
+      // Independent owners keep every allocation unwind-safe on GCC 11.
+      auto study = warm::Uuid(o.key.study,domain);
+      warm::OccurrencePath path(o.key.source.path.begin(),o.key.source.path.end(),
+          detail::SharedReservationAllocator<std::uint32_t>(domain));
+      OccurrenceKey occurrence{std::move(study),{o.key.source.entry,std::move(path)}};
       const auto &target=tools.at(group)->ref;
       work.copy_key(target.revision);
       if (out.contributions_.size() == out.contributions_.capacity()) {
@@ -164,15 +166,13 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
         // Conservatively admit nested payload relocation even if a move is used.
         for (const auto &retained : out.contributions_) {
           work.copy_key(retained.occurrence);
-          work.copy_key(retained.field.object);
           work.copy_key(retained.target);
         }
       }
-      auto field_object = catalogue_object(group,domain,work);
       auto target_object = catalogue_object(target.object,domain,work);
       auto revision = warm::Uuid(target.revision,domain);
       MembershipContribution contribution{std::move(occurrence),
-          {GroupKind::Membership,std::move(field_object)},
+          GroupKind::Membership,
           {std::move(target_object),std::move(revision)},*live.mass};
       out.contributions_.push_back(std::move(contribution));
     }
@@ -186,9 +186,11 @@ StudyInput MembershipFields::bind(const LetterProjection &projection,
   need(study_ == projection.study(),
        "membership: fields belong to another study");
   auto input = projection.bind(nodes);
-  for (const auto &edge : contributions_)
+  for (const auto &edge : contributions_) {
+    need(edge.kind == GroupKind::Membership, "membership: invalid field kind");
     input.memberships.push_back(
-        {InputText(occurrence_text(edge.occurrence)), InputText(warm::key(edge.field.object))});
+        {InputText(occurrence_text(edge.occurrence)), InputText(warm::key(edge.target.object))});
+  }
   return input;
 }
 StructuralStudyInput MembershipFields::bind_structure(
@@ -198,9 +200,11 @@ StructuralStudyInput MembershipFields::bind_structure(
   need(study_ == projection.study(),
        "membership: fields belong to another study");
   auto input = projection.bind_structure(nodes);
-  for (const auto &edge : contributions_)
+  for (const auto &edge : contributions_) {
+    need(edge.kind == GroupKind::Membership, "membership: invalid field kind");
     input.memberships.push_back(
-        {InputText(occurrence_text(edge.occurrence)), InputText(warm::key(edge.field.object))});
+        {InputText(occurrence_text(edge.occurrence)), InputText(warm::key(edge.target.object))});
+  }
   return input;
 }
 }  // namespace assembly

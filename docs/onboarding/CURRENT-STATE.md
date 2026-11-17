@@ -6,11 +6,49 @@ Next implementation is authorized without another planning round: remove the sep
 
 #359 smoke 44099141184 and projection-values passed; native 44099141583 is running. #358 native 44089456571 has all compiler jobs and three regression shards passed, with regression shard 1 still pending at review; build/projection/database and smoke passed. Both remain unmerged pending hosted/dependency qualification. No duplicate CI dispatch. Taichi handles structure; HCP owns meaning. Direct indexed guards, catalogue/mixed revisions, public producer adoption, full accounting and #324 remain separately scoped. Held #75/#111/#123 unchanged.
 
+**Contributor exchange-leaf inspection — 2026-11-17 (awaiting review):**
+public `87061d3b` measures the flat leaf inventory duplicated by the same
+declaration's canonical byte-source parents. All five leaf fields are available
+from existing paths, ordinals, complete target pins and exact contributions;
+execution uses those parent rows. See
+[owner/native boundary, actual cost and proposal](../../engine/docs/EXCHANGE-LEAF-INVENTORY-COST.md).
+Eight/ten leaves duplicate 712/890 nested requested bytes, plus actual vector
+capacity. Reverse-copy capacity differs from collection. These are candidate
+costs; production still retains and charges the leaf table.
+
+Local quick CI, the engine-build value test and both fresh four-test Clang/GCC
+suites passed, including 4,048 structural recipe checks. Borrowed traversal
+allocates nothing and preserves complete pins/counts after source teardown.
+Main `67861a37` and explicit source-accepted, unmerged #358 are preserved by
+normal merge `b59a54c3`; production is identical to #358. Review the scoped
+proposal before removal. Native claims/candidate state and the separate indexed,
+catalogue/producer/accounting/#324 work remain unchanged.
+
 **Maintainer #358 review — 2026-11-17 (supersedes older status below):** #358 `3b570a4f09ff68239df6ea423404dcd7074a28bd` is source-accepted in review 5939303910, not integrated. The authorized membership duplicate-key removal keeps explicit kind, full occurrence/target pins and count; collector/bind/exchange/plan/census readers use target.object directly. Short group addresses, context/revision/dedup validation, detached/shared-catalogue lifetime and native claim/candidate state remain. Storage/relocation/census reflect actual smaller rows; validation work remains charged. Qualification-driven audit range-lifetime and projection-copy unwind repairs were reviewed separately; original guards/quotas remain and allocation-refusal controls cover v1/v2/reserved copies. Local historical binaries, sanitizer probes and Clang/GCC archives remain contributor-reported. Scoped retained reductions of 1,084/2,168 requested bytes include vector extent and nested storage.
 
 Tested 4f27d26d differs from head only in six Markdown files. Smoke 44089456736 passed; native 44089456571 build/projection/database passed, with the remaining regression/compiler matrix pending. Inspected standalone four-test suite and database addressed_reads=24/private_reads=0. Main fd0817f6 combined smoke/native 44000323894/44000324524 passed. Reconcile this head's remaining qualification before integration; no duplicate CI dispatch.
 
 Project-owner clarification: **Taichi handles the structure; HCP owns what it means.** Use native machinery for structural responsibilities; retain HCP semantic identity, provenance and composition rules. Next bounded inspection may select a concrete remaining duplicated association or structural responsibility, establish owner/lifetime and actual native overlap, and measure a proposed simplification. Avoid a parallel structural registry or generic wrapper layer. Direct indexed guards, catalogue/mixed-revision adoption, public producer migration, full accounting and #324 mathematics remain separately scoped. Held #75/#111/#123 unchanged.
+
+**Contributor membership pin authority — 2026-11-17 (awaiting review; supersedes older contributor status):**
+public `4f27d26d` implements the removal authorized by #357 review 5931480140,
+starting from fully integrated main `fd0817f6`. Membership rows borrow their
+field object from the complete target pin and retain explicit membership kind,
+full occurrence identity and exact count. Collector, bind/exchange/plan readers,
+census and tests migrate together. See
+[implementation, actual before/after and qualification](../../engine/docs/MEMBERSHIP-PIN-AUTHORITY.md).
+Eight/sixteen-row actual live/catalogue fixtures retain 1,084/2,168 fewer
+requested bytes; these are scoped collector measurements, not full B accounting.
+
+Final local quick CI, 15 focused Clang CTests, seven fresh GCC CTests, both
+standalone four-test compiler suites and exchange/compiler/lifecycle invocations
+passed. Extended GCC qualification exposed an existing audit range-lifetime bug
+and projection-copy unwind failure; separate commits repair them with original
+guards intact and preserved failures. Review and this contribution's authoritative
+hosted CI remain pending. Main's own smoke/native runs now report success.
+No unmerged dependency remains. Native claims/candidate state, direct indexed
+guards, catalogue/mixed-revision adoption, public producer migration and #324
+mathematics remain separate. Held #75/#111/#123 remain unchanged.
 
 **Maintainer #357 review and stack integration — 2026-11-16 (supersedes older status below):** #355 `93dcd711f9c6b601b0b669ffa4639888355d944f`, #356 `c9c414a2bf9fbf768caa1f0bdb9c633e97355c22` and #357 `8d3d6d03bd331ddb1292eea3bf3f3aa23c5a27b9` are integrated by this merge, preserving all dependency and main ancestry. Reviews 5929836328, 5930271128 and 5931480140 accepted their scope. All 12 native jobs passed for each (43978139830, 43984329173, 43989759360), and their smoke gates passed; #356 optional viewport also passed. Independently inspected #357's combined 181 regression passes, membership value/native tests, builder, all four owner/observer profiles, standalone projection suite and database addressed_reads=24/private_reads=0. Main 0bd4db55 combined smoke/native 43985601638/43985601612 also passed. This merge changes only these two status handoffs relative to qualified #357; its normal combined CI is separate.
 
