@@ -103,12 +103,17 @@ void ProjectionStorage::add(const ProjectionStorage &other) {
 ProjectionStorage LetterProjection::storage() const {
   return storage(nullptr,false);
 }
-ProjectionStorage LetterProjection::storage(detail::PreparationWork *meter, bool logical) const {
+ProjectionStorage LetterProjection::storage(detail::PreparationWork *meter, bool logical, bool include_recipe) const {
   Census c;
   c.meter = meter; c.logical = logical;
   if (meter) meter->charge(1);
   c.result.object_bytes = sizeof(*this);
-  c.uuid(study_); c.bundle(recipe_); c.buffer(exposures_); c.buffer(occurrences_);
+  c.uuid(study_);
+  if (include_recipe) {
+    c.count(c.result.object_bytes,sizeof(warm::Bundle));
+    c.bundle(recipe());
+  }
+  c.buffer(exposures_); c.buffer(occurrences_);
   for (const auto &o : occurrences_) {
     c.key(o.key); c.tool_ref(o.definition);
     if (o.byte) { c.key(o.byte->owner); c.tool_ref(o.byte->character); }

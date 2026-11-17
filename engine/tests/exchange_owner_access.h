@@ -7,7 +7,8 @@ struct ExchangeOwnerAccess {
   static auto reservations(const detail::ExchangeOwner &o) { return o.reservations_->result(); }
   static auto reservation_domain(const detail::ExchangeOwner &o) { return o.reservations_; }
   static auto bootstrap_tracker(const detail::ExchangeOwner &o) { return o.bootstrap_; }
-  template<class Visit> static void projection_table_vectors(const LetterProjection &p, Visit visit) {
+  static const auto &recipe_owner(const LetterProjection &p) { return p.recipe_; }
+  template<class Visit> static void projection_table_vectors(const LetterProjection &p, Visit visit, bool recipe = true) {
     const auto input=[&](const auto &value) {
       visit(value.nodes); visit(value.definitions); visit(value.occurrences);
       visit(value.selections); visit(value.contacts); visit(value.memberships);
@@ -17,12 +18,13 @@ struct ExchangeOwnerAccess {
     };
     input(p.input_); input(p.structural_input_);
     visit(p.exposures_); visit(p.occurrences_); visit(p.parents_); visit(p.spare_parents_);
-    visit(p.recipe_.tools); visit(p.recipe_.geometry); visit(p.recipe_.nodes);
-    visit(p.recipe_.occurrences); visit(p.recipe_.selections); visit(p.recipe_.contacts);
-    visit(p.recipe_.structural_occurrences); visit(p.recipe_.focal_fields);
-    for (const auto &tool : p.recipe_.tools) { visit(tool.parents); visit(tool.member_of); }
-    for (const auto &geometry : p.recipe_.geometry) visit(geometry.spheres);
-    for (const auto &selection : p.recipe_.selections) visit(selection.parts);
+    if (!recipe) return;
+    visit(p.recipe().tools); visit(p.recipe().geometry); visit(p.recipe().nodes);
+    visit(p.recipe().occurrences); visit(p.recipe().selections); visit(p.recipe().contacts);
+    visit(p.recipe().structural_occurrences); visit(p.recipe().focal_fields);
+    for (const auto &tool : p.recipe().tools) { visit(tool.parents); visit(tool.member_of); }
+    for (const auto &geometry : p.recipe().geometry) visit(geometry.spheres);
+    for (const auto &selection : p.recipe().selections) visit(selection.parts);
   }
   template<class Visit> static void recipe_uuids(const warm::Bundle &b, Visit visit) {
     visit(b.ref.selection); visit(b.ref.revision); visit(b.owner); visit(b.creator);
@@ -37,7 +39,7 @@ struct ExchangeOwnerAccess {
     for (const auto &o : b.structural_occurrences) visit(o.definition.scope);
     for (const auto &f : b.focal_fields) visit(f.object.scope);
   }
-  template<class Visit> static void projection_texts(const LetterProjection &p, Visit visit) {
+  template<class Visit> static void projection_texts(const LetterProjection &p, Visit visit, bool recipe = true) {
     for (const auto *input : {&p.input_.definitions,&p.structural_input_.definitions})
       for (const auto &d : *input) for (const auto &parent : d.parents) visit(parent.value);
     const auto relations=[&](const auto &input) {
@@ -49,7 +51,7 @@ struct ExchangeOwnerAccess {
       for (const auto &f : input.focal_fields) visit(f.value);
     };
     relations(p.input_); relations(p.structural_input_);
-    recipe_uuids(p.recipe_,[&](const auto &uuid) { visit(uuid.str()); });
+    if (recipe) recipe_uuids(p.recipe(),[&](const auto &uuid) { visit(uuid.str()); });
     visit(p.study_.str());
     const auto reference=[&](const auto &ref) {
       visit(ref.object.scope.str()); visit(ref.revision.str());
@@ -63,25 +65,25 @@ struct ExchangeOwnerAccess {
       for (const auto &row : *rows) {
         visit(row.occurrence.study.str()); visit(row.field.object.scope.str());
       }
-    for (const auto &tool : p.recipe_.tools) {
+    if (recipe) for (const auto &tool : p.recipe().tools) {
       visit(tool.recipe);
       if (tool.notation) visit(*tool.notation);
     }
   }
-  template<class Visit> static void projection_backing(const LetterProjection &p, Visit visit) {
+  template<class Visit> static void projection_backing(const LetterProjection &p, Visit visit, bool recipe = true) {
     projection_table_vectors(p,[&](const auto &table) {
       visit(std::make_pair(static_cast<const void *>(table.data()),table.capacity()*sizeof(table[0])));
-    });
+    },recipe);
     projection_texts(p,[&](const auto &text) {
       visit(std::make_pair(static_cast<const void *>(text.data()),warm::recipe_text_backing(text)));
-    });
+    },recipe);
   }
-  template<class Visit> static void projection_paths(const LetterProjection &p, Visit visit) {
-    for (const auto &o : p.recipe_.occurrences) visit(o.id.path);
-    for (const auto &o : p.recipe_.structural_occurrences) visit(o.id.path);
-    for (const auto &s : p.recipe_.selections)
+  template<class Visit> static void projection_paths(const LetterProjection &p, Visit visit, bool recipe = true) {
+    if (recipe) for (const auto &o : p.recipe().occurrences) visit(o.id.path);
+    if (recipe) for (const auto &o : p.recipe().structural_occurrences) visit(o.id.path);
+    if (recipe) for (const auto &s : p.recipe().selections)
       for (const auto &id : s.parts) visit(id.path);
-    for (const auto &c : p.recipe_.contacts) { visit(c.a.path); visit(c.b.path); }
+    if (recipe) for (const auto &c : p.recipe().contacts) { visit(c.a.path); visit(c.b.path); }
     for (const auto &o : p.occurrences_) {
       visit(o.key.source.path);
       if (o.byte) visit(o.byte->owner.source.path);
@@ -89,8 +91,8 @@ struct ExchangeOwnerAccess {
     for (const auto *rows : {&p.parents_,&p.spare_parents_})
       for (const auto &row : *rows) visit(row.occurrence.source.path);
   }
-  template<class Visit> static void projection_addresses(const LetterProjection &p, Visit visit) {
-    recipe_addresses(p.recipe_,visit);
+  template<class Visit> static void projection_addresses(const LetterProjection &p, Visit visit, bool recipe = true) {
+    if (recipe) recipe_addresses(p.recipe(),visit);
     for (const auto &o : p.occurrences_) {
       visit(o.definition.object.address);
       if (o.byte) visit(o.byte->character.object.address);
@@ -224,7 +226,7 @@ struct ExchangeOwnerAccess {
   }
   static bool projection_equivalent(const LetterProjection &a, const LetterProjection &b) {
     if (!input_equivalent(a.input_,b.input_) || !input_equivalent(a.structural_input_,b.structural_input_) ||
-        !recipe_equivalent(a.recipe_,b.recipe_) || a.study_ != b.study_ || a.exposures_ != b.exposures_ ||
+        !recipe_equivalent(a.recipe(),b.recipe()) || a.study_ != b.study_ || a.exposures_ != b.exposures_ ||
         a.occurrences_.size() != b.occurrences_.size()) return false;
     for (std::size_t i=0; i<a.occurrences_.size(); ++i) {
       const auto &x=a.occurrences_[i], &y=b.occurrences_[i];
@@ -246,9 +248,9 @@ struct ExchangeOwnerAccess {
     };
     return same_parents(a.parents_,b.parents_) && same_parents(a.spare_parents_,b.spare_parents_);
   }
-  static auto projection_backing_bytes(const LetterProjection &p) {
+  static auto projection_backing_bytes(const LetterProjection &p, bool recipe = true) {
     std::uint64_t bytes = 0;
-    projection_backing(p,[&](const auto &entry) { bytes += entry.second; });
+    projection_backing(p,[&](const auto &entry) { bytes += entry.second; },recipe);
     return bytes;
   }
   template<class Visit> static void projection_domains(const LetterProjection &p, Visit visit) {
@@ -337,7 +339,7 @@ struct ExchangeOwnerAccess {
   static auto catalogue(const LetterProjection &p, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return MembershipFields::collect(p,true,domain);
   }
-  static auto &catalogue_recipe(LetterProjection &p) { return p.recipe_; }
+  static auto &catalogue_recipe(LetterProjection &p) { return const_cast<warm::Bundle &>(p.recipe()); }
   static auto contract(const LetterProjection &p, const OccurrenceKey &key, warm::Exposure target,
       const std::shared_ptr<detail::ReservationDomain> &domain) {
     return LetterExchangeContract::collect(p,key,target,domain);

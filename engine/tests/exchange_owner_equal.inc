@@ -102,7 +102,7 @@ void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = 
       require(retry.status == PreparationStatus::Ok && Plan::target(Access::plan(*owner)) == target,
               "equal alternatives failed exact directional preparation retry");
       require(Access::resources(*owner).total().charged_bytes() == resources.total().charged_bytes() &&
-                  Access::resources(*owner).shared_allocations == 4,
+                  Access::resources(*owner).shared_allocations == 5,
               "binding alias duplicated census storage or shared identities");
     });
     const auto &commands = Plan::commands(Access::plan(*owner));

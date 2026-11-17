@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <memory>
 
 #include "assembly/study_input.h"
 #include "assembly/reservation_allocator.h"
@@ -84,8 +85,17 @@ struct ProjectionStorage {
 
 class LetterProjection {
  public:
+  // Value copies own independent recipes. Assignment preserves the destination
+  // domain; moves transfer it. A moved-from value can be assigned or destroyed.
+  LetterProjection(const LetterProjection &);
+  LetterProjection &operator=(const LetterProjection &);
+  LetterProjection(LetterProjection &&) noexcept = default;
+  LetterProjection &operator=(LetterProjection &&) noexcept;
   const warm::Uuid &study() const { return study_; }
-  const warm::Bundle &recipe() const { return recipe_; }
+  const warm::Bundle &recipe() const {
+    if (!recipe_) throw warm::Error("moved-from projection has no recipe");
+    return *recipe_;
+  }
   // Current owner-local exposure; recipe() remains the immutable initial recipe.
   warm::Exposure exposure(std::uint64_t entry) const;
   const auto &occurrences() const {
@@ -104,6 +114,11 @@ class LetterProjection {
  private:
   LetterProjection() = default;
   LetterProjection(const LetterProjection &, const std::shared_ptr<detail::ReservationDomain> &);
+  // Only the private owner-spare path can share an immutable recipe.
+  struct OwnerSpare {};
+  LetterProjection(const LetterProjection &, const std::shared_ptr<detail::ReservationDomain> &, OwnerSpare);
+  LetterProjection(const LetterProjection &, const std::shared_ptr<detail::ReservationDomain> &,
+                   std::shared_ptr<const warm::Bundle>);
   friend LetterProjection project_letters(const warm::Bundle &);
   friend class detail::ExchangeOwner;
   friend struct testing::ExchangeOwnerAccess;
@@ -111,9 +126,9 @@ class LetterProjection {
   void prepare_exposure(LetterProjection &, const OccurrenceKey &, warm::Exposure,
                         detail::PreparationWork &) const;
   ProjectionStorage storage() const;
-  ProjectionStorage storage(detail::PreparationWork *, bool logical) const;
+  ProjectionStorage storage(detail::PreparationWork *, bool logical, bool include_recipe = true) const;
   warm::Uuid study_;
-  warm::Bundle recipe_;
+  std::shared_ptr<const warm::Bundle> recipe_;
   detail::SharedReservedVector<warm::Exposure> exposures_;
   detail::SharedReservedVector<ProjectedOccurrence> occurrences_;
   detail::SharedReservedVector<ParentContribution> parents_;

@@ -173,11 +173,14 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     declarations_.push_back(std::move(retained));
   }
   setup.phase = ProjectionSetupPhase::SpareInspection;
-  const auto copy_bytes = projection_->storage(&meter,true).charged_bytes();
+  // The spare copies mutable view state, retaining this owner's immutable
+  // recipe. Recipe inventory was already admitted for the initial snapshot.
+  const auto copy_bytes = projection_->storage(&meter,true,false).charged_bytes();
   setup.phase = ProjectionSetupPhase::SpareCopy;
   meter.charge(copy_bytes);
+  meter.charge(1); // Explicit owner-spare recipe/domain association.
   prospective_ = reserve_unique<LetterProjection>(domain,[&](auto *p) {
-    ::new (static_cast<void *>(p)) LetterProjection(*projection_,domain);
+    ::new (static_cast<void *>(p)) LetterProjection(*projection_,domain,LetterProjection::OwnerSpare{});
   });
   setup.phase = ProjectionSetupPhase::CommittedParents;
   projection_->reserve_exposure(meter);
@@ -207,9 +210,9 @@ std::shared_ptr<const LetterExchangeContract> ExchangeOwner::declaration(
       need(target == entry->from() || target == entry->to(), "invalid exchange target exposure");
       const auto source = target == entry->to() ? entry->from() : entry->to();
       bool current = false;
-      for (std::size_t i = 0; i < projection_->recipe_.selections.size(); ++i) {
+      for (std::size_t i = 0; i < projection_->recipe().selections.size(); ++i) {
         meter.charge(1);
-        if (projection_->recipe_.selections[i].entry == owner.source.entry) {
+        if (projection_->recipe().selections[i].entry == owner.source.entry) {
           current = source == projection_->exposures_[i]; break;
         }
       }
@@ -222,7 +225,7 @@ std::shared_ptr<const LetterExchangeContract> ExchangeOwner::declaration(
 
 ProjectionStorage ExchangeOwner::projection_storage() const {
   auto result = projection_->storage();
-  result.add(prospective_->storage());
+  result.add(prospective_->storage(nullptr,false,projection_->recipe_ != prospective_->recipe_));
   return result;
 }
 
