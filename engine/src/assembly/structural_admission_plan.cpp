@@ -39,13 +39,12 @@ warm::ToolRef copy_ref(const warm::ToolRef &ref,
   auto revision = warm::Uuid(ref.revision,domain);
   return {std::move(object),std::move(revision)};
 }
-OccurrenceKey copy_occurrence(const OccurrenceKey &key,
+warm::OccurrenceId copy_occurrence(const warm::OccurrenceId &key,
     const std::shared_ptr<ReservationDomain> &domain, PreparationWork &w) {
   w.copy_key(key);
-  auto study = warm::Uuid(key.study,domain);
-  warm::OccurrencePath path(key.source.path.begin(),key.source.path.end(),
+  warm::OccurrencePath path(key.path.begin(),key.path.end(),
       SharedReservationAllocator<std::uint32_t>(domain));
-  return {std::move(study),{key.source.entry,std::move(path)}};
+  return {key.entry,std::move(path)};
 }
 AdmissionSource empty_source(const std::shared_ptr<ReservationDomain> &domain) {
   // GCC 11 does not fully unwind allocating nested aggregate temporaries.
@@ -230,6 +229,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   };
   for (std::size_t i=0; i<ordered.size(); ++i) {
     const auto &o = *ordered[i];
+    need(w.equal(o.key.study,source_.study));
     const AdmissionBody *input = nullptr;
     for (const auto &v : b.bodies) {
       w.charge(1);
@@ -266,7 +266,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     const int command = append(c);
     w.charge(sizeof(field::PlacementIntrinsic));
     intrinsics_.push_back({std::uint64_t(command),i,input->mass,radius,input->geometry});
-    auto key = copy_occurrence(o.key,domain_,w);
+    auto key = copy_occurrence(o.key.source,domain_,w);
     auto ref = copy_ref(o.definition,domain_,w);
     w.charge(sizeof(AdmissionOccurrenceCommand));
     occurrences_.push_back({std::move(key),std::move(ref),command,o.node,units[o.node]});
@@ -323,9 +323,11 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   need(position == edges);
   const auto occurrence_index = [&](const warm::OccurrenceId &key) {
     for (std::size_t i=0; i<occurrences_.size(); ++i) {
-      w.charge(1); w.copy_key(occurrences_[i].occurrence);
+      // Preserve the prior full-key validation charge for this scan even
+      // though the common study is now borrowed from the sealed header.
+      w.charge(1); w.charge(source_.study.str().size()); w.copy_key(occurrences_[i].occurrence);
       w.elements(key.path.size(),sizeof(std::uint32_t));
-      if (occurrences_[i].occurrence.source == key) return int(i);
+      if (occurrences_[i].occurrence == key) return int(i);
     }
     throw Refusal{AdmissionPlanStatus::InvalidInput};
   };

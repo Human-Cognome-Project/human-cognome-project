@@ -98,7 +98,8 @@ void run(engine::Runtime &runtime, field::HostPath path) {
       check(actual.context == map[i].context && actual.incarnation == map[i].incarnation &&
             actual.address == map[i].address && actual.record == map[i].record &&
             observed.report.prepared.particles[i].occurrence.slot == actual.record &&
-            std::string(observed.report.prepared.particles[i].occurrence.id) == occurrence_text(plan.occurrences()[i].occurrence),
+            std::string(observed.report.prepared.particles[i].occurrence.id) ==
+                occurrence_text(plan.source().study,plan.occurrences()[i].occurrence),
             "completed report uses committed occurrence/full-handle associations");
     }
     for (const auto &scale : observed.report.prepared.scales)

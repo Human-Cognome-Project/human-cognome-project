@@ -1,16 +1,79 @@
 # Current implementation and work
 
+**Maintainer #357 review and stack integration — 2026-11-16 (supersedes older status below):** #355 `93dcd711f9c6b601b0b669ffa4639888355d944f`, #356 `c9c414a2bf9fbf768caa1f0bdb9c633e97355c22` and #357 `8d3d6d03bd331ddb1292eea3bf3f3aa23c5a27b9` are integrated by this merge, preserving all dependency and main ancestry. Reviews 5929836328, 5930271128 and 5931480140 accepted their scope. All 12 native jobs passed for each (43978139830, 43984329173, 43989759360), and their smoke gates passed; #356 optional viewport also passed. Independently inspected #357's combined 181 regression passes, membership value/native tests, builder, all four owner/observer profiles, standalone projection suite and database addressed_reads=24/private_reads=0. Main 0bd4db55 combined smoke/native 43985601638/43985601612 also passed. This merge changes only these two status handoffs relative to qualified #357; its normal combined CI is separate.
+
+#356 implements the already accepted plan-header study authority. #357 is a production-unchanged membership field-key comparison, not its removal. Actual public/bounded live and alternative-catalogue rows duplicate the target pin's ObjectKey; 380/760 nested requested bytes for eight/sixteen rows identify candidate cost, with member extent already inside vector allocation. Full contexts, pins, counts, short group addresses and detached ownership remain. Local archives and historical before/after executions remain contributor-reported.
+
+Next authorized implementation, without another planning round: reuse target.object as membership field-object authority, retaining explicit membership kind, full target ToolRef, complete occurrence identity and exact count. Coordinate collector, bind/exchange/plan readers, retained census and tests; use borrowed kind/object directly without an owning FieldKey temporary. Preserve shorter valid group addresses, field-kind distinctions, memoized pin validation, missing/cyclic-source refusal, per-occurrence dedup, English/French context, exposure alternatives and detached/shared-catalogue lifetime. Reject inconsistent legacy duplicates where a transition still accepts them; add no fallback solely for migration. Recalculate actual construction/relocation/census costs, preserve traversal/association validation work and exact/one-short/unwind controls, and measure actual public/bounded/catalogue producer before/after request, retained and peak effects. Native claims, candidate/committed and publication state remain required. Direct indexed guards, catalogue/mixed revisions, public producer migration and #324 mathematics remain separate. Held #75/#111/#123 unchanged.
+
+**Contributor membership key comparison — 2026-11-16 (awaiting review):**
+public `ec21b153be936b579676027179358ed9f6b34418` adds test-only attribution of
+the field ObjectKey duplicated beside the same object in each membership
+contribution's full target ToolRef. Actual public/bounded live and alternative
+catalogue producers preserve exact context, revisions and counts after source
+teardown. Eight/sixteen rows retain 380/760 nested requested bytes for the extra
+keys, plus their in-vector ObjectKey extent. These are candidate costs, not
+realized savings. See
+[ownership, evidence and bounded proposal](../../engine/docs/MEMBERSHIP-FIELD-KEY-COST.md).
+The proposal retains an explicit membership kind/full pins and coordinates
+bind/exchange/plan/census consumers; shorter group addresses remain valid.
+
+Local quick CI, two focused value/native CTests and both four-test standalone
+Clang/GCC suites passed, including all 3,808 membership value controls. Production
+is unchanged relative to explicit source-accepted #356/#355 dependencies, merged
+with main `0bd4db55` at `2697fb36`. #355 native CI now reports success but it
+remains unmerged; #356 qualification is separate. Review before removal. Full
+claims, candidate state, catalogue/producer adoption and #324 remain unchanged.
+
 **Maintainer #356 review — 2026-11-16 (supersedes older status below):** #354 at `eff64deb977839d8f9d719c93e6645fc99bfe3e0` is integrated by this merge after reconciled smoke 43976006107, viewport 43976006191 and all 12 native jobs in 43976006049 passed. Inspected 181 regression passes (46/45/45/45), origin provenance, all four owner/observer profiles and database addressed_reads=24/private_reads=0. Its code/tests remain identical to reviewed eddd4f35; #353 history and historical comparison are preserved. Main 1337bbcc smoke/native also passed. This merge's combined CI is separate qualification.
 
 #355 `93dcd711f9c6b601b0b669ffa4639888355d944f` remains source-accepted (5929836328), unmerged; native 43978139830 has regression shard 2 pending at review, all other existing jobs passed. #356 `c9c414a2bf9fbf768caa1f0bdb9c633e97355c22` is source-accepted in review 5930271128, unmerged. It implements the accepted plan study cleanup: header-owned study plus numeric rows/full definition pins, full supplied-key validation and charged header equality, existing renderer reused without an owning temporary, detached complete identities preserved. Work/reservation charges follow actual smaller storage while validation charges remain. Separate-study, lifetime, refusal and allocation-unwind controls were reviewed. Reported two/24-row producer savings of 170/2,040 requested bytes include vector extent and nested contents; local historical binaries/archives remain contributor-reported. Tested 57615368 differs only in five Markdown files. Smoke 43984329102/viewport 43984329040 passed; native 43984329173 build/projection passed, remaining qualification pending.
 
 Next bounded work may identify one concrete remaining duplicate immutable association against existing/native accessors, with actual ownership/lifetime/cost before removal. No generic registry, wrapper or accounting layer is implied. Preserve full claims, candidate/committed state, authorization and detached identity. Direct indexed guards, catalogue/mixed revisions, public producer migration and #324 mathematics remain separate. Reconcile completed hosted results before integrating the remaining stack; do not dispatch duplicate CI. Held #75/#111/#123 unchanged.
 
+**Contributor plan study authority — 2026-11-16 (awaiting review):** public
+`576153688eeed29183097e930f3fb7d89e8c7a51` implements #355's accepted removal.
+The existing owned plan source header now supplies study identity; rows retain
+numeric entry/path and full definition pins. Full supplied-key validation,
+charged header equality, numeric order, independent lifetime and native claim
+alignment remain. The viewport renders borrowed header + numeric identity while
+detached output still owns complete keys. See
+[implementation and actual before/after evidence](../../engine/docs/PLAN-STUDY-AUTHORITY.md).
+Local quick CI, 12 focused Clang CTests, five fresh GCC CTests and four standalone
+tests passed, including 4,708 builder controls and every C++ allocation-failure
+point. Two/24-row actual producers save 170/2,040 cumulative, retained and scoped
+peak requested bytes across both compilers; these are host-plan measurements.
+
+This branch starts from main `a06362be` with explicit source-accepted, unmerged
+#355/#354 ancestry preserved by merge `52a10bd0`. Main `1337bbcc` native run
+43972037837 has now passed; stack/integration gates remain separate. Review the
+implementation and reconcile authoritative hosted CI before integration. Native
+guards/maps, candidate state, catalogue/producer adoption and #324 are unchanged.
+
 **Maintainer #355 review — 2026-11-16 (supersedes older status below):** #355 `93dcd711f9c6b601b0b669ffa4639888355d944f` is source-accepted in review 5929836328, not integrated. It is stacked on source-accepted #354 `eff64deb977839d8f9d719c93e6645fc99bfe3e0`. The actual builder witness attributes per-row study UUID copies equal to the already owned plan source header, proves allocation-free header comparison and standalone lifetime, and distinguishes nested requests from in-vector member extent. Production is unchanged relative to #354; measured 74/888 nested requested bytes for two/24 rows are candidate costs, not realized savings. Tested 52be505c differs only in five Markdown files; local archives remain contributor-reported.
 
 The bounded removal is authorized without another planning round: use existing plan.source().study as sole per-plan study authority, retain numeric occurrence identity and full definition pins in each row, and update producers/readers together. Keep full foreign-study/source validation before numeric-only emission, separate-study identity, ordering/mixed exposure, domain/lifetime, checked owner authorization/stale-view refusal, command/native-claim alignment, exact versus physical mass and explicit units. Render header plus numeric identity without an owning temporary; detached reports retain complete owned identity. Recalculate legitimate reservation/copy-work charges, preserve validation work and exact/one-short/allocation-unwind controls, and measure actual before/after producer cost. No new registry, owner or accounting layer. Direct indexed guards, catalogue/mixed revisions, public producer migration and #324 remain separate.
 
 #354 reconciliation was inspected: relative to reviewed eddd4f35 only Markdown differs, preserving #353 history and superseding its obsolete test correctly. Original smoke/viewport and all 12 native jobs in 43970206467 passed; inspected 181 regression passes including provenance/snapshot and all four owner/observer profiles, database addressed_reads=24/private_reads=0. Reconciled smoke 43976006107/viewport 43976006191 passed; native 43976006049 matrix is pending. #355 smoke 43978139744 passed; native 43978139830 build/projection/database passed, matrix pending. Main 1337bbcc smoke passed; native 43972037837 still has its final regression shard pending at review. Do not equate source acceptance with integration or dispatch duplicate CI. Held #75/#111/#123 unchanged.
+
+**Contributor plan study-identity comparison — 2026-11-16 (awaiting review):**
+public `52be505c5830e74a6ffd8dab10894538671b258e` adds test-only attribution of
+the study UUID repeated in every admission-plan occurrence, beside the existing
+owned source-header UUID. See
+[ownership, measurements and bounded removal proposal](../../engine/docs/PLAN-STUDY-IDENTITY-COST.md).
+The actual builder's two/24-row fixtures retain 74/888 nested requested bytes
+for these copies, plus 48 bytes of in-vector UUID member extent per row.
+Header access allocates nothing and survives caller teardown with the plan.
+These are candidate costs; production still retains the copies. Local quick
+CI and all 4,465 builder checks passed under Clang and fresh GCC.
+
+The explicit source dependency is #354 at reconciled `eff64deb`, which merges
+main `1337bbcc`, preserves #353 ancestry/historical comparison, and retains
+#354's reviewed production/tests byte-for-byte. #354 is source-accepted but
+unmerged; its reconciled smoke/viewport passed while native CI is separate.
+Review this comparison before removing row study UUIDs; preserve full identity,
+numeric paths, definition pins, independent plan lifetime and native claims.
+Direct indexed/catalogue/producer/#324 work remains separate.
 
 **Maintainer #354 review — 2026-11-16 (supersedes older status below):** #353 at `9bf2b956e6d9dc21d3bb239a5d31f0ebfa1495fd` is integrated by this merge after smoke 43958409053, viewport 43958409063 and all 12 native jobs in 43958409039 passed. Inspected logs confirm 180 regression passes (45 per shard), all four owner/observer profiles and database addressed_reads=24/private_reads=0. Main 5f45f566 combined smoke/native 43962490566/43962490573 also passed. This merge's combined qualification remains separate.
 

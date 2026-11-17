@@ -42,7 +42,8 @@ struct AdmissionBindings {
   std::vector<FieldKey> focus; // Must match the snapshot's requested order exactly.
 };
 struct AdmissionOccurrenceCommand {
-  OccurrenceKey occurrence;
+  // The enclosing immutable plan owns the common study in source().study.
+  warm::OccurrenceId occurrence;
   warm::ToolRef definition;
   int command{-1}, node{-1};
   double units{};

@@ -251,17 +251,15 @@ warm::Bundle normalize_structural_letters(
 bool operator==(const OccurrenceKey &a, const OccurrenceKey &b) {
   return a.study == b.study && a.source == b.source;
 }
-namespace {
-std::string occurrence_text_parts(const warm::Uuid &study, const warm::OccurrenceId &source) {
+std::string occurrence_text(const warm::Uuid &study, const warm::OccurrenceId &source) {
   need(!study.nil() && (source.path.empty() || source.path.size() == 2),
        "invalid occurrence key");
   auto text = std::string(study.str()) + "/" + std::to_string(source.entry);
   for (auto ordinal : source.path) text += "/" + std::to_string(ordinal);
   return text;
 }
-}  // namespace
 std::string occurrence_text(const OccurrenceKey &k) {
-  return occurrence_text_parts(k.study,k.source);
+  return occurrence_text(k.study,k.source);
 }
 
 LetterProjection project_letters(const warm::Bundle &b) {
@@ -369,19 +367,19 @@ LetterProjection project_letters(const warm::Bundle &b) {
     out.occurrences_.push_back(std::move(record));
   }
   for (const auto &s : b.selections) {
-    Selection selection{InputText(occurrence_text_parts(out.study_, {s.entry, {}})),
+    Selection selection{InputText(occurrence_text(out.study_, {s.entry, {}})),
                         {},
                         s.exposure == warm::Exposure::Aggregate
                             ? Exposure::Aggregate
                             : Exposure::Parts};
     for (const auto &id : s.parts)
-      selection.parts.push_back(InputText(occurrence_text_parts(out.study_, id)));
+      selection.parts.push_back(InputText(occurrence_text(out.study_, id)));
     out.structural_input_.selections.push_back(std::move(selection));
   }
   for (const auto &c : b.contacts)
     out.structural_input_.contacts.push_back(
-        {InputText(occurrence_text_parts(out.study_, c.a)),
-         InputText(occurrence_text_parts(out.study_, c.b))});
+        {InputText(occurrence_text(out.study_, c.a)),
+         InputText(occurrence_text(out.study_, c.b))});
   for (const auto &f : b.focal_fields)
     out.structural_input_.focal_fields.push_back(
         {static_cast<GroupKind>(f.kind), InputText(warm::key(f.object))});

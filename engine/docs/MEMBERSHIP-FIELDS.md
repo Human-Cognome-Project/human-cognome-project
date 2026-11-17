@@ -1,5 +1,14 @@
 # Contextual membership fields — Stage C
 
+**Ownership comparison — 2026-11-16 (awaiting review):**
+[field-key cost attribution](MEMBERSHIP-FIELD-KEY-COST.md) at `ec21b153` measures
+the ObjectKey duplicated beside the full target ToolRef in each returned row.
+Production and the accepted contract below remain unchanged. The bounded
+proposal reuses the existing pin object while retaining explicit membership
+kind, context/count/revision, shorter valid group addresses and detached lifetime.
+Actual live/catalogue cost and all 3,808 membership value controls agree under
+Clang/GCC; local native consumer and quick CI also passed. Removal awaits review.
+
 Accepted and merged in #146 at `43f418a`, closing [#144](https://github.com/Human-Cognome-Project/human-cognome-project/issues/144),
 following the [accepted contract](../../docs/warm-toolbox-implementation-plan.md).
 Stage B is accepted and merged in #143 at `6ccd5a3`. The full database-to-hot
