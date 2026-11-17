@@ -1,5 +1,30 @@
 # Core continuation after local CUDA corrections
 
+**Contributor next inspection — 2026-11-17 (awaiting review):**
+[Immutable recipe duplication](../engine/docs/EXCHANGE-RECIPE-COPY-COST.md)
+at `ac4ab9cf` attributes the actual separate recipe backing in both adopted
+projection views. Three native fixtures retain 25,735–28,059 requested bytes
+per copy across 302–335 buffers, plus an embedded 520-byte header already in
+each projection object. Full values/pins and source lifetime remain intact;
+staging changes spare live exposure without changing either recipe or its
+backing. Complete owner/domain/bootstrap teardown reclaims observed requests.
+
+Proposed after review: one owner-owned immutable Bundle for both private views,
+with explicit owner-spare reuse and preserved public/domain copy detachment.
+Keep live exposure/activity, input state, parent pools, maps, claims, membership,
+generation and publication separate. Native IDs are not semantic recipe authority.
+Coordinate snapshot/copy admission and census, preserve validation work, and
+measure actual header/coallocation/lifetime/peak effects before claiming savings.
+No runtime sharing or new registry/wrapper is implemented by this inspection.
+
+Quick CI, four dedicated Clang/GCC three-fixture runs and the full single-owner
+case on each compiler passed. Production is byte-identical to #362; its accepted,
+unmerged ancestry is explicit in `e69742d1` from main `ad38b6cd` (integrated #361).
+#362 native now passes all 12 jobs. Review this candidate before implementation
+and reconcile its own authoritative hosted/dependency gates. Indexed guards,
+catalogue/mixed revisions, broader producers, complete accounting and #324 remain
+separate; held #75/#111/#123 are unchanged.
+
 **Maintainer #361 integration / #362 review — 2026-11-17 (supersedes older status below):** #361 `71d0c80ded11181645037f8d9b4f38524aaee556` is integrated by this merge, preserving prior main and dependency ancestry. Review 5942373407 stands. All 12 native jobs in 44124840860 and smoke 44124840948 passed; independently inspected 181 regression passes and database addressed_reads=24/private_reads=0. Main 3fd1936e combined smoke/native 44126195388/44126195333 passed. This merge differs from qualified #361 only in these two reconciled handoffs; its combined main CI is separate.
 
 #362 `2cdf2ea8072f775b246e25fe18a6723329441b5c` is source-accepted in review 5943526107, not integrated. One complete immutable payload per exact selected owner replaces separate forward/reverse graphs. The existing binding carries explicit target, used coherently by capture and incoming commands. Full owner/target/current exposure, pins/ordered parents, native claims, candidate maps, membership, generation/readiness and atomic publication remain; standalone one-way semantics remain intact. Capture prepays its added current-exposure lookup. Failed preparation invalidates pending authority. Census and charges track actual removed storage/copy/table work. No cross-owner/revision sharing or new registry/wrapper.
