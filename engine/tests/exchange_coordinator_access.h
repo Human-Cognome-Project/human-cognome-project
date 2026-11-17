@@ -40,20 +40,28 @@ struct ExchangeCoordinatorAccess {
   static auto stage_binding(detail::ExchangeCoordinator &c,
       std::shared_ptr<const LetterExchangeContract> declaration,
       std::shared_ptr<const MembershipFields> memberships,
-      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
-      const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields, warm::Exposure target) {
+      warm::Exposure target) {
     detail::PreparationWork meter(UINT64_MAX);
-    c.bound_->stage(std::move(declaration),target,std::move(memberships),rows,fields,meter);
+    c.bound_->stage(std::move(declaration),target,std::move(memberships),meter);
     return meter.result();
   }
-  static auto capture(detail::ExchangeCoordinator &c, const LetterProjection &p, std::uint64_t work) {
-    return c.bound_->capture(p,work);
+  static auto capture(detail::ExchangeCoordinator &c, const LetterProjection &p,
+      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
+      const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields, std::uint64_t work) {
+    return c.bound_->capture(p,rows,fields,work);
   }
-  static void capture(detail::ExchangeCoordinator &c, const LetterProjection &p) {
-    if (capture(c,p,UINT64_MAX).status != detail::CaptureStatus::Ok)
+  static void capture(detail::ExchangeCoordinator &c, const LetterProjection &p,
+      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
+      const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {
+    if (capture(c,p,rows,fields,UINT64_MAX).status != detail::CaptureStatus::Ok)
       throw warm::Error("test capture work overflow");
   }
   static const auto *binding(const detail::ExchangeCoordinator &c) { return c.bound_.get(); }
+  static auto &harness(const detail::ExchangeCoordinator &c) { return c.bound_->h_; }
+  static auto binding_work(const detail::ExchangeCoordinator &c) { return c.bound_->work_; }
+  static auto owned_binding_status(const detail::ExchangeCoordinator &c) {
+    return c.bound_->validate(c.bound_->h_.prepared_storage().generation,UINT64_MAX).status;
+  }
   static auto binding_backing(const detail::ExchangeCoordinator &c) {
     const auto &b = *c.bound_;
     return std::array<std::pair<const void *,std::size_t>,5>{{
@@ -61,15 +69,17 @@ struct ExchangeCoordinatorAccess {
       {b.edges_.data(),b.edges_.capacity()}, {nullptr,b.outgoing_rows_.capacity()},
       {nullptr,b.edge_rows_.capacity()}}};
   }
-  static auto binding_status(const detail::ExchangeCoordinator &c) {
-    return c.bound_->validate(c.bound_->h_.prepared_storage().generation,UINT64_MAX).status;
+  static auto binding_status(const detail::ExchangeCoordinator &c,
+      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
+      const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {
+    return c.bound_->validate(c.bound_->h_.prepared_storage().generation,UINT64_MAX,rows,fields).status;
   }
   static void rebind(detail::ExchangeCoordinator &c, const LetterProjection &p,
       std::shared_ptr<const LetterExchangeContract> declaration,
       const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
       const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields, warm::Exposure target) {
-    stage_binding(c,std::move(declaration),c.bound_->memberships_,rows,fields,target);
-    if (c.bound_->capture(p,UINT64_MAX).status !=
+    stage_binding(c,std::move(declaration),c.bound_->memberships_,target);
+    if (c.bound_->capture(p,rows,fields,UINT64_MAX).status !=
         detail::CaptureStatus::Ok) throw warm::Error("test rebind work overflow");
   }
   static const auto *declaration(const detail::ExchangeCoordinator &c) { return c.bound_->contract_.get(); }

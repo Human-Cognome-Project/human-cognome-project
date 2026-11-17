@@ -58,6 +58,14 @@ ExchangeCoordinator::ExchangeCoordinator(ReservedUnique<ExchangeBindings> bound,
 
 PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
     const std::vector<ExchangeNewField> &new_fields, std::uint64_t allowance) {
+  need(bool(bound_), "missing trusted exchange bindings");
+  return prepare(incoming,new_fields,allowance,bound_->occurrences_,bound_->fields_);
+}
+
+PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncoming> &incoming,
+    const std::vector<ExchangeNewField> &new_fields, std::uint64_t allowance,
+    const ExchangeMap<OccurrenceBinding> &current_occurrences,
+    const ExchangeMap<ExchangeFieldBinding> &current_fields) {
   sealed_ = false;
   consumed_ = true; // A failed preparation must never expose a partial plan.
   PreparationWork meter(allowance);
@@ -75,9 +83,9 @@ PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncomin
     meter.charge(sizeof(command)); commands_.push_back(command);
   };
   meter.charge(b.work_);
-  need(b.validate(b.generation_, UINT64_MAX).status == field::UpdateStatus::Ok,
+  need(b.validate(b.generation_,UINT64_MAX,current_occurrences,current_fields).status == field::UpdateStatus::Ok,
        "stale exchange preparation");
-  need(b.fields_.size() == s.live.fields,
+  need(current_fields.size() == s.live.fields,
        "exchange field lifecycle requires a complete trusted field inventory");
   const auto &sources = b.incoming_sources();
   need(incoming.size() == sources.size(), "incomplete incoming alternative");
@@ -86,13 +94,13 @@ PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncomin
   mapping_generation_ = b.generation_;
   need(new_fields.size() <= s.capacity.limits()[field::Budget::Fields],
        "exchange field preparation exceeds capacity");
-  for (const auto &f : b.fields_) {
+  for (const auto &f : current_fields) {
     meter.charge(sizeof(ExchangeFieldBinding)); meter.copy_key(f.field.object);
     next_fields_.push_back(f);
   }
   meter.elements(next_fields_.size(),sizeof(int));
   field_commands_.assign(next_fields_.size(), -1);
-  for (const auto &o : b.occurrences_) {
+  for (const auto &o : current_occurrences) {
     meter.charge(1);
     if (!b.outgoing_rows_[o.handle.record]) {
       meter.charge(sizeof(OccurrenceBinding)); meter.copy_key(o.occurrence);
@@ -197,7 +205,7 @@ PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncomin
       add(GroupKind::ParentValue, parent.target.object, parent.contribution, parent.ordinal);
     }
     // Preserve the trusted committed field order used before catalogue reuse.
-    for (const auto &field : b.fields_) {
+    for (const auto &field : current_fields) {
       meter.charge(1);
       if (field.field.kind == GroupKind::Membership)
       for (const auto &membership : b.memberships_->contributions())
@@ -298,9 +306,22 @@ HierarchySealResult ExchangeCoordinator::prepare_hierarchy(
 
 field::UpdateResult ExchangeCoordinator::execute(std::uint64_t generation,
     std::uint64_t work, std::uint64_t cells, std::uint64_t hierarchy_work) {
+  auto result=execute(generation,work,cells,hierarchy_work,bound_->occurrences_,bound_->fields_);
+  if (result.status==field::UpdateStatus::Ok) {
+    // Source-map arguments have expired before their owned stores are mutated.
+    bound_->occurrences_.swap(next_);
+    bound_->fields_.swap(next_fields_);
+  }
+  return result;
+}
+
+field::UpdateResult ExchangeCoordinator::execute(std::uint64_t generation,
+    std::uint64_t work, std::uint64_t cells, std::uint64_t hierarchy_work,
+    const ExchangeMap<OccurrenceBinding> &current_occurrences,
+    const ExchangeMap<ExchangeFieldBinding> &current_fields) {
   auto &b = *bound_;
   auto &h = b.h_;
-  auto result = b.validate(generation, work);
+  auto result = b.validate(generation,work,current_occurrences,current_fields);
   if (result.status != field::UpdateStatus::Ok) return result;
   if (consumed_) { result.status = field::UpdateStatus::Stale; return result; }
   if (!sealed_) { result.status = field::UpdateStatus::InvalidInput; return result; }
@@ -333,8 +354,6 @@ field::UpdateResult ExchangeCoordinator::execute(std::uint64_t generation,
       next_[survivors_ + i].handle = s.resolved[i];
     for (std::size_t i = 0; i < next_fields_.size(); ++i)
       if (field_commands_[i] >= 0) next_fields_[i].handle = s.resolved[field_commands_[i]];
-    b.occurrences_.swap(next_);
-    b.fields_.swap(next_fields_);
     outgoing_report_ = outgoing;
     balance_report_ = balance;
     mapping_generation_ = result.generation;

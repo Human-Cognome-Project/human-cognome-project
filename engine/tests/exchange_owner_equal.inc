@@ -52,11 +52,10 @@ void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = 
             "equal alternatives changed immutable payload or full ordered meanings");
     bool rejected = false;
     try {
-      Plan::stage_binding(Access::plan(*owner),selected,memberships,
-          Access::mappings(*owner),Access::fields(*owner),current.exposure(0));
-      Plan::capture(Access::plan(*owner),current);
+      Plan::stage_binding(Access::plan(*owner),selected,memberships,current.exposure(0));
+      Plan::capture(Access::plan(*owner),current,Access::mappings(*owner),Access::fields(*owner));
     } catch (const warm::Error &) { rejected = true; }
-    require(rejected && Plan::binding_status(Access::plan(*owner)) == UpdateStatus::InvalidInput,
+    require(rejected && Access::binding_status(*owner) == UpdateStatus::InvalidInput,
             "equal row counts/mass authorized capture with the wrong explicit role");
     std::vector<ExchangeIncoming> incoming;
     for (const auto &source : expected.incoming())

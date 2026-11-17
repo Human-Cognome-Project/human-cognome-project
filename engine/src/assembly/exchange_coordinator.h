@@ -29,6 +29,9 @@ class ExchangeCoordinator {
   void reserve(const field::Harness &, PreparationWork * = nullptr);
   PreparationResult prepare(const std::vector<ExchangeIncoming> &,
                const std::vector<ExchangeNewField> &, std::uint64_t command_work);
+  PreparationResult prepare(const std::vector<ExchangeIncoming> &,
+               const std::vector<ExchangeNewField> &, std::uint64_t command_work,
+               const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &);
   ExchangeCoordinator(ReservedUnique<ExchangeBindings>,
                       const std::vector<ExchangeIncoming> &,
                       const std::vector<ExchangeNewField> & = {});
@@ -36,6 +39,11 @@ class ExchangeCoordinator {
   HierarchySealResult prepare_hierarchy(const field::LiveRefreshSpec &, HierarchySealBudget);
   field::UpdateResult execute(std::uint64_t generation, std::uint64_t placement_work,
                               std::uint64_t cells, std::uint64_t hierarchy_work);
+  // Resolve only into candidate storage. The caller publishes after this call's
+  // source-map access ends; the standalone wrapper publishes its owned maps.
+  field::UpdateResult execute(std::uint64_t generation, std::uint64_t placement_work,
+                              std::uint64_t cells, std::uint64_t hierarchy_work,
+                              const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &);
   ReservedUnique<ExchangeBindings> bound_;
   ReservedVector<field::UpdateCommand> commands_;
   ReservedVector<field::PlacementIntrinsic> intrinsics_;

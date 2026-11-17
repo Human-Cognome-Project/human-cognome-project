@@ -193,7 +193,6 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
   });
   const auto &limits = h_.prepared_storage().capacity.limits();
   reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_,nullptr,&meter);
-  reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->bound_->occurrences_,plan_->bound_->fields_,&fields_,&meter);
   reserve_exchange_maps(*projection_,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],plan_->next_,plan_->next_fields_,&fields_,&meter);
   completed_ = true;
 }
@@ -244,12 +243,12 @@ OwnerPreparationResult ExchangeOwner::prepare(const OccurrenceKey &owner, warm::
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
   auto selected = declaration(owner, target,meter);
   prepare_projection(owner,target,meter);
-  plan_->bound_->stage(std::move(selected),target,memberships_,occurrences_,fields_,meter);
+  plan_->bound_->stage(std::move(selected),target,memberships_,meter);
   const auto staged = meter.result();
-  const auto captured = plan_->bound_->capture(*projection_,capture_work);
+  const auto captured = plan_->bound_->capture(*projection_,occurrences_,fields_,capture_work);
   if (captured.status != CaptureStatus::Ok)
     return {captured.status,PreparationPhase::Capture,staged,captured,{}};
-  const auto commands = plan_->prepare(incoming, fields,command_work);
+  const auto commands = plan_->prepare(incoming,fields,command_work,occurrences_,fields_);
   if (commands.status != PreparationStatus::Ok)
     return {commands.status,PreparationPhase::Commands,staged,captured,commands};
   completed_ = false;
@@ -280,13 +279,15 @@ field::UpdateResult ExchangeOwner::execute(std::uint64_t expected, std::uint64_t
     result.failure = {field::Budget::PlacementWork,64,work}; return result;
   }
   try {
-    result = plan_->execute(expected, work - 64, cells, hierarchy_work);
+    result = plan_->execute(expected,work-64,cells,hierarchy_work,occurrences_,fields_);
     result.structural_visits += 64;
     if (result.status != field::UpdateStatus::Ok) return result;
     if (h_.prepared_storage().failure_point == 8)
       throw std::runtime_error("injected failure before owner exposure publication");
-    occurrences_.swap(plan_->bound_->occurrences_);
-    fields_.swap(plan_->bound_->fields_);
+    // The synchronous source-map call has ended. Publish the resolved candidate
+    // directly, without an intermediate binding-map owner or a retained loan.
+    occurrences_.swap(plan_->next_);
+    fields_.swap(plan_->next_fields_);
     projection_.swap(prospective_);
     outgoing_report_ = plan_->outgoing_report_;
     balance_report_ = plan_->balance_report_;

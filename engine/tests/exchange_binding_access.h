@@ -18,5 +18,7 @@ struct ExchangeBindingAccess {
   }
   static auto outgoing(const detail::ExchangeBindings &b) { return b.outgoing_; }
   static auto work(const detail::ExchangeBindings &b) { return b.work_; }
+  static const auto &mappings(const detail::ExchangeBindings &b) { return b.occurrences_; }
+  static const auto &fields(const detail::ExchangeBindings &b) { return b.fields_; }
 };
 }  // namespace assembly::testing
