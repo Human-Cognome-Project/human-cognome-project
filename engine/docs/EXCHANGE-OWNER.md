@@ -49,25 +49,25 @@ capacity and malformed-input checks still apply before copying. This is a
 bounded sealing gate, not a total owner memory/preparation-work policy; see
 [the precise budget scope](OWNER-RESOURCES.md#hierarchy-sealing-gate-contribution-awaiting-review).
 
-Adoption also retains two immutable exchange declarations per selected occurrence,
-one for each direction. Both come from the validated structural recipe: the reverse
-swaps outgoing/incoming descriptors and from/to exposure, retaining the same exact
-mass, ordered source/parent inventory and symmetric comparison-work bound. Each declaration
-keeps the full study/occurrence key, pinned recipe and definition revisions. Copies
-of the same letter have distinct declarations; no live identity is deduplicated.
+Adoption retains one immutable exchange payload per selected occurrence, containing
+both alternatives from the validated structural recipe. Its original one-way header,
+exact mass, ordered sources/parents and symmetric comparison-work bound stay fixed.
+It keeps the full study/occurrence key, pinned recipe and definition revisions.
+Copies of the same letter retain distinct payloads; no live identity is deduplicated.
 
-[Forward/reverse payload inspection](EXCHANGE-DIRECTION-COPY-COST.md) measures
-this second immutable graph and proposes retaining one complete payload with
-an explicit operation role on the existing private binding. It is a test-only
-proposal awaiting review; both snapshots are still retained. Direction, current
-exposure, complete semantic pins and native generation/claim/publication guards
-remain required independently of shared storage.
+[Private direction sharing](EXCHANGE-DIRECTION-SHARING.md) implements the accepted
+[payload proposal](EXCHANGE-DIRECTION-COPY-COST.md). The existing private binding
+carries the explicit pending target, selecting outgoing and incoming roles from
+the same const graph. Current exposure, complete semantic pins and native
+generation/claim/publication guards remain required independently of shared storage.
 
-Preparation selects by exact owner key and target and verifies the declared source
+Preparation selects by exact owner key and target and verifies the operation's source
 exposure against the current projection. Foreign studies, unknown entries, nested
 occurrences, invalid targets and requests for the current exposure reject before
-binding recapture. The binding shares the selected const declaration without
-copying its nested descriptors. Readiness/generation and current source participation
+binding recapture. The binding shares the selected const payload without copying
+its nested descriptors; capture and commands use the same explicit target.
+Standalone declaration accessors keep their original one-way meaning.
+Readiness/generation and current source participation
 are still validated afresh; a retained declaration is not live execution authority.
 There is no mutable declaration alias on this path. Reference-counted ownership
 keeps it alive through binding teardown; all harness/owner calls remain exclusive.
@@ -125,7 +125,7 @@ same owner is subsequent work.
 ### Combined retained-capacity report (accepted #231)
 
 `ExchangeOwner::storage()` now reports both projections, all six nested map stores,
-binding and coordinator objects/buffers, both declarations per selection, and the
+binding and coordinator objects/buffers, one declaration per selection, and the
 all-alternative membership catalogue. Shared pointees are counted once; control
 block identities are reported separately from their unmeasured byte overhead.
 The checked total uses the existing conservative capacity convention, including
@@ -230,11 +230,11 @@ remain bounded by the borrowed harness's capacity; this is not a separate total
 owner byte-budget admission gate. Coordinator and binding objects remain resident
 until teardown; invalid preparation may leave unusable partial metadata resident.
 Declaration construction now occurs at adoption; successful selection and sharing
-perform no C++ allocation. Two declarations per selection, their nested descriptors,
+perform no C++ allocation. One declaration per selection, its nested descriptors,
 table capacity and reference-count control blocks remain resident until their last
 owner/binding reference is released. These surfaces are **also excluded** from
-`projection_storage()`. Adoption copies the reverse alternative and still has
-setup transients; no complete peak/lifetime or byte-budget claim follows.
+`projection_storage()`. Adoption still has setup transients; no complete machine
+peak or combined byte-budget claim follows from the retained projection charge.
 Membership traversal now occurs at adoption and the catalogue is shared across
 preparations. After nested occurrence/field maps are staged, fresh source capture
 uses reserved buffers and borrowed key references without C++ allocation. Nested

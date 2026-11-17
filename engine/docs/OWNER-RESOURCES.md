@@ -1,5 +1,17 @@
 # Private exchange-owner resource inventory
 
+**Contributor direction-sharing update — 2026-11-17 (awaiting review):**
+[One immutable payload per owner](EXCHANGE-DIRECTION-SHARING.md) at `faa7fc8e`
+removes the reverse graph/shared allocation and second table entry. Explicit
+target state on the existing binding coordinates capture and commands; census
+counts its alias once. Binding size remains 376 bytes on the measured ABI.
+Actual one/four-selection fixtures retain 2,998/11,992 fewer requested bytes;
+capacity reductions of 2,966/11,864 overlap those measurements. Full native
+claims, maps, both projections, catalogue and all work/refusal/unwind guards
+remain. Current direction, lookup and shared-count descriptions below reflect
+this update; older source-pinned measurements describe their original scope.
+Combined B/admission and complete machine accounting remain open.
+
 **Contributor declaration census update — 2026-11-17 (awaiting review):**
 [Exchange leaf authority](EXCHANGE-LEAF-AUTHORITY.md) at `0750a2cd` removes the
 flat leaf table and its pin copies. Census counts the actual smaller declaration
@@ -51,7 +63,7 @@ not an operational memory-budget policy or a second state authority.
 | `maps` | Outer capacity of all six stores: occurrence/field maps in owner, binding and coordinator; nested UUID/path/address storage of **every constructed slot**, including inactive slots |
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
 | `coordinator` | Coordinator object; command, intrinsic, field-command-index, hierarchy-node, child and contribution buffers |
-| `declarations` | Shared-pointer table capacity; both declaration objects per selection; owner/recipe pins; incoming/outgoing descriptors and their ordered parent provenance with complete nested keys/pins; nibble provenance reads the byte-side rows directly |
+| `declarations` | Shared-pointer table capacity; one immutable declaration object per selection; owner/recipe pins; both source alternatives and their ordered parent provenance with complete nested keys/pins; operation direction is on the existing binding |
 | `memberships` | One catalogue object, study/recipe pins, all-alternative contribution capacity and constructed rows' full occurrence identities and target pins; explicit kind is inline and the field object comes from the target pin |
 
 Object sizes include embedded member objects. Vector capacity is multiplied by
@@ -65,7 +77,7 @@ and multiplication reject overflow without publishing a partial report.
 
 Binding aliases do not duplicate declaration/catalogue pointee charges. The
 owner creates distinct declarations and a single catalogue; `shared_allocations`
-records their control-block count (two per selection plus one). Control-block
+records their control-block count (one per selection plus one catalogue). Control-block
 **bytes** and allocator metadata are implementation-dependent and are not included
 in the retained-capacity charge. The smart-pointer objects themselves are already
 counted in the containing objects/table. This report must never be labeled heap
@@ -358,8 +370,8 @@ limits plus borrowed-resource accounting remained open at the #240 boundary.
 
 ### Shared object allocation domain (accepted #241)
 
-The declaration pointer table and `allocate_shared` requests for the two immutable
-declarations per selection and the membership catalogue now use the owner's
+The declaration pointer table and `allocate_shared` requests for the immutable
+declaration payloads and membership catalogue use the owner's
 reservation domain. The table charges its actual backing capacity, including
 old/new overlap while growing. Standard-library allocator rebinding supplies the
 actual shared allocation size, including the object, control block and any padding
@@ -1091,9 +1103,10 @@ explicit capture-work allowance. This allowance covers capture only, after
 declaration selection, projection staging and identity-map staging. Those earlier
 steps now have the separate staging gate described below. The following command gate supplies the later
 coordinator allowance separately.
-Adoption/standalone binding construction explicitly uses the maximum capture
-allowance because setup-work admission is not yet implemented; this is not a
-claim that adoption is bounded. Test facades retain convenience allowances.
+Owner adoption shares its setup meter with binding construction and capture;
+see the later binding-construction gate. Standalone setup adapters and test
+facades retain explicit unrestricted convenience allowances. This remains
+separate from a complete combined owner-resource admission policy.
 
 `CaptureWork` (an alias of the shared `PreparationWork`) charges incrementally
 before the associated operation:
@@ -1101,6 +1114,7 @@ before the associated operation:
 | Surface | Structural work units |
 |---|---|
 | Fixed capture admission | One; zero allowance stops before clearing capture buffers or scanning source payload |
+| Committed exposure lookup | One per possible selection row, prepaid before lookup, plus one fixed operation-direction comparison |
 | Occurrence/field/source/parent rows, scalar edge matches and duplicate-field candidates | One per visited row/candidate; fixed scalar checks and assignments are included in their enclosing row |
 | Identity comparisons in projection/tool searches, duplicate occurrences, source/field resolution and catalogue filtering | One dispatch unit plus both operands' UUID text lengths and nested path/address byte lengths, charged before equality reads payload |
 | Captured mass/edge append | One each, before append |
@@ -1195,7 +1209,7 @@ invalidated before the first charge, including when replacing a pending plan.
 | Surface | Structural work units |
 |---|---|
 | Owner and projection admission, binding staging | One each, before validation or payload changes |
-| Declaration lookup | Shared-meter key comparison, then one per selection visited to check current exposure |
+| Declaration lookup | Shared-meter full key comparison, one target/source direction check, then one per selection visited to check current committed exposure |
 | Projection compatibility | Shared-meter UUID/pin comparisons; one per current-exposure lookup row |
 | Exposure/active flags and occurrence traversal | One per visited row before reading/updating scalar fields |
 | Tool/parent matching | Shared-meter identity comparisons, plus one per immutable parent row |
@@ -1241,9 +1255,9 @@ Current execution charges are deliberately narrower than complete preparation:
 
 | Phase | Existing behavior / outstanding charge |
 |---|---|
-| Declaration selection | Staging gate charges retained alternative key comparisons and current exposure lookup |
+| Declaration selection | Staging gate charges full owner key comparisons, target/source direction validation and current committed exposure lookup |
 | Projection staging | Staging gate charges flag scans, key searches, swaps and complete parent-pool transfers before work |
-| Binding capture | Incremental structural-work gate before scans, key comparisons, masks and final validation; stage-map copying uses the preceding staging allowance |
+| Binding capture | Incremental gate before current-exposure lookup, selected-role source scans, key comparisons, masks and final validation; stage-map copying uses the preceding staging allowance |
 | Binding validation | Existing `16 * (occurrences + fields + captured_edges + live_edges + 1)` charge covers its bounded read-only execution validation; it is not a charge for all prior capture work |
 | Coordinator preparation | Separate incremental command-work gate covers revalidation, descriptor/key comparisons, command/map copies, contacts, membership, field usage and retirements; setup and preceding staging remain outside it |
 | Hierarchy sealing | Explicit input-span plus destination-capacity byte allowance and payload-byte copy-work gate before reading/copying; caller construction, constant admission bookkeeping and native hierarchy validation remain separate |

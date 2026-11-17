@@ -4,6 +4,10 @@ Contributor inspection under [#343](https://github.com/Human-Cognome-Project/hum
 2026-11-17, awaiting review. Public tested source:
 `657d0d87726ff4991590b3d6d0692a376acfefd1`.
 
+**Follow-on implementation:** [private direction sharing](EXCHANGE-DIRECTION-SHARING.md)
+implements the accepted proposal. The measurements and status below remain
+pinned to this pre-sharing inspection source.
+
 Starts from main `45b5cf074b4941bf4addc1031a53d093fe986151`, which integrates
 #358/#359. Normal merge `63905fc7` preserves source-accepted, unmerged #360
 `444594ed12e0910623c2a7145fa6b45dec58e6cd`. Relative to that dependency,

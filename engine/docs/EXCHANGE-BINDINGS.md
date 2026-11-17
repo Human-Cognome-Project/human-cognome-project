@@ -5,7 +5,7 @@ to a generation-bound view of committed prepared source metadata. It does not
 call replacement staging, read physical mass/motion, claim records or publish.
 
 `assembly::detail::ExchangeBindings` has a private preparation constructor and
-private validation method. Only the future private coordinator and the test
+private validation method. Only the private coordinator/owner and the test
 adapter can access them. Preparation consumes a validated projection, its exchange
 contract, and trusted occurrence/field mappings from committed admission results.
 These mappings are **not accepted from an exchange request**. Their initial
@@ -19,7 +19,7 @@ every projected active occurrence maps once to a distinct current full handle,
 and its exact source mass matches. Inactive alternatives, foreign studies,
 missing copies and duplicate mappings reject. Field names and physical field
 handles cannot alias. Both maps validate context, address, record and incarnation
-against the committed source headers. The contract's outgoing alternative must
+against the committed source headers. The operation-selected outgoing alternative must
 be exposed in that inventory. Native kind/layout/scale installation is not
 inferred from a record number; the initial trusted owner must establish it from
 the projection's node bindings. This view validates source identity/accounting,
@@ -52,8 +52,15 @@ The prepared harness must outlive the view.
 
 The declaration has shared const ownership. The standalone preparation adapter
 moves its supplied declaration into owned immutable storage; the persistent
-exchange owner shares an adoption-retained declaration instead. Neither path
-borrows a temporary declaration or changes its descriptors at publication. Live
+exchange owner shares its one adoption-retained payload per selected occurrence.
+The owner stages an explicit target on this binding, after validating the full
+owner and committed exposure. Capture reads its outgoing side and commands read
+the corresponding incoming side. The opposite operation uses the same immutable
+graph with those roles exchanged; row counts and initial recipe exposure do not
+select direction. Capture prepays and verifies current exposure independently.
+Standalone adapters select the declaration's original `to()`; public accessors
+and matching remain one-way. See [implementation/evidence](EXCHANGE-DIRECTION-SHARING.md).
+Neither path borrows a temporary declaration or changes descriptors at publication. Live
 binding validation remains generation-bound even though immutable declarations
 can be selected for later operations. Nested binding maps reuse adoption-reserved
 slots; source capture is a separate phase after those maps are assigned.

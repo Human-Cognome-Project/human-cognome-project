@@ -8,6 +8,32 @@ Equal-row/equal-mass native controls exercise 16 forward/back publications, expl
 
 #362 smoke 44137874131 and native build/database/standalone four-test suite passed; remaining regression/compiler matrix 44137874103 is pending. Reconcile hosted gates before integration; no duplicate workflow dispatch. Next bounded inspection may select another concrete duplicated association or structural responsibility, establish owner/lifetime and actual native overlap, and measure a simplification. Taichi handles structure; HCP owns meaning. Indexed guards, catalogue/mixed revisions, broader producer adoption, full accounting and #324 remain separately scoped. Held #75/#111/#123 unchanged.
 
+**Contributor implementation — 2026-11-17 (awaiting review):**
+[One immutable exchange payload per owner](../engine/docs/EXCHANGE-DIRECTION-SHARING.md)
+at `faa7fc8e` implements #361's authorized direction-sharing scope. Full owner
+and current committed exposure are validated before staging an explicit target
+on the existing binding. Capture/commands read corresponding sides of one const
+graph; initial recipe exposure, cardinality and mass do not select direction.
+Public one-way declarations, full semantic pins/parents, native claims, catalogue,
+generation/readiness, current/candidate maps and atomic publication remain.
+
+Only duplicate reverse construction/retention and actual table work disappear;
+source/pin/association/direction validation stays charged. Census counts one
+payload per exact owner and its binding alias once. Actual one/four-selection
+fixtures save 2,998/11,992 retained requested bytes; binding extent remains 376
+on the measured ABI. Weak teardown includes domain/bootstrap storage and full
+release. The new equal-sized native fixture proves explicit role selection and
+16 publications with budget refusal/retry and following ticks.
+
+Quick CI, 16 Clang/eight fresh GCC CTests, both four-test standalone suites,
+48 owner runs across workers/paths/LLVM modes and eight standalone exchange
+compatibility runs passed. All 13,416 reached owner allocation failures per
+mode unwind. Main `3fd1936e` and normal merge `c50bb1f8` preserve source-accepted,
+unmerged #361; its native run now passes all 12 jobs. Review this implementation
+and reconcile its authoritative hosted/dependency gates before integration.
+Indexed guards, catalogue/mixed revisions, public producer adoption, combined
+accounting and #324 remain separately scoped; held #75/#111/#123 are unchanged.
+
 **Maintainer #360 integration / #361 review — 2026-11-17 (supersedes older status below):** #360 `444594ed12e0910623c2a7145fa6b45dec58e6cd` is integrated by this merge, preserving prior main and its full ancestry. Review 5941694377 stands. Smoke 44109255302 and all 12 native jobs in 44109254971 passed; independently inspected the combined 181 regression passes, standalone four-test suite and database addressed_reads=24/private_reads=0. This merge differs from qualified #360 only in these two status handoffs. Prior main 45b5cf07 smoke passed; its combined native 44118550566 remains running at inspection.
 
 #361 `71d0c80ded11181645037f8d9b4f38524aaee556` is source-accepted in review 5942373407, not integrated. It changes only the recipe test and five Markdown files relative to #360; tested 657d0d87 differs from head only in those five Markdown files. The actual private reverse copy/shared-allocation witness attributes 2,046–6,304 requested bytes across three fixtures. Complete pins/source/parent order, distinct buffers/domains, explicit opposite roles even at equal cardinality, detached aliases and final weak/domain release are checked. Candidate costs are not realized whole-owner savings; local archives remain contributor-reported.

@@ -1533,17 +1533,29 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
   owner_reservation_admission(f,projection,rows,fields);
   owner_projection_setup(f,projection,rows,fields);
   allocation_lifetime_controls();
+  const auto entry = projection.recipe().selections.front().entry;
+  const auto target = projection.exposure(entry) == warm::Exposure::Aggregate
+      ? warm::Exposure::Parts : warm::Exposure::Aggregate;
+  const auto expected_declaration = assembly::declare_letter_exchange(projection,{projection.study(),{entry,{}}},target);
   const TickSnapshot before(f);
   const auto generation = f.h.prepared_storage().generation;
   const auto ticks = f.h.prepared_storage().completed_ticks;
   A::begin();
   A::Counts retained, complete;
   std::uint64_t capacity_charge = 0;
+  std::uint64_t payloads = 0, pointer_capacity = 0, binding_bytes = 0, declaration_charge = 0, shared_identities = 0;
   try {
     auto owner = Access::adopt(f.h,projection,rows,fields);
     retained = A::counts;
     const auto census = Access::resources(*owner);
     capacity_charge = census.total().charged_bytes();
+    payloads = Access::declarations(*owner).size();
+    pointer_capacity = Access::declarations(*owner).capacity();
+    binding_bytes = census.binding.object_bytes;
+    declaration_charge = census.declarations.charged_bytes();
+    shared_identities = census.shared_allocations;
+    require(payloads == projection.recipe().selections.size() && shared_identities == payloads+1,
+            "owner census does not count one immutable payload per selected owner");
     // On this qualified standard library allocate_shared colocates each object
     // and control block. Find its whole actual new request independently of the
     // reservation allocator; do not guess control-block layout or use nested census.
@@ -1681,22 +1693,41 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     // External aliases deliberately outlive the owner: neither the shared
     // control blocks nor their nested allocations may be reported as reclaimed.
     auto declaration = Access::declarations(*owner).front();
+    auto other_direction = declaration;
+    const auto declaration_request = containing_request(declaration.get());
+    std::weak_ptr<const assembly::LetterExchangeContract> weak_declaration = declaration;
     auto catalogue = Access::memberships(*owner);
     auto domain = Access::reservation_domain(*owner);
+    const auto bootstrap_requests = Access::bootstrap_tracker(*owner).result().live_bytes;
     std::weak_ptr<const assembly::MembershipFields> weak_catalogue = catalogue;
     owner.reset();
     const auto aliased = A::counts.live;
     const auto alias_charge = domain->result().live_bytes;
+    require(declaration.get() == other_direction.get() && Access::equivalent(*declaration,expected_declaration),
+            "shared directional aliases lost complete immutable meaning after owner teardown");
     declaration.reset();
+    require(!weak_declaration.expired() && Access::equivalent(*other_direction,expected_declaration),
+            "one direction alias released the other direction's payload");
+    other_direction.reset();
+    require(weak_declaration.expired(), "directional payload outlived its last strong alias");
     const auto catalogue_only = A::counts.live;
     const auto catalogue_charge = domain->result().live_bytes;
     catalogue.reset();
     require(weak_catalogue.expired() && domain->result().live_bytes == catalogue_charge-membership_bytes,
             "owner catalogue control block lost its charge before weak release");
     weak_catalogue.reset();
-    require(alias_charge > catalogue_charge && catalogue_charge && !domain->result().live_bytes,
+    require(alias_charge > catalogue_charge && catalogue_charge && domain->result().live_bytes == declaration_request,
             "owner shared allocation charge failed alias/weak release accounting");
+    std::weak_ptr<assembly::detail::ReservationDomain> weak_domain = domain;
     domain.reset();
+    // The allocator's domain/control block and its intrusive bootstrap tracker
+    // were created inside this observation window, unlike standalone copies.
+    require(!weak_domain.expired() && A::counts.live == declaration_request+bootstrap_requests && A::counts.blocks == 3,
+            "weak declaration lost its coallocation or selected domain after owner teardown");
+    weak_declaration.reset();
+    require(weak_domain.expired() && A::counts.live == bootstrap_requests && A::counts.blocks == 2,
+            "last weak declaration retained its domain object or lost the domain weak storage");
+    weak_domain.reset();
     complete = A::end();
     require(aliased > catalogue_only && catalogue_only > 0,
             "shared owner data did not survive until final alias release");
@@ -1736,4 +1767,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
             << ",failure_peak_requested_bytes=" << failure_peak
             << ",failure_sites_checked=" << retained.attempts
             << ",remaining_blocks=" << retry.blocks << " PASS\n";
+  std::cout << "owner_direction_storage,payloads=" << payloads << ",pointer_capacity=" << pointer_capacity
+            << ",binding_object_bytes=" << binding_bytes << ",declaration_capacity_charge=" << declaration_charge
+            << ",shared_identities=" << shared_identities << " PASS\n";
 }

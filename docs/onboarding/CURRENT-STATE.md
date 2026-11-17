@@ -8,6 +8,28 @@ Equal-row/equal-mass native controls exercise 16 forward/back publications, expl
 
 #362 smoke 44137874131 and native build/database/standalone four-test suite passed; remaining regression/compiler matrix 44137874103 is pending. Reconcile hosted gates before integration; no duplicate workflow dispatch. Next bounded inspection may select another concrete duplicated association or structural responsibility, establish owner/lifetime and actual native overlap, and measure a simplification. Taichi handles structure; HCP owns meaning. Indexed guards, catalogue/mixed revisions, broader producer adoption, full accounting and #324 remain separately scoped. Held #75/#111/#123 unchanged.
 
+**Contributor implementation — 2026-11-17 (awaiting review):**
+[Private exchange direction sharing](../../engine/docs/EXCHANGE-DIRECTION-SHARING.md)
+at public `faa7fc8e` implements the scope authorized in #361 review 5942373407.
+The owner retains one immutable payload per selected occurrence; the existing
+binding stages an explicit target for both outgoing capture and incoming
+commands. Full owner/current-exposure validation precedes staging. Standalone
+one-way semantics, complete pins/order/counts/mass/nodes/stored mass, catalogue,
+native claims, current/candidate maps, generation and publication remain.
+Census counts aliases once; actual one/four-selection owner fixtures retain
+2,998/11,992 fewer requested bytes, including table/coallocation effects.
+
+Local quick CI, 16 Clang/eight fresh GCC CTests, both standalone four-test suites,
+48 owner mode runs and eight standalone exchange compatibility runs passed.
+The equal-sized native fixture requires explicit direction and completes 16
+forward/back exchanges with exact/one-short retry and following ticks. All
+13,416 reached owner allocation failures per mode reclaim partial output.
+Main `3fd1936e` integrates #360; merge `c50bb1f8` preserves source-accepted,
+unmerged #361 `71d0c80d`, whose authoritative native run now passes all 12 jobs.
+Review and this implementation's authoritative hosted CI remain pending.
+Indexed guards, catalogue/mixed revisions, producer adoption, full accounting,
+#324 and held #75/#111/#123 remain separate.
+
 **Maintainer #360 integration / #361 review — 2026-11-17 (supersedes older status below):** #360 `444594ed12e0910623c2a7145fa6b45dec58e6cd` is integrated by this merge, preserving prior main and its full ancestry. Review 5941694377 stands. Smoke 44109255302 and all 12 native jobs in 44109254971 passed; independently inspected the combined 181 regression passes, standalone four-test suite and database addressed_reads=24/private_reads=0. This merge differs from qualified #360 only in these two status handoffs. Prior main 45b5cf07 smoke passed; its combined native 44118550566 remains running at inspection.
 
 #361 `71d0c80ded11181645037f8d9b4f38524aaee556` is source-accepted in review 5942373407, not integrated. It changes only the recipe test and five Markdown files relative to #360; tested 657d0d87 differs from head only in those five Markdown files. The actual private reverse copy/shared-allocation witness attributes 2,046–6,304 requested bytes across three fixtures. Complete pins/source/parent order, distinct buffers/domains, explicit opposite roles even at equal cardinality, detached aliases and final weak/domain release are checked. Candidate costs are not realized whole-owner savings; local archives remain contributor-reported.

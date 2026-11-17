@@ -59,7 +59,8 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &pr
   reserve_exchange_maps(projection,limits[field::Budget::Particles],limits[field::Budget::Fields],limits[field::Budget::Batch],occurrences_,fields_,&trusted,&setup);
   const ExchangeMap<OccurrenceBinding> staged_rows(occurrences,domain,&setup);
   const ExchangeMap<ExchangeFieldBinding> staged_fields(fields,domain,&setup);
-  stage(std::move(contract),std::move(memberships),staged_rows,staged_fields,setup);
+  const auto target = contract ? contract->to() : warm::Exposure{};
+  stage(std::move(contract),target,std::move(memberships),staged_rows,staged_fields,setup);
   // Setup refusal must unwind the constructor to the owner boundary, not become
   // a fresh operational capture allowance or a swallowed partial result.
   capture(projection,setup);
@@ -71,17 +72,21 @@ CaptureResult ExchangeBindings::prepare(const LetterProjection &projection,
     const ExchangeMap<OccurrenceBinding> &occurrences,
     const ExchangeMap<ExchangeFieldBinding> &fields, std::uint64_t capture_work) {
   PreparationWork setup(UINT64_MAX); // Standalone wrapper; owner adoption uses its shared meter.
-  stage(std::move(contract),std::move(memberships),occurrences,fields,setup);
+  const auto target = contract ? contract->to() : warm::Exposure{};
+  stage(std::move(contract),target,std::move(memberships),occurrences,fields,setup);
   return capture(projection,capture_work);
 }
 
 void ExchangeBindings::stage(std::shared_ptr<const LetterExchangeContract> contract,
-    std::shared_ptr<const MembershipFields> memberships,
+    warm::Exposure target, std::shared_ptr<const MembershipFields> memberships,
     const ExchangeMap<OccurrenceBinding> &occurrences,
     const ExchangeMap<ExchangeFieldBinding> &fields, PreparationWork &meter) {
   valid_ = false;
   meter.charge(1);
+  need(contract && (target == contract->from() || target == contract->to()) &&
+       contract->from() != contract->to(), "invalid exchange operation direction");
   contract_ = std::move(contract);
+  target_ = target;
   memberships_ = std::move(memberships);
   occurrences_.clear(); fields_.clear();
   for (const auto &row : occurrences) {
@@ -118,6 +123,11 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection, Prep
        meter.equal(contract_->recipe().selection,projection.recipe().ref.selection) &&
        meter.equal(contract_->recipe().revision,projection.recipe().ref.revision),
        "exchange contract belongs to another projection");
+  meter.elements(projection.recipe().selections.size(),1);
+  meter.charge(1);
+  const auto source_exposure = target_ == contract_->to() ? contract_->from() : contract_->to();
+  need(projection.exposure(contract_->owner().source.entry) == source_exposure,
+       "exchange source exposure differs from committed projection");
   need(occurrences_.size() == s.live.particles && fields_.size() <= s.live.fields,
        "exchange binding inventory differs from committed execution");
   need(occurrences_.size() <= masses_.capacity() && s.live.edges <= edges_.capacity() &&
@@ -156,7 +166,7 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection, Prep
   meter.charge(s.live.edges); meter.charge(s.particle_headers.size());
   edge_rows_.assign(s.live.edges, false);
   outgoing_rows_.assign(s.particle_headers.size(), false);
-  for (const auto &source : contract_->outgoing()) {
+  for (const auto &source : outgoing_sources()) {
     meter.charge(1);
     const auto binding = std::find_if(occurrences_.begin(), occurrences_.end(),
         [&](const auto &v) { return meter.equal(v.occurrence,source.occurrence); });

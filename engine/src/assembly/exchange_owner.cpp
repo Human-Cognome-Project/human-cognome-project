@@ -158,10 +158,6 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     auto forward = LetterExchangeContract::collect(*projection_,
         {warm::Uuid(projection_->study(),domain), {selection.entry,{}}}, target,domain,&meter);
     meter.charge(sizeof(LetterExchangeContract));
-    auto reverse = LetterExchangeContract(forward,domain,&meter);
-    std::swap(reverse.from_, reverse.to_);
-    reverse.outgoing_.swap(reverse.incoming_);
-    meter.charge(sizeof(LetterExchangeContract));
     auto retained = std::allocate_shared<const LetterExchangeContract>(
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
     setup.phase = ProjectionSetupPhase::Bindings;
@@ -175,10 +171,6 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
     };
     append_declaration();
     declarations_.push_back(std::move(retained));
-    append_declaration();
-    meter.charge(sizeof(LetterExchangeContract));
-    declarations_.push_back(std::allocate_shared<const LetterExchangeContract>(
-        SharedReservationAllocator<LetterExchangeContract>(domain),std::move(reverse)));
   }
   setup.phase = ProjectionSetupPhase::SpareInspection;
   const auto copy_bytes = projection_->storage(&meter,true).charged_bytes();
@@ -210,12 +202,15 @@ void ExchangeOwner::prepare_projection(const OccurrenceKey &owner, warm::Exposur
 std::shared_ptr<const LetterExchangeContract> ExchangeOwner::declaration(
     const OccurrenceKey &owner, warm::Exposure target, PreparationWork &meter) const {
   for (const auto &entry : declarations_)
-    if (meter.equal(entry->owner(),owner) && entry->to() == target) {
+    if (meter.equal(entry->owner(),owner)) {
+      meter.charge(1);
+      need(target == entry->from() || target == entry->to(), "invalid exchange target exposure");
+      const auto source = target == entry->to() ? entry->from() : entry->to();
       bool current = false;
       for (std::size_t i = 0; i < projection_->recipe_.selections.size(); ++i) {
         meter.charge(1);
         if (projection_->recipe_.selections[i].entry == owner.source.entry) {
-          current = entry->from() == projection_->exposures_[i]; break;
+          current = source == projection_->exposures_[i]; break;
         }
       }
       need(current,
@@ -246,7 +241,7 @@ OwnerPreparationResult ExchangeOwner::prepare(const OccurrenceKey &owner, warm::
   need(h_.ready() && h_.prepared_storage().generation == generation_, "stale or unready exchange owner");
   auto selected = declaration(owner, target,meter);
   prepare_projection(owner,target,meter);
-  plan_->bound_->stage(std::move(selected),memberships_,occurrences_,fields_,meter);
+  plan_->bound_->stage(std::move(selected),target,memberships_,occurrences_,fields_,meter);
   const auto staged = meter.result();
   const auto captured = plan_->bound_->capture(*projection_,capture_work);
   if (captured.status != CaptureStatus::Ok)
