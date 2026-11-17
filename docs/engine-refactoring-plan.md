@@ -211,6 +211,18 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-16 contributor (awaiting review):
+[membership field-key cost comparison](../engine/docs/MEMBERSHIP-FIELD-KEY-COST.md)
+at `ec21b153` attributes duplicate row ObjectKeys beside full target pins in the
+actual live/bounded/catalogue collector. Eight/sixteen rows retain 380/760 nested
+requested bytes plus in-vector extent; this is a measured candidate, not removal
+savings. A scoped proposal reuses the existing pin object while preserving an
+explicit field kind, shorter group addresses, context/revision/count semantics
+and census/consumer validation. Local quick CI, value/native controls and fresh
+standalone Clang/GCC suites passed. Production is identical to the accepted #356
+dependency, with current main `0bd4db55` preserved. Review/hosted qualification
+remain separate; no new registry, owner, native guard or #324 formula is added.
+
+2026-11-16 contributor (awaiting review):
 [owned plan study authority](../engine/docs/PLAN-STUDY-AUTHORITY.md) at `57615368`
 implements #355's accepted row-UUID removal. Full supplied source/occurrence
 validation precedes numeric-only emission; existing header + numeric rendering

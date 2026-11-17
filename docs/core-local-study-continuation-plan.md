@@ -1,5 +1,23 @@
 # Core continuation after local CUDA corrections
 
+**Contributor next comparison — 2026-11-16 (awaiting review):**
+[membership field-key attribution](../engine/docs/MEMBERSHIP-FIELD-KEY-COST.md)
+at `ec21b153` identifies duplicate ObjectKeys inside returned membership rows,
+already owned by their complete target pins. Actual legacy/structural live and
+alternative-catalogue factories retain 380/760 nested requested bytes in these
+copies for eight/sixteen rows. Pin-member comparison allocates nothing; complete
+contexts/counts/revisions survive collector-source teardown. The scoped proposal
+retains the explicit kind, coordinates all consumers/census and preserves short
+group addresses. It is not implemented.
+
+Local quick CI, both focused value/native CTests and fresh standalone Clang/GCC
+four-test suites passed, including all 3,808 membership value controls. Main
+`0bd4db55` and explicit source-accepted #356/#355 dependencies are preserved by
+merge `2697fb36`; production is unchanged relative to #356. #355 native run now
+reports success, integration remains separate and #356 qualification is pending.
+Review this candidate before removal; preserve native claims, candidate/committed
+state and all separately scoped indexed/catalogue/producer/#324 boundaries.
+
 **Maintainer #356 review — 2026-11-16 (supersedes older status below):** #354 at `eff64deb977839d8f9d719c93e6645fc99bfe3e0` is integrated by this merge after reconciled smoke 43976006107, viewport 43976006191 and all 12 native jobs in 43976006049 passed. Inspected 181 regression passes (46/45/45/45), origin provenance, all four owner/observer profiles and database addressed_reads=24/private_reads=0. Its code/tests remain identical to reviewed eddd4f35; #353 history and historical comparison are preserved. Main 1337bbcc smoke/native also passed. This merge's combined CI is separate qualification.
 
 #355 `93dcd711f9c6b601b0b669ffa4639888355d944f` remains source-accepted (5929836328), unmerged; native 43978139830 has regression shard 2 pending at review, all other existing jobs passed. #356 `c9c414a2bf9fbf768caa1f0bdb9c633e97355c22` is source-accepted in review 5930271128, unmerged. It implements the accepted plan study cleanup: header-owned study plus numeric rows/full definition pins, full supplied-key validation and charged header equality, existing renderer reused without an owning temporary, detached complete identities preserved. Work/reservation charges follow actual smaller storage while validation charges remain. Separate-study, lifetime, refusal and allocation-unwind controls were reviewed. Reported two/24-row producer savings of 170/2,040 requested bytes include vector extent and nested contents; local historical binaries/archives remain contributor-reported. Tested 57615368 differs only in five Markdown files. Smoke 43984329102/viewport 43984329040 passed; native 43984329173 build/projection passed, remaining qualification pending.
