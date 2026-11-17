@@ -1,5 +1,14 @@
 # Checked prepared associations and consuming observation
 
+**Subsequent implementation — 2026-11-16:** #352 is integrated in main
+`5f45f566`. The later [Origin pin-authority removal](ORIGIN-PIN-AUTHORITY.md)
+at `417aed19` removes a duplicate key inside detached origin rows and preserves
+the checked association/observer contract. Its smaller metadata changes the
+retained-versus-consuming comparison to 31 requests/3,287 requested bytes in
+both local compiler builds. The 39/3,847 measurements below remain historical
+evidence for their exact `33cffcb3` source. The later removal awaits its own
+review and hosted qualification.
+
 The subsequent [origin association cost comparison](ORIGIN-ASSOCIATION-COST.md)
 uses this checked boundary to measure one duplicate ObjectKey inside each
 detached provenance row. It proposes a separate removal boundary; this

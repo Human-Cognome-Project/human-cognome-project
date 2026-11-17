@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #include <atomic>
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -11,6 +12,7 @@
 #include <thread>
 
 #include "membership_fixture.h"
+#include "origin_reference.h"
 
 namespace {
 int checks = 0;
@@ -22,9 +24,86 @@ template<class F> void rejects(F fn, const char *label) {
   try { fn(); } catch (const std::exception &) { check(true, label); return; }
   check(false, label);
 }
+void pin_snapshot_equivalence() {
+  using namespace assembly;
+  ActiveReport detached;
+  viewport::CaptureContext detached_context;
+  viewport::Json before;
+  {
+    membership_fixture::Fixture fixture;
+    const auto owner = warm::new_uuid();
+    const auto local = origin_reference::local_input(fixture.base.owner,owner);
+    const auto recipe = normalize_letters(fixture.base,
+        {fixture.request(fixture.english,0,warm::Exposure::Aggregate),
+         fixture.request(fixture.english,1,warm::Exposure::Parts)});
+    const auto source = ActiveAssembly::assemble(recipe,owner,true,local);
+    const auto legacy = origin_reference::produce(source.origins());
+    engine::InstanceSettings settings;
+    settings.read_environment = false; settings.cpu_threads = 1;
+    ActiveSession session(settings);
+    field::Parameters p; p.gravity = p.contact_stiffness = p.reach_strength = 0;
+    const auto handle = session.submit(source,p);
+    auto report = session.report(handle,owner);
+    auto context = viewport::context(source,handle,0,"shared/local provenance");
+    const auto actual = viewport::snapshot(report,context);
+    auto reference = report;
+    reference.origins.clear();
+    for (const auto &old : legacy) reference.origins.push_back(origin_reference::checked(old));
+    check(actual == viewport::snapshot(reference,context),"complete snapshot agrees with checked legacy provenance values");
+    check(report.origins.size() == 5 && actual.at("particles").size() == 3,
+          "hidden alternatives and repeated occurrences survive shared/local migration");
+    bool saw_shared = false, saw_local = false;
+    for (const auto &particle : actual.at("particles")) {
+      const auto id = particle.at("id").get<std::string>();
+      const auto old = std::find_if(legacy.begin(),legacy.end(),
+          [&](const auto &v) { return occurrence_text(v.occurrence) == id; });
+      check(old != legacy.end() && particle.at("definition") == warm::key(old->definition),
+            "serialized definition agrees with independent legacy key");
+      std::string label;
+      for (const auto &tool : recipe.tools)
+        if (tool.ref.object == old->definition && tool.notation)
+          label.assign(tool.notation->data(),tool.notation->size());
+      check(particle.at("label") == label,"shared and local labels preserve legacy lookup behavior");
+      if (old->local) {
+        saw_local = true;
+        check(origin_reference::same_local(old->local,local.values.front().ref),
+              "local object owner and version remain complete");
+      } else {
+        saw_shared = true;
+        check(old->shared && !old->shared->revision.nil(),"shared revision remains complete");
+      }
+    }
+    check(saw_shared && saw_local,"native snapshot exercises both provenance families");
+    for (std::size_t i=0; i<report.origins.size(); ++i) {
+      auto no_pin = report; no_pin.origins[i].shared.reset(); no_pin.origins[i].local.reset();
+      rejects([&] { viewport::snapshot(no_pin,context); },"all origins, including hidden alternatives, require a pin");
+      auto dual = report;
+      dual.origins[i].shared = legacy.front().shared;
+      dual.origins[i].local = local.values.front().ref;
+      rejects([&] { viewport::snapshot(dual,context); },"ambiguous shared/local provenance refused");
+    }
+    auto mismatch = report;
+    mismatch.prepared.particles.front().occurrence.definition = warm::key(local.values.front().ref.object);
+    rejects([&] { viewport::snapshot(mismatch,context); },"legacy encoded occurrence key must match its full pin");
+    mismatch = report;
+    const auto active = std::string(mismatch.prepared.particles.front().occurrence.id);
+    for (auto &origin : mismatch.origins)
+      if (occurrence_text(origin.occurrence) == active) origin.shared->object = fixture.french;
+    rejects([&] { viewport::snapshot(mismatch,context); },"a different valid shared key cannot silently replace legacy definition");
+    mismatch = report;
+    for (auto &origin : mismatch.origins) if (origin.local) origin.local->object = local.source.object;
+    rejects([&] { viewport::snapshot(mismatch,context); },"a different valid local key cannot silently replace legacy definition");
+    detached = std::move(report); detached_context = std::move(context); before = actual;
+  } // Source assembly, native session and Runtime all die here.
+  check(viewport::snapshot(detached,detached_context) == before,
+        "complete detached snapshot and pins survive source and native owner teardown");
+  for (const auto &scale : detached.prepared.scales)
+    check(!scale.node.layout,"detached provenance has no native layout lifetime dependency");
+}
 }
 int main() {
   try {
+    pin_snapshot_equivalence();
     using namespace assembly;
     using viewport::Json;
     membership_fixture::Fixture f;

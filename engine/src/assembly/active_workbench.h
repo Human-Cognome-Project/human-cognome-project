@@ -43,9 +43,11 @@ struct LocalInput {
 };
 struct Origin {
   OccurrenceKey occurrence;
-  warm::ObjectKey definition;
   std::optional<warm::ToolRef> shared;
   std::optional<LocalRef> local;
+  // Exactly one complete pin owns the definition. The reference is borrowed
+  // from this value, not the source assembly or native execution.
+  const warm::ObjectKey &definition() const;
 };
 
 // Pure logical hot state. No Program, SNode pointers, manager or SQL handles.

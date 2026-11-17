@@ -9,6 +9,7 @@
 #include <fstream>
 #include <limits>
 #include <set>
+#include <string_view>
 
 namespace viewport {
 namespace {
@@ -59,7 +60,7 @@ CaptureContext context(const assembly::ActiveAssembly &a,
     if (o.local) selected.emplace(id, DisplayContext{"standalone", id, {}});
     auto found = selected.find(id);
     if (found != selected.end()) {
-      found->second.label = labels[o.definition];
+      found->second.label = labels[o.definition()];
       out.occurrences.emplace(id, found->second);
     }
   }
@@ -113,9 +114,9 @@ Json snapshot(const assembly::ActiveReport &r, const CaptureContext &c) {
     scales.push_back({{"id", i}, {"parent", s.node.parent}, {"role", role},
                       {"units", s.units}, {"level", level}});
   }
-  std::map<std::string, const assembly::Origin *> origins;
+  std::map<std::string, const warm::ObjectKey *> origins;
   for (const auto &o : r.origins)
-    need(origins.emplace(assembly::occurrence_text(o.occurrence), &o).second,
+    need(origins.emplace(assembly::occurrence_text(o.occurrence), &o.definition()).second,
          "viewport: duplicate occurrence origin");
   Json particles = Json::array();
   std::set<int> slots;
@@ -136,7 +137,10 @@ Json snapshot(const assembly::ActiveReport &r, const CaptureContext &c) {
     const auto &d = c.occurrences.at(std::string(o.id));
     need(d.exposure == "aggregate" || d.exposure == "parts" || d.exposure == "standalone",
          "viewport: invalid supplied exposure");
-    particles.push_back({{"id", std::string(o.id)}, {"definition", warm::key(origins.at(std::string(o.id))->definition)},
+    auto definition = warm::key(*origins.at(std::string(o.id)));
+    need(std::string_view(o.definition.data(),o.definition.size()) == std::string_view(definition),
+         "viewport: occurrence definition differs from provenance pin");
+    particles.push_back({{"id", std::string(o.id)}, {"definition", std::move(definition)},
       {"slot", o.slot}, {"position", point(scalar(field::kPosX), scalar(field::kPosY), scalar(field::kPosZ))},
       {"radius", radius}, {"mass", mass}, {"exact_mass", std::to_string(v.exact_mass)},
       {"binding", o.study_node}, {"level", levels.at(o.study_node)},

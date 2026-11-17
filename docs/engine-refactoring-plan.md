@@ -223,6 +223,18 @@ removed; the comparison specifies current readers and invalid-provenance
 questions for a separately reviewed accessor/removal with equivalence controls.
 
 2026-11-16 contributor (awaiting review):
+[Origin pin authority](../engine/docs/ORIGIN-PIN-AUTHORITY.md) at `417aed19`
+implements #353's accepted duplicate-key removal on main `5f45f566`. The complete
+shared/local pin supplies the definition through a checked borrowed accessor;
+all producers/readers preserve alternatives, occurrence identity and detached
+lifetime. Actual producer requests, retained bytes and scoped peak decrease
+against both the old-shaped reference and an isolated historical producer.
+Local quick CI, 16 focused Clang tests and five fresh GCC tests passed, including
+shared/local snapshot/label equivalence and invalid provenance refusal. Review
+and authoritative hosted CI remain pending. #353's old-member witness requires
+integration reconciliation; native claims, candidate state and #324 are unchanged.
+
+2026-11-16 contributor (awaiting review):
 [checked prepared associations](../engine/docs/PREPARED-ASSOCIATIONS.md) at
 `33cffcb3` implement the accepted first view/consumer slice on main `677d151f`.
 Existing immutable source/plan and actual handle arrays are borrowed behind
