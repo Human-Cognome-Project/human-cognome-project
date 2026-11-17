@@ -1,6 +1,6 @@
 // Both alternatives have one body and mass two. Untouched aggregate and byte
 // copies retain every field, so repeated publication isolates semantic direction.
-void exchange_owner_equal(engine::Runtime &r, HostPath path) {
+void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = false) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
@@ -30,6 +30,8 @@ void exchange_owner_equal(engine::Runtime &r, HostPath path) {
     rows.push_back({o.key,f.in.particle_rows[o.key.source.entry]});
   std::vector<ExchangeFieldBinding> fields;
   for (std::size_t i=0; i<keys.size(); ++i) fields.push_back({keys[i],f.in.field_rows[i]});
+  exchange_recipe_cost(f,initial,rows,fields);
+  if (recipe_only) return;
   owner_lifetime(f,initial,rows,fields);
   auto owner = Access::adopt(f.h,initial,rows,fields);
   const assembly::OccurrenceKey key{initial.study(),{0,{}}};

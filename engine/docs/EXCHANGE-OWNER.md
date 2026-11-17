@@ -23,6 +23,11 @@ projection consequently follow the current alternative and exact source masses.
 Exchange declarations use the current exposure while their alternatives still
 come from the immutable recipe. No new projection UUID is minted between exchanges.
 
+[Recipe backing inspection](EXCHANGE-RECIPE-COPY-COST.md) measures the identical
+immutable Bundles currently copied into both views. It proposes owner-private
+recipe sharing while retaining independent live view state and detached public/
+domain copies. This is awaiting review; both views still own complete recipes.
+
 ## Preparation and publication
 
 Adoption reserves two projection views and one reusable

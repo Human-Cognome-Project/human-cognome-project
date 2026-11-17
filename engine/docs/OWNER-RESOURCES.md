@@ -1,5 +1,14 @@
 # Private exchange-owner resource inventory
 
+**Contributor recipe-family inspection — 2026-11-17 (awaiting review):**
+[Actual duplicate recipe backing](EXCHANGE-RECIPE-COPY-COST.md) at `ac4ab9cf`
+attributes 25,735–28,059 requested bytes per adopted recipe copy. Both committed/
+spare views still retain one; their 520-byte Bundle headers are already embedded
+in projection object requests. The proposal requires owner-private lifetime,
+snapshot/copy admission and census changes before removal, with public/domain
+copy detachment preserved. These candidate costs overlap whole-owner totals;
+no savings or combined B/admission policy is implemented.
+
 **Contributor direction-sharing update — 2026-11-17 (awaiting review):**
 [One immutable payload per owner](EXCHANGE-DIRECTION-SHARING.md) at `faa7fc8e`
 removes the reverse graph/shared allocation and second table entry. Explicit
