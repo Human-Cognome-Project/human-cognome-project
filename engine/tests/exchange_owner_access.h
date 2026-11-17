@@ -334,7 +334,6 @@ struct ExchangeOwnerAccess {
         visit(source.occurrence.study); reference(source.definition);
         for (const auto &parent : source.parents) reference(parent.target);
       }
-    for (const auto &leaf : c.leaves()) reference(leaf.definition);
   }
   template<class Visit> static void contract_addresses(const LetterExchangeContract &c, Visit visit) {
     for (const auto *side : {&c.outgoing(),&c.incoming()})
@@ -342,26 +341,34 @@ struct ExchangeOwnerAccess {
         visit(source.definition.object.address);
         for (const auto &parent : source.parents) visit(parent.target.object.address);
       }
-    for (const auto &leaf : c.leaves()) visit(leaf.definition.object.address);
   }
   static auto contract_tables(const LetterExchangeContract &c) {
-    return std::array<std::pair<const void *,std::size_t>,3>{{
+    return std::array<std::pair<const void *,std::size_t>,2>{{
       {c.outgoing_.data(),c.outgoing_.capacity()*sizeof(ExchangeSource)},
-      {c.incoming_.data(),c.incoming_.capacity()*sizeof(ExchangeSource)},
-      {c.leaves_.data(),c.leaves_.capacity()*sizeof(ExchangeLeaf)}}};
+      {c.incoming_.data(),c.incoming_.capacity()*sizeof(ExchangeSource)}}};
   }
   static bool equivalent(const LetterExchangeContract &a, const LetterExchangeContract &b) {
     if (!(a.owner() == b.owner()) || a.recipe().selection != b.recipe().selection ||
         a.recipe().revision != b.recipe().revision || a.from() != b.from() || a.to() != b.to() ||
-        a.mass() != b.mass() || a.match_work() != b.match_work() || a.leaves().size() != b.leaves().size() ||
+        a.mass() != b.mass() || a.match_work() != b.match_work() ||
         !a.matches(b.outgoing().data(),b.outgoing().size(),b.incoming().data(),b.incoming().size(),UINT64_MAX))
       return false;
-    for (std::size_t i = 0; i < a.leaves().size(); ++i) {
-      const auto &x = a.leaves()[i], &y = b.leaves()[i];
-      if (x.character != y.character || x.byte != y.byte || x.nibble != y.nibble ||
-          !(x.definition == y.definition) || x.count != y.count) return false;
-    }
-    return true;
+    // Bijections accept caller permutations; immutable declaration copies also
+    // retain canonical source/parent order, which now supplies nibble provenance.
+    const auto ordered = [](const auto &x, const auto &y) {
+      if (x.size() != y.size()) return false;
+      for (std::size_t i=0; i<x.size(); ++i) {
+        if (!(x[i].occurrence == y[i].occurrence) || !(x[i].definition == y[i].definition) ||
+            x[i].mass != y[i].mass || x[i].node != y[i].node || x[i].parents.size() != y[i].parents.size()) return false;
+        for (std::size_t j=0; j<x[i].parents.size(); ++j) {
+          const auto &a=x[i].parents[j], &b=y[i].parents[j];
+          if (!(a.target == b.target) || a.ordinal != b.ordinal ||
+              a.stored_mass != b.stored_mass || a.contribution != b.contribution) return false;
+        }
+      }
+      return true;
+    };
+    return ordered(a.outgoing(),b.outgoing()) && ordered(a.incoming(),b.incoming());
   }
   static const auto &declarations(const detail::ExchangeOwner &o) { return o.declarations_; }
   static auto declaration(const detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target) {

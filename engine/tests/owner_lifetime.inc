@@ -1230,7 +1230,7 @@ void contract_reservation_controls(const assembly::LetterProjection &projection)
           require(!source.parents.get_allocator().domain && !source.occurrence.source.path.get_allocator().domain,
                   "declaration snapshot retained nested parent domain");
       require(!snapshot->owner().source.path.get_allocator().domain && !snapshot->outgoing().get_allocator().domain && !snapshot->incoming().get_allocator().domain &&
-                  !snapshot->leaves().get_allocator().domain && domain->result().live_bytes == backing,
+                  domain->result().live_bytes == backing,
               "declaration snapshot retained or charged its source domain");
       moved.emplace(std::move(contract));
     }

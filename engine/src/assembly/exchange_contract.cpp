@@ -51,15 +51,6 @@ auto copy_sources(const detail::SharedReservedVector<ExchangeSource> &sources,
   }
   return result;
 }
-auto copy_leaves(const detail::SharedReservedVector<ExchangeLeaf> &leaves,
-    const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter = nullptr) {
-  detail::SharedReservedVector<ExchangeLeaf> result{detail::SharedReservationAllocator<ExchangeLeaf>(domain)};
-  if (meter) { meter->charge(1); meter->elements(leaves.size(),sizeof(ExchangeLeaf)); }
-  result.reserve(leaves.size());
-  for (const auto &leaf : leaves)
-    result.push_back({leaf.character,leaf.byte,leaf.nibble,copy_reference(leaf.definition,domain,meter),leaf.count});
-  return result;
-}
 warm::Uuid copy_uuid(const warm::Uuid &id,
     const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter) {
   if (meter) meter->copy_key(id);
@@ -75,9 +66,6 @@ void relocation_work(const ExchangeSource &source, detail::PreparationWork &work
   work.copy_key(source.occurrence); work.copy_key(source.definition);
   work.elements(source.parents.size(),sizeof(warm::Parent));
   for (const auto &parent : source.parents) work.copy_key(parent.target);
-}
-void relocation_work(const ExchangeLeaf &leaf, detail::PreparationWork &work) {
-  work.copy_key(leaf.definition);
 }
 template<class T>
 void append_work(const detail::SharedReservedVector<T> &rows, detail::PreparationWork &work) {
@@ -127,16 +115,14 @@ LetterExchangeContract::LetterExchangeContract(const OccurrenceKey &owner, const
     : owner_(copy_occurrence(owner,domain,meter)),
       recipe_(copy_recipe(recipe,domain,meter)),
       outgoing_(detail::SharedReservationAllocator<ExchangeSource>(domain)),
-      incoming_(detail::SharedReservationAllocator<ExchangeSource>(domain)),
-      leaves_(detail::SharedReservationAllocator<ExchangeLeaf>(domain)) {}
+      incoming_(detail::SharedReservationAllocator<ExchangeSource>(domain)) {}
 
 LetterExchangeContract::LetterExchangeContract(const LetterExchangeContract &other,
     const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter)
     : owner_(copy_occurrence(other.owner_,domain,meter)), recipe_(copy_recipe(other.recipe_,domain,meter)), from_(other.from_), to_(other.to_),
       mass_(other.mass_), match_work_(other.match_work_),
       outgoing_(copy_sources(other.outgoing_,domain,meter)),
-      incoming_(copy_sources(other.incoming_,domain,meter)),
-      leaves_(copy_leaves(other.leaves_,domain,meter)) {}
+      incoming_(copy_sources(other.incoming_,domain,meter)) {}
 
 LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &projection,
     const OccurrenceKey &owner, warm::Exposure target,
@@ -189,13 +175,8 @@ LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &p
          "exchange exact mass overflow");
     mass += part.mass;
     // project_letters already verified exact UTF-8 character -> byte -> nibble
-    // construction against pinned revisions. Keep every ordered contribution,
-    // including repeated bytes/nibbles, rather than deduplicating definitions.
-    for (const auto &parent : part.parents) {
-      append_work(result.leaves_,work);
-      result.leaves_.push_back({id.path[0], id.path[1], parent.ordinal,
-                                copy_reference(parent.target,domain,&work), parent.contribution});
-    }
+    // construction against pinned revisions. The path and retained parents
+    // preserve every ordered/repeated nibble contribution without a second table.
     append_work(parts,work);
     parts.push_back(std::move(part));
   }
