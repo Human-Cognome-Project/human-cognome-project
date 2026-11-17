@@ -1,10 +1,13 @@
 #include <algorithm>
 #include <iostream>
 #include <set>
+#include <optional>
 
 #include "harness.h"
 #include "assembly/preparation_work.h"
 #include "membership_fixture.h"
+#define HCP_ALLOCATION_LIFETIME
+#include "allocation_observation.h"
 
 namespace assembly::testing {
 struct MembershipFieldsAccess {
@@ -353,6 +356,117 @@ void retained_alternatives() {
   rejects([&] { catalogue.bind(initial,{}); }, "alternative catalogue cannot bind as live legacy participation");
   rejects([&] { catalogue.bind_structure(initial,{}); }, "alternative catalogue cannot bind as live structural participation");
 }
+const allocation_lifetime::Entry *tracked(const void *pointer) {
+  if (!pointer) return nullptr;
+  auto *p = const_cast<void *>(pointer);
+  for (std::size_t n=0, i=allocation_lifetime::bucket(p); n<65536; ++n, i=(i+1)%65536) {
+    const auto &entry = allocation_lifetime::table[i];
+    if (!entry.used) return nullptr;
+    if (entry.pointer == p) return &entry;
+  }
+  return nullptr;
+}
+// Attribute the actual collector's duplicated field key. The full target pin
+// already owns that object; this witness changes no production representation.
+void membership_key_cost(int mode) {
+  using namespace assembly::detail;
+  using Access = assembly::testing::MembershipFieldsAccess;
+  auto fixture = std::make_unique<membership_fixture::Fixture>();
+  auto recipe = mode == 0 ? normalize_letters(fixture->base,
+      {fixture->request(fixture->english,2,warm::Exposure::Aggregate),
+       fixture->request(fixture->english,10,warm::Exposure::Parts),
+       fixture->request(fixture->french,20,warm::Exposure::Parts)}) :
+      normalize_structural_letters(fixture->base,
+      {{2,fixture->ref(fixture->english),warm::Exposure::Aggregate},
+       {10,fixture->ref(fixture->english),warm::Exposure::Parts},
+       {20,fixture->ref(fixture->french),warm::Exposure::Parts}});
+  auto projection = std::make_unique<LetterProjection>(project_letters(recipe));
+  const auto recipe_version = recipe.recipe_version;
+  struct Expected { OccurrenceKey occurrence; ToolRef target; std::uint64_t count; };
+  std::vector<Expected> expected;
+  for (const auto &o : projection->occurrences()) {
+    if (mode != 2 && !o.active) continue;
+    std::vector<ObjectKey> groups = o.key.source.entry == 20
+        ? std::vector<ObjectKey>{fixture->fr,fixture->fr_alphabet}
+        : std::vector<ObjectKey>{fixture->en,fixture->en_alphabet,fixture->family};
+    std::sort(groups.begin(),groups.end());
+    for (const auto &group : groups) expected.push_back({o.key,fixture->ref(group),2});
+  }
+  const auto study = projection->study();
+  auto domain = mode == 0 ? std::shared_ptr<ReservationDomain>{} :
+      std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  PreparationWork work(UINT64_MAX);
+  std::optional<MembershipFields> fields;
+  allocation_lifetime::begin();
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  try {
+    if (mode == 0) fields.emplace(membership_fields(*projection));
+    else fields.emplace(Access::bounded(*projection,mode == 2,domain,work));
+  } catch (...) {
+    allocation_observation::enabled = false;
+    fields.reset(); allocation_lifetime::end(); throw;
+  }
+  allocation_observation::enabled = false;
+  const auto calls = allocation_observation::calls.load(), requested = allocation_observation::bytes.load();
+  const auto retained = allocation_lifetime::counts;
+  const auto count = fields->contributions().size(), capacity = fields->contributions().capacity();
+  const auto *outer = tracked(fields->contributions().data());
+  const auto outer_bytes = outer ? outer->bytes : 0;
+  std::size_t duplicate_bytes = 0, duplicate_blocks = 0, pin_object_bytes = 0;
+  bool exact = count == expected.size(), distinct = true, attributed = outer;
+  for (std::size_t i=0; i<count && i<expected.size(); ++i) {
+    const auto &row = fields->contributions()[i];
+    const auto &pin = row.target.object;
+    exact &= row.field.kind == GroupKind::Membership && row.field.object == pin &&
+             row.target == expected[i].target && row.occurrence == expected[i].occurrence && row.count == expected[i].count;
+    const auto *scope = tracked(row.field.object.scope.str().data());
+    const auto *address = tracked(row.field.object.address.data());
+    const auto *pin_scope = tracked(pin.scope.str().data());
+    const auto *pin_address = tracked(pin.address.data());
+    attributed &= scope && address && pin_scope && pin_address &&
+        row.field.object.scope.str().get_allocator().domain == domain &&
+        row.field.object.address.get_allocator().domain == domain && row.target.revision.str().get_allocator().domain == domain;
+    distinct &= row.field.object.scope.str().data() != pin.scope.str().data() && row.field.object.address.data() != pin.address.data();
+    if (scope && address) { duplicate_bytes += scope->bytes + address->bytes; duplicate_blocks += 2; }
+    if (pin_scope && pin_address) pin_object_bytes += pin_scope->bytes + pin_address->bytes;
+  }
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  for (const auto &row : fields->contributions()) exact &= row.field.object == row.target.object;
+  allocation_observation::enabled = false;
+  const auto borrow_calls = allocation_observation::calls.load(), borrow_bytes = allocation_observation::bytes.load();
+  const auto *backing = fields->contributions().data();
+  projection.reset(); fixture.reset(); // All borrowed source/graph inputs die.
+  const bool detached = fields->study() == study && fields->contributions().data() == backing &&
+      allocation_lifetime::counts.live == retained.live;
+  for (std::size_t i=0; i<count && i<expected.size(); ++i) {
+    const auto &row = fields->contributions()[i];
+    exact &= row.occurrence == expected[i].occurrence && row.target == expected[i].target &&
+             row.field.object == expected[i].target.object && row.count == expected[i].count;
+  }
+  const auto domain_live = domain ? domain->result().live_bytes : 0;
+  fields.reset();
+  const auto released = allocation_lifetime::end();
+  check(exact && detached,"membership field and full target pin retain exact detached context/count/revision after source death");
+  check(count == (mode == 2 ? 16U : 8U) && attributed && distinct && duplicate_blocks == 2*count &&
+        duplicate_bytes && duplicate_bytes == pin_object_bytes,
+        "actual live/catalogue producer owns distinct equal field/pin key backing for every occurrence");
+  check(outer_bytes == capacity*sizeof(MembershipContribution) && (!domain || domain_live == retained.live),
+        "field member extent is inside actual vector capacity and selected-domain retained storage");
+  check(!borrow_calls && !borrow_bytes,"existing full-pin object comparison allocates no storage");
+  check(retained.acquired == calls && !released.live && !released.blocks && released.acquired == released.released &&
+        (!domain || !domain->result().live_bytes),"collector scratch and detached contributions release every tracked request");
+  std::cout << "membership_key_cost,mode=" << mode << ",recipe=" << recipe_version << ",rows=" << count << ",capacity=" << capacity
+            << ",construction_calls=" << calls << ",construction_requested=" << requested
+            << ",retained_requested=" << retained.live << ",peak_requested=" << retained.peak
+            << ",duplicate_blocks=" << duplicate_blocks << ",duplicate_requested=" << duplicate_bytes
+            << ",pin_object_requested=" << pin_object_bytes << ",field_member_bytes=" << sizeof(FieldKey)
+            << ",key_object_bytes=" << sizeof(warm::ObjectKey)
+            << ",row_object_bytes=" << sizeof(MembershipContribution) << ",outer_capacity_bytes=" << outer_bytes
+            << ",domain_live=" << domain_live << ",borrow_calls=" << borrow_calls
+            << ",after_destroy_requested=" << released.live << '\n';
+}
 }  // namespace
 
 int main() {
@@ -362,6 +476,7 @@ int main() {
     graph_failures();
     retained_alternatives();
     bounded_traversal();
+    for (int mode=0; mode<3; ++mode) membership_key_cost(mode);
   } catch (const std::exception &e) {
     harness::record(false, "unexpected exception", e.what());
   }
