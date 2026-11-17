@@ -52,9 +52,16 @@ bounded sealing gate, not a total owner memory/preparation-work policy; see
 Adoption also retains two immutable exchange declarations per selected occurrence,
 one for each direction. Both come from the validated structural recipe: the reverse
 swaps outgoing/incoming descriptors and from/to exposure, retaining the same exact
-mass, ordered leaf inventory and symmetric comparison-work bound. Each declaration
+mass, ordered source/parent inventory and symmetric comparison-work bound. Each declaration
 keeps the full study/occurrence key, pinned recipe and definition revisions. Copies
 of the same letter have distinct declarations; no live identity is deduplicated.
+
+[Forward/reverse payload inspection](EXCHANGE-DIRECTION-COPY-COST.md) measures
+this second immutable graph and proposes retaining one complete payload with
+an explicit operation role on the existing private binding. It is a test-only
+proposal awaiting review; both snapshots are still retained. Direction, current
+exposure, complete semantic pins and native generation/claim/publication guards
+remain required independently of shared storage.
 
 Preparation selects by exact owner key and target and verifies the declared source
 exposure against the current projection. Foreign studies, unknown entries, nested

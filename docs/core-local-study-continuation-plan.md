@@ -8,6 +8,34 @@ Next bounded implementation is authorized without another planning round: one im
 
 #361 smoke 44124840948 and native build/standalone four-test projection suite passed; remaining matrix 44124840860 is pending. Reconcile hosted qualification before integration; no duplicate workflow dispatch. Taichi handles structure; HCP owns meaning. Indexed guards, catalogue/mixed revisions, broader producer adoption, full accounting and #324 remain separate. Held #75/#111/#123 unchanged.
 
+**Contributor next inspection — 2026-11-17 (awaiting review):**
+[retained reverse-declaration payload cost](../engine/docs/EXCHANGE-DIRECTION-COPY-COST.md)
+at `657d0d87` identifies a second complete immutable source/parent graph owned
+solely to swap operation direction. Actual private reverse copies and shared
+retention cost 26–80 requests / 2,046–6,304 retained requested bytes in three
+fixtures, with complete buffer/domain attribution and weak-reference teardown.
+Const alias reads preserve full rows without allocation after source teardown;
+the equal-sized one-byte case still requires explicit semantic direction.
+This is a test-only inspection, not implemented sharing.
+
+Proposed bounded implementation after review: one immutable payload per exact
+owner, explicit operation role on the existing private binding, and coordinated
+owner selection, outgoing capture, incoming commands and census. Preserve full
+pins/order/counts/mass/node/stored mass, public one-way contract semantics,
+current-exposure and generation checks, native claims/maps/candidate state and
+atomic publication. Measure actual owner before/after, recalculate real object/
+table/work/domain costs and retain all budget/unwind/exchange/lifetime guards.
+No new registry, general wrapper or broader producer migration is implied.
+
+Local quick CI, engine recipe test and both fresh four-test compiler suites
+pass all 3,938 recipe controls, including the original refusal families. Current
+main `45b5cf07` integrates #358/#359; merge `63905fc7` explicitly retains
+source-accepted, unmerged #360 `444594ed`. Production is identical to #360;
+its authoritative native run now passes all 12 jobs. Main combined CI and this
+inspection's hosted/review gates remain separate. Indexed guards, catalogue/
+mixed revisions, producer adoption, full accounting and #324 remain separate;
+held #75/#111/#123 are unchanged.
+
 **Maintainer integration and #360 review — 2026-11-17 (supersedes older status below):** #358 `3b570a4f09ff68239df6ea423404dcd7074a28bd` and #359 `69edf33ae128d02b066c1a96a26b6e82aec726fb` are integrated by this merge, preserving current main and dependency ancestry. Their source reviews 5939303910/5939931047 stand; all 12 native jobs passed for each (44089456571/44099141583), as did smoke 44089456736/44099141184. Independently inspected #359's combined 181 regression passes and database addressed_reads=24/private_reads=0. This merge changes only these two handoffs relative to qualified #359; combined main CI remains separate.
 
 #360 `444594ed12e0910623c2a7145fa6b45dec58e6cd` is source-accepted in review 5941694377, not integrated. It removes the duplicate ExchangeLeaf inventory using existing byte-side paths and ordered parents, preserving aggregate/byte distinction, full pins, counts/mass/nodes/stored mass, matching/permutation/work guards, detached/shared lifetime and native publication authority. Census and actual construction/copy charges track removed storage; no replacement array/registry/wrapper. Actual contributor-reported retained savings are 1,992/3,450 bytes for repeated/mixed collection, 2,490 mixed reverse copy, and 2,072 in the native owner fixture including headers. Local archives remain contributor-reported. Tested 0750a2cd differs from head only in six Markdown files.
