@@ -1,5 +1,26 @@
 # Core continuation after local CUDA corrections
 
+**Contributor implementation — 2026-11-17 (awaiting review):**
+[membership pin authority](../engine/docs/MEMBERSHIP-PIN-AUTHORITY.md) at public
+`4f27d26d` completes #357's authorized duplicate field-object removal on fully
+integrated main `fd0817f6`, with no unmerged dependency. Complete target pins now
+supply field objects directly; explicit kind, full contexts/counts/revisions,
+short group addresses, native claims and catalogue lifetime remain. Actual
+eight/sixteen-row producer fixtures retain 1,084/2,168 fewer requested bytes.
+Construction/relocation/census follow the smaller row while validation work
+and exact/one-short/unwind controls remain.
+
+Final quick CI, 15 focused Clang CTests, seven fresh GCC CTests, both standalone
+four-test compiler suites and single/multiple-owner exchanges at one-worker bulk
+and two-worker direct paths passed. Compiler and refresh/rebase lifecycle
+controls also passed. Separate qualification-driven commits fix the existing
+GCC audit range lifetime and explicit projection-copy cleanup failures, with
+preserved original failures and 1,259 new C++ allocation-refusal controls.
+Review the implementation and its repairs, then reconcile authoritative hosted
+CI before integration. Complete accounting, direct indexed guards,
+catalogue/mixed-revision adoption, public producer migration and #324 remain
+separately scoped; no new registry, owner or execution policy is introduced.
+
 **Maintainer #357 review and stack integration — 2026-11-16 (supersedes older status below):** #355 `93dcd711f9c6b601b0b669ffa4639888355d944f`, #356 `c9c414a2bf9fbf768caa1f0bdb9c633e97355c22` and #357 `8d3d6d03bd331ddb1292eea3bf3f3aa23c5a27b9` are integrated by this merge, preserving all dependency and main ancestry. Reviews 5929836328, 5930271128 and 5931480140 accepted their scope. All 12 native jobs passed for each (43978139830, 43984329173, 43989759360), and their smoke gates passed; #356 optional viewport also passed. Independently inspected #357's combined 181 regression passes, membership value/native tests, builder, all four owner/observer profiles, standalone projection suite and database addressed_reads=24/private_reads=0. Main 0bd4db55 combined smoke/native 43985601638/43985601612 also passed. This merge changes only these two status handoffs relative to qualified #357; its normal combined CI is separate.
 
 #356 implements the already accepted plan-header study authority. #357 is a production-unchanged membership field-key comparison, not its removal. Actual public/bounded live and alternative-catalogue rows duplicate the target pin's ObjectKey; 380/760 nested requested bytes for eight/sixteen rows identify candidate cost, with member extent already inside vector allocation. Full contexts, pins, counts, short group addresses and detached ownership remain. Local archives and historical before/after executions remain contributor-reported.

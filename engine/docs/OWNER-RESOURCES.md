@@ -1,5 +1,14 @@
 # Private exchange-owner resource inventory
 
+**Contributor membership census update — 2026-11-17 (awaiting review):**
+[Membership pin authority](MEMBERSHIP-PIN-AUTHORITY.md) at `4f27d26d` removes
+the duplicate row field object. Census counts actual smaller vector capacity,
+full occurrence identity and the complete target pin once; kind is inline.
+Independent allocation/lifetime, shared-catalogue and refusal controls pass
+under Clang/GCC. Qualification also repairs existing GCC explicit-copy unwind
+and test-audit lifetime failures without relaxing quotas or cleanup assertions.
+This updates one retained family; combined admission/full B remains open.
+
 **Current setup inventory (2026-11-12, awaiting review):**
 [Adoption accounting](ADOPTION-ACCOUNTING.md) maps every adoption operation to its
 current gates after #295, derives the initial-map snapshot/work overlap, and
@@ -35,7 +44,7 @@ not an operational memory-budget policy or a second state authority.
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
 | `coordinator` | Coordinator object; command, intrinsic, field-command-index, hierarchy-node, child and contribution buffers |
 | `declarations` | Shared-pointer table capacity; both declaration objects per selection; owner/recipe pins; incoming/outgoing descriptors, their parents, ordered leaves and nested keys/pins |
-| `memberships` | One catalogue object, study/recipe pins, all-alternative contribution capacity and constructed rows' occurrence/field/target keys and pins |
+| `memberships` | One catalogue object, study/recipe pins, all-alternative contribution capacity and constructed rows' full occurrence identities and target pins; explicit kind is inline and the field object comes from the target pin |
 
 Object sizes include embedded member objects. Vector capacity is multiplied by
 element size once; nested backing is then counted only for constructed elements.

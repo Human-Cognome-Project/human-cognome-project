@@ -1,5 +1,14 @@
 # Contextual membership fields — Stage C
 
+**Contributor implementation — 2026-11-17 (awaiting review):**
+[target-pin authority](MEMBERSHIP-PIN-AUTHORITY.md) at `4f27d26d` implements
+the duplicate field-object removal authorized by #357. Rows retain explicit
+membership kind, full occurrence/target pin and count; consumers use the pin's
+object directly. Actual collector measurements, census, preserved failures and
+final Clang/GCC qualification are recorded there. Short group addresses and
+the context/exposure/native semantics below remain. Review and authoritative
+hosted CI are pending.
+
 **Ownership comparison — 2026-11-16 (awaiting review):**
 [field-key cost attribution](MEMBERSHIP-FIELD-KEY-COST.md) at `ec21b153` measures
 the ObjectKey duplicated beside the full target ToolRef in each returned row.
@@ -33,8 +42,10 @@ the accepted study/entry/path keys. Inactive alternatives emit no membership
 edges. Exact aggregate/byte membership mass is conserved; equality of their
 forces or trajectories is not asserted.
 
-`MembershipContribution` retains `OccurrenceKey`, `FieldKey` with
-`GroupKind::Membership`, the pinned target `ToolRef` and exact whole-mass count.
+On this contribution, `MembershipContribution` retains `OccurrenceKey`, explicit
+`GroupKind::Membership`, the complete target `ToolRef` and exact whole-mass count.
+Its field object is borrowed from `target.object`; no second owning ObjectKey
+is retained beside the pin. Bind readers reject nonmembership kind.
 `MembershipFields::bind(projection, nodes)` extends that same study's bounded
 `StudyInput` with explicit `(occurrence, group)` requests. Native opaque names
 encode full keys losslessly. Binding a different study is rejected, even when
