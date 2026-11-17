@@ -5,6 +5,23 @@
 
 #include "harness.h"
 #include "letter_projection_fixture.h"
+#include "assembly/preparation_work.h"
+#define HCP_ALLOCATION_LIFETIME
+#include "allocation_observation.h"
+
+namespace assembly::testing {
+struct ExchangeOwnerAccess {
+  static auto copy(const LetterProjection &p,
+      const std::shared_ptr<detail::ReservationDomain> &domain, bool reserve) {
+    auto result = LetterProjection(p,domain);
+    if (reserve) {
+      detail::PreparationWork meter(UINT64_MAX);
+      result.reserve_exposure(meter);
+    }
+    return result;
+  }
+};
+}
 
 namespace {
 using namespace letter_fixture;
@@ -23,11 +40,84 @@ void rejects(F run, const char *label) {
   }
   check(refused, label);
 }
+void projection_copy_unwind() {
+  using namespace assembly::detail;
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  for (bool structural : {false,true}) {
+    Fixture fixture;
+    if (structural) fixture.base.focal_fields = {{warm::FieldKind::SiblingDefinition,fixture.accented}};
+    const auto recipe = structural ? normalize_structural_letters(fixture.base,
+        {{0,fixture.ref(fixture.accented),warm::Exposure::Aggregate},
+         {1,fixture.ref(fixture.english),warm::Exposure::Parts}}) :
+        normalize_letters(fixture.base,
+        {fixture.request(fixture.accented,0,warm::Exposure::Aggregate),
+         fixture.request(fixture.english,1,warm::Exposure::Parts)});
+    const auto projection = project_letters(recipe);
+    for (bool reserve : {false,true}) {
+      if (reserve && !structural) continue;
+      auto full = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+      bool exact = false;
+      allocation_lifetime::begin();
+      {
+        auto copy = Access::copy(projection,full,reserve);
+        exact = copy.study() == projection.study() &&
+                  copy.recipe().ref.selection == projection.recipe().ref.selection &&
+                  copy.recipe().ref.revision == projection.recipe().ref.revision &&
+                  copy.occurrences().size() == projection.occurrences().size();
+      }
+      const auto observed = allocation_lifetime::end();
+      check(exact,"explicit projection copy preserves source identity and occurrence count");
+      check(!observed.live && !observed.blocks && !full->result().live_bytes,
+            "successful explicit projection copy releases every request");
+      std::cout << "projection_copy_unwind,recipe=" << recipe.recipe_version
+                << ",reserve=" << reserve << ",requests=" << observed.attempts
+                << ",peak_requested=" << observed.peak
+                << ",allocation_work=" << full->result().charged_work << '\n';
+      for (bool bytes : {true,false}) {
+        const auto total = bytes ? full->result().peak_bytes : full->result().charged_work;
+        std::uint64_t allowance = 0;
+        while (allowance < total) {
+          auto domain = std::make_shared<ReservationDomain>(ReservationBudget{
+              bytes ? allowance : UINT64_MAX,bytes ? UINT64_MAX : allowance});
+          bool refused = false;
+          allocation_lifetime::begin();
+          try { auto copy = Access::copy(projection,domain,reserve); }
+          catch (const ReservationStop &) { refused = true; }
+          const auto released = allocation_lifetime::end();
+          const auto result = domain->result();
+          const auto next = bytes ? result.required_bytes : result.required_work;
+          check(refused && result.status == (bytes ? ReservationStatus::ByteExhausted : ReservationStatus::WorkExhausted) &&
+                    !result.live_bytes && !released.live && !released.blocks && next > allowance && next <= total,
+                "every projection reservation refusal cleans up and makes progress");
+          allowance = next;
+        }
+      }
+      auto exact_domain = std::make_shared<ReservationDomain>(ReservationBudget{
+          full->result().peak_bytes,full->result().charged_work});
+      { auto copy = Access::copy(projection,exact_domain,reserve); }
+      check(!exact_domain->result().live_bytes &&
+                exact_domain->result().charged_work == full->result().charged_work,
+            "exact projection byte and work allowances succeed and release");
+      for (std::size_t fail = 1; fail <= observed.attempts; ++fail) {
+        auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+        bool refused = false;
+        allocation_lifetime::begin(fail);
+        try { auto copy = Access::copy(projection,domain,reserve); }
+        catch (const std::bad_alloc &) { refused = true; }
+        const auto released = allocation_lifetime::end();
+        check(refused && released.attempts == fail && !released.live && !released.blocks &&
+                  !domain->result().live_bytes,
+              "every projection C++ allocation failure releases partial copies");
+      }
+    }
+  }
+}
 }  // namespace
 
 int main() {
   using namespace letter_fixture;
   try {
+    projection_copy_unwind();
     const warm::Uuid text_study("12345678-1234-1234-1234-123456789ABC");
     check(occurrence_text({text_study,{UINT64_MAX,{}}}) ==
               "12345678-1234-1234-1234-123456789abc/18446744073709551615",
