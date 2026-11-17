@@ -1,5 +1,19 @@
 # Private exchange-owner resource inventory
 
+**Contributor recipe-sharing implementation — 2026-11-17 (awaiting review):**
+[One owner-local immutable recipe](EXCHANGE-RECIPE-SHARING.md) at `6be856c7`
+replaces two embedded Bundles with one detached shared const payload, selected
+only by the private spare constructor. Value/domain copies and assignment remain
+independent. The current census includes both mutable projections plus one Bundle
+header/body; shared identities are one recipe, one catalogue and one declaration
+per selection. Actual retained request savings are 26,191 / 28,515 / 26,963 bytes,
+including smaller projection objects and the new 552-byte shared request. The
+initial input gate still prices one complete snapshot; spare work excludes only
+the eliminated recipe copy and includes a fixed association charge. Complete
+native validation and domain/weak/unwind controls remain. This supersedes the
+recipe-copy descriptions below for this implementation; source-pinned historical
+contributions retain their original scopes. Combined B/admission remains open.
+
 **Contributor recipe-family inspection — 2026-11-17 (awaiting review):**
 [Actual duplicate recipe backing](EXCHANGE-RECIPE-COPY-COST.md) at `ac4ab9cf`
 attributes 25,735–28,059 requested bytes per adopted recipe copy. Both committed/
@@ -68,7 +82,7 @@ not an operational memory-budget policy or a second state authority.
 | Family | Owned surfaces counted |
 |---|---|
 | `owner` | `sizeof(ExchangeOwner)` plus its separately allocated reservation-domain object, including embedded references, smart pointers, vector/map headers, generation/gates and fixed reports |
-| `projections` | Both complete projection objects and their existing recursive census: recipes, inputs, occurrences, exposures, active and spare parents, nested keys/pins/text |
+| `projections` | Both mutable projection objects and their independent inputs, occurrences, exposures, active/spare parents and nested keys/pins/text; one shared immutable Bundle header and recursive body |
 | `maps` | Outer capacity of all six stores: occurrence/field maps in owner, binding and coordinator; nested UUID/path/address storage of **every constructed slot**, including inactive slots |
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
 | `coordinator` | Coordinator object; command, intrinsic, field-command-index, hierarchy-node, child and contribution buffers |
@@ -85,9 +99,9 @@ inline string capacity already represented inside object sizes. Checked addition
 and multiplication reject overflow without publishing a partial report.
 
 Binding aliases do not duplicate declaration/catalogue pointee charges. The
-owner creates distinct declarations and a single catalogue; `shared_allocations`
-records their control-block count (one per selection plus one catalogue). Control-block
-**bytes** and allocator metadata are implementation-dependent and are not included
+owner creates distinct declarations, one catalogue and one recipe shared by both
+views; `shared_allocations` records their control-block count (one per selection
+plus two). Control-block **bytes** and allocator metadata are implementation-dependent and are not included
 in the retained-capacity charge. The smart-pointer objects themselves are already
 counted in the containing objects/table. This report must never be labeled heap
 bytes, RSS, total process memory, provisioned memory or a setup peak.
