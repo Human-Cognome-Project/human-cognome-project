@@ -211,6 +211,20 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[Private exchange direction sharing](../engine/docs/EXCHANGE-DIRECTION-SHARING.md)
+at `faa7fc8e` implements #361's authorized one-payload scope. Explicit target
+state on the existing binding coordinates owner validation, capture and commands;
+standalone one-way semantics and all full pins/native authority remain. Actual
+one/four-selection owner fixtures save 2,998/11,992 retained requested bytes with
+table, shared-block and census effects included; no cross-owner/revision sharing
+or new wrapper/registry. Quick CI, 16 Clang/eight GCC CTests, both standalone
+suites, 48 owner mode runs and eight standalone exchange cases pass, including
+equal alternatives, exact/one-short work, all allocation unwind, weak/domain
+lifetime and following ticks. Main `3fd1936e` includes #360; unmerged accepted
+#361 ancestry is explicit and its native run now passes. Review/hosted gates
+and indexed/catalogue/producer/accounting/#324 work remain separate.
+
+2026-11-17 contributor (awaiting review):
 [reverse declaration graph cost](../engine/docs/EXCHANGE-DIRECTION-COPY-COST.md)
 at `657d0d87` measures the owner's duplicate immutable forward/reverse payloads.
 Actual retained reverse copying costs 26–80 requests / 2,046–6,304 requested

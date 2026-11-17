@@ -33,7 +33,7 @@ struct ExchangeContractAccess {
   }
   static auto retained_reverse(const LetterExchangeContract &c,
       const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork &work) {
-    // Same private copy, swaps and shared allocation used by owner adoption.
+    // Historical owner reverse-retention path, kept as a copy/lifetime control.
     work.charge(sizeof(LetterExchangeContract));
     auto result = reverse(c,domain,work);
     work.charge(sizeof(LetterExchangeContract));
