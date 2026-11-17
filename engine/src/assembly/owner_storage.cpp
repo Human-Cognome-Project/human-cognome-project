@@ -74,6 +74,8 @@ OwnerStorage ExchangeOwner::storage() const {
 
   Census declarations;
   declarations.buffer(declarations_);
+  // One payload per exact selected owner; the binding's directional alias does
+  // not own a second graph or another shared allocation identity.
   for (const auto &c : declarations_) declarations.contract(*c);
   out.declarations = declarations.result;
   Census memberships;

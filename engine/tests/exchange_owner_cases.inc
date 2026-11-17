@@ -97,7 +97,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   }
   assembly::detail::OwnerStorage resources;
   no_new([&] { resources = Access::resources(*owner); });
-  require(resources.shared_allocations == 3 && resources.maps.vector_bytes &&
+  require(resources.shared_allocations == 2 && resources.maps.vector_bytes &&
               resources.binding.vector_bytes && resources.coordinator.vector_bytes &&
               resources.declarations.vector_bytes && resources.memberships.vector_bytes &&
               resources.total().charged_bytes() > Access::storage(*owner).charged_bytes(),
@@ -137,7 +137,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
   }
   const auto memberships = Access::memberships(*owner);
   const auto declarations = Access::declarations(*owner);
-  require(declarations.size() == 2, "owner did not retain both exchange declarations");
+  require(declarations.size() == 1, "owner did not retain one complete exchange payload");
   const auto *reserved_plan = &Access::plan(*owner);
   const auto plan_backing = Plan::backing(*reserved_plan);
   const auto *reserved_binding = Plan::binding(*reserved_plan);
@@ -192,14 +192,15 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     const auto declaration = assembly::declare_letter_exchange(*previous,key,target);
     std::shared_ptr<const assembly::LetterExchangeContract> selected;
     no_new([&] { selected = Access::declaration(*owner,key,target); });
-    require(selected.get() == declarations[compression ? 1 : 0].get() &&
-                Access::equivalent(*selected,declaration),
+    require(selected.get() == declarations[0].get() &&
+                Access::equivalent(*selected,declaration,compression),
             "retained declaration differs from freshly derived alternatives");
-    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,old_fields); });
+    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,old_fields,target); });
     require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::InvalidInput,
             "map staging exposed an uncaptured binding");
     no_new([&] { Plan::capture(Access::plan(*owner),*previous); });
-    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok && unchanged(),
+    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok &&
+                Plan::target(Access::plan(*owner)) == target && unchanged(),
             "allocation-free source capture failed or published owner data");
     std::vector<assembly::detail::ExchangeIncoming> incoming;
     for (const auto &source : declaration.incoming())
@@ -395,7 +396,7 @@ void exchange_owner(engine::Runtime &r, HostPath path) {
     auto invalid_fields = old_fields;
     invalid_fields.back().handle.incarnation = 0;
     rejected = false;
-    try { Plan::rebind(Access::plan(*owner),*previous,selected,old_rows,invalid_fields); }
+    try { Plan::rebind(Access::plan(*owner),*previous,selected,old_rows,invalid_fields,target); }
     catch (const warm::Error &) { rejected = true; }
     require(rejected && Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput && unchanged(),
             "partial binding capture retained authority or changed committed owner");
