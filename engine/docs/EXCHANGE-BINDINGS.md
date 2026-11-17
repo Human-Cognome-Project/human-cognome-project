@@ -1,5 +1,12 @@
 # Private committed-source bindings for exchange
 
+[The temporary-adoption inspection](ADOPTION-BINDING-COST.md) at `8972cd49`
+measures the existing per-selection stack validators separately from persistent
+source-map publication. Each still owns reserved maps, three constructor-local
+maps and independent captured facts; nothing is removed by this inspection.
+The source associations, full native validation and final cleanup are recorded
+with a bounded private initial-map proposal for review.
+
 [The source-map implementation](EXCHANGE-OWNER-SOURCE-MAPS.md) at `4f74ad11`
 implements the bounded removal authorized by #365 review 5946869103. Only the
 private persistent owner passes its current maps synchronously by const argument

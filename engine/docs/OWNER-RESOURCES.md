@@ -1,5 +1,18 @@
 # Private exchange-owner resource inventory
 
+**Contributor temporary-validator inspection — 2026-11-17 (awaiting review):**
+[Per-selection construction, peak, work and cleanup](ADOPTION-BINDING-COST.md)
+at `8972cd49` leaves production unchanged. Actual adoption traces match the
+existing stack constructor for all selected roles. Its 90,460-byte live members
+are 47,180 owned-map bytes and 43,280 capture-buffer bytes; three constructor-local
+maps add 1,189–4,070 bytes, then release on constructor return. All temporary
+backing dies before the next selection; 91,649 / 378,120 / 279,009 cumulative
+requested bytes are not retained-owner savings or summed simultaneous peaks.
+The retained candidate remains 47,180 bytes and current/candidate census 94,360.
+Complete masses, outgoing handles, ledger facts/masks, work and selected-domain/
+weak cleanup are checked. A private synchronous initial-map proposal awaits
+review; temporary validators and current fees remain implemented.
+
 **Contributor direct owner-map publication — 2026-11-17 (awaiting review):**
 [Implementation and actual before/after evidence](EXCHANGE-OWNER-SOURCE-MAPS.md)
 at `4f74ad11` implements #365's authorized private synchronous source-map path.

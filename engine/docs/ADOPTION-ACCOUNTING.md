@@ -7,6 +7,20 @@ It does not implement or accept a combined admission limit. Audited runtime:
 `c118e6efea6902a3996af126e67840f5c4e7da1a`. Main `5ef632f2` adds current handoff
 notes; normal merge `46e7d1ad` preserves them in this continuation.
 
+## Temporary per-selection validators (inspection, awaiting review)
+
+[Actual construction attribution](ADOPTION-BINDING-COST.md) at `8972cd49`
+measures the existing `ExchangeBindings check` once per selection. Its stack
+header, three local map headers, owned reserved maps, independent capture buffers
+and complete source checks have separate roles. Temporary constructor cumulative
+requests total 91,649 / 378,120 / 279,009 bytes in the one/four/three-selection
+fixtures and release within their iteration. Constructor logical work totals
+134,160 / 658,494 / 431,898; whole-owner setup work is separately
+466,844 / 1,149,866 / 796,076. These are measured existing operations, not
+eliminated fees or a new combined gate. Retained candidates, C/S prepayment and
+all runtime behavior are unchanged. Review the bounded initial-owner-map
+proposal before implementing any removal.
+
 ## Persistent binding-map removal (awaiting review)
 
 [The source-map implementation](EXCHANGE-OWNER-SOURCE-MAPS.md) at `4f74ad11`

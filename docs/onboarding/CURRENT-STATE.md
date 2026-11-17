@@ -1,5 +1,36 @@
 # Current implementation and work
 
+**Contributor temporary adoption-binding inspection — 2026-11-17 (awaiting review):**
+[Measured constructor cost, source facts and lifetime](../../engine/docs/ADOPTION-BINDING-COST.md)
+at `8972cd49` completes #366 review 5948024253's inspection-only scope.
+Each selection's real adoption requests match the exact stack constructor's
+complete allocation/release sequence. Per temporary: 90,460 bytes survive
+constructor locals (47,180 owned maps + 43,280 capture buffers); local scratch
+adds 1,189–4,070 requested bytes. All backing dies at that selection's iteration
+end. Cumulative temporary setup requests are 91,649 / 378,120 / 279,009 bytes
+for the one/four/three-selection fixtures, not retained savings or simultaneous
+whole-owner peaks. Constructor work, full masses/handles/ledger/masks and
+generation checks are measured separately from retained candidate backing.
+
+Quick CI, four three-fixture Clang/GCC probe runs and six full changed owner
+cases pass, with original refusal/allocation/work/retry/publication/tick controls
+enabled. Independent native-fact, selected-domain, candidate-buffer and final
+weak/bootstrap cleanup assertions pass. Production is byte-identical to
+provisionally accepted #366; no runtime change or full baseline rerun.
+
+Main `8c3d0b93` integrates #364/#365. Normal merge `266bdd8b` preserves that
+main and #366 `dc0854aa`, including both current maintainer handoffs.
+#366 smoke/warm passed; native run 44193455273 remains pending in the
+retained handoff snapshot. This inspection's review/hosted gates are separate.
+No duplicate workflow was dispatched. Local evidence remains contributor-reported; GitHub CI is authoritative.
+
+Review the bounded proposal to feed these private validators from already copied
+owner maps synchronously, keeping independent capture facts, standalone owned
+adapters and every source/role/pin/work/currentness check. This inspection does
+not authorize implementation. Initial snapshot prepayment, retained candidates,
+indexed guards, collision policy, catalogue/mixed revisions, broader adoption,
+full accounting and #324 remain separate. Held #75/#111/#123 unchanged.
+
 **Maintainer integration of #364 and #365 and review of #366 (2026-11-17)**
 
 This merge integrates reviewed #365 `80922b92`, including reviewed #364 `45d30de3`. Hosted native runs 44166963726 and 44177130927, smoke and warm passed on their respective heads. #364 shares the detached immutable recipe within one owner. #365 measures the persistent binding's duplicate map backing.
