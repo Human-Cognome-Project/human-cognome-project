@@ -44,7 +44,7 @@ inline std::map<ObjectKey, std::uint64_t> totals(
     const MembershipFields &fields) {
   std::map<ObjectKey, std::uint64_t> out;
   for (const auto &edge : fields.contributions())
-    out[edge.field.object] += edge.count;
+    out[edge.target.object] += edge.count;
   return out;
 }
 }  // namespace membership_fixture

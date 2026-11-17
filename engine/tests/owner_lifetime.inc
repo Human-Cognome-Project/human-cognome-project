@@ -1044,9 +1044,11 @@ void catalogue_graph_address_controls() {
   // Four visited graph vertices have state/reached keys. Their ancestor sets
   // contain 3+1+1+0 unique targets despite the diamond and direct top edge.
   const auto temporary=(projection.recipe().tools.size()+2*4+5)*address_size;
-  const auto retained=reference.contributions().size()*2*address_size;
+  // Each row owns one target address and three UUIDs (occurrence study,
+  // target scope and revision); field kind is inline beside that pin.
+  const auto retained=reference.contributions().size()*address_size;
   const auto temporary_uuid=(projection.recipe().tools.size()+2*4+5)*37;
-  const auto retained_uuid=(3+reference.contributions().size()*4)*37;
+  const auto retained_uuid=(3+reference.contributions().size()*3)*37;
   require(reference.contributions().size()==projection.occurrences().size()*3,
           "diamond catalogue failed per-occurrence deduplication");
   auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});

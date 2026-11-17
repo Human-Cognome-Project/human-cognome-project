@@ -315,8 +315,14 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     for (const auto &m : assembly.memberships_.contributions()) {
       w.charge(1);
       if (w.equal(m.occurrence,o.key)) {
-        need(m.count == *t.mass && w.equal(m.field.object,m.target.object));
-        tool(m.target); edge(GroupKind::Membership,m.field.object,m.count,0);
+        need(m.count == *t.mass);
+        // Retain the prior object-association validation charge. The pin now
+        // owns the sole object, while explicit kind and full revision still validate.
+        w.charge(1);
+        w.elements(2,m.target.object.scope.str().size());
+        w.elements(m.target.object.address.size(),2*sizeof(codec::AddressElement));
+        need(m.kind == GroupKind::Membership);
+        tool(m.target); edge(m.kind,m.target.object,m.count,0);
       }
     }
   }

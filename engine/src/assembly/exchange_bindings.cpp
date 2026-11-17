@@ -187,8 +187,11 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection, Prep
       add(GroupKind::ParentValue, parent.target.object, parent.contribution);
     }
     for (const auto &membership : memberships_->contributions())
-      if (meter.equal(membership.occurrence,source.occurrence))
-        add(membership.field.kind, membership.field.object, membership.count);
+      if (meter.equal(membership.occurrence,source.occurrence)) {
+        meter.charge(1);
+        need(membership.kind == GroupKind::Membership,"invalid membership field kind");
+        add(membership.kind, membership.target.object, membership.count);
+      }
   }
   need(!outgoing_.empty(), "empty outgoing alternative");
   for (std::size_t row = 0; row < s.live.edges; ++row)
