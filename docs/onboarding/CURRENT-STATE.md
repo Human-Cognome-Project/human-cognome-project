@@ -6,6 +6,26 @@ Tested 4f27d26d differs from head only in six Markdown files. Smoke 44089456736 
 
 Project-owner clarification: **Taichi handles the structure; HCP owns what it means.** Use native machinery for structural responsibilities; retain HCP semantic identity, provenance and composition rules. Next bounded inspection may select a concrete remaining duplicated association or structural responsibility, establish owner/lifetime and actual native overlap, and measure a proposed simplification. Avoid a parallel structural registry or generic wrapper layer. Direct indexed guards, catalogue/mixed-revision adoption, public producer migration, full accounting and #324 mathematics remain separately scoped. Held #75/#111/#123 unchanged.
 
+**Contributor membership pin authority — 2026-11-17 (awaiting review; supersedes older contributor status):**
+public `4f27d26d` implements the removal authorized by #357 review 5931480140,
+starting from fully integrated main `fd0817f6`. Membership rows borrow their
+field object from the complete target pin and retain explicit membership kind,
+full occurrence identity and exact count. Collector, bind/exchange/plan readers,
+census and tests migrate together. See
+[implementation, actual before/after and qualification](../../engine/docs/MEMBERSHIP-PIN-AUTHORITY.md).
+Eight/sixteen-row actual live/catalogue fixtures retain 1,084/2,168 fewer
+requested bytes; these are scoped collector measurements, not full B accounting.
+
+Final local quick CI, 15 focused Clang CTests, seven fresh GCC CTests, both
+standalone four-test compiler suites and exchange/compiler/lifecycle invocations
+passed. Extended GCC qualification exposed an existing audit range-lifetime bug
+and projection-copy unwind failure; separate commits repair them with original
+guards intact and preserved failures. Review and this contribution's authoritative
+hosted CI remain pending. Main's own smoke/native runs now report success.
+No unmerged dependency remains. Native claims/candidate state, direct indexed
+guards, catalogue/mixed-revision adoption, public producer migration and #324
+mathematics remain separate. Held #75/#111/#123 remain unchanged.
+
 **Maintainer #357 review and stack integration — 2026-11-16 (supersedes older status below):** #355 `93dcd711f9c6b601b0b669ffa4639888355d944f`, #356 `c9c414a2bf9fbf768caa1f0bdb9c633e97355c22` and #357 `8d3d6d03bd331ddb1292eea3bf3f3aa23c5a27b9` are integrated by this merge, preserving all dependency and main ancestry. Reviews 5929836328, 5930271128 and 5931480140 accepted their scope. All 12 native jobs passed for each (43978139830, 43984329173, 43989759360), and their smoke gates passed; #356 optional viewport also passed. Independently inspected #357's combined 181 regression passes, membership value/native tests, builder, all four owner/observer profiles, standalone projection suite and database addressed_reads=24/private_reads=0. Main 0bd4db55 combined smoke/native 43985601638/43985601612 also passed. This merge changes only these two status handoffs relative to qualified #357; its normal combined CI is separate.
 
 #356 implements the already accepted plan-header study authority. #357 is a production-unchanged membership field-key comparison, not its removal. Actual public/bounded live and alternative-catalogue rows duplicate the target pin's ObjectKey; 380/760 nested requested bytes for eight/sixteen rows identify candidate cost, with member extent already inside vector allocation. Full contexts, pins, counts, short group addresses and detached ownership remain. Local archives and historical before/after executions remain contributor-reported.

@@ -202,8 +202,8 @@ PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncomin
       if (field.field.kind == GroupKind::Membership)
       for (const auto &membership : b.memberships_->contributions())
         if (meter.equal(membership.occurrence,source.occurrence) &&
-            membership.field.kind == field.field.kind && meter.equal(membership.field.object,field.field.object))
-          add(membership.field.kind, membership.field.object, membership.count, 0);
+            membership.kind == field.field.kind && meter.equal(membership.target.object,field.field.object))
+          add(membership.kind, membership.target.object, membership.count, 0);
     }
   }
   // Only touched outgoing fields may disappear. Retained source participation,

@@ -399,17 +399,22 @@ warm::OccurrenceId projection_id(const warm::OccurrenceId &id,
 }
 OccurrenceKey projection_key(const OccurrenceKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {warm::Uuid(key.study,domain),projection_id(key.source,domain)};
+  auto study = warm::Uuid(key.study,domain);
+  auto id = projection_id(key.source,domain);
+  return {std::move(study),std::move(id)};
 }
 warm::ObjectKey projection_object(const warm::ObjectKey &key,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {warm::Uuid(key.scope,domain),{key.address.begin(),key.address.end(),
-      detail::SharedReservationAllocator<codec::AddressElement>(domain)}};
+  auto scope = warm::Uuid(key.scope,domain);
+  codec::Address address(key.address.begin(),key.address.end(),
+      detail::SharedReservationAllocator<codec::AddressElement>(domain));
+  return {std::move(scope),std::move(address)};
 }
 warm::ToolRef projection_reference(const warm::ToolRef &ref,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {projection_object(ref.object,domain),
-      warm::Uuid(ref.revision,domain)};
+  auto object = projection_object(ref.object,domain);
+  auto revision = warm::Uuid(ref.revision,domain);
+  return {std::move(object),std::move(revision)};
 }
 template<class T, class Copy> warm::RecipeTable<T> recipe_tables(
     const warm::RecipeTable<T> &rows,
@@ -432,47 +437,77 @@ warm::Bundle projection_recipe(const warm::Bundle &b,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   // Build addressed rows directly; a detached whole-recipe copy would allocate
   // their backing before admission. Other recipe storage remains outside it.
-  return {{warm::Uuid(b.ref.selection,domain),warm::Uuid(b.ref.revision,domain)},
-      warm::Uuid(b.owner,domain),warm::Uuid(b.creator,domain),b.recipe_version,
-      recipe_tables(b.tools,domain,[&](const auto &t) -> warm::Tool {
-        return {projection_reference(t.ref,domain),warm::Uuid(t.epoch,domain),projection_text(t.recipe,domain),projection_text(t.notation,domain),t.mass,
-            recipe_tables(t.parents,domain,[&](const auto &p) -> warm::Parent {
-              return {projection_reference(p.target,domain),p.ordinal,p.stored_mass,p.contribution};
-            }),
-            recipe_tables(t.member_of,domain,[&](const auto &ref) { return projection_reference(ref,domain); }),warm::Uuid(t.author,domain)};
-      }),
-      recipe_tables(b.geometry,domain,[&](const auto &g) -> warm::Geometry {
-        return {projection_object(g.object,domain),g.centroid,recipe_tables(g.spheres,domain,[](const auto &sphere) { return sphere; })};
-      }),recipe_tables(b.nodes,domain,[](const auto &n) { return n; }),
-      recipe_tables(b.occurrences,domain,[&](const auto &o) -> warm::Occurrence {
-        return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node,o.position,o.velocity};
-      }),
-      recipe_tables(b.selections,domain,[&](const auto &s) -> warm::Selection {
-        return {s.entry,s.exposure,recipe_tables(s.parts,domain,[&](const auto &id) { return projection_id(id,domain); })};
-      }),
-      recipe_tables(b.contacts,domain,[&](const auto &c) -> warm::Contact {
-        return {projection_id(c.a,domain),projection_id(c.b,domain)};
-      }),
-      recipe_tables(b.structural_occurrences,domain,[&](const auto &o) -> warm::StructuralOccurrence {
-        return {projection_id(o.id,domain),projection_object(o.definition,domain),o.node};
-      }),
-      recipe_tables(b.focal_fields,domain,[&](const auto &f) -> warm::FocalField {
-        return {f.kind,projection_object(f.object,domain)};
-      })};
+  // Finish allocating into independent owners before aggregate moves so GCC 11
+  // also unwinds every preceding member when a later request is refused.
+  auto selection = warm::Uuid(b.ref.selection,domain);
+  auto revision = warm::Uuid(b.ref.revision,domain);
+  warm::BundleRef ref{std::move(selection),std::move(revision)};
+  auto owner = warm::Uuid(b.owner,domain);
+  auto creator = warm::Uuid(b.creator,domain);
+  auto tools = recipe_tables(b.tools,domain,[&](const auto &t) -> warm::Tool {
+    auto target = projection_reference(t.ref,domain);
+    auto epoch = warm::Uuid(t.epoch,domain);
+    auto recipe = projection_text(t.recipe,domain);
+    auto notation = projection_text(t.notation,domain);
+    auto parents = recipe_tables(t.parents,domain,[&](const auto &p) -> warm::Parent {
+      return {projection_reference(p.target,domain),p.ordinal,p.stored_mass,p.contribution};
+    });
+    auto member_of = recipe_tables(t.member_of,domain,[&](const auto &ref) { return projection_reference(ref,domain); });
+    auto author = warm::Uuid(t.author,domain);
+    return {std::move(target),std::move(epoch),std::move(recipe),std::move(notation),t.mass,
+        std::move(parents),std::move(member_of),std::move(author)};
+  });
+  auto geometry = recipe_tables(b.geometry,domain,[&](const auto &g) -> warm::Geometry {
+    auto object = projection_object(g.object,domain);
+    auto spheres = recipe_tables(g.spheres,domain,[](const auto &sphere) { return sphere; });
+    return {std::move(object),g.centroid,std::move(spheres)};
+  });
+  auto nodes = recipe_tables(b.nodes,domain,[](const auto &n) { return n; });
+  auto occurrences = recipe_tables(b.occurrences,domain,[&](const auto &o) -> warm::Occurrence {
+    auto id = projection_id(o.id,domain);
+    auto definition = projection_object(o.definition,domain);
+    return {std::move(id),std::move(definition),o.node,o.position,o.velocity};
+  });
+  auto selections = recipe_tables(b.selections,domain,[&](const auto &s) -> warm::Selection {
+    return {s.entry,s.exposure,recipe_tables(s.parts,domain,[&](const auto &id) { return projection_id(id,domain); })};
+  });
+  auto contacts = recipe_tables(b.contacts,domain,[&](const auto &c) -> warm::Contact {
+    auto a = projection_id(c.a,domain);
+    auto other = projection_id(c.b,domain);
+    return {std::move(a),std::move(other)};
+  });
+  auto structural_occurrences = recipe_tables(b.structural_occurrences,domain,[&](const auto &o) -> warm::StructuralOccurrence {
+    auto id = projection_id(o.id,domain);
+    auto definition = projection_object(o.definition,domain);
+    return {std::move(id),std::move(definition),o.node};
+  });
+  auto focal_fields = recipe_tables(b.focal_fields,domain,[&](const auto &f) -> warm::FocalField {
+    return {f.kind,projection_object(f.object,domain)};
+  });
+  return {std::move(ref),std::move(owner),std::move(creator),b.recipe_version,
+      std::move(tools),std::move(geometry),std::move(nodes),std::move(occurrences),
+      std::move(selections),std::move(contacts),std::move(structural_occurrences),std::move(focal_fields)};
 }
 ProjectedOccurrence projection_row(const ProjectedOccurrence &o,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   std::optional<ByteProvenance> byte;
-  if (o.byte) byte.emplace(ByteProvenance{projection_key(o.byte->owner,domain),projection_reference(o.byte->character,domain),
-      o.byte->character_ordinal,o.byte->byte_ordinal});
+  if (o.byte) {
+    auto owner = projection_key(o.byte->owner,domain);
+    auto character = projection_reference(o.byte->character,domain);
+    byte.emplace(ByteProvenance{std::move(owner),std::move(character),o.byte->character_ordinal,o.byte->byte_ordinal});
+  }
   std::optional<warm::ToolRef> complete;
   if (o.complete_character) complete.emplace(projection_reference(*o.complete_character,domain));
-  return {projection_key(o.key,domain),projection_reference(o.definition,domain),o.slot,o.node,o.active,
+  auto key = projection_key(o.key,domain);
+  auto definition = projection_reference(o.definition,domain);
+  return {std::move(key),std::move(definition),o.slot,o.node,o.active,
       std::move(byte),std::move(complete)};
 }
 ParentContribution projection_row(const ParentContribution &p,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {projection_key(p.occurrence,domain),{p.field.kind,projection_object(p.field.object,domain)},p.ordinal,p.count};
+  auto occurrence = projection_key(p.occurrence,domain);
+  auto object = projection_object(p.field.object,domain);
+  return {std::move(occurrence),{p.field.kind,std::move(object)},p.ordinal,p.count};
 }
 template<class T> auto projection_rows(const detail::SharedReservedVector<T> &rows,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
@@ -492,9 +527,9 @@ Definition input_row(const Definition &row, const std::shared_ptr<detail::Reserv
   parents.reserve(row.parents.size());
   for (const auto &p : row.parents)
     parents.push_back({InputText(p.value.begin(),p.value.end(),detail::SharedReservationAllocator<char>(domain)),p.ordinal,p.count});
-  return {InputText(row.id.begin(),row.id.end(),detail::SharedReservationAllocator<char>(domain)),row.mass,row.centroid,
-      InputTable<Sphere>(row.components.begin(),row.components.end(),detail::SharedReservationAllocator<Sphere>(domain)),
-      std::move(parents)};
+  InputText id(row.id.begin(),row.id.end(),detail::SharedReservationAllocator<char>(domain));
+  InputTable<Sphere> components(row.components.begin(),row.components.end(),detail::SharedReservationAllocator<Sphere>(domain));
+  return {std::move(id),row.mass,row.centroid,std::move(components),std::move(parents)};
 }
 Selection input_row(const Selection &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
   InputTable<InputText> parts{detail::SharedReservationAllocator<InputText>(domain)};
@@ -508,16 +543,24 @@ InputText input_text(const InputText &text, const std::shared_ptr<detail::Reserv
   return InputText(text.begin(),text.end(),detail::SharedReservationAllocator<char>(domain));
 }
 Occurrence input_row(const Occurrence &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {input_text(row.id,domain),input_text(row.definition,domain),row.slot,row.study_node,row.position,row.velocity};
+  auto id = input_text(row.id,domain);
+  auto definition = input_text(row.definition,domain);
+  return {std::move(id),std::move(definition),row.slot,row.study_node,row.position,row.velocity};
 }
 StructuralOccurrence input_row(const StructuralOccurrence &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {input_text(row.id,domain),input_text(row.definition,domain),row.study_node};
+  auto id = input_text(row.id,domain);
+  auto definition = input_text(row.definition,domain);
+  return {std::move(id),std::move(definition),row.study_node};
 }
 Contact input_row(const Contact &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {input_text(row.a,domain),input_text(row.b,domain)};
+  auto a = input_text(row.a,domain);
+  auto b = input_text(row.b,domain);
+  return {std::move(a),std::move(b)};
 }
 Membership input_row(const Membership &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
-  return {input_text(row.occurrence,domain),input_text(row.group,domain)};
+  auto occurrence = input_text(row.occurrence,domain);
+  auto group = input_text(row.group,domain);
+  return {std::move(occurrence),std::move(group)};
 }
 FocalField input_row(const FocalField &row, const std::shared_ptr<detail::ReservationDomain> &domain) {
   return {row.kind,input_text(row.value,domain)};
@@ -583,8 +626,10 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
     for (const auto &p : t->parents) {
       meter.charge(sizeof(ParentContribution));
       meter.copy_key(o.key); meter.copy_key(p.target.object);
-      spare_parents_.push_back({projection_key(o.key,spare_parents_.get_allocator().domain),
-          {GroupKind::ParentValue,projection_object(p.target.object,spare_parents_.get_allocator().domain)},
+      auto occurrence = projection_key(o.key,spare_parents_.get_allocator().domain);
+      auto object = projection_object(p.target.object,spare_parents_.get_allocator().domain);
+      spare_parents_.push_back({std::move(occurrence),
+          {GroupKind::ParentValue,std::move(object)},
           p.ordinal,p.contribution});
     }
   }

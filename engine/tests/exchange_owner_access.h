@@ -295,13 +295,12 @@ struct ExchangeOwnerAccess {
   template<class Visit> static void catalogue_uuids(const MembershipFields &c, Visit visit) {
     visit(c.study_); visit(c.recipe_.selection); visit(c.recipe_.revision);
     for (const auto &row : c.contributions()) {
-      visit(row.occurrence.study); visit(row.field.object.scope);
+      visit(row.occurrence.study);
       visit(row.target.object.scope); visit(row.target.revision);
     }
   }
   template<class Visit> static void catalogue_addresses(const MembershipFields &c, Visit visit) {
     for (const auto &row : c.contributions()) {
-      visit(row.field.object.address);
       visit(row.target.object.address);
     }
   }
@@ -311,8 +310,8 @@ struct ExchangeOwnerAccess {
         a.contributions().size() != b.contributions().size()) return false;
     for (std::size_t i=0; i<a.contributions().size(); ++i) {
       const auto &x=a.contributions()[i], &y=b.contributions()[i];
-      if (!(x.occurrence == y.occurrence) || x.field.kind != y.field.kind ||
-          !(x.field.object == y.field.object) || !(x.target == y.target) || x.count != y.count) return false;
+      if (!(x.occurrence == y.occurrence) || x.kind != y.kind ||
+          !(x.target == y.target) || x.count != y.count) return false;
     }
     return true;
   }

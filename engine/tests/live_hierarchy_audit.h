@@ -212,9 +212,13 @@ class Analyzer {
                 match_shape(int(arg)))
               break;
         } else {
-          for (int arg : (mode_ >= 3 ? std::initializer_list<int>{0, 2, 3, 5}
-                                     : std::initializer_list<int>{0, 10}))
-            if (match_shape(arg))
+          // A conditional initializer_list leaves its backing array expired
+          // before C++17 range iteration. Keep both argument sets alive here.
+          const int ordinary_args[]{0, 10}, placement_args[]{0, 2, 3, 5};
+          const auto *args = mode_ >= 3 ? placement_args : ordinary_args;
+          const int count = mode_ >= 3 ? 4 : 2;
+          for (int i = 0; i < count; ++i)
+            if (match_shape(args[i]))
               break;
         }
       }

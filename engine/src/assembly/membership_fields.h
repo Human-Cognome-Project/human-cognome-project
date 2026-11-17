@@ -7,7 +7,8 @@ namespace detail { class ExchangeOwner; class ExchangeBindings; }
 namespace testing { struct MembershipFieldsAccess; }
 struct MembershipContribution {
   OccurrenceKey occurrence;
-  FieldKey field;
+  GroupKind kind{GroupKind::Membership};
+  // The complete target pin owns the field object; reads borrow target.object.
   // Exact pinned group revision; naming mass is metadata.
   warm::ToolRef target;
   std::uint64_t count{0};
