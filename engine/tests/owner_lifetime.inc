@@ -631,12 +631,168 @@ void unique_reservation_controls() {
   require(destroyed == 2, "unbudgeted unique fixture did not destroy its object");
 }
 
+std::size_t observed_shared_request(const void *object) {
+  const auto address = reinterpret_cast<std::uintptr_t>(object);
+  for (const auto &entry : allocation_lifetime::table) {
+    const auto base = reinterpret_cast<std::uintptr_t>(entry.pointer);
+    if (entry.pointer && address >= base && address-base < entry.bytes) return entry.bytes;
+  }
+  throw std::runtime_error("shared object missing from independent request observer");
+}
+
+void projection_assignment_controls(const assembly::LetterProjection &projection) {
+  using Access = assembly::testing::ExchangeOwnerAccess;
+  using namespace assembly::detail;
+  using Projection = assembly::LetterProjection;
+  namespace A = allocation_lifetime;
+  static_assert(std::is_nothrow_move_constructible_v<Projection>);
+  static_assert(std::is_nothrow_move_assignable_v<Projection>);
+  const auto unlimited = ReservationBudget{UINT64_MAX,UINT64_MAX};
+  auto source_domain = std::make_shared<ReservationDomain>(unlimited);
+  const auto source = Access::projection_copy(projection,source_domain);
+  const auto seed = assembly::project_letters(projection.recipe());
+  std::array<std::uint64_t,2> construction_requests{}, assignment_requests{};
+  // Public construction and ordinary detached copies must also unwind every
+  // nested recipe request, including failures before any mutable table exists.
+  for (bool fresh : {false,true}) {
+    std::uint64_t attempts=0;
+    for (std::uint64_t fail=0; fail<=attempts; ++fail) {
+      bool failed=false;
+      A::begin(fail);
+      try {
+        auto value=fresh ? assembly::project_letters(source.recipe()) : Projection(source);
+        require(&value.recipe()!=&source.recipe() && Access::recipe_equivalent(value.recipe(),source.recipe()),
+                "public projection construction shared or changed its recipe");
+        Access::projection_domains(value,[&](const auto *d) {
+          require(!d,"public projection construction retained a selected domain");
+        });
+      } catch (const std::bad_alloc &) { failed=true; }
+      catch (...) { A::end(); throw; }
+      const auto done=A::end();
+      if (!fail) construction_requests[fresh]=attempts=done.attempts;
+      if (done.live || done.blocks)
+        std::cerr << "projection_construction_unwind,fresh=" << fresh << ",fail=" << fail
+                  << ",attempts=" << done.attempts << ",live=" << done.live << ",blocks=" << done.blocks << '\n';
+      require((fail ? failed && done.attempts==fail : !failed) && !done.live && !done.blocks,
+              "public projection construction failed nested allocation unwind");
+    }
+  }
+  const auto check = [&](const auto &value, const auto &domain) {
+    require(Access::projection_equivalent(value,source) && &value.recipe()!=&source.recipe(),
+            "projection assignment lost values or shared its source recipe");
+    Access::projection_domains(value,[&](const auto *d) {
+      require(d==domain.get(),"projection assignment changed its destination domain");
+    });
+  };
+  // Even equal selected domains do not authorize recipe sharing in value APIs.
+  {
+    auto value=Access::projection_copy(source,source_domain);
+    check(value,source_domain);
+    value=source;
+    check(value,source_domain);
+    const auto *recipe=&value.recipe();
+    no_new([&] { value=value; });
+    require(&value.recipe()==recipe,"self assignment replaced its recipe");
+    auto destination=Access::projection_copy(seed,std::make_shared<ReservationDomain>(unlimited));
+    no_new([&] {
+      Projection moved(std::move(value));
+      require(&moved.recipe()==recipe,"move construction copied a recipe");
+      destination=std::move(moved);
+      require(&destination.recipe()==recipe,"move assignment copied a recipe");
+      destination=std::move(destination);
+      require(&destination.recipe()==recipe,"self move assignment changed a recipe");
+    });
+    require(Access::projection_equivalent(destination,source),"move assignment lost projection state");
+    Access::projection_domains(destination,[&](const auto *d) {
+      require(d==source_domain.get(),"move assignment lost the source allocation domain");
+    });
+    bool rejected=false;
+    try { (void)value.recipe(); } catch (const warm::Error &) { rejected=true; }
+    require(rejected,"moved-from projection exposed a missing recipe");
+    value=projection;
+    require(Access::projection_equivalent(value,projection),"moved-from projection was not assignable");
+  }
+  // Observe assignment itself, then inject every underlying allocation failure.
+  // Destination state and selected live bytes must survive each partial copy.
+  for (bool selected : {false,true}) {
+    std::uint64_t attempts=0;
+    for (std::uint64_t fail=0; fail<=attempts; ++fail) {
+      auto domain=selected ? std::make_shared<ReservationDomain>(unlimited)
+                           : std::shared_ptr<ReservationDomain>{};
+      std::optional<Projection> value(Access::projection_copy(seed,domain));
+      const auto retained=domain ? domain->result().live_bytes : 0;
+      bool failed=false;
+      A::begin(fail);
+      try { *value=source; }
+      catch (const std::bad_alloc &) { failed=true; }
+      catch (...) { A::end(); throw; }
+      if (!fail) { assignment_requests[selected]=attempts=A::counts.attempts; check(*value,domain); }
+      else require(failed && Access::projection_equivalent(*value,seed) &&
+                       (!domain || domain->result().live_bytes==retained),
+                   "partial projection assignment changed destination or leaked selected bytes");
+      value.reset();
+      const auto done=A::end();
+      if (done.live || done.blocks || (domain && domain->result().live_bytes))
+        std::cerr << "assignment_unwind,selected=" << selected << ",fail=" << fail
+                  << ",attempts=" << done.attempts << ",live=" << done.live
+                  << ",blocks=" << done.blocks << ",domain_live=" << (domain ? domain->result().live_bytes : 0) << '\n';
+      require(!done.live && !done.blocks && (!domain || !domain->result().live_bytes),
+              "projection assignment failed allocation unwind");
+    }
+  }
+  // Byte/work gates include overlap with the retained destination. Rejection
+  // preserves that destination, and an exact-budget retry completes the copy.
+  const auto transaction = [&](const auto &domain, bool expect_success) {
+    std::optional<Projection> value;
+    bool failed=false;
+    A::begin();
+    try { value.emplace(Access::projection_copy(seed,domain)); *value=source; }
+    catch (const ReservationStop &) { failed=true; }
+    catch (...) { A::end(); throw; }
+    require(failed!=expect_success,"projection assignment reservation gate disagreed with retry");
+    if (value) {
+      if (failed) require(Access::projection_equivalent(*value,seed),
+                          "reservation refusal changed the retained projection");
+      else check(*value,domain);
+    }
+    auto result=domain->result();
+    value.reset();
+    const auto done=A::end();
+    require(!done.live && !done.blocks && !domain->result().live_bytes,
+            "projection assignment reservation unwind leaked backing");
+    return result;
+  };
+  const auto full=transaction(std::make_shared<ReservationDomain>(unlimited),true);
+  for (bool bytes : {true,false}) {
+    const auto total=bytes ? full.peak_bytes : full.charged_work;
+    std::uint64_t allowance=0;
+    while (allowance<total) {
+      const auto result=transaction(std::make_shared<ReservationDomain>(ReservationBudget{
+          bytes ? allowance : UINT64_MAX,bytes ? UINT64_MAX : allowance}),false);
+      const auto next=bytes ? result.required_bytes : result.required_work;
+      require(next>allowance && next<=total,"assignment reservation refusal failed progress");
+      allowance=next;
+    }
+    transaction(std::make_shared<ReservationDomain>(ReservationBudget{
+        bytes ? total-1 : UINT64_MAX,bytes ? UINT64_MAX : total-1}),false);
+  }
+  transaction(std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work}),true);
+  std::cout << "projection_value_controls,version=" << projection.recipe().recipe_version
+            << ",inactive_parents=" << Access::projection_parent_sizes(projection).second
+            << ",public_copy_requests=" << construction_requests[0]
+            << ",fresh_projection_requests=" << construction_requests[1]
+            << ",public_assignment_requests=" << assignment_requests[0]
+            << ",selected_assignment_requests=" << assignment_requests[1]
+            << ",transaction_peak=" << full.peak_bytes << ",transaction_work=" << full.charged_work << " PASS\n";
+}
+
 void projection_reservation_controls(const assembly::LetterProjection &projection, bool reserve=true) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using namespace assembly::detail;
   namespace A = allocation_lifetime;
   auto prepared=projection;
   if (reserve) Access::reserve_projection(prepared);
+  projection_assignment_controls(prepared);
   auto domain = std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
   std::weak_ptr<ReservationDomain> watch = domain;
   std::optional<assembly::LetterProjection> snapshot;
@@ -646,7 +802,8 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     {
       auto copy = Access::projection_copy(projection,domain);
       if (reserve) Access::reserve_projection(copy);
-      outer = Access::projection_backing_bytes(copy);
+      outer = Access::projection_backing_bytes(copy) + observed_shared_request(&copy.recipe());
+      require(&copy.recipe() != &projection.recipe(), "explicit copy shared its caller recipe");
       Access::projection_texts(copy,[&](const auto &text) {
         const auto observed=std::find_if(std::begin(A::table),std::end(A::table),
             [&](const auto &entry) { return entry.pointer==text.data(); });
@@ -694,7 +851,8 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
         auto other_domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
         auto reserved_copy=Access::projection_copy(copy,other_domain);
         if (reserve) Access::reserve_projection(reserved_copy);
-        std::uint64_t bytes=Access::projection_backing_bytes(reserved_copy);
+        std::uint64_t bytes=Access::projection_backing_bytes(reserved_copy)+observed_shared_request(&reserved_copy.recipe());
+        require(&reserved_copy.recipe() != &copy.recipe(), "explicit domain copy shared a recipe");
         Access::projection_paths(reserved_copy,[&](const auto &path) {
           require(path.get_allocator().domain == other_domain,"copied inactive projection path detached");
           bytes += path.capacity()*sizeof(std::uint32_t);
@@ -712,6 +870,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
                 "explicit reserved projection copy lost or duplicated a parent pool");
       }
       snapshot.emplace(copy);
+      require(&snapshot->recipe() != &copy.recipe(), "public copy shared a selected-domain recipe");
       require(Access::projection_equivalent(*snapshot,copy),"projection snapshot changed exact rows");
       Access::projection_addresses(*snapshot,[&](const auto &address) {
         require(!address.get_allocator().domain,"projection snapshot retained address domain");
@@ -1399,7 +1558,7 @@ void owner_reservation_admission(Fixture &f, const assembly::LetterProjection &p
                     Access::declarations(*owner).capacity()*sizeof(std::shared_ptr<const assembly::LetterExchangeContract>)+
                     storage.declarations.object_bytes+storage.memberships.object_bytes+unique_bytes+
                     Access::projection_backing_bytes(Access::projection(*owner))+
-                    Access::projection_backing_bytes(Access::spare_projection(*owner)),
+                    Access::projection_backing_bytes(Access::spare_projection(*owner),false)+sizeof(warm::Bundle),
             "reservation domain omitted fixed buffers or repeated temporary setup");
   }
   std::uint64_t byte_boundaries = 0, work_boundaries = 0;
@@ -1554,7 +1713,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     binding_bytes = census.binding.object_bytes;
     declaration_charge = census.declarations.charged_bytes();
     shared_identities = census.shared_allocations;
-    require(payloads == projection.recipe().selections.size() && shared_identities == payloads+1,
+    require(payloads == projection.recipe().selections.size() && shared_identities == payloads+2,
             "owner census does not count one immutable payload per selected owner");
     // On this qualified standard library allocate_shared colocates each object
     // and control block. Find its whole actual new request independently of the
@@ -1567,7 +1726,11 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
       }
       throw std::runtime_error("shared pointee missing from independent allocation observer");
     };
-    std::uint64_t shared_bytes = containing_request(Access::memberships(*owner).get());
+    require(&Access::projection(*owner).recipe() == &Access::spare_projection(*owner).recipe() &&
+                &Access::projection(*owner).recipe() != &projection.recipe(),
+            "owner recipe is not shared privately and detached from caller");
+    std::uint64_t shared_bytes = containing_request(Access::memberships(*owner).get())+
+        containing_request(&Access::projection(*owner).recipe());
     for (const auto &p : Access::declarations(*owner)) shared_bytes += containing_request(p.get());
     const auto table_bytes = Access::declarations(*owner).capacity()*
         sizeof(std::shared_ptr<const assembly::LetterExchangeContract>);
@@ -1608,14 +1771,14 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
         const auto request = containing_request(entry.first);
         require(request == entry.second, "projection table differs from observed allocation request");
         projection_bytes += request;
-      }});
+      }},p == &Access::projection(*owner));
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
       Access::projection_paths(*p,[&](const auto &path) {
         const auto bytes=path.capacity()*sizeof(std::uint32_t);
         require(!bytes || containing_request(path.data()) == bytes,
                 "projection path differs from observed allocation request");
         projection_bytes += bytes;
-      });
+      },p == &Access::projection(*owner));
     for (const auto *p : {&Access::projection(*owner),&Access::spare_projection(*owner)})
       Access::projection_addresses(*p,[&](const auto &address) {
         const auto bytes=address.capacity()*sizeof(codec::AddressElement);
@@ -1623,7 +1786,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
                     (!bytes || containing_request(address.data()) == bytes),
                 "projection address differs from observed allocation request");
         projection_bytes += bytes;
-      });
+      },p == &Access::projection(*owner));
     const auto &membership_rows = Access::memberships(*owner)->contributions();
     std::uint64_t declaration_bytes=0;
     for (const auto &declaration : Access::declarations(*owner)) {

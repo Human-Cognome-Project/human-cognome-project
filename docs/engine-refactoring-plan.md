@@ -211,6 +211,20 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[Owner-local immutable recipe](../engine/docs/EXCHANGE-RECIPE-SHARING.md) at
+`6be856c7` implements #363's explicitly authorized private spare-sharing path.
+Initial adoption and public/domain value APIs keep independent recipes;
+mutable views and native authority remain separate. Admission/census count the
+single owner-owned Bundle, with actual header/control/domain lifetime effects
+included in measured 26,191 / 28,515 / 26,963-byte retained reductions. Public
+v1/v2 copy/assignment/move and partial-construction unwind are qualified alongside
+all native owner guards. Quick CI, 16 Clang/eight GCC CTests, both standalone
+suites, both six-test warm compatibility suites, 48 owner mode runs and eight
+standalone exchanges pass. Main `c63a1c24` and reviewed unmerged #363 are
+preserved; review and hosted gates remain separate.
+No cross-owner deduplication, generic wrapper or new execution authority is added.
+
+2026-11-17 contributor (awaiting review):
 [Projection recipe copy attribution](../engine/docs/EXCHANGE-RECIPE-COPY-COST.md)
 at `ac4ab9cf` selects the two identical immutable Bundles in the owner's committed/
 spare views. Actual separate backing costs 25,735–28,059 requested bytes per copy

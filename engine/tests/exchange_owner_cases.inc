@@ -72,6 +72,9 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false)
   auto owner = Access::adopt(f.h, initial, rows, fields);
   {
     auto probe = Access::adopt(f.h,initial,rows,fields);
+    require(&Access::projection(*probe).recipe()!=&Access::projection(*owner).recipe() &&
+                &Access::projection(*probe).recipe()!=&initial.recipe(),
+            "independent owner adoption shared caller or another owner's recipe");
     auto before = Access::resources(*probe);
     auto &path = Access::inactive_path(*probe);
     const auto capacity = path.capacity();
@@ -99,7 +102,7 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false)
   }
   assembly::detail::OwnerStorage resources;
   no_new([&] { resources = Access::resources(*owner); });
-  require(resources.shared_allocations == 2 && resources.maps.vector_bytes &&
+  require(resources.shared_allocations == 3 && resources.maps.vector_bytes &&
               resources.binding.vector_bytes && resources.coordinator.vector_bytes &&
               resources.declarations.vector_bytes && resources.memberships.vector_bytes &&
               resources.total().charged_bytes() > Access::storage(*owner).charged_bytes(),
@@ -154,7 +157,7 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false)
   try { overflow.add({1,0,0,0}); } catch (const warm::Error &) { charge_rejected = true; }
   require(charge_rejected && overflow.object_bytes == UINT64_MAX && !overflow.vector_bytes && !overflow.text_bytes,
           "projection charge overflow published a partial report");
-  require(reserved.object_bytes == 2 * sizeof(assembly::LetterProjection) && reserved.parent_slots == 10 &&
+  require(reserved.object_bytes == 2 * sizeof(assembly::LetterProjection) + sizeof(warm::Bundle) && reserved.parent_slots == 10 &&
               reserved.vector_bytes && reserved.text_bytes, "projection storage omitted retained surfaces");
   const auto *first_view = &Access::projection(*owner), *second_view = &Access::spare_projection(*owner);
   taichi::lang::SNode projection_root(0,taichi::lang::SNodeType::root);

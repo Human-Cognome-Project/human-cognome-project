@@ -56,7 +56,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
   const auto binding_backing = Plan::binding_backing(*reserved_plan);
   const auto reserved = Access::storage(*owner);
   const auto resources = Access::resources(*owner);
-  require(resources.shared_allocations == 5, "shared declarations/catalogue counted per alias");
+  require(resources.shared_allocations == 6, "shared recipe/declarations/catalogue counted per alias");
   const auto map_backing = Access::map_backing(*owner);
   require(reserved.parent_slots == 40, "multiple owner omitted inactive parent storage");
   prepared_test::Metrics metrics(r,PreparedFixtureAccess::nodes(f.h));
