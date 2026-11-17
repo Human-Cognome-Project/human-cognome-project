@@ -1,4 +1,4 @@
-void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false) {
+void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false, bool adoption_only = false) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
@@ -38,6 +38,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
   fields.push_back({{GroupKind::ParentValue,character.object},f.in.field_rows[6]});
   fields.push_back({{GroupKind::SiblingDefinition,letters.accented},f.in.field_rows[7]});
   fields.push_back({{GroupKind::Membership,group.object},f.in.field_rows[8]});
+  if (adoption_only || (!recipe_only && !map_only)) exchange_adoption_binding_cost(f,initial,rows,fields);
+  if (adoption_only) return;
   if (!map_only) exchange_recipe_cost(f,initial,rows,fields);
   if (!recipe_only) exchange_binding_map_cost(f,initial,rows,fields);
   if (recipe_only || map_only) return;

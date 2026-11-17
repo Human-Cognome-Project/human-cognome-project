@@ -1,0 +1,277 @@
+// Test-only observation of real adoption phases, followed by the exact stack
+// constructor with the same pinned inputs. No production callback or copy path.
+namespace adoption_binding_observation {
+namespace A=allocation_lifetime;
+using Phase=assembly::detail::ProjectionSetupPhase;
+struct Stats { std::size_t requests{},bytes{},live{},peak{},whole_peak{}; };
+struct Event { std::size_t selection{},bytes{}; bool acquire{}; };
+struct Trace {
+  std::array<std::size_t,65536> tags{};
+  std::array<Event,32768> events{};
+  std::array<Stats,16> selections{};
+  assembly::detail::ProjectionSetupResult *setup{};
+  Phase last{Phase::Admission};
+  std::size_t count{},current{},used{},bytes{};
+  bool spare{};
+  void reset(assembly::detail::ProjectionSetupResult *s=nullptr) {
+    tags.fill(0); selections.fill({}); setup=s; last=Phase::Admission;
+    count=s?0:1; current=s?0:1; used=bytes=0; spare=false;
+  }
+  void phase() noexcept {
+    if (!setup) return;
+    const auto now=setup->phase;
+    if (now>=Phase::SpareInspection) spare=true;
+    if (now!=last) {
+      current=0;
+      if (now==Phase::Bindings && !spare) {
+        if (++count>=selections.size() || selections[count-1].live) std::abort();
+        current=count;
+      }
+      last=now;
+    }
+  }
+  std::size_t slot(void *p) const noexcept {
+    for (std::size_t j=0,i=A::bucket(p); j<65536; ++j,i=(i+1)%65536)
+      if (A::table[i].pointer==p) return i;
+    std::abort();
+  }
+  void event(std::size_t id,std::size_t n,bool acquire) noexcept {
+    if (!id) return;
+    if (used==events.size()) std::abort();
+    events[used++]={id,n,acquire};
+    auto &s=selections[id];
+    if (acquire) { ++s.requests; s.bytes+=n; s.live+=n; s.peak=std::max(s.peak,s.live); }
+    else { if (n>s.live) std::abort(); s.live-=n; }
+  }
+  void overlap() noexcept {
+    for (std::size_t id=1; id<=count; ++id)
+      if (selections[id].live) selections[id].whole_peak=std::max(selections[id].whole_peak,A::counts.live);
+  }
+  void acquired(void *p,std::size_t n) noexcept {
+    phase(); bytes+=n; const auto index=slot(p); tags[index]=current;
+    event(current,n,true); overlap();
+  }
+  void released(void *p,std::size_t n) noexcept {
+    phase(); overlap(); const auto index=slot(p);
+    event(tags[index],n,false); tags[index]=0;
+  }
+};
+inline thread_local Trace *active{};
+void acquired(void *p,std::size_t n) noexcept { active->acquired(p,n); }
+void released(void *p,std::size_t n) noexcept { active->released(p,n); }
+struct Observe {
+  explicit Observe(Trace &t) {
+    if (active || A::on_acquired || A::on_released) std::abort();
+    active=&t; A::on_acquired=acquired; A::on_released=released;
+  }
+  ~Observe() { A::on_acquired=A::on_released=nullptr; active=nullptr; }
+};
+struct Select {
+  Trace *prior;
+  explicit Select(Trace &t):prior(active) { if (!prior) std::abort(); active=&t; }
+  ~Select() { active=prior; }
+};
+template<class Map,class Visit> void map_requests(const Map &m,const assembly::detail::ReservationDomain *domain,Visit visit) {
+  require(m.storage().get_allocator().domain==domain,"temporary outer map escaped domain");
+  visit(m.storage().data(),m.storage().capacity()*sizeof(m.storage()[0]));
+  for (const auto &row:m.storage()) {
+    const auto &text=map_cost_uuid(row).str();
+    require(text.get_allocator().domain.get()==domain,"temporary UUID escaped domain");
+    visit(text.data(),warm::recipe_text_backing(text));
+    const auto &key=assembly::detail::key_buffer(row);
+    require(key.get_allocator().domain.get()==domain,"temporary nested key escaped domain");
+    visit(key.data(),key.capacity()*sizeof(key[0]));
+  }
+}
+bool same_events(const Trace &owner,std::size_t id,const Trace &single) {
+  std::size_t j=0;
+  for (std::size_t i=0; i<owner.used; ++i) if (owner.events[i].selection==id) {
+    if (j==single.used || owner.events[i].bytes!=single.events[j].bytes ||
+        owner.events[i].acquire!=single.events[j].acquire) return false;
+    ++j;
+  }
+  return j==single.used;
+}
+}
+
+void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection &projection,
+    const std::vector<assembly::detail::OccurrenceBinding> &rows,
+    const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
+  using Owner=assembly::testing::ExchangeOwnerAccess;
+  using Bind=assembly::testing::ExchangeBindingAccess;
+  using namespace assembly::detail;
+  namespace O=adoption_binding_observation;
+  namespace A=allocation_lifetime;
+  auto real=std::make_unique<O::Trace>(), single=std::make_unique<O::Trace>();
+  ProjectionSetupResult setup;
+  real->reset(&setup);
+  const TickSnapshot before(f);
+  struct Measurement {
+    O::Stats actual;
+    A::Counts alive;
+    std::size_t map_bytes{},map_blocks{},facts{},bodies{},outgoing{},edges{};
+    std::uint64_t work{},validation{};
+    warm::Exposure source{};
+  };
+  std::array<Measurement,16> measurements{};
+  A::Counts whole,finished;
+  ReservationResult selected;
+  std::uint64_t retained_map_bytes=0,candidate_requested=0,candidate_blocks=0;
+  std::uint64_t temporary_bytes=0,temporary_requests=0,temporary_work=0,owner_requested=0;
+  std::weak_ptr<ReservationDomain> weak;
+  {
+    O::Observe observe(*real);
+    A::begin();
+    try {
+      {
+        auto owner=Owner::adopt(f.h,projection,rows,fields,UINT64_MAX,setup);
+        require(owner && setup.phase==ProjectionSetupPhase::Complete,"actual adoption did not complete");
+        whole=A::counts;
+        owner_requested=real->bytes;
+        selected=Owner::reservations(*owner);
+        weak=Owner::reservation_domain(*owner);
+        require(real->count==projection.recipe().selections.size(),"phase observer lost a temporary selection");
+        for (std::size_t id=1; id<=real->count; ++id)
+          require(real->selections[id].requests && !real->selections[id].live,
+                  "temporary binding backing survived its selection iteration");
+        require(selected.live_bytes && selected.charged_work<=real->bytes,
+                "selected requests exceed whole-owner observation");
+        const auto declarations=Owner::declarations(*owner);
+        const auto memberships=Owner::memberships(*owner);
+        const auto &source=Owner::projection(*owner);
+        retained_map_bytes=Owner::resources(*owner).maps.charged_bytes();
+        map_cost_pairs(*owner,[&](auto role,const auto &r,const auto &g) {
+          if (role!=2) return;
+          const auto add=[&](const void *p,std::size_t n) {
+            if (!n) return;
+            require(A::table[real->slot(const_cast<void *>(p))].bytes==n,
+                    "candidate visitor differs from real request");
+            candidate_requested+=n; ++candidate_blocks;
+          };
+          const auto *domain=Owner::reservation_domain(*owner).get();
+          O::map_requests(r,domain,add); O::map_requests(g,domain,add);
+        });
+        const auto candidate_backing=Owner::map_backing(*owner);
+        for (std::size_t i=0; i<declarations.size(); ++i) {
+          const auto &declaration=declarations[i];
+          auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+          single->reset();
+          A::Counts alive;
+          const auto baseline=A::counts;
+          std::size_t map_bytes=0,map_blocks=0,fact_bytes=0;
+          std::size_t bodies=0,outgoing=0,edges=0;
+          std::uint64_t work=0,validation=0;
+          {
+            O::Select select(*single);
+            const auto result=Bind::adoption(f.h,source,declaration,memberships,rows,fields,domain,UINT64_MAX,
+              [&](const auto &b) { no_new([&] {
+                alive=A::counts;
+                alive.live-=baseline.live; alive.blocks-=baseline.blocks;
+                alive.peak=single->selections[1].peak;
+                require(Bind::validate(b).status==field::UpdateStatus::Ok &&
+                            Bind::generation(b)==f.h.prepared_storage().generation &&
+                            map_cost_equal(Bind::mappings(b),rows) && map_cost_equal(Bind::fields(b),fields),
+                        "temporary constructor changed source associations");
+                const auto add=[&](const void *p,std::size_t n) {
+                  if (!n) return;
+                  const auto index=single->slot(const_cast<void *>(p));
+                  require(A::table[index].bytes==n,"temporary map visitor differs from actual request");
+                  map_bytes+=n; ++map_blocks;
+                };
+                O::map_requests(Bind::mappings(b),domain.get(),add);
+                O::map_requests(Bind::fields(b),domain.get(),add);
+                const auto &native=f.h.prepared_storage();
+                const auto same=[](const auto &a,const auto &c) {
+                  return a.context==c.context && a.record==c.record && a.address==c.address && a.incarnation==c.incarnation;
+                };
+                const auto &masses=Bind::masses(b);
+                const auto &captured=Bind::edges(b);
+                const auto &handles=Bind::outgoing_view(b);
+                bodies=masses.size(); outgoing=handles.size(); edges=captured.size();
+                require(bodies==rows.size() && outgoing==declaration->outgoing().size(),"temporary lost inventory or outgoing role");
+                for (std::size_t j=0; j<rows.size(); ++j) {
+                  const auto h=rows[j].handle;
+                  require(same(h,native.particle_headers[h.record]) && masses[j]==native.source_masses[h.record],
+                          "temporary captured mass or full source handle differs");
+                }
+                for (std::size_t j=0; j<handles.size(); ++j) {
+                  const auto row=std::find_if(rows.begin(),rows.end(),[&](const auto &r) {return r.occurrence==declaration->outgoing()[j].occurrence;});
+                  require(row!=rows.end() && same(handles[j],row->handle) && Bind::outgoing_mask(b)[row->handle.record],
+                          "temporary outgoing source selection differs");
+                }
+                for (const auto &e:captured) {
+                  const auto &live=native.edges[e.row];
+                  require(same(e.header.first,live.first) && same(e.header.second,live.second) &&
+                              e.header.ordinal==live.ordinal && e.header.share==live.share &&
+                              e.count==native.source_counts[e.row] && Bind::edge_mask(b)[e.row],
+                          "temporary captured ledger fact differs");
+                }
+                require(Bind::outgoing_mask(b).size()==native.particle_headers.size() &&
+                            Bind::edge_mask(b).size()==native.live.edges,"temporary masks lost source spans");
+                for (std::size_t row=0; row<native.particle_headers.size(); ++row) {
+                  const auto present=std::any_of(handles.begin(),handles.end(),[&](const auto &h) {return std::size_t(h.record)==row;});
+                  require(Bind::outgoing_mask(b)[row]==present,"temporary outgoing mask changed another occurrence");
+                }
+                for (std::size_t row=0; row<native.live.edges; ++row) {
+                  const auto count=std::count_if(captured.begin(),captured.end(),[&](const auto &e) {return e.row==row;});
+                  const auto incident=Bind::outgoing_mask(b)[native.edges[row].first.record];
+                  require(count<=1 && bool(count)==incident && Bind::edge_mask(b)[row]==incident,
+                          "temporary captured ledger omitted or duplicated outgoing participation");
+                }
+                validation=Bind::work(b);
+                require(validation==16*(rows.size()+fields.size()+edges+native.live.edges+1),
+                        "temporary validation work omitted live inventory");
+                require(alive.live==domain->result().live_bytes && alive.live>=map_bytes &&
+                            alive.blocks==map_blocks+5,
+                        "temporary retained backing is not maps plus five capture buffers");
+                fact_bytes=alive.live-map_bytes;
+              }); });
+            work=result.charged;
+          }
+          const auto &actual=real->selections[i+1], &isolated=single->selections[1];
+          require(A::counts.live==baseline.live && A::counts.blocks==baseline.blocks && !domain->result().live_bytes &&
+                      A::counts.attempts-baseline.attempts==actual.requests &&
+                      isolated.bytes==actual.bytes && isolated.peak==actual.peak &&
+                      O::same_events(*real,i+1,*single),
+                  "isolated constructor does not match actual adoption request/lifetime trace");
+          temporary_bytes+=actual.bytes; temporary_requests+=actual.requests; temporary_work+=work;
+          measurements[i]={actual,alive,map_bytes,map_blocks,fact_bytes,bodies,outgoing,edges,work,validation,declaration->from()};
+          require(Owner::resources(*owner).maps.charged_bytes()==retained_map_bytes &&
+                      Owner::map_backing(*owner)==candidate_backing,
+                  "temporary validation inspection changed retained current/candidate backing");
+        }
+      }
+      require(weak.expired(),"temporary inspection retained the owner domain");
+      weak.reset();
+      finished=A::end();
+    } catch (...) { if (A::active) A::end(); throw; }
+  }
+  require(!finished.live && !finished.blocks && finished.acquired==finished.released,
+          "adoption inspection leaked owner, alias or constructor requests");
+  require(temporary_bytes<=owner_requested-whole.live && temporary_work<=setup.work.charged,
+          "temporary costs exceed whole-owner construction or setup work");
+  for (std::size_t i=0; i<real->count; ++i) {
+    const auto &m=measurements[i];
+    std::cout << "exchange_adoption_binding_cost,selections=" << real->count << ",selection=" << i
+              << ",source=" << (m.source==warm::Exposure::Aggregate?"aggregate":"parts")
+              << ",requests=" << m.actual.requests << ",requested=" << m.actual.bytes << ",peak=" << m.actual.peak
+              << ",whole_overlap_peak=" << m.actual.whole_peak << ",constructor_live=" << m.alive.live
+              << ",owned_map_requests=" << m.map_blocks << ",owned_map_bytes=" << m.map_bytes
+              << ",capture_buffer_bytes=" << m.facts << ",constructor_work=" << m.work
+              << ",released_before_constructor_return=" << m.actual.bytes-m.alive.live
+              << ",validation_work=" << m.validation << ",bodies=" << m.bodies << ",outgoing=" << m.outgoing
+              << ",captured_edges=" << m.edges << ",stack_object_bytes=" << sizeof(ExchangeBindings)
+              << ",scratch_map_headers=" << sizeof(ExchangeMap<OccurrenceBinding>)+2*sizeof(ExchangeMap<ExchangeFieldBinding>)
+              << ",trace_equal=1,after_destroy_requested=0 PASS\n";
+  }
+  require(before==TickSnapshot(f),"adoption binding inspection changed native execution");
+  std::cout << "exchange_adoption_binding_total,selections=" << real->count
+            << ",temporary_requests=" << temporary_requests << ",temporary_requested=" << temporary_bytes
+            << ",temporary_work=" << temporary_work << ",owner_setup_work=" << setup.work.charged
+            << ",owner_requests=" << whole.attempts << ",owner_requested=" << owner_requested
+            << ",owner_retained=" << whole.live << ",owner_peak=" << whole.peak
+            << ",domain_peak=" << selected.peak_bytes << ",current_candidate_map_census=" << retained_map_bytes
+            << ",candidate_map_requested=" << candidate_requested << ",candidate_map_requests=" << candidate_blocks
+            << ",other_setup_released=" << owner_requested-whole.live-temporary_bytes
+            << ",candidate_unchanged=1,native_unchanged=1 PASS\n";
+}
