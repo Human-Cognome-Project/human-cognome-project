@@ -211,6 +211,21 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[reverse declaration graph cost](../engine/docs/EXCHANGE-DIRECTION-COPY-COST.md)
+at `657d0d87` measures the owner's duplicate immutable forward/reverse payloads.
+Actual retained reverse copying costs 26–80 requests / 2,046–6,304 requested
+bytes across three fixtures; all buffers and weak/domain lifetimes are checked.
+Explicitly swapped const alias roles allocate nothing and retain complete pins,
+order/counts/mass/node/stored mass. Equal cardinalities do not identify direction.
+Proposed sharing uses the existing private binding's explicit operation role;
+coordinate owner/capture/command/census readers and preserve all native authority.
+Runtime is unchanged relative to source-accepted, unmerged #360. Main `45b5cf07`
+and integrated #358/#359 ancestry are preserved. Quick CI, engine recipe and
+fresh standalone Clang/GCC suites pass all 3,938 recipe controls. Review this
+candidate before implementation; hosted CI remains authoritative and indexed/
+catalogue/producer/accounting/#324 work remains separate.
+
+2026-11-17 contributor (awaiting review):
 [exchange leaf authority](../engine/docs/EXCHANGE-LEAF-AUTHORITY.md) at `0750a2cd`
 implements #359's authorized second-inventory removal. Canonical byte-source
 paths and parents retain all ordered semantic pins/counts, while the separate
