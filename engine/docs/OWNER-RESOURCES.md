@@ -1,5 +1,17 @@
 # Private exchange-owner resource inventory
 
+**Contributor binding-map inspection — 2026-11-17 (awaiting review):**
+[Actual retained map requests and publication roles](EXCHANGE-BINDING-MAP-COST.md)
+at `120658ca` measures 47,180 requested bytes / 562 allocations for each of the
+owner, binding and candidate map pairs (140 occurrence and 140 field slots per
+pair). These are already in whole-owner totals. The binding's 112-byte map
+headers are embedded in its actual 376-byte object request. Staging makes the
+binding's active rows equal the owner; successful publication rotates all three
+stores and stales the old source view. Full-value/claim/lifetime controls preserve
+that distinction. A private synchronous source-map/direct-publication proposal
+awaits review; all six stores and current charges remain implemented, and no
+removal, achieved savings or combined resource policy follows.
+
 **Contributor recipe-sharing implementation — 2026-11-17 (awaiting review):**
 [One owner-local immutable recipe](EXCHANGE-RECIPE-SHARING.md) at `6be856c7`
 replaces two embedded Bundles with one detached shared const payload, selected

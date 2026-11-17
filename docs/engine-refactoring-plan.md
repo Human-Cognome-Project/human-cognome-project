@@ -211,6 +211,20 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[Binding-map request and publication inspection](../engine/docs/EXCHANGE-BINDING-MAP-COST.md)
+at `120658ca` measures the third source-map pair's 47,180 requested bytes across
+562 allocations, with embedded headers and whole-owner overlap separated.
+Actual capture copies owner associations; native publication rotates candidate
+through binding into owner. New detached full-value snapshots qualify 160
+rotations, native claims, stale old authority and following ticks. The bounded
+proposal passes current owner maps through synchronous private source reads and
+publishes the existing candidate directly, preserving candidate/captured state,
+standalone ownership and all validation. It is not implemented. Quick CI, four
+three-fixture probes and six full Clang/GCC owner cases pass; source matches
+reviewed #364. Main `068fe63a` and its unmerged dependency are explicit. Review
+and hosted gates remain separate; no new registry or native guard is introduced.
+
+2026-11-17 contributor (awaiting review):
 [Owner-local immutable recipe](../engine/docs/EXCHANGE-RECIPE-SHARING.md) at
 `6be856c7` implements #363's explicitly authorized private spare-sharing path.
 Initial adoption and public/domain value APIs keep independent recipes;

@@ -1,5 +1,12 @@
 # Private committed-source bindings for exchange
 
+[The retained-map inspection](EXCHANGE-BINDING-MAP-COST.md) at `120658ca`
+attributes the binding pair's actual backing and traces its source-copy and
+publication-transport roles. A bounded private owner-map/direct-publication
+proposal awaits review. Current bindings still own their maps; no runtime loan,
+map removal, validation reduction or achieved saving is implemented by that
+test-only inspection. Standalone ownership and native generation checks remain.
+
 This coordinator prerequisite connects the [logical declaration](EXCHANGE-CONTRACT.md)
 to a generation-bound view of committed prepared source metadata. It does not
 call replacement staging, read physical mass/motion, claim records or publish.
