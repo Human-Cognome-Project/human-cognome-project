@@ -90,9 +90,11 @@ OwnerStorage ExchangeOwner::storage() const {
   }
   out.memberships = memberships.result;
   // Binding references alias the retained declarations/catalogue. Their pointer
-  // objects are in sizeof(b); count each pointee and control block identity once.
-  if (declarations_.size() == UINT64_MAX) throw warm::Error("owner shared count overflow");
-  out.shared_allocations = declarations_.size() + 1;
+  // objects are in sizeof(b); count each pointee and control block identity once,
+  // including the immutable recipe shared by the two mutable projection views.
+  const std::uint64_t shared_recipes = projection_->recipe_ == prospective_->recipe_ ? 1 : 2;
+  if (declarations_.size() > UINT64_MAX-1-shared_recipes) throw warm::Error("owner shared count overflow");
+  out.shared_allocations = declarations_.size() + 1 + shared_recipes;
   out.total(); // Reject aggregate overflow before returning any report.
   return out;
 }

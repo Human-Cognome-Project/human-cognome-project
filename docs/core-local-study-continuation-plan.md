@@ -1,5 +1,32 @@
 # Core continuation after local CUDA corrections
 
+**Contributor binding-map inspection — 2026-11-17 (awaiting review):**
+[Measured retained source maps and publication lifetime](../engine/docs/EXCHANGE-BINDING-MAP-COST.md)
+at `120658ca` selects the private binding's map pair as an intermediate copy of
+the owner's current logical/native associations. Actual backing is 47,180 requested
+bytes / 562 allocations per pair in all three fixtures; embedded headers overlap
+the binding object. Current source, captured participation facts and candidate
+publication have distinct lifetimes. New before/after controls prove the existing
+three-way rotation, complete historical values, actual current claims, coherent
+generation and stale captured authority through 160 publications/following ticks.
+
+After review, the bounded proposal is synchronous private access to the current
+owner maps during capture/commands/precommit validation, followed by direct
+candidate-to-owner publication. Preserve standalone owned maps, all captured
+validation data, full key/pin/claim/work checks, refusal/retry and postclaim unready
+semantics. Loans end before map mutation. No replacement registry/wrapper or new
+native indexed guard is proposed; no runtime removal or savings is implemented.
+
+Quick CI, four dedicated three-fixture Clang/GCC probes and six full owner cases
+pass. Runtime source matches #364 exactly. Main `068fe63a` and reviewed unmerged
+#364 `45d30de3` are preserved in `d2e599c1`; its native 44166963726 still has
+regression shards 2/3/4 pending, with build/database/standalone/all compiler jobs
+and shard 1 passed, plus smoke/warm. Review this concrete inspection/proposal and
+reconcile hosted/dependency gates before runtime implementation/integration.
+Local evidence remains contributor-reported. Indexed guards, catalogue/mixed
+revisions, broader producers, combined accounting and #324 remain separate;
+held #75/#111/#123 are unchanged.
+
 **Maintainer #363 integration / #364 review — 2026-11-17 (supersedes older status below):** #363 `553834c620a0e45648eabd97b729b9e5f95f13d2` is integrated by this merge, preserving prior main and dependency ancestry. Review 5944572189 stands. All 12 native jobs 44149675384 and smoke 44149675364 passed; independently inspected 181 regression passes and database addressed_reads=24/private_reads=0. Main c63a1c24 combined smoke/native 44151992799/44151992824 passed. This merge differs from qualified #363 only in these two reconciled handoffs; combined main CI is separate.
 
 #364 `45d30de3063724925953e88b2f87efe2b03c3e12` is source-accepted in review 5945881346, not integrated. Explicit private OwnerSpare construction shares one detached immutable owner recipe; public/domain copies, including equal-domain copies, remain independent. Copy assignment stages a full replacement in the destination domain, moves transfer ownership through noexcept construction, and moved-from recipe access refuses. Live exposure/occurrence/input/parent state, semantic pins, native claims/generation/candidate/publication ownership remain separate and unchanged. Initial snapshot representation, spare copy/inspection work and census follow actual sharing. Named-member staging repairs in public projection creation and v1 warm validation preserve values/rules while repairing qualification-discovered unwind failures.
@@ -7,6 +34,35 @@
 Independent visitors and added public/domain construction/assignment failure sweeps cover partial-copy cleanup, destination preservation, same-domain/self/move operations, source death and shared/weak/domain/bootstrap lifetime. Reported whole-owner retained savings 26,191/28,515/26,963 requested bytes include changed projection extent and shared payload/control block; body/capacity/request figures overlap and are not additive. Local historical binaries, failed/partial evidence and final compiler/worker matrix remain contributor-reported. Tested 6be856c7 differs from head only in eight Markdown files.
 
 #364 smoke 44166963681, warm toolbox 44166963600 and hosted standalone four-test projection suite passed; native build/matrix 44166963726 remains pending. Reconcile hosted gates before integration; no duplicate workflow dispatch. Next bounded inspection may identify another concrete duplicated association or structural responsibility, establish owner/lifetime and native overlap, and measure a simplification. Taichi handles structure; HCP owns meaning. Indexed guards, catalogue/mixed revisions, broader producer adoption, full accounting and #324 remain separate. Held #75/#111/#123 unchanged.
+
+**Contributor owner-local recipe sharing — 2026-11-17 (awaiting review):**
+[Implementation and source-pinned evidence](../engine/docs/EXCHANGE-RECIPE-SHARING.md)
+at `6be856c7` implements the explicit private owner-spare path authorized by
+#363 review 5944572189. One detached complete const Bundle now serves both
+views; public/domain copies and assignment retain independent values and
+allocator selection. Live exposures/activity, input state, parent pools, maps,
+claims, membership, generation and publication retain their separate ownership.
+Snapshot, spare-copy work, census and independent request visitors are coordinated.
+Measured whole-owner retained reductions are 26,191 / 28,515 / 26,963 bytes,
+including headers/coallocation, with complete strong/weak/domain teardown.
+
+Quick CI, 16 Clang/eight GCC CTests, both standalone four-test suites, all 48
+owner mode runs, eight standalone exchange cases and both six-test warm
+compatibility suites pass. v1/v2 construction/copy/assignment/move, all C++
+allocation failures, every reservation boundary,
+exact/one-short retry, source death, equal/mixed alternatives, repeated forward/
+back publication and following ticks are covered. GCC partial-initialization
+and equal-domain move-accounting failures found during development are fixed
+and retained with the local evidence; local qualification is contributor-reported.
+
+Main `c63a1c24` (integrated #362) and reviewed unmerged #363 `553834c6` are
+preserved in normal merge `7550839e`. Review this implementation and reconcile
+its authoritative hosted gates before integration. #363 now passes all 12
+native jobs (44149675384) and smoke (44149675364); its integration is separate.
+Further work should select another concrete duplicated association through its
+actual owner/lifetime and native overlap; indexed guards, catalogue/mixed
+revisions, broader producers, combined accounting and #324 remain separate.
+Held #75/#111/#123 are unchanged.
 
 **Maintainer #362 integration / #363 review — 2026-11-17 (supersedes older status below):** #362 `2cdf2ea8072f775b246e25fe18a6723329441b5c` is integrated by this merge, preserving prior main and dependency ancestry. Review 5943526107 stands. All 12 native jobs in 44137874103 and smoke 44137874131 passed; independently inspected 181 regression passes and database addressed_reads=24/private_reads=0. Main ad38b6cd combined smoke/native 44139457522/44139457378 passed. This merge differs from qualified #362 only in these two reconciled handoffs; combined main CI is separate.
 

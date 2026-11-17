@@ -1,4 +1,4 @@
-void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only = false) {
+void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
@@ -38,8 +38,9 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
   fields.push_back({{GroupKind::ParentValue,character.object},f.in.field_rows[6]});
   fields.push_back({{GroupKind::SiblingDefinition,letters.accented},f.in.field_rows[7]});
   fields.push_back({{GroupKind::Membership,group.object},f.in.field_rows[8]});
-  exchange_recipe_cost(f,initial,rows,fields);
-  if (recipe_only) return;
+  if (!map_only) exchange_recipe_cost(f,initial,rows,fields);
+  if (!recipe_only) exchange_binding_map_cost(f,initial,rows,fields);
+  if (recipe_only || map_only) return;
   owner_lifetime(f,initial,rows,fields);
   auto owner = Access::adopt(f.h,initial,rows,fields);
   const auto memberships = Access::memberships(*owner);
@@ -56,7 +57,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
   const auto binding_backing = Plan::binding_backing(*reserved_plan);
   const auto reserved = Access::storage(*owner);
   const auto resources = Access::resources(*owner);
-  require(resources.shared_allocations == 5, "shared declarations/catalogue counted per alias");
+  require(resources.shared_allocations == 6, "shared recipe/declarations/catalogue counted per alias");
   const auto map_backing = Access::map_backing(*owner);
   require(reserved.parent_slots == 40, "multiple owner omitted inactive parent storage");
   prepared_test::Metrics metrics(r,PreparedFixtureAccess::nodes(f.h));
@@ -153,9 +154,11 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
                 &Access::projection(*owner) == before_view && Access::outgoing_report(*owner) == old_outgoing &&
                 Access::balance_report(*owner) == old_balance, "multi-occurrence rejection changed committed state");
     PreparedFixtureAccess::inject_failure(f.h,0);
+    const auto map_rotation = map_rotation_before(*owner);
     no_new([&] { result = Access::execute(*owner,generation); });
     require(result.status == UpdateStatus::Ok && result.generation == generation+1 &&
                 f.h.prepared_storage().completed_ticks == ticks, "multi-occurrence exchange failed");
+    map_rotation_after(*owner,f.h.prepared_storage(),map_rotation);
     const auto &current = Access::projection(*owner);
     require(Access::map_backing(*owner) == map_backing,
             "multiple exchange map publication changed reserved nested backing");

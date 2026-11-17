@@ -37,13 +37,14 @@ struct ExchangeCoordinatorAccess {
     return result;
   }
   static const auto *memberships(const detail::ExchangeCoordinator &c) { return c.bound_->memberships_.get(); }
-  static void stage_binding(detail::ExchangeCoordinator &c,
+  static auto stage_binding(detail::ExchangeCoordinator &c,
       std::shared_ptr<const LetterExchangeContract> declaration,
       std::shared_ptr<const MembershipFields> memberships,
       const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
       const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields, warm::Exposure target) {
     detail::PreparationWork meter(UINT64_MAX);
     c.bound_->stage(std::move(declaration),target,std::move(memberships),rows,fields,meter);
+    return meter.result();
   }
   static auto capture(detail::ExchangeCoordinator &c, const LetterProjection &p, std::uint64_t work) {
     return c.bound_->capture(p,work);
@@ -89,6 +90,7 @@ struct ExchangeCoordinatorAccess {
   }
   static const auto &commands(const detail::ExchangeCoordinator &c) { return c.commands_; }
   static const auto &mappings(const detail::ExchangeCoordinator &c) { return c.bound_->occurrences_; }
+  static const auto &planned_mappings(const detail::ExchangeCoordinator &c) { return c.next_; }
   static const auto &fields(const detail::ExchangeCoordinator &c) { return c.bound_->fields_; }
   static const auto &planned_fields(const detail::ExchangeCoordinator &c) { return c.next_fields_; }
   static const auto &field_commands(const detail::ExchangeCoordinator &c) { return c.field_commands_; }

@@ -5,6 +5,7 @@
 #include <functional>
 #include <limits>
 #include <map>
+#include <new>
 #include <set>
 
 namespace assembly {
@@ -266,7 +267,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
   warm::validate(b);
   LetterProjection out;
   out.study_ = warm::new_uuid();
-  out.recipe_ = b;
+  out.recipe_ = std::make_shared<warm::Bundle>(b);
   for (const auto &s : b.selections) out.exposures_.push_back(s.exposure);
   const auto tools = index(b);
   // Borrow occurrence IDs and definitions from stable input rows; publication
@@ -340,29 +341,40 @@ LetterProjection project_letters(const warm::Bundle &b) {
     const auto &id = source_id.get();
     const auto &t = *tools.at(*o.definition);
     const auto slot = b.recipe_version == 1 ? int(out.occurrences_.size()) : -1;
-    ProjectedOccurrence record{{out.study_, id}, t.ref, slot, o.node, o.active,
-                               {}, {}};
+    // Stage allocating members before aggregate publication, so partial
+    // initialization also unwinds correctly on the supported GCC 11 path.
+    auto study = out.study_;
+    auto occurrence = id;
+    auto definition = t.ref;
+    ProjectedOccurrence record{{std::move(study),std::move(occurrence)},
+                               std::move(definition),slot,o.node,o.active,{}, {}};
     const auto &k = record.key; // Stable local storage until final publication.
     if (const auto found = provenance.find(id); found != provenance.end()) {
       const auto &source = found->second;
-      record.byte = ByteProvenance{{out.study_, {source.owner, {}}}, *source.character,
+      auto byte_study = out.study_;
+      auto character = *source.character;
+      record.byte = ByteProvenance{{std::move(byte_study), {source.owner, {}}}, std::move(character),
           source.character_ordinal, source.byte_ordinal};
     }
     if (o.complete_character) record.complete_character = *o.complete_character;
-    out.structural_input_.occurrences.push_back(
-        {InputText(occurrence_text(k)), InputText(warm::key(*o.definition)), o.node});
+    auto id_text = InputText(occurrence_text(k));
+    auto definition_text = InputText(warm::key(*o.definition));
     if (b.recipe_version == 1) {
       const auto &initial = *o.initial;
+      auto legacy_id = id_text;
+      auto legacy_definition = definition_text;
       out.input_.occurrences.push_back(
-          {InputText(occurrence_text(k)), InputText(warm::key(*o.definition)), slot, o.node,
+          {std::move(legacy_id),std::move(legacy_definition),slot,o.node,
            point(initial.position), point(initial.velocity)});
     }
+    out.structural_input_.occurrences.push_back({std::move(id_text),std::move(definition_text),o.node});
     if (record.active)
-      for (const auto &p : t.parents)
-        out.parents_.push_back({k,
-                                {GroupKind::ParentValue, p.target.object},
-                                p.ordinal,
-                                p.contribution});
+      for (const auto &p : t.parents) {
+        auto parent_key = k;
+        auto object = p.target.object;
+        out.parents_.push_back({std::move(parent_key),
+                                {GroupKind::ParentValue,std::move(object)},p.ordinal,p.contribution});
+      }
     // All record/key consumers are finished; no reference into the vector survives.
     out.occurrences_.push_back(std::move(record));
   }
@@ -376,10 +388,11 @@ LetterProjection project_letters(const warm::Bundle &b) {
       selection.parts.push_back(InputText(occurrence_text(out.study_, id)));
     out.structural_input_.selections.push_back(std::move(selection));
   }
-  for (const auto &c : b.contacts)
-    out.structural_input_.contacts.push_back(
-        {InputText(occurrence_text(out.study_, c.a)),
-         InputText(occurrence_text(out.study_, c.b))});
+  for (const auto &c : b.contacts) {
+    auto a = InputText(occurrence_text(out.study_,c.a));
+    auto other = InputText(occurrence_text(out.study_,c.b));
+    out.structural_input_.contacts.push_back({std::move(a),std::move(other)});
+  }
   for (const auto &f : b.focal_fields)
     out.structural_input_.focal_fields.push_back(
         {static_cast<GroupKind>(f.kind), InputText(warm::key(f.object))});
@@ -586,7 +599,46 @@ template<class Input> Input projection_input(const Input &source,
 // Ordinary value copies detach, including every retained input string.
 LetterProjection::LetterProjection(const LetterProjection &other,
     const std::shared_ptr<detail::ReservationDomain> &domain)
-    : study_(other.study_,domain), recipe_(projection_recipe(other.recipe_,domain)),
+    : LetterProjection(other,domain,other.recipe_
+        ? std::allocate_shared<warm::Bundle>(detail::SharedReservationAllocator<warm::Bundle>(domain),
+              projection_recipe(*other.recipe_,domain))
+        : std::shared_ptr<const warm::Bundle>{}) {}
+
+LetterProjection::LetterProjection(const LetterProjection &other)
+    : LetterProjection(other,std::shared_ptr<detail::ReservationDomain>{}) {}
+
+LetterProjection &LetterProjection::operator=(const LetterProjection &other) {
+  if (this != &other) {
+    // Copy assignment preserves the destination's selected domain. Stage the
+    // complete independent value before replacing any destination member.
+    LetterProjection copy(other,exposures_.get_allocator().domain);
+    *this = std::move(copy);
+  }
+  return *this;
+}
+
+LetterProjection &LetterProjection::operator=(LetterProjection &&other) noexcept {
+  if (this != &other) {
+    // Reconstruct instead of memberwise assignment: an equal-allocator string
+    // move can leave displaced backing in an allocator whose domain was moved.
+    // Construction transfers backing without that displaced-buffer lifetime.
+    this->~LetterProjection();
+    ::new (static_cast<void *>(this)) LetterProjection(std::move(other));
+  }
+  return *this;
+}
+
+LetterProjection::LetterProjection(const LetterProjection &other,
+    const std::shared_ptr<detail::ReservationDomain> &domain, OwnerSpare)
+    : LetterProjection(other,domain,[&] {
+        need(other.recipe_ && other.exposures_.get_allocator().domain == domain,
+             "owner spare requires its retained recipe domain");
+        return other.recipe_;
+      }()) {}
+
+LetterProjection::LetterProjection(const LetterProjection &other,
+    const std::shared_ptr<detail::ReservationDomain> &domain, std::shared_ptr<const warm::Bundle> recipe)
+    : study_(other.study_,domain), recipe_(std::move(recipe)),
       exposures_(other.exposures_.begin(),other.exposures_.end(),detail::SharedReservationAllocator<warm::Exposure>(domain)),
       occurrences_(projection_rows(other.occurrences_,domain)),
       parents_(projection_rows(other.parents_,domain)),
@@ -594,20 +646,20 @@ LetterProjection::LetterProjection(const LetterProjection &other,
       exposure_reserved_(other.exposure_reserved_), input_(projection_input(other.input_,domain)), structural_input_(projection_input(other.structural_input_,domain)) {}
 
 warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
-  for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
-    if (recipe_.selections[i].entry == entry) return exposures_[i];
+  for (std::size_t i = 0; i < recipe().selections.size(); ++i)
+    if (recipe().selections[i].entry == entry) return exposures_[i];
   throw warm::Error("unknown projected selection");
 }
 
 void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
   meter.charge(1);
-  need(recipe_.recipe_version == 2, "projection is not structural");
+  need(recipe().recipe_version == 2, "projection is not structural");
   std::size_t count = 0;
   for (const auto &o : occurrences_) {
     meter.charge(1);
-    const auto t = std::find_if(recipe_.tools.begin(),recipe_.tools.end(),
+    const auto t = std::find_if(recipe().tools.begin(),recipe().tools.end(),
         [&](const auto &v) { return meter.equal(v.ref,o.definition); });
-    need(t != recipe_.tools.end() && t->parents.size() <= SIZE_MAX - count,
+    need(t != recipe().tools.end() && t->parents.size() <= SIZE_MAX - count,
          "projection parent reservation overflow");
     count += t->parents.size();
   }
@@ -621,7 +673,7 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
   for (const auto &o : occurrences_) {
     meter.charge(1);
     if (exposure_reserved_ || o.active) continue;
-    const auto t = std::find_if(recipe_.tools.begin(),recipe_.tools.end(),
+    const auto t = std::find_if(recipe().tools.begin(),recipe().tools.end(),
         [&](const auto &v) { return meter.equal(v.ref,o.definition); });
     for (const auto &p : t->parents) {
       meter.charge(sizeof(ParentContribution));
@@ -639,22 +691,22 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
 void LetterProjection::prepare_exposure(LetterProjection &next, const OccurrenceKey &owner,
                                         warm::Exposure target, detail::PreparationWork &meter) const {
   meter.charge(1);
-  need(recipe_.recipe_version == 2 && meter.equal(owner.study,study_) && owner.source.path.empty(),
+  need(recipe().recipe_version == 2 && meter.equal(owner.study,study_) && owner.source.path.empty(),
        "exposure change requires this structural study's aggregate owner");
   bool other = false;
-  for (std::size_t i = 0; i < recipe_.selections.size(); ++i) {
+  for (std::size_t i = 0; i < recipe().selections.size(); ++i) {
     meter.charge(1);
-    if (recipe_.selections[i].entry == owner.source.entry) { other = exposures_[i] != target; break; }
+    if (recipe().selections[i].entry == owner.source.entry) { other = exposures_[i] != target; break; }
   }
   need((target == warm::Exposure::Aggregate || target == warm::Exposure::Parts) &&
        other, "exposure change requires the other alternative");
   need(&next != this && next.exposure_reserved_ && meter.equal(next.study_,study_) &&
-       meter.equal(next.recipe_.ref.selection,recipe_.ref.selection) && meter.equal(next.recipe_.ref.revision,recipe_.ref.revision) &&
+       meter.equal(next.recipe().ref.selection,recipe().ref.selection) && meter.equal(next.recipe().ref.revision,recipe().ref.revision) &&
        next.occurrences_.size() == occurrences_.size(), "foreign or unreserved projection buffer");
-  for (std::size_t i = 0; i < recipe_.selections.size(); ++i)
+  for (std::size_t i = 0; i < recipe().selections.size(); ++i)
     {
       meter.charge(1);
-      const auto value = recipe_.selections[i].entry == owner.source.entry ? target : exposures_[i];
+      const auto value = recipe().selections[i].entry == owner.source.entry ? target : exposures_[i];
       next.exposures_[i] = value;
       next.structural_input_.selections[i].exposure = value == warm::Exposure::Aggregate
           ? Exposure::Aggregate : Exposure::Parts;
@@ -676,9 +728,9 @@ void LetterProjection::prepare_exposure(LetterProjection &next, const Occurrence
   for (const auto &o : next.occurrences_) {
     meter.charge(1);
     if (!o.active) continue;
-    const auto tool = std::find_if(next.recipe_.tools.begin(), next.recipe_.tools.end(),
+    const auto tool = std::find_if(next.recipe().tools.begin(), next.recipe().tools.end(),
         [&](const auto &t) { return meter.equal(t.ref,o.definition); });
-    need(tool != next.recipe_.tools.end(), "missing immutable projected definition");
+    need(tool != next.recipe().tools.end(), "missing immutable projected definition");
     for (const auto &p : tool->parents) {
       meter.charge(1);
       const auto found = std::find_if(next.parents_.begin()+active,next.parents_.end(),[&](const auto &v) {
@@ -697,13 +749,13 @@ void LetterProjection::prepare_exposure(LetterProjection &next, const Occurrence
 }
 
 StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {
-  need(recipe_.recipe_version == 1,
+  need(recipe().recipe_version == 1,
        "legacy numerical binding requires recipe v1");
-  need(nodes.size() == recipe_.nodes.size(),
+  need(nodes.size() == recipe().nodes.size(),
        "native layout differs from normalized recipe");
   for (std::size_t i = 0; i < nodes.size(); ++i)
-    need(nodes[i].layout && nodes[i].parent == recipe_.nodes[i].parent &&
-             nodes[i].role == role(recipe_.nodes[i].role),
+    need(nodes[i].layout && nodes[i].parent == recipe().nodes[i].parent &&
+             nodes[i].role == role(recipe().nodes[i].role),
          "native binding differs from normalized exposure");
   auto input = input_;
   input.nodes.assign(nodes.begin(),nodes.end());
@@ -712,13 +764,13 @@ StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {
 StructuralStudyInput LetterProjection::bind_structure(
     const std::vector<StudyNode> &nodes) const {
   need(
-      recipe_.recipe_version == 2,
+      recipe().recipe_version == 2,
       "structural binding requires recipe v2; explicitly adapt legacy recipes");
-  need(nodes.size() == recipe_.nodes.size(),
+  need(nodes.size() == recipe().nodes.size(),
        "native layout differs from normalized recipe");
   for (std::size_t i = 0; i < nodes.size(); ++i)
-    need(nodes[i].layout && nodes[i].parent == recipe_.nodes[i].parent &&
-             nodes[i].role == role(recipe_.nodes[i].role),
+    need(nodes[i].layout && nodes[i].parent == recipe().nodes[i].parent &&
+             nodes[i].role == role(recipe().nodes[i].role),
          "native binding differs from normalized exposure");
   auto input = structural_input_;
   input.nodes.assign(nodes.begin(),nodes.end());

@@ -34,7 +34,7 @@ void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projecti
   allocation_observation::calls = allocation_observation::bytes = 0;
   allocation_observation::enabled = true;
   A::Counts retained, released;
-  std::uint64_t calls = 0, requested = 0, recipe_bytes = 0, recipe_blocks = 0, offset = 0;
+  std::uint64_t calls = 0, requested = 0, recipe_bytes = 0, recipe_blocks = 0, recipe_request = 0;
   std::uint64_t borrow_calls = 0, stage_calls = 0;
   try {
     auto owner = Access::adopt(f.h,*source,rows,fields);
@@ -61,28 +61,29 @@ void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projecti
     };
     no_new([&] { append(current.recipe(),committed); append(next.recipe(),spare); });
     require(committed.size() == spare.size() && !committed.empty(), "projection recipes differ in retained buffer shape");
+    require(&current.recipe() == &next.recipe() && &current.recipe() != &projection.recipe(),
+            "owner views do not share a privately detached recipe");
     for (std::size_t i=0; i<committed.size(); ++i) {
-      require(committed[i].bytes == spare[i].bytes && committed[i].data != spare[i].data,
-              "immutable recipe buffers are already shared or have different capacities");
+      require(committed[i].bytes == spare[i].bytes && committed[i].data == spare[i].data,
+              "owner recipe backing differs between views");
       for (std::size_t j=0; j<committed.size(); ++j)
-        require(spare[i].data != committed[j].data && (i == j ||
-                    (committed[i].data != committed[j].data && spare[i].data != spare[j].data)),
-                "recipe family aliases another buffer or was attributed twice");
+        require(i == j || committed[i].data != committed[j].data,
+                "shared recipe buffer was attributed twice");
       recipe_bytes += spare[i].bytes; ++recipe_blocks;
     }
     const auto current_base = reinterpret_cast<std::uintptr_t>(&current);
     const auto next_base = reinterpret_cast<std::uintptr_t>(&next);
-    offset = reinterpret_cast<std::uintptr_t>(&current.recipe())-current_base;
+    const auto recipe_address = reinterpret_cast<std::uintptr_t>(&current.recipe());
+    recipe_request = observed_shared_request(&current.recipe());
     bool current_request = false, next_request = false;
     for (const auto &request : A::table) {
       if (request.pointer == &current) current_request = request.bytes == sizeof(current);
       if (request.pointer == &next) next_request = request.bytes == sizeof(next);
     }
-    require(current_request && next_request && reinterpret_cast<std::uintptr_t>(&current.recipe()) >= current_base &&
-                reinterpret_cast<std::uintptr_t>(&next.recipe()) >= next_base &&
-                reinterpret_cast<std::uintptr_t>(&next.recipe())-next_base == offset &&
-                offset+sizeof(warm::Bundle) <= sizeof(assembly::LetterProjection),
-            "recipe object is not inside each separately retained projection");
+    require(current_request && next_request && recipe_request >= sizeof(warm::Bundle) &&
+                !(recipe_address >= current_base && recipe_address-current_base < sizeof(current)) &&
+                !(recipe_address >= next_base && recipe_address-next_base < sizeof(next)),
+            "shared recipe request overlaps mutable projection storage");
     const auto *borrowed = &current.recipe();
     no_new([&] {
       require(Access::recipe_equivalent(*borrowed,expected) && Access::recipe_equivalent(*borrowed,next.recipe()),
@@ -112,8 +113,18 @@ void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projecti
     require(A::counts.attempts == retained.attempts && A::counts.live == retained.live,
             "recipe inspection/staging changed owner request lifetime");
     const auto bootstrap = Access::bootstrap_tracker(*owner).result().live_bytes;
+    auto alias = Access::recipe_owner(current);
+    std::weak_ptr<const warm::Bundle> weak_recipe = alias;
     std::weak_ptr<assembly::detail::ReservationDomain> weak = Access::reservation_domain(*owner);
     owner.reset();
+    require(!weak_recipe.expired() && !weak.expired() && Access::recipe_equivalent(*alias,expected) &&
+                A::counts.live == recipe_bytes+recipe_request+bootstrap,
+            "recipe alias lost meaning or retained mutable views after owner teardown");
+    alias.reset();
+    require(weak_recipe.expired() && !weak.expired() && domain->result().live_bytes == recipe_request &&
+                A::counts.live == recipe_request+bootstrap && A::counts.blocks == 3,
+            "weak recipe lost its shared allocation or selected-domain lifetime");
+    weak_recipe.reset();
     require(weak.expired() && A::counts.live == bootstrap && A::counts.blocks == 2,
             "recipe views outlived owner or bootstrap weak-storage witness");
     weak.reset();
@@ -124,8 +135,8 @@ void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projecti
   std::cout << "exchange_recipe_cost,selections=" << expected.selections.size()
             << ",construction_calls=" << calls << ",construction_requested=" << requested
             << ",owner_retained=" << retained.live << ",owner_peak=" << retained.peak
-            << ",recipe_blocks_each=" << recipe_blocks << ",recipe_requested_each=" << recipe_bytes
+            << ",recipe_blocks_unique=" << recipe_blocks << ",recipe_requested_unique=" << recipe_bytes
             << ",recipe_header_bytes=" << sizeof(warm::Bundle) << ",projection_object_bytes=" << sizeof(assembly::LetterProjection)
-            << ",embedded_recipe_offset=" << offset << ",borrow_calls=" << borrow_calls << ",stage_calls=" << stage_calls
+            << ",recipe_payload_request=" << recipe_request << ",shared_recipe_views=2,borrow_calls=" << borrow_calls << ",stage_calls=" << stage_calls
             << ",after_destroy_requested=" << released.live << " PASS\n";
 }
