@@ -6,11 +6,43 @@
 
 Next bounded work may identify one concrete remaining duplicate immutable association against existing/native accessors, with actual ownership/lifetime/cost before removal. No generic registry, wrapper or accounting layer is implied. Preserve full claims, candidate/committed state, authorization and detached identity. Direct indexed guards, catalogue/mixed revisions, public producer migration and #324 mathematics remain separate. Reconcile completed hosted results before integrating the remaining stack; do not dispatch duplicate CI. Held #75/#111/#123 unchanged.
 
+**Contributor implementation — 2026-11-16 (awaiting review):**
+[plan study authority](../engine/docs/PLAN-STUDY-AUTHORITY.md) at `57615368`
+implements the removal accepted in #355 review 5929836328. One existing owned
+header study scopes numeric-only rows; producers/readers and rendering migrate
+together while full source validation, detached output, standalone lifetime,
+roles/units and native claims remain intact. Actual before/after producer
+measurements show 170/2,040-byte reductions for two/24 rows. Local quick CI,
+12 focused native tests, five fresh GCC tests and four standalone tests passed,
+including 4,708 builder controls and all 162 C++ allocation-failure points.
+
+Current main `a06362be` is preserved with explicit source-accepted #355/#354
+dependencies in merge `52a10bd0`; neither dependency is labelled integrated.
+Main `1337bbcc` native CI now reports success. Review this implementation and
+reconcile its own authoritative hosted checks before integration; no native
+execution policy, public producer, catalogue or #324 mathematical change follows.
+
 **Maintainer #355 review — 2026-11-16 (supersedes older status below):** #355 `93dcd711f9c6b601b0b669ffa4639888355d944f` is source-accepted in review 5929836328, not integrated. It is stacked on source-accepted #354 `eff64deb977839d8f9d719c93e6645fc99bfe3e0`. The actual builder witness attributes per-row study UUID copies equal to the already owned plan source header, proves allocation-free header comparison and standalone lifetime, and distinguishes nested requests from in-vector member extent. Production is unchanged relative to #354; measured 74/888 nested requested bytes for two/24 rows are candidate costs, not realized savings. Tested 52be505c differs only in five Markdown files; local archives remain contributor-reported.
 
 The bounded removal is authorized without another planning round: use existing plan.source().study as sole per-plan study authority, retain numeric occurrence identity and full definition pins in each row, and update producers/readers together. Keep full foreign-study/source validation before numeric-only emission, separate-study identity, ordering/mixed exposure, domain/lifetime, checked owner authorization/stale-view refusal, command/native-claim alignment, exact versus physical mass and explicit units. Render header plus numeric identity without an owning temporary; detached reports retain complete owned identity. Recalculate legitimate reservation/copy-work charges, preserve validation work and exact/one-short/allocation-unwind controls, and measure actual before/after producer cost. No new registry, owner or accounting layer. Direct indexed guards, catalogue/mixed revisions, public producer migration and #324 remain separate.
 
 #354 reconciliation was inspected: relative to reviewed eddd4f35 only Markdown differs, preserving #353 history and superseding its obsolete test correctly. Original smoke/viewport and all 12 native jobs in 43970206467 passed; inspected 181 regression passes including provenance/snapshot and all four owner/observer profiles, database addressed_reads=24/private_reads=0. Reconciled smoke 43976006107/viewport 43976006191 passed; native 43976006049 matrix is pending. #355 smoke 43978139744 passed; native 43978139830 build/projection/database passed, matrix pending. Main 1337bbcc smoke passed; native 43972037837 still has its final regression shard pending at review. Do not equate source acceptance with integration or dispatch duplicate CI. Held #75/#111/#123 unchanged.
+
+**Contributor next comparison — 2026-11-16 (awaiting review):**
+[plan study-identity attribution](../engine/docs/PLAN-STUDY-IDENTITY-COST.md)
+at public `52be505c` measures one remaining duplicate immutable association:
+per-occurrence study UUIDs equal the plan's existing owned source header.
+Actual two/24-row producer fixtures, selected-domain ownership, allocation-free
+header comparison, caller teardown and complete release passed with all 4,465
+builder checks under Clang/fresh GCC and local quick CI. The proposed removal
+reuses that header and retains numeric paths/full definition pins; it is not
+implemented. Review the bounded proposal before changing representation.
+
+This branch explicitly depends on source-accepted, unmerged #354 at `eff64deb`,
+reconciled with main `1337bbcc` per maintainer instructions. #353 history and
+historical comparison are retained; #354's reviewed runtime/tests are exact.
+Hosted qualification remains separate. No native maps, candidate state,
+authorization, producer adoption or #324 mathematics change in this comparison.
 
 **Maintainer #354 review — 2026-11-16 (supersedes older status below):** #353 at `9bf2b956e6d9dc21d3bb239a5d31f0ebfa1495fd` is integrated by this merge after smoke 43958409053, viewport 43958409063 and all 12 native jobs in 43958409039 passed. Inspected logs confirm 180 regression passes (45 per shard), all four owner/observer profiles and database addressed_reads=24/private_reads=0. Main 5f45f566 combined smoke/native 43962490566/43962490573 also passed. This merge's combined qualification remains separate.
 
