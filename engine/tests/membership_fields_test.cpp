@@ -372,6 +372,7 @@ void membership_key_cost(int mode) {
   using namespace assembly::detail;
   using Access = assembly::testing::MembershipFieldsAccess;
   auto fixture = std::make_unique<membership_fixture::Fixture>();
+  if (mode != 0) fixture->base.focal_fields = {{warm::FieldKind::Membership,fixture->en}};
   auto recipe = mode == 0 ? normalize_letters(fixture->base,
       {fixture->request(fixture->english,2,warm::Exposure::Aggregate),
        fixture->request(fixture->english,10,warm::Exposure::Parts),
