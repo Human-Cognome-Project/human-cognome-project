@@ -1,5 +1,26 @@
 # Core continuation after local CUDA corrections
 
+**Contributor implementation — 2026-11-17 (awaiting review):**
+[exchange leaf provenance from retained parents](../engine/docs/EXCHANGE-LEAF-AUTHORITY.md)
+at `0750a2cd` implements #359's accepted removal. Existing canonical byte-source
+paths and ordered parents supply full character/byte/parent identity, pins and
+counts. The separate leaf vector/export/copies and their actual charges are
+removed; complete source validation, matching/permutation, mass/node/stored-mass
+provenance and native claim/candidate/publication state remain. Census and all
+test readers use the smaller actual representation. Actual collectors retain
+1,992/3,450 fewer requested bytes; mixed reverse copy saves 2,490. The native
+one-selection owner saves 2,072 including both smaller contract headers.
+
+Final quick CI, 16 Clang CTests, eight fresh GCC CTests, both standalone compiler
+suites and all selected single/multiple-owner exchange/lifetime profiles passed.
+All 448 producer C++ allocation failures and 3,239 native owner failure sites
+reclaim partial output. Current main `d1139a89` and explicit source-accepted,
+unmerged #359/#358 ancestry remain in merge `e2730f98`. #358 native now reports
+success; #359 native still runs. Review this implementation and reconcile its
+authoritative hosted and dependency gates before integration. Full accounting,
+indexed guards, catalogue/mixed revisions, public producer adoption and #324
+remain separately scoped; no new registry or execution authority is introduced.
+
 **Maintainer #359 review — 2026-11-17 (supersedes older status below):** #359 `69edf33ae128d02b066c1a96a26b6e82aec726fb` is source-accepted in review 5939931047, not integrated. Relative to source-accepted #358 `3b570a4f09ff68239df6ea423404dcd7074a28bd`, only the structural recipe test and five Markdown files differ; tested 87061d3b differs from head only in those five Markdown files. Actual public/bounded collection and owner-style reverse-copy witnesses show the flat leaf inventory duplicates canonical byte-source path/direct-parent information. Full pins, order/counts and detached lifetime are verified; native records cannot replace these meanings. Nested requested bytes of 712/890 plus separately measured vector capacity are candidate costs, not realized savings. Local archives remain contributor-reported.
 
 Next implementation is authorized without another planning round: remove the separate leaf vector/copies and read existing const source/parent rows on the byte side selected by exposure direction. Coordinate census and tests. Preserve owner/study/recipe pins, complete revisions/stored-mass provenance, character/byte/parent order, repeated contributions, exact counts/mass, nodes, both directions, descriptor bijection/permutation and stale/foreign/duplicate refusal. Retain comparison work, detached/shared lifetime and native claim/candidate/publication state. No replacement owning leaf array, registry, generic range wrapper or compatibility fallback. Remove only actual leaf construction/relocation/copy/census charges; keep source/traversal/association validation. Measure actual public/bounded/reverse producer before/after including object/header/capacity effects, and run native owner/exchange/lifetime plus exact-budget/unwind controls.
