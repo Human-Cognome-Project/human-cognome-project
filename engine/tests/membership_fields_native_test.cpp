@@ -60,6 +60,21 @@ void native_contract() {
   const auto base = assembly::prepare(p.bind(layout.nodes));
   const auto input = fields.bind(p, layout.nodes);
   const auto prepared = assembly::prepare(input);
+  auto wrong_kind = fields;
+  const_cast<assembly::MembershipContribution &>(wrong_kind.contributions().front()).kind = assembly::GroupKind::ParentValue;
+  rejects([&] { wrong_kind.bind(p,layout.nodes); },"membership kind cannot be relabelled as a parent field");
+  auto structural_base = f.base;
+  structural_base.focal_fields = {{warm::FieldKind::Membership,f.en}};
+  const auto structural = project_letters(normalize_structural_letters(structural_base,
+      {{0,f.ref(f.english),warm::Exposure::Parts}}));
+  auto structural_fields = membership_fields(structural);
+  const auto structural_input = structural_fields.bind_structure(structural,layout.nodes);
+  std::set<std::string> structural_groups;
+  for (const auto &m : structural_input.memberships) structural_groups.emplace(m.group.data(),m.group.size());
+  check(structural_groups == std::set<std::string>{warm::key(f.en),warm::key(f.en_alphabet),warm::key(f.family)} &&
+        structural_input.memberships.size() == 3,"structural handoff preserves short group names through complete pins");
+  const_cast<assembly::MembershipContribution &>(structural_fields.contributions().front()).kind = assembly::GroupKind::SiblingDefinition;
+  rejects([&] { structural_fields.bind_structure(structural,layout.nodes); },"structural membership kind cannot be relabelled as a sibling field");
   check(prepared.capacity == base.capacity &&
             prepared.particles.size() == base.particles.size() &&
             input.definitions.size() == p.bind(layout.nodes).definitions.size(),
@@ -74,8 +89,8 @@ void native_contract() {
     int found = 0;
     for (const auto &edge : prepared.participation) {
       const auto &group = prepared.groups[edge.group];
-      if (group.kind == assembly::GroupKind::Membership &&
-          group.value == warm::key(typed.field.object) &&
+      if (group.kind == typed.kind &&
+          group.value == warm::key(typed.target.object) &&
           edge.occurrence == occurrence_text(typed.occurrence)) {
         ++found;
         exact &= edge.exact_count == typed.count && edge.share == 1 &&

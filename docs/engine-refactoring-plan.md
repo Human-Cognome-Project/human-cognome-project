@@ -210,6 +210,35 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-17 contributor (awaiting review):
+[exchange leaf-inventory cost](../engine/docs/EXCHANGE-LEAF-INVENTORY-COST.md)
+at `87061d3b` selects a concrete second structural view: each flat leaf repeats
+fields already owned by canonical byte-source paths and direct parents. Runtime
+binding/staging consumes those required semantic parents, not the flat table;
+native handles cannot replace their complete HCP pins. Actual public/bounded/
+reverse-copy factories retain 712/890 duplicate nested requested bytes for
+eight/ten leaves plus distinct vector capacity. Borrowed traversal allocates
+nothing and preserves ordered full identity after source death. This is a
+measured proposal, not removal. Quick CI and engine/standalone Clang/GCC values
+passed, including 4,048 structural recipe controls. Main `67861a37` and explicit
+source-accepted #358 ancestry remain; production is identical to #358. Review/
+hosted qualification and indexed/catalogue/producer/accounting/#324 remain separate.
+
+2026-11-17 contributor (awaiting review):
+[membership target-pin authority](../engine/docs/MEMBERSHIP-PIN-AUTHORITY.md)
+at `4f27d26d` implements #357's accepted removal from integrated main `fd0817f6`.
+One complete target pin supplies each membership field object; explicit kind,
+context/count/revision, short addresses and detached/shared-catalogue lifetime
+remain. Collector, bind/exchange/plan readers and independent retained census
+migrate together. Actual live/catalogue fixtures retain 1,084/2,168 fewer
+requested bytes for eight/sixteen rows, without weakening validation or quotas.
+Extended GCC qualification also found an existing audit range-lifetime bug and
+projection-copy unwind failure; separate repairs preserve all original guards
+and add standalone refusal coverage. Final local quick CI, 15 Clang CTests,
+seven fresh GCC CTests, both standalone suites and exchange/compiler/lifecycle
+invocations passed. Review/authoritative hosted qualification remain pending;
+native claims, candidate state, broader adoption/accounting and #324 are separate.
+
 2026-11-16 contributor (awaiting review):
 [membership field-key cost comparison](../engine/docs/MEMBERSHIP-FIELD-KEY-COST.md)
 at `ec21b153` attributes duplicate row ObjectKeys beside full target pins in the

@@ -1,5 +1,15 @@
 # Prepared logical declaration for letter exchange
 
+**Contributor ownership comparison — 2026-11-17 (awaiting review):**
+[Leaf-inventory attribution](EXCHANGE-LEAF-INVENTORY-COST.md) at `87061d3b`
+measures the flat leaf rows copied from the declaration's existing byte-source
+parents. The test preserves all five semantic fields, full pin revisions,
+repeated/multibyte order, both directions and detached ownership while measuring
+actual public/bounded/reverse-copy factories. The proposal reuses those parent
+rows through existing accessors, preserving their distinct role from aggregate
+parents. Production and the contract below remain unchanged; review precedes
+removal. Local quick CI and Clang/GCC value suites pass all 4,048 recipe controls.
+
 This is the structural first increment of the private D7 coordinator. It builds
 an immutable declaration from the existing validated v2 `LetterProjection`;
 it does not bind native handles, call placement or publish an exchange.
