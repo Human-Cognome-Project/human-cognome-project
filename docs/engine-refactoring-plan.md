@@ -211,6 +211,19 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[Projection recipe copy attribution](../engine/docs/EXCHANGE-RECIPE-COPY-COST.md)
+at `ac4ab9cf` selects the two identical immutable Bundles in the owner's committed/
+spare views. Actual separate backing costs 25,735–28,059 requested bytes per copy
+in three fixtures; embedded headers are counted separately, not as new requests.
+Live view state remains independent while const recipe reads/staging allocate
+nothing. Proposed owner-private sharing preserves full meaning, detached public/
+domain copies and native authority; it is not implemented. Quick CI, four native
+Clang/GCC inspections and both full single-owner integration paths pass. Main
+`ad38b6cd` and explicit source-accepted #362 ancestry are preserved; production
+is unchanged. Review/hosted gates and indexed/catalogue/producer/accounting/#324
+remain separate.
+
+2026-11-17 contributor (awaiting review):
 [Private exchange direction sharing](../engine/docs/EXCHANGE-DIRECTION-SHARING.md)
 at `faa7fc8e` implements #361's authorized one-payload scope. Explicit target
 state on the existing binding coordinates owner validation, capture and commands;

@@ -2823,6 +2823,7 @@ void capture_current(engine::Runtime &r,
 #include "exchange_commit_cases.inc"
 #include "exchange_field_cases.inc"
 #include "owner_lifetime.inc"
+#include "exchange_recipe_cost.inc"
 #include "exchange_owner_cases.inc"
 #include "exchange_owner_multiple.inc"
 #include "exchange_owner_equal.inc"
@@ -2980,6 +2981,10 @@ int main(int argc, char **argv) {
       run("exchange_owner_multiple", [&] { exchange_owner_multiple(r, path); });
     if (only == "placement" || only == "exchange_owner_equal")
       run("exchange_owner_equal", [&] { exchange_owner_equal(r, path); });
+    if (only == "exchange_recipe_cost")
+      run("exchange_recipe_cost", [&] {
+        exchange_owner(r,path,true); exchange_owner_multiple(r,path,true); exchange_owner_equal(r,path,true);
+      });
     if (only == "placement" || only == "live_focus")
       run("live_focus", [&] { live_focus(r, path); });
     if (only == "placement" || only == "admission_commit_failures")

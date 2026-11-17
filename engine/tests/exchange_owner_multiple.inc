@@ -1,4 +1,4 @@
-void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
+void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only = false) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
@@ -38,6 +38,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path) {
   fields.push_back({{GroupKind::ParentValue,character.object},f.in.field_rows[6]});
   fields.push_back({{GroupKind::SiblingDefinition,letters.accented},f.in.field_rows[7]});
   fields.push_back({{GroupKind::Membership,group.object},f.in.field_rows[8]});
+  exchange_recipe_cost(f,initial,rows,fields);
+  if (recipe_only) return;
   owner_lifetime(f,initial,rows,fields);
   auto owner = Access::adopt(f.h,initial,rows,fields);
   const auto memberships = Access::memberships(*owner);

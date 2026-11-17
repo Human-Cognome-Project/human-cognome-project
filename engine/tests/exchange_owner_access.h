@@ -110,6 +110,25 @@ struct ExchangeOwnerAccess {
     for (const auto &o : b.structural_occurrences) visit(o.definition.address);
     for (const auto &f : b.focal_fields) visit(f.object.address);
   }
+  // Recipe family only: no live exposure, occurrence publication or input maps.
+  template<class Visit> static void recipe_backing(const warm::Bundle &b, Visit visit) {
+    const auto table = [&](const auto &v) {
+      visit(static_cast<const void *>(v.data()),v.capacity()*sizeof(v[0]),v.get_allocator().domain.get());
+    };
+    const auto text = [&](const auto &v) {
+      visit(static_cast<const void *>(v.data()),warm::recipe_text_backing(v),v.get_allocator().domain.get());
+    };
+    table(b.tools); table(b.geometry); table(b.nodes); table(b.occurrences);
+    table(b.selections); table(b.contacts); table(b.structural_occurrences); table(b.focal_fields);
+    for (const auto &t : b.tools) { table(t.parents); table(t.member_of); text(t.recipe); if (t.notation) text(*t.notation); }
+    for (const auto &g : b.geometry) table(g.spheres);
+    for (const auto &s : b.selections) { table(s.parts); for (const auto &id : s.parts) table(id.path); }
+    for (const auto &o : b.occurrences) table(o.id.path);
+    for (const auto &o : b.structural_occurrences) table(o.id.path);
+    for (const auto &c : b.contacts) { table(c.a.path); table(c.b.path); }
+    recipe_addresses(b,table);
+    recipe_uuids(b,[&](const auto &u) { text(u.str()); });
+  }
   static bool recipe_equivalent(const warm::Bundle &a, const warm::Bundle &b) {
     const auto rows=[](const auto &x, const auto &y, auto equal) {
       return x.size()==y.size() && std::equal(x.begin(),x.end(),y.begin(),equal);
