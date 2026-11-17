@@ -211,6 +211,24 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[Direct owner-map publication](../engine/docs/EXCHANGE-OWNER-SOURCE-MAPS.md) at
+`4f74ad11` implements #365 review 5946869103's bounded removal. Current maps
+are synchronous const call arguments; independent candidates publish directly
+into the owner after source access ends. Captured facts, generation/readiness,
+all native/semantic validation and standalone owned adapters remain. No stored
+loan or new registry/wrapper. Actual whole-owner before/after runs remove 562
+allocations and 47,180 retained/scoped-peak requested bytes per fixture, with
+unchanged 608/680/376-byte owner/coordinator/binding extents. Census, removed
+reservation/copy work and lifetime witnesses are coordinated. Initial input
+prepayment and temporary adoption validators remain. Quick CI, 16 Clang/eight
+GCC CTests, all 48 owner and 48 standalone exchange mode runs and both compilers'
+request/ABI/source-death/unwind controls pass. Main `068fe63a` and accepted
+#365/#364 remain explicit dependencies through normal merge `bd4d1658`.
+Review/authoritative hosted gates remain separate. Next, inspect the temporary
+adoption validation maps as a separate measured surface after this review;
+indexed guards, broader producers, full accounting and #324 stay separate.
+
+2026-11-17 contributor (awaiting review):
 [Binding-map request and publication inspection](../engine/docs/EXCHANGE-BINDING-MAP-COST.md)
 at `120658ca` measures the third source-map pair's 47,180 requested bytes across
 562 allocations, with embedded headers and whole-owner overlap separated.

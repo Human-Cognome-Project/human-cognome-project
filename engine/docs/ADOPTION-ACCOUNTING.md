@@ -7,6 +7,18 @@ It does not implement or accept a combined admission limit. Audited runtime:
 `c118e6efea6902a3996af126e67840f5c4e7da1a`. Main `5ef632f2` adds current handoff
 notes; normal merge `46e7d1ad` preserves them in this continuation.
 
+## Persistent binding-map removal (awaiting review)
+
+[The source-map implementation](EXCHANGE-OWNER-SOURCE-MAPS.md) at `4f74ad11`
+removes only the retained binding pair's reservation and later row/key staging
+copies. Four current/candidate stores retain backing; the binding's empty headers
+remain in its unchanged object extent. Header association/direction admission,
+actual-inventory capture/revalidation and command work remain. Input C/S and the
+component copy-work prepayment still cover one complete initial owner snapshot.
+Temporary per-selection standalone validation bindings, including their maps and
+capture/setup work, remain a separate surface. Actual whole-owner requests and
+scoped setup peaks are measured before/after; this introduces no combined gate.
+
 ## Owner-local recipe sharing (awaiting review)
 
 [The recipe-sharing implementation](EXCHANGE-RECIPE-SHARING.md) at `6be856c7`
@@ -98,7 +110,7 @@ storage; caller inputs and native execution remain borrowed.
 | Inspect/copy spare projection | Separate mutable-view inspection/logical-copy charge plus one fixed retained recipe/domain association | A second mutable projection exists, sharing the initial owner's immutable Bundle. Only new requests are selected charges. Do not add logical copy work to D as bytes. |
 | Reserve both exposure pools | CommittedParents / SpareParents charge scans, equality, slots and nested copies | Both projections' active/spare backing selected, including growth overlap. |
 | Construct retained coordinator and binding | Bindings charges fixed objects, buffer reservations and mask initialization | Unique objects and all reserved backing selected. |
-| Reserve owner/binding/coordinator maps | Bindings charges inventory scans, slot growth, nil initialization and nested capacity | Six retained map stores selected, including inactive constructed slots. These are extensions/reuse of initial owner maps, not another full initial snapshot. |
+| Reserve owner/candidate maps | Bindings charges inventory scans, slot growth, nil initialization and nested capacity for the two current/candidate pairs | Four retained map stores selected, including inactive constructed slots; persistent binding maps remain empty. These are extensions/reuse of initial owner maps, not another full initial snapshot. |
 | Publish returned owner and results | Fixed result/handle assignment; no payload scan or new backing | Domain ownership moves into the returned owner; pointee/control-block lifetime can extend through retained aliases. No native publication occurs. |
 
 Later operational staging/capture/command/matching limits are separate and are not

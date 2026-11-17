@@ -8,6 +8,38 @@ This merge integrates reviewed #365 `80922b92`, including reviewed #364 `45d30de
 
 The next authorized work is inspection and measurement of the per-selection temporary validation binding during owner adoption. Attribute construction work, temporary peak, lifetime, source associations and captured validation facts separately from retained candidate backing before proposing any runtime change.
 
+**Contributor direct owner-map publication — 2026-11-17 (awaiting review):**
+[Implementation and source-pinned evidence](../engine/docs/EXCHANGE-OWNER-SOURCE-MAPS.md)
+at `4f74ad11` implements the removal explicitly authorized by #365 review
+5946869103. The private owner passes current maps synchronously by const argument
+for capture/commands/precommit validation; its independent candidate publishes
+directly after source access ends. No stored loan, new registry or wrapper.
+Captured masses/handles/edges/masks, full typed key/pin/claim/source/ledger checks,
+actual-inventory work, standalone ownership and stale-generation authority remain.
+Four stores have backing; six embedded headers and object extents remain.
+Actual whole-owner retained/scoped-peak reduction is 47,180 requested bytes and
+562 construction allocations in each one/four/three-selection fixture. Initial
+input prepayment and temporary adoption validation bindings are unchanged.
+
+Quick CI, 16 Clang/eight GCC native CTests, all 48 owner and all 48 standalone
+exchange mode runs, and both compilers' before/after request/lifetime probes pass.
+Every allocation/admission/work boundary, exact/one-short retry, mixed/equal and
+both-direction publication, survivors, stale/foreign/wrong-role refusal,
+postclaim faults 7/8 and following ticks remain covered. Local evidence is
+contributor-reported; authoritative hosted CI and implementation review remain
+pending. This supersedes the historical six-store description below.
+
+Main `068fe63a`, accepted #365 `80922b92` and its accepted #364 dependency
+`45d30de3` are preserved by normal merge `bd4d1658`. GitHub reports native workflows
+44166963726 (#364) and 44177130927 (#365) completed successfully. Both PRs
+remain open at handoff; integration and this implementation's own hosted gates
+remain separate. No duplicate workflow was dispatched.
+Review this implementation and reconcile hosted/dependency gates before
+integration. After review, inspect the remaining temporary adoption bindings as
+a separate measured surface before proposing another removal. Indexed guards,
+collision policy, catalogue/mixed revisions, broader adoption, full accounting
+and #324 remain separate. Held #75/#111/#123 unchanged.
+
 **Contributor binding-map inspection — 2026-11-17 (awaiting review):**
 [Measured retained source maps and publication lifetime](../engine/docs/EXCHANGE-BINDING-MAP-COST.md)
 at `120658ca` selects the private binding's map pair as an intermediate copy of

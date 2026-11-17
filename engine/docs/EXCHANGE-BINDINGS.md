@@ -1,11 +1,13 @@
 # Private committed-source bindings for exchange
 
-[The retained-map inspection](EXCHANGE-BINDING-MAP-COST.md) at `120658ca`
-attributes the binding pair's actual backing and traces its source-copy and
-publication-transport roles. A bounded private owner-map/direct-publication
-proposal awaits review. Current bindings still own their maps; no runtime loan,
-map removal, validation reduction or achieved saving is implemented by that
-test-only inspection. Standalone ownership and native generation checks remain.
+[The source-map implementation](EXCHANGE-OWNER-SOURCE-MAPS.md) at `4f74ad11`
+implements the bounded removal authorized by #365 review 5946869103. Only the
+private persistent owner passes its current maps synchronously by const argument
+to capture, command preparation and precommit validation. Its binding retains
+captured facts and empty map headers; the candidate publishes directly into the
+owner after source access ends. Standalone adapters retain independent owned
+maps and publish into them after the same source-argument call returns. Review
+and authoritative hosted CI remain pending.
 
 This coordinator prerequisite connects the [logical declaration](EXCHANGE-CONTRACT.md)
 to a generation-bound view of committed prepared source metadata. It does not
@@ -69,8 +71,9 @@ Standalone adapters select the declaration's original `to()`; public accessors
 and matching remain one-way. See [implementation/evidence](EXCHANGE-DIRECTION-SHARING.md).
 Neither path borrows a temporary declaration or changes descriptors at publication. Live
 binding validation remains generation-bound even though immutable declarations
-can be selected for later operations. Nested binding maps reuse adoption-reserved
-slots; source capture is a separate phase after those maps are assigned.
+can be selected for later operations. Persistent-owner capture reads synchronous
+current-map arguments; it stores no loans. Standalone bindings assign their own
+adoption-reserved slots before capture.
 
 The owner also shares one immutable membership catalogue, derived at adoption
 from actual pinned upward memberships for every aggregate and byte alternative.
@@ -84,7 +87,7 @@ Catalogue presence never makes an inactive alternative live. Its ordinary
 continues to produce only live participation.
 
 The conservative validation reservation is
-`16 * (bound_occurrences + bound_fields + captured_edges + live_edges + 1)`
+`16 * (current_occurrences + current_fields + captured_edges + live_edges + 1)`
 structural units, capped by the prepared `PlacementWork` limit before scanning.
 Preparation rejects overflow. The persistent owner now reserves one binding
 object at adoption: mass/outgoing-handle vectors to `Particles`, captured edges
@@ -102,14 +105,15 @@ valid retry reuses its backing. Generation checks still reject a completed view
 after native source publication. This is explicit reconstruction from the owner's
 committed maps, not automatic rebinding after an unrelated operation.
 
-Map staging invalidates before copying maps and sharing declaration/catalogue
-ownership. Capture independently invalidates before clearing/refilling the reserved
+Header staging invalidates before checking direction and sharing declaration/
+catalogue ownership. Only the standalone path also copies maps into its reserved
+slots. Capture independently invalidates before clearing/refilling the reserved
 buffers and uses references to immutable object keys, avoiding temporary key copies.
 Successful capture performs no C++ allocation from its first call. Membership
 graph traversal is no longer repeated on the persistent-owner preparation path.
 The standalone value-taking binding adapter still constructs its own catalogue.
 
-Nested identity staging reuses bounded key storage. Catalogue construction,
+Owned-map and candidate identity staging reuse bounded key storage. Catalogue construction,
 including graph maps/sets, occurs at adoption and has its own retained and transient
 cost. Catalogue rows, nested keys/pins and shared ownership remain outside the
 projection census; no complete owner memory-budget or preparation-work claim follows.

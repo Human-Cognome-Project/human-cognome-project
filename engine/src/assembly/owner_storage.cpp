@@ -55,6 +55,8 @@ OwnerStorage ExchangeOwner::storage() const {
   const auto &b = *p.bound_;
   Census maps;
   maps.map(occurrences_); maps.map(fields_);
+  // The persistent binding's owned maps stay empty. Their headers are already
+  // in sizeof(b); only current/candidate backing is retained on this path.
   maps.map(b.occurrences_); maps.map(b.fields_);
   maps.map(p.next_); maps.map(p.next_fields_);
   out.maps = maps.result;

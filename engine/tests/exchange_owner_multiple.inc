@@ -92,9 +92,9 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
             "multi-occurrence projection preparation published or grew storage");
     std::shared_ptr<const assembly::LetterExchangeContract> selected;
     no_new([&] { selected = Access::declaration(*owner,key,target); });
-    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,Access::fields(*owner),target); });
-    no_new([&] { Plan::capture(Access::plan(*owner),*before_view); });
-    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok,
+    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,target); });
+    no_new([&] { Plan::capture(Access::plan(*owner),*before_view,Access::mappings(*owner),Access::fields(*owner)); });
+    require(Access::binding_status(*owner) == UpdateStatus::Ok,
             "multi-occurrence source capture failed");
     no_new([&] { Access::prepare(*owner,key,target,incoming,{}); });
     const auto staging_snapshot = TickSnapshot(f);

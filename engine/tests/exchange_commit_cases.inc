@@ -57,7 +57,12 @@ void exchange_commit(engine::Runtime &r, HostPath path) {
       incoming.push_back({source.occurrence, source.definition, source.node, 1,
                           int(900 + incoming.size()), 0.5, {1,1,true}});
     const auto prepare = [&](const auto &inputs) {
-      return Access::prepare(Bind::prepare(f.h, projection, declaration, rows, fields), inputs);
+      auto source=projection;
+      auto contract=declaration;
+      auto source_rows=rows;
+      auto source_fields=fields;
+      auto source_incoming=inputs;
+      return Access::prepare(Bind::prepare(f.h,source,std::move(contract),std::move(source_rows),std::move(source_fields)),source_incoming);
     };
     if (scenario == 0) {
       auto wrong = incoming;
