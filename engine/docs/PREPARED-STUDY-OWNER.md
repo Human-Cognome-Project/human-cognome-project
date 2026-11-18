@@ -97,6 +97,14 @@ constituent/lifecycle framework as necessary.
 
 ## Integration findings and qualification
 
+The [retained-entry inspection](RETAINED-C3-HANDOFF.md) (contributor evidence,
+awaiting review) demonstrates this existing bounded bridge alongside legacy
+ActiveSession execution. Bootstrap publishes initial C3 through combined native
+admission, not the standalone C3-1 installer. Source ownership and actual claim
+mapping are already built here; the retained capture adapter still needs an
+explicit prepared request/context lifetime handoff. Its fixture reproduction
+does not qualify current retained database pins or the full retained study.
+
 Native field declaration extent is `Fields`; particle declarations use
 `Potential`. Development exposed that #348's validator checked field addresses
 against Potential. Native rejection stayed ready and preserved state. Separate

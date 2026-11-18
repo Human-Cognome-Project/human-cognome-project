@@ -1,5 +1,26 @@
 # Current implementation and work
 
+**Contributor retained-study/C3 handoff inspection — 2026-11-18 (awaiting review):**
+[Source trace, focused witness and first missing operation](../../engine/docs/RETAINED-C3-HANDOFF.md)
+at `ff27ecac` follows #370 review 5956165492. Main remains `2c7ec4d0`;
+normal merge `543cfbf4` explicitly carries provisionally accepted #370 `eee4ef07`,
+whose native hosted gate is still separate. The retained capture adapter uses v1
+normalization and legacy ActiveSession/FixedStudy, with C3 intent unavailable.
+Bounded v2 PreparedStudyOwner already seals source, bootstraps native C3 through
+combined admission and publishes actual claim maps. It does not call the standalone
+initial installer optimized in #370. No duplicate native installer is required.
+
+The first missing retained entry is an explicit prepared request/context lifetime
+handoff with caller-supplied supported comparisons, intrinsics, focus and resources.
+Review that boundary before runtime implementation; do not infer it from a detached
+report or add Analyst policy. Quick CI, four Clang worker/path CTests and two GCC
+probes pass: six flat/refusal traces and 12 aggregate/parts prepared traces retain
+source pins, actual handle mapping, authorization/currentness and completed ticks.
+The saved study's 16 paths/notations/masses are reproduced with fixtures; byte IDs
+remain synthetic. No current DB reacquisition, numeric replay or full retained-C3
+execution is claimed. Production equals #370. Hosted CI is authoritative; dependency
+and this inspection's gates remain distinct. Refresh transport and #324 stay separate.
+
 **Contributor native initial C3 seed transport — 2026-11-18 (awaiting review):**
 [Implementation, actual before/after transfers and controls](../../engine/docs/NATIVE-HIERARCHY-SEED-TRANSPORT.md)
 at `98da1f2f`, based on integrated main `2c7ec4d0`, implements #369 review
