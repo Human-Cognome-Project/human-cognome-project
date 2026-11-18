@@ -44,6 +44,8 @@ void exchange_binding_map_cost(Fixture &f, const assembly::LetterProjection &pro
   auto caller=std::make_unique<assembly::LetterProjection>(projection);
   std::optional<std::vector<OccurrenceBinding>> caller_rows(rows);
   std::optional<std::vector<ExchangeFieldBinding>> caller_fields(fields);
+  std::optional<ExchangeMap<OccurrenceBinding>> source_rows(std::in_place,rows);
+  std::optional<ExchangeMap<ExchangeFieldBinding>> source_fields(std::in_place,fields);
   // Comparator controls change every full-handle component and complete
   // semantic key independently; a record index alone is not an association.
   auto changed_rows=rows;
@@ -114,16 +116,18 @@ void exchange_binding_map_cost(Fixture &f, const assembly::LetterProjection &pro
     };
     no_new([&] {
       map_cost_pairs(*owner,[&](auto role,const auto &r,const auto &g) {
-        require(r.storage().size()==row_slots && g.storage().size()==field_slots,
+        require(role==1 ? r.storage().empty() && g.storage().empty() &&
+                             !r.storage().capacity() && !g.storage().capacity() :
+                             r.storage().size()==row_slots && g.storage().size()==field_slots,
                 "map reservation omitted constructed inactive slots");
         require(role==0 ? map_cost_equal(r,rows) && map_cost_equal(g,fields) : r.size()==0 && g.size()==0,
                 "map adoption/source-death changed active inventory or made reserved slots live");
         inspect(role,r); inspect(role,g);
       });
     });
-    require(requested[0] && requested[0]==requested[1] && requested[1]==requested[2] &&
-                blocks[0]==blocks[1] && blocks[1]==blocks[2],
-            "map families differ in reserved request footprint");
+    require(requested[0] && requested[0]==requested[2] && !requested[1] &&
+                blocks[0]==blocks[2] && !blocks[1],
+            "persistent binding retained source-map backing or candidate reservation changed");
     no_new([&] {
       require(Access::resources(*owner).maps.charged_bytes()==requested[0]+requested[1]+requested[2],
               "map census differs from independent actual backing or counts embedded headers again");
@@ -132,15 +136,20 @@ void exchange_binding_map_cost(Fixture &f, const assembly::LetterProjection &pro
       const auto selected=Access::declaration(*owner,key,target);
       const auto memberships=Access::memberships(*owner);
       no_new([&] {
-        stage_work=Plan::stage_binding(Access::plan(*owner),selected,memberships,
-            Access::mappings(*owner),Access::fields(*owner),target).charged;
-        require(map_cost_equal(Plan::mappings(Access::plan(*owner)),Access::mappings(*owner)) &&
-                    map_cost_equal(Plan::fields(Access::plan(*owner)),Access::fields(*owner)),
-                "staging did not retain complete ordered logical/native associations");
-        Plan::capture(Access::plan(*owner),Access::projection(*owner));
-        require(Plan::binding_status(Access::plan(*owner))==UpdateStatus::Ok &&
+        stage_work=Plan::stage_binding(Access::plan(*owner),selected,memberships,target).charged;
+        require(map_cost_equal(Access::mappings(*owner),rows) && map_cost_equal(Access::fields(*owner),fields) &&
+                    Plan::mappings(Access::plan(*owner)).storage().empty() &&
+                    Plan::fields(Access::plan(*owner)).storage().empty(),
+                "staging changed current associations or acquired owned binding maps");
+        Plan::capture(Access::plan(*owner),Access::projection(*owner),*source_rows,*source_fields);
+      });
+      // Capture does not retain these argument maps. Subsequent validation reads
+      // the owner's unchanged current maps after both temporary arguments die.
+      source_rows.reset(); source_fields.reset();
+      no_new([&] {
+        require(Access::binding_status(*owner)==UpdateStatus::Ok &&
                     Plan::planned_mappings(Access::plan(*owner)).size()==0 &&
-                    Plan::planned_fields(Access::plan(*owner)).size()==0 && stage_work,
+                    Plan::planned_fields(Access::plan(*owner)).size()==0 && stage_work==1,
                 "source capture changed candidate maps or did not validate committed source");
         map_cost_pairs(*owner,[&](auto role,const auto &r,const auto &g) {
           std::size_t i=0;
@@ -184,8 +193,11 @@ void exchange_binding_map_cost(Fixture &f, const assembly::LetterProjection &pro
             << ",binding_map_requested=" << requested[1] << ",candidate_map_requested=" << requested[2]
             << ",map_pair_headers=" << sizeof(ExchangeMap<OccurrenceBinding>)+sizeof(ExchangeMap<ExchangeFieldBinding>)
             << ",binding_object_bytes=" << sizeof(ExchangeBindings) << ",binding_object_request=" << binding_request
+            << ",owner_object_bytes=" << sizeof(ExchangeOwner)
+            << ",coordinator_object_bytes=" << sizeof(ExchangeCoordinator)
             << ",stage_work=" << stage_work
-            << ",stage_capture_cpp_new=0,after_destroy_requested=" << released.live << " PASS\n";
+            << ",map_argument_pointer_bytes=" << 2*sizeof(void *)
+            << ",argument_source_death=1,stage_capture_cpp_new=0,after_destroy_requested=" << released.live << " PASS\n";
 }
 
 // Value snapshots are test scratch, constructed outside execution/allocation
@@ -199,16 +211,36 @@ struct MapRotationSnapshot {
 MapRotationSnapshot map_rotation_before(const assembly::detail::ExchangeOwner &owner) {
   using Access=assembly::testing::ExchangeOwnerAccess;
   using Plan=assembly::testing::ExchangeCoordinatorAccess;
+  using Bind=assembly::testing::ExchangeBindingAccess;
+  const auto &plan=Access::plan(owner);
+  // The owned standalone route supplies an independent complete-map work and
+  // lifetime control. All caller copies die before its validation below.
+  auto owned=[&] {
+    auto source=Access::projection(owner);
+    std::vector<assembly::detail::OccurrenceBinding> rows(Access::mappings(owner).begin(),Access::mappings(owner).end());
+    std::vector<assembly::detail::ExchangeFieldBinding> fields(Access::fields(owner).begin(),Access::fields(owner).end());
+    auto declaration=assembly::declare_letter_exchange(source,Plan::declaration(plan)->owner(),Plan::target(plan));
+    return Bind::prepare(Plan::harness(plan),source,std::move(declaration),std::move(rows),std::move(fields));
+  }();
   std::array<const void *,6> stores;
   no_new([&] {
-    require(map_cost_equal(Access::mappings(owner),Plan::mappings(Access::plan(owner))) &&
-                map_cost_equal(Access::fields(owner),Plan::fields(Access::plan(owner))),
-            "prepared binding source differs from complete current owner maps");
+    require(Bind::validate(*owned).status==UpdateStatus::Ok &&
+                Bind::work(*owned)==Plan::binding_work(plan) &&
+                map_cost_equal(Bind::mappings(*owned),Access::mappings(owner)) &&
+                map_cost_equal(Bind::fields(*owned),Access::fields(owner)) &&
+                Bind::mappings(*owned).storage().data()!=Access::mappings(owner).storage().data() &&
+                Bind::fields(*owned).storage().data()!=Access::fields(owner).storage().data() &&
+                Plan::owned_binding_status(plan)==UpdateStatus::InvalidInput,
+            "borrowed source underpriced validation or standalone maps depended on caller storage");
+    require(Access::binding_status(owner)==UpdateStatus::Ok &&
+                Plan::mappings(Access::plan(owner)).storage().empty() &&
+                Plan::fields(Access::plan(owner)).storage().empty(),
+            "prepared binding did not validate current owner arguments or retained maps");
     map_cost_pairs(owner,[&](auto role,const auto &r,const auto &g) {
       stores[2*role]=r.storage().data(); stores[2*role+1]=g.storage().data();
     });
-    for (std::size_t i=0; i<stores.size(); ++i) for (std::size_t j=0; j<i; ++j)
-      require(stores[i] && stores[i]!=stores[j],"publication map stores are not independent");
+    for (const auto i : {0,1,4,5}) for (const auto j : {0,1,4,5}) if (j<i)
+      require(stores[i] && stores[i]!=stores[j],"current/candidate map stores are not independent");
   });
   return {stores,Access::mappings(owner),Access::fields(owner),Access::generation(owner)};
 }
@@ -218,14 +250,19 @@ void map_rotation_after(const assembly::detail::ExchangeOwner &owner,
   using Plan=assembly::testing::ExchangeCoordinatorAccess;
   no_new([&] {
     map_cost_pairs(owner,[&](auto role,const auto &r,const auto &g) {
-      const auto prior=role==0 ? 2 : (role==1 ? 0 : 1);
+      if (role==1) {
+        require(r.storage().empty() && g.storage().empty() && !r.storage().capacity() && !g.storage().capacity(),
+                "owner publication retained maps in its binding");
+        return;
+      }
+      const auto prior=role==0 ? 2 : 0;
       require(r.storage().data()==before.stores[2*prior] && g.storage().data()==before.stores[2*prior+1],
-              "publication did not rotate candidate to binding to owner and old current stores back");
-      if (role) require(map_cost_equal(r,before.source_rows) && map_cost_equal(g,before.source_fields),
-                        "retired binding/candidate maps lost exact previous source associations");
+              "publication did not swap resolved candidate directly with current owner stores");
+      if (role==2) require(map_cost_equal(r,before.source_rows) && map_cost_equal(g,before.source_fields),
+                          "retired candidate maps lost exact previous source associations");
     });
     require(Access::generation(owner)==before.generation+1 && native.generation==Access::generation(owner) &&
-                Plan::binding_status(Access::plan(owner))==UpdateStatus::Stale && !Access::pending(owner),
+                Access::binding_status(owner)==UpdateStatus::Stale && !Access::pending(owner),
             "publication reused old source authority or separated native/owner generation");
     const auto claims=[&](const auto &map,const auto &headers) {
       for (const auto &row : map)

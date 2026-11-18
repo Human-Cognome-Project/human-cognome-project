@@ -1,4 +1,4 @@
-void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false) {
+void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false, bool adoption_only = false) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
@@ -51,6 +51,8 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
   std::vector<assembly::detail::OccurrenceBinding> rows{{key, f.in.particle_rows[0]}};
   std::vector<assembly::detail::ExchangeFieldBinding> fields;
   for (int i = 0; i < 3; ++i) fields.push_back({keys[6+i], f.in.field_rows[i]});
+  if (adoption_only || (!recipe_only && !map_only)) exchange_adoption_binding_cost(f,initial,rows,fields);
+  if (adoption_only) return;
   if (!map_only) exchange_recipe_cost(f,initial,rows,fields);
   if (!recipe_only) exchange_binding_map_cost(f,initial,rows,fields);
   if (recipe_only || map_only) return;
@@ -148,7 +150,7 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
   const auto plan_backing = Plan::backing(*reserved_plan);
   const auto *reserved_binding = Plan::binding(*reserved_plan);
   const auto binding_backing = Plan::binding_backing(*reserved_plan);
-  require(Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput,
+  require(Access::binding_status(*owner) == UpdateStatus::InvalidInput,
           "adoption exposes an uncaptured binding");
   require(!Access::pending(*owner), "new owner exposes an unprepared plan");
   const auto reserved = Access::storage(*owner);
@@ -201,11 +203,11 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
     require(selected.get() == declarations[0].get() &&
                 Access::equivalent(*selected,declaration,compression),
             "retained declaration differs from freshly derived alternatives");
-    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,old_fields,target); });
-    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::InvalidInput,
+    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,target); });
+    require(Access::binding_status(*owner) == UpdateStatus::InvalidInput,
             "map staging exposed an uncaptured binding");
-    no_new([&] { Plan::capture(Access::plan(*owner),*previous); });
-    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok &&
+    no_new([&] { Plan::capture(Access::plan(*owner),*previous,Access::mappings(*owner),Access::fields(*owner)); });
+    require(Access::binding_status(*owner) == UpdateStatus::Ok &&
                 Plan::target(Access::plan(*owner)) == target && unchanged(),
             "allocation-free source capture failed or published owner data");
     std::vector<assembly::detail::ExchangeIncoming> incoming;
@@ -246,7 +248,7 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
                     stopped.staging.next_required <= staging_charge && !stopped.capture.charged &&
                     !stopped.commands.charged && !Access::pending(*owner) &&
                     Plan::consumed(*reserved_plan) && !Plan::sealed(*reserved_plan) &&
-                    Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput,
+                    Access::binding_status(*owner) == UpdateStatus::InvalidInput,
                 "staging boundary exposed partial intent or charged a later phase");
         if (!allowance) require(!stopped.staging.charged && stopped.staging.next_required == 1,
                                 "zero staging allowance performed payload work");
@@ -281,7 +283,7 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
       const auto short_work = Access::prepare(*owner,key,target,incoming,additions,captured.charged-1);
       require(short_work.status == Status::WorkExhausted && short_work.charged < captured.charged &&
                   short_work.next_required == captured.charged && !Access::pending(*owner) &&
-                  Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput,
+                  Access::binding_status(*owner) == UpdateStatus::InvalidInput,
               "capture exhaustion exposed partial intent or failed its late boundary");
     });
     require(unchanged() && capture_snapshot == TickSnapshot(f) &&
@@ -295,7 +297,7 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
           require(stopped.status == assembly::detail::CaptureStatus::WorkExhausted &&
                       stopped.charged <= allowance && stopped.next_required > allowance &&
                       stopped.next_required <= captured.charged && !Access::pending(*owner) &&
-                      Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput,
+                      Access::binding_status(*owner) == UpdateStatus::InvalidInput,
                   "capture charge-boundary sweep exposed partial intent or lost progress");
           allowance = stopped.next_required; ++boundaries;
         }
@@ -404,12 +406,12 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
     rejected = false;
     try { Plan::rebind(Access::plan(*owner),*previous,selected,old_rows,invalid_fields,target); }
     catch (const warm::Error &) { rejected = true; }
-    require(rejected && Plan::binding_status(*reserved_plan) == UpdateStatus::InvalidInput && unchanged(),
+    require(rejected && Access::binding_status(*owner) == UpdateStatus::InvalidInput && unchanged(),
             "partial binding capture retained authority or changed committed owner");
     no_new([&] { Access::prepare(*owner,key,target,incoming,additions); });
     require(Plan::binding(*reserved_plan) == reserved_binding &&
                 Plan::binding_backing(*reserved_plan) == binding_backing &&
-                Plan::binding_status(*reserved_plan) == UpdateStatus::Ok,
+                Access::binding_status(*owner) == UpdateStatus::Ok,
             "binding retry replaced reserved capture backing or remained invalid");
     require(unchanged(), "preparation published exposure early");
     // Prospective field hierarchy includes retained membership and pending claims.

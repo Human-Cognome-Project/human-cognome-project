@@ -81,13 +81,7 @@ void ExchangeBindings::stage(std::shared_ptr<const LetterExchangeContract> contr
     warm::Exposure target, std::shared_ptr<const MembershipFields> memberships,
     const ExchangeMap<OccurrenceBinding> &occurrences,
     const ExchangeMap<ExchangeFieldBinding> &fields, PreparationWork &meter) {
-  valid_ = false;
-  meter.charge(1);
-  need(contract && (target == contract->from() || target == contract->to()) &&
-       contract->from() != contract->to(), "invalid exchange operation direction");
-  contract_ = std::move(contract);
-  target_ = target;
-  memberships_ = std::move(memberships);
+  stage(std::move(contract),target,std::move(memberships),meter);
   occurrences_.clear(); fields_.clear();
   for (const auto &row : occurrences) {
     meter.charge(sizeof(OccurrenceBinding)); meter.copy_key(row.occurrence);
@@ -99,16 +93,39 @@ void ExchangeBindings::stage(std::shared_ptr<const LetterExchangeContract> contr
   }
 }
 
+void ExchangeBindings::stage(std::shared_ptr<const LetterExchangeContract> contract,
+    warm::Exposure target, std::shared_ptr<const MembershipFields> memberships, PreparationWork &meter) {
+  valid_ = false;
+  meter.charge(1);
+  need(contract && (target == contract->from() || target == contract->to()) &&
+       contract->from() != contract->to(), "invalid exchange operation direction");
+  contract_ = std::move(contract);
+  target_ = target;
+  memberships_ = std::move(memberships);
+}
+
 CaptureResult ExchangeBindings::capture(const LetterProjection &projection, std::uint64_t allowance) {
+  return capture(projection,occurrences_,fields_,allowance);
+}
+
+CaptureResult ExchangeBindings::capture(const LetterProjection &projection, PreparationWork &meter) {
+  return capture(projection,occurrences_,fields_,meter);
+}
+
+CaptureResult ExchangeBindings::capture(const LetterProjection &projection,
+    const ExchangeMap<OccurrenceBinding> &current_occurrences,
+    const ExchangeMap<ExchangeFieldBinding> &current_fields, std::uint64_t allowance) {
   CaptureWork meter(allowance);
-  try { return capture(projection,meter); }
+  try { return capture(projection,current_occurrences,current_fields,meter); }
   catch (const CaptureStop &stop) {
     valid_ = false;
     return stop.result;
   }
 }
 
-CaptureResult ExchangeBindings::capture(const LetterProjection &projection, PreparationWork &meter) {
+CaptureResult ExchangeBindings::capture(const LetterProjection &projection,
+    const ExchangeMap<OccurrenceBinding> &current_occurrences,
+    const ExchangeMap<ExchangeFieldBinding> &current_fields, PreparationWork &meter) {
   valid_ = false;
   meter.charge(1); // Fixed capture admission; vector headers only before this.
   masses_.clear(); outgoing_.clear(); edges_.clear();
@@ -128,38 +145,38 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection, Prep
   const auto source_exposure = target_ == contract_->to() ? contract_->from() : contract_->to();
   need(projection.exposure(contract_->owner().source.entry) == source_exposure,
        "exchange source exposure differs from committed projection");
-  need(occurrences_.size() == s.live.particles && fields_.size() <= s.live.fields,
+  need(current_occurrences.size() == s.live.particles && current_fields.size() <= s.live.fields,
        "exchange binding inventory differs from committed execution");
-  need(occurrences_.size() <= masses_.capacity() && s.live.edges <= edges_.capacity() &&
+  need(current_occurrences.size() <= masses_.capacity() && s.live.edges <= edges_.capacity() &&
        s.live.edges <= edge_rows_.capacity() && s.particle_headers.size() <= outgoing_rows_.capacity(),
        "exchange binding reservation exceeded");
   std::size_t active = 0;
   for (const auto &o : projection.occurrences()) { meter.charge(1); active += o.active; }
-  need(active == occurrences_.size(), "exchange owner exposure is incomplete");
-  for (std::size_t i = 0; i < occurrences_.size(); ++i) {
+  need(active == current_occurrences.size(), "exchange owner exposure is incomplete");
+  for (std::size_t i = 0; i < current_occurrences.size(); ++i) {
     meter.charge(1);
-    const auto &binding = occurrences_[i];
+    const auto &binding = current_occurrences[i];
     const auto o = std::find_if(projection.occurrences().begin(), projection.occurrences().end(),
         [&](const auto &v) { return meter.equal(v.key,binding.occurrence); });
     need(o != projection.occurrences().end() && o->active && current(binding.handle, s.particle_headers),
          "exchange occurrence is inactive, foreign or stale");
     for (std::size_t j = 0; j < i; ++j)
-      need(!meter.equal(occurrences_[j].occurrence,binding.occurrence) &&
-           !same(occurrences_[j].handle, binding.handle), "duplicate exchange occurrence binding");
+      need(!meter.equal(current_occurrences[j].occurrence,binding.occurrence) &&
+           !same(current_occurrences[j].handle, binding.handle), "duplicate exchange occurrence binding");
     const auto tool = std::find_if(projection.recipe().tools.begin(), projection.recipe().tools.end(),
         [&](const auto &v) { return meter.equal(v.ref,o->definition); });
     need(tool != projection.recipe().tools.end() && tool->mass &&
          *tool->mass == s.source_masses[binding.handle.record], "bound exact source mass differs");
     meter.charge(1); masses_.push_back(*tool->mass);
   }
-  for (std::size_t i = 0; i < fields_.size(); ++i) {
+  for (std::size_t i = 0; i < current_fields.size(); ++i) {
     meter.charge(1);
-    need(current(fields_[i].handle, s.field_headers), "stale exchange field binding");
+    need(current(current_fields[i].handle, s.field_headers), "stale exchange field binding");
     for (std::size_t j = 0; j < i; ++j) {
       meter.charge(1);
-      need(!(fields_[i].field.kind == fields_[j].field.kind &&
-             meter.equal(fields_[i].field.object,fields_[j].field.object)) &&
-           !same(fields_[i].handle, fields_[j].handle),
+      need(!(current_fields[i].field.kind == current_fields[j].field.kind &&
+             meter.equal(current_fields[i].field.object,current_fields[j].field.object)) &&
+           !same(current_fields[i].handle, current_fields[j].handle),
            "aliased exchange field binding");
     }
   }
@@ -168,17 +185,17 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection, Prep
   outgoing_rows_.assign(s.particle_headers.size(), false);
   for (const auto &source : outgoing_sources()) {
     meter.charge(1);
-    const auto binding = std::find_if(occurrences_.begin(), occurrences_.end(),
+    const auto binding = std::find_if(current_occurrences.begin(), current_occurrences.end(),
         [&](const auto &v) { return meter.equal(v.occurrence,source.occurrence); });
-    need(binding != occurrences_.end(), "outgoing alternative is not currently exposed");
+    need(binding != current_occurrences.end(), "outgoing alternative is not currently exposed");
     need(outgoing_.size() < outgoing_.capacity(), "exchange outgoing reservation exceeded");
     outgoing_.push_back(binding->handle);
     outgoing_rows_[binding->handle.record] = true;
     const auto add = [&](GroupKind kind, const warm::ObjectKey &object, std::uint64_t count) {
       meter.charge(1);
-      const auto field = std::find_if(fields_.begin(), fields_.end(),
+      const auto field = std::find_if(current_fields.begin(), current_fields.end(),
           [&](const auto &v) { meter.charge(1); return v.field.kind == kind && meter.equal(v.field.object,object); });
-      need(field != fields_.end(), "missing declared exchange field binding");
+      need(field != current_fields.end(), "missing declared exchange field binding");
       std::size_t row = 0;
       for (; row < s.live.edges; ++row) {
         meter.charge(1);
@@ -212,18 +229,24 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection, Prep
   generation_ = s.generation;
   source_edges_ = s.live.edges;
   // Bounded read-only validation; reserve before scanning live source metadata.
-  const auto terms = occurrences_.size() + fields_.size() + edges_.size() + source_edges_ + 1;
+  const auto terms = current_occurrences.size() + current_fields.size() + edges_.size() + source_edges_ + 1;
   need(terms <= UINT64_MAX / 16, "exchange binding work overflow");
   work_ = 16 * terms;
   meter.charge(work_); // Reserve the existing complete validation charge before its scan.
   valid_ = true;
-  valid_ = validate(generation_, work_).status == field::UpdateStatus::Ok;
+  valid_ = validate(generation_,work_,current_occurrences,current_fields).status == field::UpdateStatus::Ok;
   need(valid_,
        "exchange binding changed during preparation");
   return meter.result();
 }
 
 field::UpdateResult ExchangeBindings::validate(std::uint64_t expected, std::uint64_t work) const {
+  return validate(expected,work,occurrences_,fields_);
+}
+
+field::UpdateResult ExchangeBindings::validate(std::uint64_t expected, std::uint64_t work,
+    const ExchangeMap<OccurrenceBinding> &current_occurrences,
+    const ExchangeMap<ExchangeFieldBinding> &current_fields) const {
   field::UpdateResult out;
   const auto &s = h_.prepared_storage();
   out.generation = s.generation;
@@ -239,13 +262,14 @@ field::UpdateResult ExchangeBindings::validate(std::uint64_t expected, std::uint
     return out;
   }
   out.structural_visits = work_;
-  if (s.live.particles != occurrences_.size() || s.live.edges != source_edges_) return out;
-  for (std::size_t i = 0; i < occurrences_.size(); ++i) {
-    const auto handle = occurrences_[i].handle;
+  if (s.live.particles != current_occurrences.size() || masses_.size() != current_occurrences.size() ||
+      s.live.edges != source_edges_) return out;
+  for (std::size_t i = 0; i < current_occurrences.size(); ++i) {
+    const auto handle = current_occurrences[i].handle;
     if (!current(handle, s.particle_headers)) { out.status = field::UpdateStatus::Stale; return out; }
     if (s.source_masses[handle.record] != masses_[i]) return out;
   }
-  for (const auto &f : fields_)
+  for (const auto &f : current_fields)
     if (!current(f.handle, s.field_headers)) { out.status = field::UpdateStatus::Stale; return out; }
   for (const auto &edge : edges_) {
     const auto &live = s.edges[edge.row];

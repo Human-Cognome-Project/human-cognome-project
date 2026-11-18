@@ -1,6 +1,6 @@
 // Both alternatives have one body and mass two. Untouched aggregate and byte
 // copies retain every field, so repeated publication isolates semantic direction.
-void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false) {
+void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false, bool adoption_only = false) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
@@ -30,6 +30,8 @@ void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = 
     rows.push_back({o.key,f.in.particle_rows[o.key.source.entry]});
   std::vector<ExchangeFieldBinding> fields;
   for (std::size_t i=0; i<keys.size(); ++i) fields.push_back({keys[i],f.in.field_rows[i]});
+  if (adoption_only || (!recipe_only && !map_only)) exchange_adoption_binding_cost(f,initial,rows,fields);
+  if (adoption_only) return;
   if (!map_only) exchange_recipe_cost(f,initial,rows,fields);
   if (!recipe_only) exchange_binding_map_cost(f,initial,rows,fields);
   if (recipe_only || map_only) return;
@@ -52,11 +54,10 @@ void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = 
             "equal alternatives changed immutable payload or full ordered meanings");
     bool rejected = false;
     try {
-      Plan::stage_binding(Access::plan(*owner),selected,memberships,
-          Access::mappings(*owner),Access::fields(*owner),current.exposure(0));
-      Plan::capture(Access::plan(*owner),current);
+      Plan::stage_binding(Access::plan(*owner),selected,memberships,current.exposure(0));
+      Plan::capture(Access::plan(*owner),current,Access::mappings(*owner),Access::fields(*owner));
     } catch (const warm::Error &) { rejected = true; }
-    require(rejected && Plan::binding_status(Access::plan(*owner)) == UpdateStatus::InvalidInput,
+    require(rejected && Access::binding_status(*owner) == UpdateStatus::InvalidInput,
             "equal row counts/mass authorized capture with the wrong explicit role");
     std::vector<ExchangeIncoming> incoming;
     for (const auto &source : expected.incoming())
