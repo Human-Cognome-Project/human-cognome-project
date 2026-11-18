@@ -22,6 +22,7 @@ struct Options {
   std::string output;
   std::optional<std::uint64_t> intent_work_limit;
   bool cuda{false};
+  bool prepared_english_pair{false};
   std::uint64_t ticks{8};
   double dt{0.1};
   int cpu_threads{1};
@@ -31,6 +32,7 @@ struct Options {
 inline const char *usage() {
   return "usage: viewport_letter_capture OUTPUT_DIRECTORY [options]\n"
     "  --backend cpu|cuda  execution backend (default cpu; cuda fails if the Taichi build lacks it)\n"
+    "  --study legacy-letters|prepared-english-pair  explicit study profile (default legacy-letters; prepared is CPU only)\n"
     "  --ticks N           total completed ticks, N >= 1 (default 8)\n"
     "  --dt X              finite tick length > 0 (default 0.1)\n"
     "  --cpu-threads N     CPU worker threads, N >= 1 (default 1; used by the cpu backend)\n"
@@ -38,7 +40,7 @@ inline const char *usage() {
     "  --pace-ms M         minimum wall-clock ms between captures, M >= 0 (default 0; does not change the simulation)\n"
     "  --intent-work-limit N  request field diagnostic with unsigned work budget (legacy study reports unavailable)\n"
     "SIGINT/SIGTERM stop after the current tick with a final capture and exit 0.\n"
-    "HCP_WARM_TEST_CONNINFO: fresh warm DB with schema.sql; "
+    "HCP_WARM_TEST_CONNINFO: owned warm DB with schema.sql (prepared also requires migration 002); "
     "HCP_CORE_TEST_CONNINFO/HCP_LING_TEST_CONNINFO: retained read-only sources\n";
 }
 // Capture schedule: tick 0, every K completed ticks (when set) and the final tick.
@@ -91,6 +93,10 @@ inline Options parse_options(const std::vector<std::string> &args) {
     if (name == "--backend") {
       if (value != "cpu" && value != "cuda") throw UsageError("invalid value for --backend: '" + value + "'");
       o.cuda = value == "cuda";
+    } else if (name == "--study") {
+      if (value != "legacy-letters" && value != "prepared-english-pair")
+        throw UsageError("invalid value for --study: '" + value + "'");
+      o.prepared_english_pair = value == "prepared-english-pair";
     } else if (name == "--ticks") o.ticks = parse_count(name, value, 1, UINT64_MAX);
     else if (name == "--intent-work-limit") o.intent_work_limit = parse_count(name, value, 0, UINT64_MAX);
     else if (name == "--dt") o.dt = parse_positive(name, value);
@@ -99,6 +105,8 @@ inline Options parse_options(const std::vector<std::string> &args) {
     else if (name == "--pace-ms") o.pace_ms = parse_count(name, value, 0, 86400000);
     else throw UsageError("unknown option: '" + name + "'");
   }
+  if (o.prepared_english_pair && o.cuda)
+    throw UsageError("prepared-english-pair requires the supported CPU backend");
   return o;
 }
 }  // namespace viewport
