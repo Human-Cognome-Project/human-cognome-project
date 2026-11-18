@@ -1153,7 +1153,7 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     return out;
   }
   out.preparation_visits += query.required_work;
-  const auto &v = h.inspect_centroid_cascade(query);
+  const auto &v = h.centroid_cascade_->inspect_descriptors(query);
   std::fill(a.owners.begin(), a.owners.end(), -1);
   std::fill(a.leaf.begin(), a.leaf.end(), 0);
   std::fill(a.cfg.begin(), a.cfg.end(), 0);
@@ -1285,18 +1285,16 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
   // No committed publication is touched until every structural/work check above
   // succeeds. Native/backend failures from here make the execution unready.
   try {
-    for (std::size_t n = 0; n < spec.node_count; ++n)
-      for (int slot = 0; slot < 2; ++slot)
-        for (int k = 0; k < 4; ++k)
-          a.inspection.slots[(slot * 4 + k) * a.H + n] =
-              v.values[(k == 3 ? 6 : k + 3) * a.H + n];
+    // Establish inactive rows on actual storage, including after a refused
+    // attempt. This is a native 64H-byte zero fill, not a host seed upload.
+    h.runtime_->program().fill_ndarray_fast_u32(a.arrays[0], 0);
+    h.centroid_cascade_->copy_published(query, *a.arrays[0]);
     std::fill(a.inspection.selectors.begin(), a.inspection.selectors.end(), 0);
     const auto upload = [&](int i, const auto &x) {
       const auto bytes = x.size() * sizeof(x[0]);
       engine::upload(*a.arrays[i], x.data(), bytes);
       out.upload_bytes += bytes;
     };
-    upload(0, a.inspection.slots);
     upload(1, a.inspection.selectors);
     upload(2, a.cfg);
     upload(3, a.children);

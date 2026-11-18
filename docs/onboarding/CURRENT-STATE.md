@@ -1,5 +1,28 @@
 # Current implementation and work
 
+**Contributor native initial C3 seed transport — 2026-11-18 (awaiting review):**
+[Implementation, actual before/after transfers and controls](../../engine/docs/NATIVE-HIERARCHY-SEED-TRANSPORT.md)
+at `98da1f2f`, based on integrated main `2c7ec4d0`, implements #369 review
+5955551516. Synchronous private descriptor/native-copy access shares the full
+observation/currentness guard. Initial installation clears actual native bank
+storage, then copies the active published XYZ/mass prefix into both banks.
+Public inspection and all source/structural/work/publication/failure checks remain.
+At H=70, actual readback drops 4,448→248 bytes and upload 76,928→72,448:
+8,680 fewer host-transfer bytes. The 4,480 native zero writes and 192 copy-request
+bytes for three nodes are separately measured, not claimed as free or retained
+memory/latency savings.
+
+Quick CI, all 16 scoped Clang suites (four full C3 and four seed modes included),
+dirty refresh, two GCC seed probes, four GCC controls and four GCC public suites
+pass. The 18 fixture comparisons retain Q31/both-bank/source-padding/dirty-native-
+destination controls, exact/short work and healthy retry, 21 provenance refusals,
+public inspection, 16 following owner ticks and injected copy/final-sync unreadiness.
+Historical binaries were actually rerun for before/after totals. Review this
+runtime change and reconcile authoritative GitHub CI before integration. Subsequent
+bounded inspection under #343 should use actual owner/lifetime and native cost
+evidence. Refresh transport, reservations, validator/capture reuse and #324 remain
+separate; CPU passes do not qualify CUDA execution.
+
 **Maintainer integration of #369 (2026-11-18)**
 
 [Review 5955551516](https://github.com/Human-Cognome-Project/human-cognome-project/pull/369#pullrequestreview-5955551516) accepts the C3 seed transport inspection at `473807bb`. All 12 native jobs and smoke passed, including the four seed transport cases and 185 regression passes. Main `22273dd2` also passed native and smoke. The three-node H=70 fixture identifies 4,200 additional host readback bytes and 4,480 seed upload bytes during installation. The CPU scratch witness reproduces the two banks using eight active-prefix copies totaling 192 bytes.

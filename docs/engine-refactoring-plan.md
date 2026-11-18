@@ -210,6 +210,21 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-18 contributor (awaiting review):
+[Native initial C3 seed transport](../engine/docs/NATIVE-HIERARCHY-SEED-TRANSPORT.md)
+at `98da1f2f` implements #369 review 5955551516 on integrated main `2c7ec4d0`.
+Validated private descriptors and native copies replace the numerical host round
+trip; actual native destination initialization establishes inactive zeros. At
+H=70 actual host traffic reduces by 8,680 bytes, with 4,480 native zero writes
+and 192 native copy-request bytes separately accounted for three nodes. Public
+inspection, guards, work/refusal/retry and publication/failure rules remain.
+Quick CI, 16 scoped Clang CTests, dirty refresh, two GCC seed probes, four GCC
+controls and four GCC public suites pass. Historical binaries establish actual
+before totals; both-bank/Q31/dirty-source-and-destination/16-tick history and
+three exception-boundary controls pass. Review/authoritative hosted CI remain
+pending. Refresh, reservations, validator/capture reuse and #324 stay separate;
+follow-on inspection requires a concrete owner/lifetime/native-cost trace.
+
 2026-11-17 contributor (awaiting review):
 [Hierarchy seed transport inspection](../engine/docs/HIERARCHY-SEED-TRANSPORT.md)
 at `c2c553c1`, based on integrated main `22273dd2`, traces C3's full centroid

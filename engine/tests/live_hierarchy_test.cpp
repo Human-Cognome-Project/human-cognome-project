@@ -77,6 +77,12 @@ struct CompiledKernelAccess {
 }  // namespace engine::testing
 namespace field::testing {
 struct LiveHierarchyAccess {
+  static const CascadeInspection &seed_descriptors(Harness &h, const CascadeResult &q) {
+    return h.centroid_cascade_->inspect_descriptors(q);
+  }
+  static void copy_seed(Harness &h, const CascadeResult &q, taichi::lang::Ndarray &destination) {
+    h.centroid_cascade_->copy_published(q, destination);
+  }
   // Forensic test-only readback after failure, not a completed-state report.
   // Never restore readiness or resume this execution.
   static std::vector<double> failed_particles(Harness &h) {
@@ -2903,10 +2909,10 @@ int main(int argc, char **argv) {
       settings.device_memory_gb = 1.0;
     }
     settings.read_environment = false;
-    // The combined placement suite creates many independent owners in one
+    // These qualification cases create many independent owners in one
     // Program. Native SNode IDs are monotonic even after a fixture is released.
     // Reserve this test-runner metadata explicitly; model budgets are unchanged.
-    if (only == "placement") settings.snode_capacity = 2048;
+    if (only == "placement" || only == "hierarchy_seed_transport") settings.snode_capacity = 2048;
     taichi::lang::default_compile_config.print_kernel_asm = dump_code;
     taichi::lang::default_compile_config.print_kernel_llvm_ir_optimized = dump_code;
     engine::Runtime r(settings);

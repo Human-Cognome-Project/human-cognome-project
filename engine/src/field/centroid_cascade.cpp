@@ -1016,7 +1016,7 @@ CascadeResult CentroidCascade::query(std::uint64_t expected,
   }
 }
 
-const CascadeInspection &CentroidCascade::inspect(const CascadeResult &q) {
+void CentroidCascade::validate_observation(const CascadeResult &q) {
   auto &a = *impl_;
   auto &s = *a.h.prepared_;
   if (!a.valid || !a.h.ready_ ||
@@ -1027,6 +1027,38 @@ const CascadeInspection &CentroidCascade::inspect(const CascadeResult &q) {
     throw std::logic_error("stale centroid cascade observation");
   try {
     a.h.validate_prepared_bindings();
+  } catch (...) {
+    a.h.ready_ = false;
+    throw;
+  }
+}
+const CascadeInspection &CentroidCascade::inspect_descriptors(const CascadeResult &q) {
+  validate_observation(q);
+  return impl_->inspection;
+}
+void CentroidCascade::copy_published(const CascadeResult &q, Ndarray &destination) {
+  validate_observation(q);
+  auto &a = *impl_;
+  const auto source = a.values_array->get_device_allocation();
+  const auto target = destination.get_device_allocation();
+  if (!source.device || source.device != target.device || source == target ||
+      destination.dtype != PrimitiveType::f64 ||
+      destination.shape.size() != 2 || destination.shape[0] != 8 ||
+      destination.shape[1] != a.nstride)
+    throw std::logic_error("incompatible live centroid seed destination");
+  // Only the successful query's logical prefix is meaningful. Padding in the
+  // source may be stale; the live owner initializes its destination separately.
+  for (int bank = 0; bank < 2; ++bank)
+    for (int column = 0; column < 4; ++column)
+      source.device->memcpy_internal(
+          target.get_ptr(std::size_t((bank * 4 + column) * a.nstride) * sizeof(double)),
+          source.get_ptr(std::size_t((column + 3) * a.nstride) * sizeof(double)),
+          a.last.nodes * sizeof(double));
+}
+const CascadeInspection &CentroidCascade::inspect(const CascadeResult &q) {
+  validate_observation(q);
+  auto &a = *impl_;
+  try {
     engine::readback(*a.values_array, a.inspection.values.data(),
                      a.inspection.values.size() * sizeof(double));
     engine::readback(*a.valid_array, a.inspection.valid.data(),
