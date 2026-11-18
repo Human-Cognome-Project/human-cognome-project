@@ -92,14 +92,14 @@ void run(engine::Runtime &runtime, field::HostPath path) {
           omitted.report.groups64 == observed.report.groups64 && owner.ready() &&
           h.prepared_storage().completed_ticks == tick,"observation preserves physical state and completed boundary");
     const auto &map = owner.bodies(authorization,handle);
-    const auto &plan = owner.plan(authorization,handle);
+    const auto associations = owner.associations(authorization,handle).read();
     for (std::size_t i=0; i<map.size(); ++i) {
       const auto &actual = observed.body_records[i];
       check(actual.context == map[i].context && actual.incarnation == map[i].incarnation &&
             actual.address == map[i].address && actual.record == map[i].record &&
             observed.report.prepared.particles[i].occurrence.slot == actual.record &&
             std::string(observed.report.prepared.particles[i].occurrence.id) ==
-                occurrence_text(plan.source().study,plan.occurrences()[i].occurrence),
+                occurrence_text(associations.source.study(),associations.body(i).source.occurrence),
             "completed report uses committed occurrence/full-handle associations");
     }
     for (const auto &scale : observed.report.prepared.scales)
