@@ -1,5 +1,7 @@
 # Retained English pair: comparison, focus and resource decision
 
+**Disposition — 2026-11-18:** [Maintainer comment 6989241451](https://github.com/Human-Cognome-Project/human-cognome-project/pull/375#issuecomment-6989241451) provisionally accepts this bounded decision and authorizes the separate opt-in preset. Its [implementation and actual retained source-to-tick evidence](RETAINED-POSITIVE-CAPTURE.md) at `e86b588e` now pass local CPU checks; authoritative hosted CI/review remain pending. The original proposal/evidence below retain their historical scope. Ten zero responses still leave #324 open.
+
 Status: **proposed qualification profile, with built fixture evidence** under #343. [Maintainer comment 6985194174](https://github.com/Human-Cognome-Project/human-cognome-project/pull/374#issuecomment-6985194174) provisionally accepts #374's corrected refusal route and authorizes this decision. Source `9d9d491fddbf8cb8e75c076d9948f36738ff2fe9` starts from current main `66edfb18`, which integrates #372/#373. Only a test and its registration change. Production profiles, native algorithms, private/shared boundaries and #374's expected refusal remain unchanged. All merges remain maintainer operations.
 
 ## Full retained closure
