@@ -1,5 +1,11 @@
 # Private prepared study bootstrap owner
 
+**Subsequent lifetime inspection — 2026-11-18 (awaiting review):**
+[Actual retained plan buffers and private consumption proposal](PREPARED-PLAN-LIFETIME.md)
+at `b07adf29` measures bootstrap backing through publication/tick and identifies
+the command-table exact-mass read. Production remains unchanged; candidate bytes
+are not achieved savings. Standalone plan/borrowed-view contracts remain in force.
+
 The subsequent [private instance-binding proposal](PRIVATE-INSTANCE-BINDING.md)
 compares this owner with ExchangeOwner and defines the source/lifetime/publication
 requirements for sharing associations. It is a contract proposal; the existing

@@ -1,5 +1,17 @@
 # Current implementation and work
 
+**Contributor prepared-plan lifetime inspection — 2026-11-18 (awaiting review):**
+[Ownership trace, measured backing and private consumption proposal](../../engine/docs/PREPARED-PLAN-LIFETIME.md)
+at `b07adf29` starts from main `22ea6d55`, independently of open #375/#376.
+Six bootstrap buffers retain 1812/2496 requested bytes through a native tick in
+aggregate/parts fixtures; these are candidates, with achieved saving zero.
+Published body reports still read command-table exact mass. The proposal must
+preserve full source/typed mappings, current native claims and standalone plan
+lifetime before retiring private bootstrap backing. Quick CI, six Clang and three
+GCC suites pass, including twelve fixture observations and complete measured
+release. Runtime is unchanged; implementation awaits review and authoritative
+GitHub CI remains pending. #324, full accounting and GPU qualification stay separate.
+
 **Hosted transport correction for #374 — 2026-11-18:** Corrected source
 `65b502e9` clears the container `LD_LIBRARY_PATH` and scopes the matching loader/
 `--library-path` to the staged native executable. An awk dependency check fails

@@ -210,6 +210,16 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-18 contributor (awaiting review):
+[Prepared plan lifetime inspection](../engine/docs/PREPARED-PLAN-LIFETIME.md) at
+`b07adf29` traces retained bootstrap descriptors and the published body's exact-mass
+dependency against existing native source/hierarchy ownership. Actual six-buffer
+requests total 1812/2496 bytes in aggregate/parts fixtures, retained through tick 1
+and fully released at owner teardown. No runtime saving is implemented. Quick CI,
+six Clang and three GCC suites pass. Review the private consumption proposal
+before implementation; preserve typed source/claim and standalone plan lifetimes.
+Authoritative hosted CI remains pending; other numerical/accounting scopes stay separate.
+
 2026-11-18 hosted correction for #374: `65b502e9` keeps container bash/PostgreSQL
 utilities on their own runtime and uses the staged loader/library path only for
 the native command; missing-library checks fail closed without rg. The new local/
