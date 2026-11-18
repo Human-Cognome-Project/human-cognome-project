@@ -1,5 +1,21 @@
 # Core continuation after local CUDA corrections
 
+**Contributor C3 refresh transport inspection — 2026-11-18 (awaiting review):**
+[Source-pinned measurement and narrow native-copy proposal](../engine/docs/REFRESH-METADATA-TRANSPORT.md)
+at `9043bcb8`, independently based on main `22ea6d55`, identifies three identical
+candidate/commit inputs: 8,816 bytes at H8 and 9,312 at H70. Quick CI, five Clang
+and three GCC suites pass, including 36 actual refresh/native scratch comparisons
+and existing refresh regressions. Runtime is unchanged; achieved saving is zero.
+Review precedes implementation. A shared-commit replacement must also qualify
+bootstrap/generated admission/atomic exchange and preserve transaction failure,
+full padding, exact u64, generation, history and retry behavior. Authoritative
+GitHub CI and all maintainer integration remain separate gates.
+
+Provisionally accepted #375–#378 remain open at this handoff, including the
+retained prepared witness and private bootstrap plan retirement. Their evidence
+and pending gates remain on those branches; this independent inspection has no
+code dependency on them. Older entries retain their source-specific status.
+
 **Hosted transport correction for #374 — 2026-11-18:** Corrected source
 `65b502e9` clears the container `LD_LIBRARY_PATH` and scopes the matching loader/
 `--library-path` to the staged native executable. An awk dependency check fails

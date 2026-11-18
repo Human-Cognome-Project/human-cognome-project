@@ -1,5 +1,25 @@
 # Current implementation and work
 
+**Contributor C3 refresh transport inspection — 2026-11-18 (awaiting review):**
+[Actual duplicate uploads and native scratch comparison](../../engine/docs/REFRESH-METADATA-TRANSPORT.md)
+at `9043bcb8` is independently based on current main `22ea6d55`. Three immutable
+candidate inputs are uploaded again at commit: 8,816 bytes at H8 or 9,312 at H70.
+Quick CI, five Clang and three GCC suites pass, including 36 actual refresh/copy
+observations and the existing refresh regressions. Full reserved padding and odd
+u64 values compare bit for bit; no-op/refusal/retry and following ticks pass.
+Runtime is unchanged and achieved saving is zero. Review the narrow three-copy
+proposal before implementation; the shared commit routine also serves bootstrap,
+generated admission and atomic exchange, which need actual runtime controls.
+GitHub CI remains authoritative and all merges remain with the maintainer.
+
+The provisionally accepted [membership decision #375](https://github.com/Human-Cognome-Project/human-cognome-project/pull/375),
+[retained prepared witness #376](https://github.com/Human-Cognome-Project/human-cognome-project/pull/376),
+[plan lifetime inspection #377](https://github.com/Human-Cognome-Project/human-cognome-project/pull/377)
+and [private bootstrap plan retirement #378](https://github.com/Human-Cognome-Project/human-cognome-project/pull/378)
+remain open at this handoff. Their evidence and remaining hosted/integration gates
+stay on those branches; this inspection does not duplicate or integrate them.
+Older entries below describe their respective source states.
+
 **Hosted transport correction for #374 — 2026-11-18:** Corrected source
 `65b502e9` clears the container `LD_LIBRARY_PATH` and scopes the matching loader/
 `--library-path` to the staged native executable. An awk dependency check fails

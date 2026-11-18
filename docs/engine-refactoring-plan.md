@@ -210,6 +210,19 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-18 contributor (awaiting review):
+[C3 refresh metadata transport inspection](../engine/docs/REFRESH-METADATA-TRANSPORT.md)
+at `9043bcb8` observes three full reserved inputs uploaded identically to candidate
+and live arrays. The second uploads total 8,816 bytes at H8 or 9,312 at H70;
+independent full-extent native copies match exactly, while truncated copies fail.
+Quick CI, five Clang and three GCC suites pass, including 36 actual observations
+and existing refresh regressions. Runtime/fork behavior is unchanged; achieved
+saving is zero. Review precedes the proposed three-copy replacement. The shared
+commit routine's bootstrap/admission/exchange callers must also be qualified in
+any runtime follow-up. This starts independently from main `22ea6d55`; accepted
+#375–#378 remain open, with their evidence/integration gates kept on those branches.
+GitHub CI is authoritative; all merges remain with the maintainer.
+
 2026-11-18 hosted correction for #374: `65b502e9` keeps container bash/PostgreSQL
 utilities on their own runtime and uses the staged loader/library path only for
 the native command; missing-library checks fail closed without rg. The new local/
