@@ -11,7 +11,7 @@ hcp_active_program=warm_active_integration
 hcp_active_program_path="$hcp_active_build/$hcp_active_program"
 case "$hcp_active_mode" in
   legacy) ;;
-  prepared-membership-refusal)
+  prepared-membership-refusal|prepared-retained-positive)
     hcp_active_program=viewport_letter_capture
     hcp_active_program_path="$hcp_active_build/viewport/$hcp_active_program" ;;
   *) echo 'Unknown acceptance mode' >&2; exit 2 ;;
@@ -26,8 +26,14 @@ mkdir -p "$hcp_active_evidence/package/libs" "$hcp_active_evidence/package/runti
 cp "$hcp_active_program_path" "$hcp_active_evidence/package/"
 ldd "$hcp_active_evidence/package/$hcp_active_program" > "$hcp_active_evidence/libraries.txt"
 git -C "$hcp_active_repo" rev-parse HEAD > "$hcp_active_evidence/source-pin.txt"
-if test "$hcp_active_mode" = prepared-membership-refusal; then
-  cp "$hcp_active_repo/engine/scripts/check_retained_prepared_capture.sh" "$hcp_active_evidence/package/"
+if test "$hcp_active_mode" != legacy; then
+  if test "$hcp_active_mode" = prepared-membership-refusal; then
+    cp "$hcp_active_repo/engine/scripts/check_retained_prepared_capture.sh" "$hcp_active_evidence/package/"
+  else
+    cp "$hcp_active_repo/engine/scripts/check_retained_positive_capture.sh" "$hcp_active_evidence/package/"
+    cp "$hcp_active_build/viewport/viewport_retained_capture_check" "$hcp_active_evidence/package/"
+    ldd "$hcp_active_evidence/package/viewport_retained_capture_check" >> "$hcp_active_evidence/libraries.txt"
+  fi
   hcp_active_snapshots="$hcp_active_repo/data/postgres/snapshots/2026-10-13-letter-seed-validation"
   printf '%s  %s\n' \
     f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121 hcp_core.sql.gz \
@@ -45,7 +51,7 @@ fi
 while IFS= read -r hcp_active_library; do
   cp -L "$hcp_active_library" "$hcp_active_evidence/package/libs/"
 done < <(awk '/=> \// {print $3}' "$hcp_active_evidence/libraries.txt")
-hcp_active_loader=$(awk '$1 ~ /\/ld[^/]*\.so/ {print $1}' "$hcp_active_evidence/libraries.txt")
+hcp_active_loader=$(awk '$1 ~ /\/ld[^/]*\.so/ {print $1; exit}' "$hcp_active_evidence/libraries.txt")
 test -n "$hcp_active_loader"
 cp -L "$hcp_active_loader" "$hcp_active_evidence/package/libs/"
 hcp_active_loader_name=$(basename "$hcp_active_loader")
@@ -72,7 +78,7 @@ trap hcp_active_verify_sources EXIT
 docker exec --user postgres "$hcp_active_container" createdb "$hcp_active_db"
 docker exec -i --user postgres "$hcp_active_container" psql -X -q -v ON_ERROR_STOP=1 \
   --dbname "$hcp_active_db" -f - < "$hcp_active_repo/kernels/database/warm/schema.sql"
-if test "$hcp_active_mode" = prepared-membership-refusal; then
+if test "$hcp_active_mode" != legacy; then
   docker exec -i --user postgres "$hcp_active_container" psql -X -q -v ON_ERROR_STOP=1 \
     --dbname "$hcp_active_db" -f - < "$hcp_active_repo/kernels/database/warm/migrations/002-structural-recipes.sql"
 fi
@@ -84,6 +90,9 @@ hcp_active_command=("/tmp/$hcp_active_db/libs/$hcp_active_loader_name"
 if test "$hcp_active_mode" = prepared-membership-refusal; then
   hcp_active_command=(bash "/tmp/$hcp_active_db/check_retained_prepared_capture.sh"
     "/tmp/$hcp_active_db-probe" "${hcp_active_command[@]}")
+elif test "$hcp_active_mode" = prepared-retained-positive; then
+  hcp_active_command=(bash "/tmp/$hcp_active_db/check_retained_positive_capture.sh"
+    "/tmp/$hcp_active_db-probe" "/tmp/$hcp_active_db/viewport_retained_capture_check" "${hcp_active_command[@]}")
 fi
 set +e
 docker exec --user postgres \
@@ -97,7 +106,7 @@ docker exec --user postgres \
   | tee "$hcp_active_evidence/native-checks.txt"
 hcp_active_result=$?
 set -e
-if test "$hcp_active_mode" = prepared-membership-refusal; then
+if test "$hcp_active_mode" != legacy; then
   docker cp "$hcp_active_container:/tmp/$hcp_active_db-probe" "$hcp_active_evidence/retained-probe" || hcp_active_result=1
 fi
 test "$hcp_active_result" = 0

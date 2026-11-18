@@ -14,7 +14,14 @@ now identifies the preset's precise blocker: English A has English/Alphabet (en)
 memberships that require an explicit comparison decision. The native executable
 refuses before warm recipe acquisition or a completed tick; source records remain
 intact. Database CI separately verifies that refusal.
-Both capture profiles require a fresh, dedicated qualification warm store per
+The separate `--study prepared-retained-english-pair` preset now applies the
+provisionally reviewed six-comparison choice, four deduplicated memberships and
+ParentValue focus. Its [source-pinned local CPU qualification](../../engine/docs/RETAINED-POSITIVE-CAPTURE.md)
+acquires the actual warm pins, records both full native claims/all six comparison
+identities, completes a tick and verifies lease release. The original prepared
+profile's refusal remains a separate executable case. Authoritative hosted CI
+and maintainer review remain pending; this equal-cohort study leaves #324 open.
+Every capture profile requires a fresh, dedicated qualification warm store per
 invocation: the producer configures new persistent 00/02 binding policy each
 time. Ownership alone does not make a populated store suitable. Prepared capture
 also requires explicit migration 002; it never migrates a store automatically.

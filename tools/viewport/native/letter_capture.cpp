@@ -100,7 +100,8 @@ int main(int argc, char **argv) {
       if (tools.count(key)) return tools.at(key).ref;
       const auto record = manager.read(key);
       if (!record) throw Error("required retained letter endpoint absent");
-      Tool t{{key, new_uuid()}, epoch, options.prepared_english_pair ? "viewport-prepared-english-pair" : "viewport-letter-capture-v1", std::optional<RecipeText>(record->notation),
+      Tool t{{key, new_uuid()}, epoch, options.retained_memberships ? "viewport-prepared-retained-english-pair" :
+              options.prepared_english_pair ? "viewport-prepared-english-pair" : "viewport-letter-capture-v1", std::optional<RecipeText>(record->notation),
               record->mass, {}, {}, actor};
       tools.emplace(key, t);
       for (const auto &p : record->parents) {
@@ -126,6 +127,7 @@ int main(int argc, char **argv) {
         definitions.geometry.push_back({key, {}, {{{}, !options.prepared_english_pair && key == dutch.object ? 0.25 : 0.125}}});
     }
     const auto recipe = [&] {
+      if (options.retained_memberships) return viewport::prepared_retained_english_pair(definitions,english);
       if (options.prepared_english_pair) return viewport::prepared_english_pair(definitions,english);
       // Test geometry and placements are supplied, not inferred from cold records.
       std::vector<LetterRequest> requests;
@@ -169,7 +171,10 @@ int main(int argc, char **argv) {
     wide_parameters.dt = options.dt;
     const auto handle = [&] {
       if (!options.prepared_english_pair) return session.submit(logical, parameters);
-      auto result = session.submit_prepared(viewport::prepared_english_pair_submission(logical_pin,english),owner);
+      auto request = options.retained_memberships
+        ? viewport::prepared_retained_english_pair_submission(logical_pin,english)
+        : viewport::prepared_english_pair_submission(logical_pin,english);
+      auto result = session.submit_prepared(std::move(request),owner);
       if (!result.handle) {
         std::cerr << "prepared capture admission refused: plan=" << int(result.preparation_status)
                   << " publication=" << int(result.publication.status)
@@ -182,7 +187,8 @@ int main(int argc, char **argv) {
       {"dt", options.dt}, {"cpu_threads", settings.cpu_threads.value_or(0)},
       {"every", options.every ? viewport::Json(options.every) : viewport::Json()}, {"pace_ms", options.pace_ms},
       {"source_calls", manager.activity().source_calls}};
-    if (options.prepared_english_pair) evidence["study_profile"] = "prepared-english-pair";
+    const auto profile_name = options.retained_memberships ? "prepared-retained-english-pair" : "prepared-english-pair";
+    if (options.prepared_english_pair) evidence["study_profile"] = profile_name;
     std::uint64_t completed = 0, count = 0;
     viewport::Json first, last;  // Evidence keeps only the first and last captures: bounded for long runs.
     std::optional<Clock::time_point> previous;
@@ -202,7 +208,7 @@ int main(int argc, char **argv) {
         {"parameters", {{"dt", parameters.dt}, {"gravity", parameters.gravity},
           {"contact_stiffness", parameters.contact_stiffness}, {"reach_strength", parameters.reach_strength}}}};
       if (options.prepared_english_pair) {
-        ctx.source["study_profile"] = "prepared-english-pair";
+        ctx.source["study_profile"] = profile_name;
         ctx.source["geometry"] = "supplied: centred sphere radius 0.125; root units 1";
         ctx.source["parameters"] = {{"dt",wide_parameters.dt},{"gravity",wide_parameters.gravity},
           {"contact_stiffness",wide_parameters.contact_stiffness},{"reach_strength",wide_parameters.reach_strength}};
@@ -210,9 +216,12 @@ int main(int argc, char **argv) {
         ctx.source["recipe_pin"] = {{"selection",std::string(logical.shared_recipe().ref.selection.str())},
           {"revision",std::string(logical.shared_recipe().ref.revision.str())}};
         auto pins = viewport::Json::array();
-        for (const auto &t : logical.shared_recipe().tools)
+        for (const auto &t : logical.shared_recipe().tools) {
           pins.push_back({{"object",key(t.ref.object)},{"revision",std::string(t.ref.revision.str())},
             {"epoch",std::string(t.epoch.str())}});
+          if (options.retained_memberships)
+            pins.back()["mass"] = t.mass ? viewport::Json(std::to_string(*t.mass)) : viewport::Json();
+        }
         ctx.source["tool_pins"] = std::move(pins);
       }
       const auto report_start = Clock::now();
@@ -253,6 +262,14 @@ int main(int argc, char **argv) {
       if (final || viewport::captures_at(completed, options)) final = capture(final);
     }
     pin.release();
+    if (options.retained_memberships) {
+      evidence["warm_activity"] = {{"publications",manager.activity().publications},
+        {"acquisitions",manager.activity().acquisitions},{"releases",manager.activity().releases}};
+      const auto demand = session.demand(handle,owner);
+      evidence["native_demand"] = {{"fields_loaded",demand.fields_loaded},{"edges_loaded",demand.edges_loaded},
+        {"force_requests",demand.force_requests},{"force_evaluations",demand.force_evaluations},
+        {"force_zero_response",demand.force_zero_response}};
+    }
     evidence["ticks"] = completed;
     evidence["stopped_by_signal"] = completed < options.ticks;
     evidence["capture_count"] = count;

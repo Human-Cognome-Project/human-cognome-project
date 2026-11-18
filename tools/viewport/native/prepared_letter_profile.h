@@ -10,4 +10,8 @@ warm::Bundle prepared_english_pair(warm::Bundle definitions, const warm::ToolRef
 assembly::PreparedStudySubmission prepared_english_pair_submission(
     std::shared_ptr<const assembly::ActiveAssembly> source, const warm::ToolRef &english,
     field::HostPath path = field::HostPath::BulkCopy);
+warm::Bundle prepared_retained_english_pair(warm::Bundle definitions, const warm::ToolRef &english);
+assembly::PreparedStudySubmission prepared_retained_english_pair_submission(
+    std::shared_ptr<const assembly::ActiveAssembly> source, const warm::ToolRef &english,
+    field::HostPath path = field::HostPath::BulkCopy);
 }
