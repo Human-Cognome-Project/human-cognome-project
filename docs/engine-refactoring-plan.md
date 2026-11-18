@@ -225,6 +225,33 @@ decision before production preset activation and genuine retained ticking.
 Production/fork/database/workflows remain unchanged, #374's final gates separate
 and all merges with the maintainer.
 
+2026-11-18 hosted correction for #374: `65b502e9` keeps container bash/PostgreSQL
+utilities on their own runtime and uses the staged loader/library path only for
+the native command; missing-library checks fail closed without rg. The new local/
+hosted transport regression passes and both restored defects fail its controls.
+[Inspected corrected database evidence](../engine/docs/RETAINED-PREPARED-QUALIFICATION.md#hosted-transport-correction-and-inspected-evidence--2026-11-18)
+from job `134949499123`/artifact `14447427435` confirms actual retained membership
+refusal, warm before/after counts, zero publications/leases and preserved cold
+data. Native build/database pass at the exact corrected tree; full matrix/review
+gates remain separate. Runtime/probe semantics and unknown memberships are
+unchanged. This qualifies the refusal route, with a retained tick still open.
+All merges remain with the maintainer.
+
+2026-11-18 contributor (awaiting review):
+[Actual retained-source qualification](../engine/docs/RETAINED-PREPARED-QUALIFICATION.md)
+at `8fa4dbb1` invokes the actual opt-in executable against verified isolated
+retained restores. English A carries English/Alphabet (en) memberships with NULL
+whole mass; the explicit preset refuses those comparison choices before warm
+publication/acquisition or native admission. Both memberships and all cold records
+are preserved. Local source-backed refusal, populated-store guard/policy
+preservation, cold fingerprints and shell/orchestration checks pass. Existing
+database CI now transports the real executable/probe into a fresh v2 warm fixture
+and records the precise refusal; its success does not qualify a completed tick.
+Docker delivery remains hosted evidence. Corrected #373 `0e2add68` requires fresh,
+dedicated qualification stores for both profiles. All merges remain with the
+maintainer. Next is the explicit membership comparison/focus/resource decision
+and a positive retained witness; no inferred weighting or #324 implementation.
+
 2026-11-18 contributor (awaiting review):
 [Opt-in retained prepared capture](../engine/docs/RETAINED-PREPARED-CAPTURE.md)
 at `3999550e` implements #372 review 5958354207's bounded producer entry.

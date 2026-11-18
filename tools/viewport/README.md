@@ -9,6 +9,11 @@ An explicit `--study prepared-english-pair` profile now uses the existing native
 prepared owner through `submit_prepared`, with supplied comparisons, geometry,
 focus and resources. See the [input trace, usage and acquisition blocker](../../engine/docs/RETAINED-PREPARED-CAPTURE.md).
 Its synthetic-source CPU tests do not qualify actual retained acquisition.
+The [actual retained-source attempt](../../engine/docs/RETAINED-PREPARED-QUALIFICATION.md)
+now identifies the preset's precise blocker: English A has English/Alphabet (en)
+memberships that require an explicit comparison decision. The native executable
+refuses before warm recipe acquisition or a completed tick; source records remain
+intact. Database CI separately verifies that refusal.
 Both capture profiles require a fresh, dedicated qualification warm store per
 invocation: the producer configures new persistent 00/02 binding policy each
 time. Ownership alone does not make a populated store suitable. Prepared capture
