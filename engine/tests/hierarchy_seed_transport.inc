@@ -34,7 +34,7 @@ void hierarchy_seed_transport_case(engine::Runtime &r, HostPath path, int H, int
   capacity[Budget::ScratchBytes] = detail::PreparedStorage::required_scratch(
       capacity, false, NumericalProfile::trial(52, bits));
   Fixture f(r, path, {{}, {}, {0, 1}}, {{2, 0}, {0, 3}, {2, 3}},
-            {2, 3}, {2., 3.}, {.1, 9.87654321}, 52, bits,
+            {2, 3}, {1., 2.}, {-1., 1.}, 52, bits,
             false, false, false, false, 1024, {}, &capacity);
   const auto generation = f.h.prepared_storage().generation;
   const auto ticks = f.h.prepared_storage().completed_ticks;
