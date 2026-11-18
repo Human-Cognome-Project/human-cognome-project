@@ -83,6 +83,18 @@ foreach(workers 1 2)
   endforeach()
 endforeach()
 
+add_executable(prepared_plan_lifetime_test tests/prepared_plan_lifetime_test.cpp)
+target_link_libraries(prepared_plan_lifetime_test PRIVATE prepared_study_owner)
+target_compile_options(prepared_plan_lifetime_test PRIVATE -Wall -Wextra -Werror)
+foreach(workers 1 2)
+  foreach(path bulk direct)
+    add_test(NAME prepared_plan_lifetime_${workers}_${path}
+      COMMAND prepared_plan_lifetime_test ${workers} ${path})
+    set_tests_properties(prepared_plan_lifetime_${workers}_${path} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
+  endforeach()
+endforeach()
+
 add_executable(active_workbench_test tests/active_workbench_test.cpp)
 target_link_libraries(active_workbench_test PRIVATE active_workbench)
 add_test(NAME active_workbench_test COMMAND active_workbench_test)

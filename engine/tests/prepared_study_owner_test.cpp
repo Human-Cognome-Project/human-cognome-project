@@ -147,7 +147,6 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
   check(!competitor_domain->result().live_bytes && owner.ready(),"stale borrower teardown leaves the current execution intact");
   std::weak_ptr<const ActiveAssembly> source_lifetime = input.source;
   {
-  const auto &plan = owner.plan(authorization,handle);
   const auto &bodies = owner.bodies(authorization,handle);
   const auto &fields = owner.fields(authorization,handle);
   const auto &s = h.prepared_storage();
@@ -156,10 +155,11 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
   const auto view = no_new([&] { return owner.associations(authorization,handle); });
   const auto associations = no_new([&] { return view.read(); });
   check(input.source.use_count() == source_owners && &associations.source == input.source.get() &&
-        &associations.plan == &plan && &associations.bodies == &bodies && &associations.fields == &fields &&
-        associations.plan.source().recipe.selection == input.bindings.source.recipe.selection &&
-        associations.plan.source().recipe.revision == input.bindings.source.recipe.revision,
-        "checked view shares exact source/plan/claim storage without another source owner");
+        &associations.bodies == &bodies && &associations.fields == &fields &&
+        &associations.exact_masses == &s.source_masses &&
+        associations.source.shared_recipe().ref.selection == input.bindings.source.recipe.selection &&
+        associations.source.shared_recipe().ref.revision == input.bindings.source.recipe.revision,
+        "checked view shares pinned source, consumed rows and native exact ledger without another owner");
   rejects([&] { owner.associations(warm::new_uuid(),handle); },"association view requires owner authorization");
   for (int part=0; part<3; ++part) {
     auto foreign = handle;
@@ -174,8 +174,8 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
         [&](const auto &v) { return v.address == bodies[i].address; });
     check(expected != input.bindings.bodies.end(),"actual claim has an independently supplied source binding");
     const auto &layout = input.bindings.layout.at(expected->node);
-    check(&association.source == &plan.occurrences()[i] && &association.claim == &bodies[i] &&
-          plan.source().study == expected->occurrence.study &&
+    check(&association.source == &associations.occurrences[i] && &association.claim == &bodies[i] &&
+          associations.source.study() == expected->occurrence.study &&
           association.source.occurrence == expected->occurrence.source && association.source.definition == expected->definition &&
           association.source.node == expected->node &&
           association.scale.node.layout == nullptr && association.scale.node.parent == layout.node.parent &&
@@ -186,7 +186,7 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
     check(v.context == s.particles.context() && v.incarnation && v.address == 40+int(i) &&
           v.record >= 0 && v.record < h.particle_capacity() && v.record != v.address &&
           s.particle_headers[v.record].incarnation == v.incarnation &&
-          plan.occurrences()[i].occurrence.entry == (i ? 10U : 2U),
+          associations.occurrences[i].occurrence.entry == (i ? 10U : 2U),
           "typed occurrence map uses actual claims rather than addresses or future slots");
   }
   for (std::size_t i=0; i<fields.size(); ++i) {
@@ -194,7 +194,7 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
     const auto expected = std::find_if(input.bindings.fields.begin(),input.bindings.fields.end(),
         [&](const auto &v) { return v.address == fields[i].address; });
     check(expected != input.bindings.fields.end(),"actual field claim has an independently supplied typed binding");
-    check(&association.source == &plan.fields()[i] && &association.claim == &fields[i] &&
+    check(&association.source == &associations.field_sources[i] && &association.claim == &fields[i] &&
           association.source.field.kind == expected->field.kind &&
           association.source.field.object == expected->field.object,
           "field ordinal preserves complete typed key and actual claim");
@@ -222,7 +222,7 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
       header = saved;
     }
   }
-  check(&view.read().plan == &plan,"restored headers retain the same immutable association");
+  check(&view.read().occurrences == &associations.occurrences,"restored headers retain the same immutable association");
   std::cout << "association_storage,view_bytes=" << sizeof(view)
             << ",loan_bytes=" << sizeof(associations) << ",extra_shared_owners=0,owning_allocations=0\n";
   h.inspect_prepared();
@@ -259,7 +259,7 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
   tick = owner.tick(authorization,handle,invalid);
   check(tick.status == field::TickStatus::InvalidInput && owner.ready() && committed == state(h),
         "invalid tick parameters remain a healthy native refusal");
-  check(&view.read().plan == &plan,"healthy tick refusals preserve current association view");
+  check(&view.read().occurrences == &associations.occurrences,"healthy tick refusals preserve current association view");
   tick = no_new([&] { return owner.tick(authorization,handle,p); });
   check(tick.status == field::TickStatus::Ok && tick.completed_ticks == 1 && owner.ready(),"native owner tick after generated bootstrap");
   rejects([&] { view.read(); },"completed quiet tick invalidates an old association stamp");
@@ -274,7 +274,7 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
   const auto current = owner.associations(authorization,handle);
   input.source.reset();
   check(!source_lifetime.expired() && current.read().source.study() == handle.study &&
-        &current.read().plan == &plan,"owner retains immutable pins after caller release and view reacquisition");
+        &current.read().occurrences == &associations.occurrences,"owner retains immutable pins after caller release and view reacquisition");
   } // All association views/loans end before owner teardown.
   prepared.owner.reset();
   check(source_lifetime.expired() && !d->result().live_bytes && h.ready() && h.present_particles() == 2,

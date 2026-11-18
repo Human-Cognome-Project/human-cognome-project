@@ -16,6 +16,31 @@ retained prepared witness and private bootstrap plan retirement. Their evidence
 and pending gates remain on those branches; this independent inspection has no
 code dependency on them. Older entries retain their source-specific status.
 
+**Contributor private bootstrap consumption — 2026-11-18 (awaiting review/hosted CI):**
+[Publication boundary, actual before/after and evidence](../engine/docs/PREPARED-BOOTSTRAP-CONSUMPTION.md)
+at `9568f7e9` implements #377 review 6990952403 on reviewed `0302c527`.
+After final native claim/source-mass verification, the owner moves typed rows
+and retires its private replay plan. Published loans retain the composed source,
+full claims and checked native exact ledger; standalone plans remain complete.
+Actual owner-domain retained requests fall 3966→1521 / 4870→1741 bytes; replacement
+headers and setup peak rise by 64 bytes. Quick CI, 17 Clang and seven GCC suites
+pass. Final probe-only scoping `14ff61f9` passes Clang/GCC and matching historical
+comparisons with unchanged runtime. No database/GPU execution is claimed.
+Review and authoritative GitHub CI remain pending; this is stacked on #377.
+All merges remain maintainer work. Earlier entries retain their historical scope.
+
+**Contributor prepared-plan lifetime inspection — 2026-11-18 (awaiting review):**
+[Ownership trace, measured backing and private consumption proposal](../engine/docs/PREPARED-PLAN-LIFETIME.md)
+at `b07adf29` starts from main `22ea6d55`, independently of open #375/#376.
+Six bootstrap buffers retain 1812/2496 requested bytes through a native tick in
+aggregate/parts fixtures; these are candidates, with achieved saving zero.
+Published body reports still read command-table exact mass. The proposal must
+preserve full source/typed mappings, current native claims and standalone plan
+lifetime before retiring private bootstrap backing. Quick CI, six Clang and three
+GCC suites pass, including twelve fixture observations and complete measured
+release. Runtime is unchanged; implementation awaits review and authoritative
+GitHub CI remains pending. #324, full accounting and GPU qualification stay separate.
+
 **Hosted transport correction for #374 — 2026-11-18:** Corrected source
 `65b502e9` clears the container `LD_LIBRARY_PATH` and scopes the matching loader/
 `--library-path` to the staged native executable. An awk dependency check fails
