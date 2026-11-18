@@ -116,6 +116,10 @@ Small self-contained fixes need not acquire a new umbrella issue.
 2. make focused commits;
 3. open the PR back against `main`, unless a named recovery/integration branch is explicitly coordinating a larger import.
 
+All merge events are handled by the maintainer for engineering discipline.
+Agents prepare reviewable work, local CI evidence and PRs, and reconcile hosted
+checks. Acceptance or a request to pull/proceed does not authorize an agent merge.
+
 ## Current repository map
 
 ```text

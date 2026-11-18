@@ -18,6 +18,10 @@ Read before changing repository files. These rules apply to code, data and docum
 
 ## Contribution flow
 
+All merge events are handled by the maintainer. Agents prepare branches, local
+CI evidence and pull requests; they do not merge PRs or create integration merges.
+Acceptance and requests to pull/proceed authorize continued work, not a merge.
+
 Use focused branches and reviewable commits. For structural changes, prefer small commits that do one of:
 
 - history-preserving integration;
