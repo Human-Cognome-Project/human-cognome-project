@@ -1,5 +1,13 @@
 # Temporary validation bindings during owner adoption
 
+**Later disposition:** provisionally accepted in
+[#367 review 5948664040](https://github.com/Human-Cognome-Project/human-cognome-project/pull/367#pullrequestreview-5948664040),
+which authorizes the bounded implementation.
+[Prepaid-map adoption capture](ADOPTION-SOURCE-CAPTURE.md) at `da083031`
+supersedes this record's current-runtime map-copy/proposal status. The measurements
+below describe inspected source `8972cd49`; they remain its existing costs,
+not savings implemented by that test-only inspection.
+
 Status: contributor inspection and measurement, 2026-11-17, awaiting review.
 Tested public source: `8972cd49f3b90ff58c93603132c96f61ba4f4ac1`, tree
 `225853f4c0d9ea958b3bb2efd9bb734181c1a483`. Production is byte-identical to

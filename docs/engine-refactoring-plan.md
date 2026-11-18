@@ -211,6 +211,22 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[Prepaid-map adoption capture](../engine/docs/ADOPTION-SOURCE-CAPTURE.md) at
+`da083031` implements #367 review 5948664040. Temporary validators read the
+initial owner snapshots synchronously with the shared setup meter, keeping
+independent capture buffers, all source checks and independent reservation bounds.
+No stored loan, new wrapper or standalone ownership change. Actual whole-owner
+construction removes 578/2,444/1,779 requests and 48,369/205,000/149,169 cumulative
+requested bytes; setup work reduces by 84,895/377,396/267,927 units. Retained
+bytes/whole peaks remain unchanged. Quick CI, 48 owner modes, 12 standalone
+cases, both compilers' old/new request/ABI probes and exact/short/bound/unwind
+controls pass. Main `8c3d0b93` and provisional #367/#366 are explicit through
+normal merge `7029c078`; review and authoritative hosted CI remain separate.
+Next inspect another concrete duplicated association through its ownership and
+measurements. Capture-buffer reuse/shrinking, indexed guards, broader producers,
+full accounting and #324 stay separate.
+
+2026-11-17 contributor (awaiting review):
 [Temporary adoption validation](../engine/docs/ADOPTION-BINDING-COST.md) at
 `8972cd49` measures each per-selection stack binding in actual adoption.
 Exact-constructor request/release traces match all eight selected roles in the

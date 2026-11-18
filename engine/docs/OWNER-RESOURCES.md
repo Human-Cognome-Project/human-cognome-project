@@ -1,5 +1,18 @@
 # Private exchange-owner resource inventory
 
+**Contributor initial-map adoption capture — 2026-11-17 (awaiting review):**
+[Actual whole-owner setup comparison](ADOPTION-SOURCE-CAPTURE.md) at `da083031`
+uses the owner's one prepaid map snapshot synchronously for temporary validation.
+Only five independent capture/mask requests remain per selection (43,280 bytes);
+temporary map backing and local map objects are eliminated on this private route.
+All source checks, fixed fees, checked sums/inventory bounds and standalone owned
+constructors remain. Cumulative construction saves 48,369 / 205,000 / 149,169
+requested bytes and 578 / 2,444 / 1,779 requests; setup work reduces separately.
+Whole-owner retained bytes/peaks and current/candidate census do not change.
+Domain/weak/unwind, source-fact/mask, standalone, retry/publication/tick controls
+are qualified within the recorded CPU scope. Older entries keep their historical
+source pins. Full B/admission and allocator/process-memory claims remain open.
+
 **Contributor temporary-validator inspection — 2026-11-17 (awaiting review):**
 [Per-selection construction, peak, work and cleanup](ADOPTION-BINDING-COST.md)
 at `8972cd49` leaves production unchanged. Actual adoption traces match the

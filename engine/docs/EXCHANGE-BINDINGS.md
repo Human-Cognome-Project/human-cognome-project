@@ -1,11 +1,12 @@
 # Private committed-source bindings for exchange
 
-[The temporary-adoption inspection](ADOPTION-BINDING-COST.md) at `8972cd49`
-measures the existing per-selection stack validators separately from persistent
-source-map publication. Each still owns reserved maps, three constructor-local
-maps and independent captured facts; nothing is removed by this inspection.
-The source associations, full native validation and final cleanup are recorded
-with a bounded private initial-map proposal for review.
+[Private initial-map capture](ADOPTION-SOURCE-CAPTURE.md) at `da083031`,
+awaiting review, implements #367's authorized adoption path. Each temporary
+borrows the owner's prepaid maps synchronously and keeps independent captured
+facts. A required shared setup meter prices complete validation; checked
+reservation/inventory bounds remain. No map reference survives construction.
+Standalone value-taking adapters retain owned maps and their constructor locals.
+The [historical inspection](ADOPTION-BINDING-COST.md) records those former costs.
 
 [The source-map implementation](EXCHANGE-OWNER-SOURCE-MAPS.md) at `4f74ad11`
 implements the bounded removal authorized by #365 review 5946869103. Only the

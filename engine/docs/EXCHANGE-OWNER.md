@@ -1,5 +1,12 @@
 # Persistent private exchange owner
 
+[Prepaid-map adoption capture](ADOPTION-SOURCE-CAPTURE.md) at `da083031`,
+awaiting review, lets each temporary validate the owner's initial occurrence/
+field snapshots synchronously with its shared setup meter. Independent captured
+facts and all checks/bounds remain; temporary map copies disappear. Source access
+ends before later map reservation or mutation. Standalone value ownership and
+the persistent candidate/native publication protocol remain unchanged.
+
 [Direct current-map publication](EXCHANGE-OWNER-SOURCE-MAPS.md) at `4f74ad11`,
 awaiting review, removes the persistent binding's copied maps. The owner supplies
 synchronous const source arguments and publishes its independent candidate pair
@@ -329,8 +336,10 @@ work domains remain open. See [allocator scope](OWNER-RESOURCES.md#bindingcoordi
 
 The map-store contribution originally extended that allocation domain to six
 retained map outer vectors. The current source-map implementation retains four
-backed stores, with initial owner map copies and explicit temporary standalone
-validation/staging maps still charged. Ordinary copied snapshots detach from the source owner's accounting lifetime;
+backed stores and initial owner map copies. Private per-selection adoption now
+uses those initial maps synchronously and reserves only its independent capture
+buffers; standalone value setup retains its separate validation/staging maps.
+Ordinary copied snapshots detach from the source owner's accounting lifetime;
 setup-owned copies explicitly attach. Assignment retains the destination domain,
 and swaps move it with the backing. Separately allocated nested key payload remains
 outside this limit. See [map-store scope](OWNER-RESOURCES.md#map-outer-store-allocation-domain-contribution-awaiting-review).

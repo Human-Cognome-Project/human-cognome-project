@@ -1,5 +1,40 @@
 # Core continuation after local CUDA corrections
 
+**Contributor prepaid-map adoption capture — 2026-11-17 (awaiting review):**
+[Implementation, bounds and actual before/after evidence](../engine/docs/ADOPTION-SOURCE-CAPTURE.md)
+at `da083031` implements the private adoption change authorized by #367 review
+5948664040. Each temporary receives the owner's single prepaid map snapshots
+synchronously through a required shared setup meter. Its independent five
+capture/mask buffers and all typed key/pin/direction/native/ledger/currentness
+checks remain. Checked reservation sums and inventory bounds are preserved.
+No map loan escapes construction; standalone value constructors remain owned.
+Initial prepayment, retained candidates and the native transaction are unchanged.
+
+Actual whole-owner construction removes 578 / 2,444 / 1,779 allocations and
+48,369 / 205,000 / 149,169 cumulative requested bytes in the one/four/three-selection
+fixtures. Setup work reduces by 84,895 / 377,396 / 267,927 units. Retained bytes
+and observed whole-adoption peaks stay 242,404 / 294,636 / 258,014. Each temporary
+retains only its 43,280 capture-buffer bytes; candidate backing stays separate.
+No retained-memory or equal whole-peak saving is claimed.
+
+Quick CI, all 48 owner mode runs, 12 standalone lifetime/exchange cases and four
+new request probes pass. Historical binaries execute both before/after probes;
+source-fact/mask, zero/short/exact work, independent field-bound, all owner
+allocation/budget/unwind, retry, faults 7/8, survivor and following-tick controls
+remain. Object extents are unchanged; two const-map arguments replace vector
+references without a stored view. Local evidence remains contributor-reported.
+
+Main `8c3d0b93` and provisional #367 `d49e6329` (including #366 `dc0854aa`)
+are preserved in normal merge `7029c078`. #366 native run 44193455273 now passes; #367 native 44203059956 remains
+pending in the retained snapshot. Their integration and this head's review/CI
+remain separate; GitHub CI is authoritative.
+Review this implementation and reconcile provisional dependency/head gates
+before integration. Further work should inspect another concrete duplicated
+association through its owner/lifetime and measured cost. Capture-buffer reuse/
+shrinking, indexed guards, collision policy, catalogue/mixed revisions, broader
+producer adoption, full accounting and #324 remain separate; held #75/#111/#123
+unchanged.
+
 **Contributor temporary adoption-binding inspection — 2026-11-17 (awaiting review):**
 [Measured constructor cost, source facts and lifetime](../engine/docs/ADOPTION-BINDING-COST.md)
 at `8972cd49` completes #366 review 5948024253's inspection-only scope.

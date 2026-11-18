@@ -7,6 +7,20 @@ It does not implement or accept a combined admission limit. Audited runtime:
 `c118e6efea6902a3996af126e67840f5c4e7da1a`. Main `5ef632f2` adds current handoff
 notes; normal merge `46e7d1ad` preserves them in this continuation.
 
+## Private initial-map capture (awaiting review)
+
+[The authorized implementation](ADOPTION-SOURCE-CAPTURE.md) at `da083031`
+keeps C/S and its component copy prepayment at one complete initial owner
+snapshot. Per-selection validators pass those already-copied maps synchronously
+to capture under the shared setup meter; only their duplicate owned/trusted/
+staged map requests and construction/reservation/copy work disappear. Five
+independent capture/mask buffers, the fixed object/header fees, full capture/
+immediate validation and checked inventory sums/bounds remain. Standalone value
+constructors stay owned. Actual setup-work reductions are
+84,895 / 377,396 / 267,927 units; cumulative requested-byte reductions are
+48,369 / 205,000 / 149,169. Retained/current/candidate backing and whole-adoption
+peaks remain unchanged. No new combined limit or arbitrary fixed fee is added.
+
 ## Temporary per-selection validators (inspection, awaiting review)
 
 [Actual construction attribution](ADOPTION-BINDING-COST.md) at `8972cd49`
@@ -120,7 +134,7 @@ storage; caller inputs and native execution remain borrowed.
 | Ready/version/inventory checks | Fixed constructor control; no size-dependent search here | No native mutation or additional backing. Fixed-unit policy must remain explicit, not presented as bytes. |
 | Collect membership catalogue | Membership meter charges fixed admission, pin copies, graph traversal/comparison, frames and output/relocation | Graph/output backing selected. `allocate_shared` uses the selected allocator for the actual rebound shared request. Fixed shared-object publication has no distinct `sizeof(MembershipFields)` setup fee. |
 | Collect/copy declarations and publish table | Declarations meter covers lookups, payloads, row growth, reverse copy and fixed shared-object/table work | Actual shared object/control-block and vector requests selected. Binding aliases are not additional pointees. |
-| Validate each temporary binding | Bindings meter covers buffers, packed-mask initialization, trusted/staged maps, staging and adoption capture | All temporary backing selected and released before leaving its loop iteration. It overlaps retained projection/catalogue/declarations while alive. |
+| Validate each temporary binding | Shared Bindings meter covers the object/header fee, independent capture/mask reservation, preserved fixed bounds, source association and complete capture/immediate validation using prepaid owner maps | Five capture/mask requests per selection; no private-adoption owned/trusted/staged maps. Backing releases within its iteration and overlaps retained projection/catalogue/declarations. Standalone value setup stays separately owned. |
 | Inspect/copy spare projection | Separate mutable-view inspection/logical-copy charge plus one fixed retained recipe/domain association | A second mutable projection exists, sharing the initial owner's immutable Bundle. Only new requests are selected charges. Do not add logical copy work to D as bytes. |
 | Reserve both exposure pools | CommittedParents / SpareParents charge scans, equality, slots and nested copies | Both projections' active/spare backing selected, including growth overlap. |
 | Construct retained coordinator and binding | Bindings charges fixed objects, buffer reservations and mask initialization | Unique objects and all reserved backing selected. |
