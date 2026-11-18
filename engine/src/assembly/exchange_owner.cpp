@@ -162,7 +162,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
         SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
     setup.phase = ProjectionSetupPhase::Bindings;
     meter.charge(sizeof(ExchangeBindings));
-    ExchangeBindings check(h_, *projection_, retained, memberships_, rows, fields,domain,&meter);
+    ExchangeBindings check(h_,*projection_,retained,memberships_,occurrences_,fields_,domain,meter);
     setup.phase = ProjectionSetupPhase::Declarations;
     const auto append_declaration = [&] {
       meter.charge(sizeof(declarations_[0]));

@@ -163,14 +163,17 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
           std::uint64_t work=0,validation=0;
           {
             O::Select select(*single);
-            const auto result=Bind::adoption(f.h,source,declaration,memberships,rows,fields,domain,UINT64_MAX,
+            const auto result=Bind::adoption(f.h,source,declaration,memberships,
+              Owner::mappings(*owner),Owner::fields(*owner),domain,UINT64_MAX,
               [&](const auto &b) { no_new([&] {
                 alive=A::counts;
                 alive.live-=baseline.live; alive.blocks-=baseline.blocks;
                 alive.peak=single->selections[1].peak;
-                require(Bind::validate(b).status==field::UpdateStatus::Ok &&
+                require(Bind::validate_adoption(b,Owner::mappings(*owner),Owner::fields(*owner)).status==field::UpdateStatus::Ok &&
                             Bind::generation(b)==f.h.prepared_storage().generation &&
-                            map_cost_equal(Bind::mappings(b),rows) && map_cost_equal(Bind::fields(b),fields),
+                            map_cost_equal(Owner::mappings(*owner),rows) && map_cost_equal(Owner::fields(*owner),fields) &&
+                            Bind::mappings(b).storage().empty() && Bind::fields(b).storage().empty() &&
+                            Bind::validate(b).status==field::UpdateStatus::InvalidInput,
                         "temporary constructor changed source associations");
                 const auto add=[&](const void *p,std::size_t n) {
                   if (!n) return;
@@ -239,6 +242,35 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
           require(Owner::resources(*owner).maps.charged_bytes()==retained_map_bytes &&
                       Owner::map_backing(*owner)==candidate_backing,
                   "temporary validation inspection changed retained current/candidate backing");
+          // The private constructor uses the shared setup allowance, unwinds
+          // partial capture, and can retry against the same unmodified source.
+          for (const auto allowance : {UINT64_C(0),work-1}) {
+            bool refused=false;
+            try { Bind::adoption(f.h,source,declaration,memberships,Owner::mappings(*owner),
+                Owner::fields(*owner),domain,allowance,[](const auto &) {}); }
+            catch (const PreparationStop &stop) { refused=stop.result.status==PreparationStatus::WorkExhausted; }
+            require(refused && !domain->result().live_bytes,"short adoption capture leaked or exceeded setup work");
+          }
+          const auto retried=Bind::adoption(f.h,source,declaration,memberships,Owner::mappings(*owner),
+              Owner::fields(*owner),domain,work,[&](const auto &b) {
+                require(Bind::validate_adoption(b,Owner::mappings(*owner),Owner::fields(*owner)).status==field::UpdateStatus::Ok,
+                        "exact adoption capture retry lost current source");
+              });
+          require(retried.charged==work && !domain->result().live_bytes,"exact adoption capture work changed");
+          if (i==0) {
+            const auto &limits=f.h.prepared_storage().capacity.limits();
+            const auto bound=exchange_map_capacity(limits[field::Budget::Fields],
+                std::min(limits[field::Budget::Fields],limits[field::Budget::Batch]));
+            const std::vector<ExchangeFieldBinding> oversized(bound+1,fields.front());
+            const ExchangeMap<ExchangeFieldBinding> too_many(oversized);
+            bool refused=false;
+            try { Bind::adoption(f.h,source,declaration,memberships,Owner::mappings(*owner),too_many,
+                domain,UINT64_MAX,[](const auto &) {}); }
+            catch (const warm::Error &error) {
+              refused=std::strcmp(error.what(),"exchange adoption inventory exceeds map bounds")==0;
+            }
+            require(refused && !domain->result().live_bytes,"adoption lost independent field reservation bound");
+          }
         }
       }
       require(weak.expired(),"temporary inspection retained the owner domain");
@@ -261,7 +293,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               << ",released_before_constructor_return=" << m.actual.bytes-m.alive.live
               << ",validation_work=" << m.validation << ",bodies=" << m.bodies << ",outgoing=" << m.outgoing
               << ",captured_edges=" << m.edges << ",stack_object_bytes=" << sizeof(ExchangeBindings)
-              << ",scratch_map_headers=" << sizeof(ExchangeMap<OccurrenceBinding>)+2*sizeof(ExchangeMap<ExchangeFieldBinding>)
+              << ",scratch_map_headers=0,map_argument_pointer_bytes=" << 2*sizeof(void *)
               << ",trace_equal=1,after_destroy_requested=0 PASS\n";
   }
   require(before==TickSnapshot(f),"adoption binding inspection changed native execution");
