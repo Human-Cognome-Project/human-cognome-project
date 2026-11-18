@@ -47,20 +47,21 @@ target_include_directories(study_assembly PUBLIC src)
 target_link_libraries(study_assembly PUBLIC field_core)
 target_compile_options(study_assembly PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
-add_library(active_workbench STATIC
-    src/assembly/active_workbench.cpp
-    src/assembly/active_session.cpp)
+add_library(active_assembly STATIC src/assembly/active_workbench.cpp)
+target_link_libraries(active_assembly PUBLIC membership_fields study_assembly)
+target_compile_options(active_assembly PRIVATE -Wall -Wextra -Wno-unused-parameter)
+add_library(active_workbench STATIC src/assembly/active_session.cpp)
 add_library(exchange_coordination STATIC src/assembly/exchange_bindings.cpp
     src/assembly/exchange_coordinator.cpp src/assembly/exchange_owner.cpp
     src/assembly/owner_storage.cpp)
 target_link_libraries(exchange_coordination PUBLIC field_core membership_fields)
 target_compile_options(exchange_coordination PRIVATE -Wall -Wextra -Wno-unused-parameter)
-target_link_libraries(active_workbench PUBLIC membership_fields study_assembly)
+target_link_libraries(active_workbench PUBLIC active_assembly)
 target_compile_options(active_workbench PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
 # Private structural preparation only; retained native commit is a later slice.
 add_library(structural_admission_plan STATIC src/assembly/structural_admission_plan.cpp)
-target_link_libraries(structural_admission_plan PUBLIC active_workbench)
+target_link_libraries(structural_admission_plan PUBLIC active_assembly)
 target_compile_options(structural_admission_plan PRIVATE -Wall -Wextra -Werror)
 add_executable(structural_admission_plan_test tests/structural_admission_plan_test.cpp)
 target_link_libraries(structural_admission_plan_test PRIVATE structural_admission_plan)
