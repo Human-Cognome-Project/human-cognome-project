@@ -216,12 +216,20 @@ CompletedState observe(field::Harness &h, HarnessBinding &&binding,
                        std::optional<IntentRequest> request) {
   return observe_prepared(h,std::move(binding),request);
 }
+struct ActiveSessionAccess {
+  static assembly::detail::PreparedStudyOwner *prepared(assembly::ActiveSession &session,
+      const assembly::ExecutionHandle &handle, const warm::Uuid &owner) {
+    return session.prepared_owner(handle,owner);
+  }
+};
 CompletedState observe(assembly::ActiveSession &session,
                        const warm::Uuid &owner,
                        const assembly::ExecutionHandle &handle,
                        std::optional<IntentRequest> request) {
   if (request) require(std::isfinite(request->gravity) && request->gravity >= 0,
                        "viewport: invalid diagnostic gravity");
+  if (auto *prepared = ActiveSessionAccess::prepared(session,handle,owner))
+    return viewport::observe(*prepared,owner,handle,request);
   const auto start = Clock::now();
   const auto before = session.timings(handle).download_bytes;
   CompletedState out;

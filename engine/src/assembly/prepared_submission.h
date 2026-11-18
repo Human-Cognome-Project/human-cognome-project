@@ -1,0 +1,27 @@
+#pragma once
+#include "assembly/structural_admission_plan.h"
+
+namespace assembly {
+// Explicit setup operation for the existing shared v2/f64 subset. Layout roles,
+// units and all model/resource choices are supplied; native layout pointers must
+// be null and are materialized by the session. No viewport values or starts.
+// Passed by value so the session can consume these temporary binding tables.
+struct PreparedStudySubmission {
+  std::shared_ptr<const ActiveAssembly> source;
+  detail::AdmissionBindings bindings;
+  field::PreparedCapacity capacity;
+  std::shared_ptr<detail::ReservationDomain> resources;
+  field::HostPath path{field::HostPath::BulkCopy};
+  std::uint64_t plan_work{UINT64_MAX}, metadata_work{UINT64_MAX};
+  std::uint64_t placement_work{UINT64_MAX}, placement_cells{UINT64_MAX}, hierarchy_work{UINT64_MAX};
+};
+struct PreparedSubmissionResult {
+  // Present only after native publication and active-session publication succeed.
+  std::optional<ExecutionHandle> handle;
+  detail::AdmissionPlanStatus preparation_status{detail::AdmissionPlanStatus::InvalidInput};
+  detail::PreparationResult plan_work, metadata_work;
+  field::BudgetFailure failure;
+  detail::ReservationResult reservation;
+  field::UpdateResult publication;
+};
+}  // namespace assembly

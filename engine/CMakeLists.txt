@@ -71,6 +71,7 @@ add_test(NAME structural_admission_plan_test COMMAND structural_admission_plan_t
 add_library(prepared_study_owner STATIC src/assembly/prepared_study_owner.cpp)
 target_link_libraries(prepared_study_owner PUBLIC structural_admission_plan)
 target_compile_options(prepared_study_owner PRIVATE -Wall -Wextra -Werror)
+target_link_libraries(active_workbench PUBLIC prepared_study_owner)
 add_executable(prepared_study_owner_test tests/prepared_study_owner_test.cpp)
 target_link_libraries(prepared_study_owner_test PRIVATE prepared_study_owner)
 target_compile_options(prepared_study_owner_test PRIVATE -Wall -Wextra -Werror)
@@ -541,6 +542,20 @@ if(HCP_WITH_VIEWPORT)
                 "${CMAKE_CURRENT_SOURCE_DIR}/../tools/viewport/examples/letter-study-tick0.json")
         set_tests_properties(retained_c3_handoff_${workers}_${path} PROPERTIES
             ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+      endforeach()
+    endforeach()
+    add_executable(active_prepared_submission_test tests/active_prepared_submission_test.cpp)
+    target_link_libraries(active_prepared_submission_test PRIVATE viewport_snapshot)
+    target_compile_options(active_prepared_submission_test PRIVATE -Wall -Wextra -Werror)
+    target_link_options(active_prepared_submission_test PRIVATE
+        "-Wl,--wrap=_ZN5field6detail13LiveHierarchy7installEmRKNS_19WeightedCascadeSpecEm"
+        "-Wl,--wrap=_ZN5field6detail13LiveHierarchy14commit_refreshERNS_12UpdateResultE")
+    foreach(workers 1 2)
+      foreach(path bulk direct)
+        add_test(NAME active_prepared_submission_${workers}_${path}
+            COMMAND active_prepared_submission_test ${workers} ${path})
+        set_tests_properties(active_prepared_submission_${workers}_${path} PROPERTIES
+            ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
       endforeach()
     endforeach()
   endif()
