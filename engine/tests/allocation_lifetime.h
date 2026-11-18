@@ -12,6 +12,9 @@ struct Counts { std::size_t attempts{}, acquired{}, released{}, live{}, peak{}, 
 inline thread_local Entry table[65536];
 inline thread_local Counts counts;
 inline thread_local bool active = false;
+// Freeze acquisitions while continuing to observe destruction of already
+// tracked requests, e.g. owner metadata retiring inside native execution.
+inline thread_local bool capture_acquisitions = true;
 inline thread_local std::size_t fail_at = 0;
 // Optional nonallocating test observers; callbacks must not throw.
 inline thread_local void (*on_acquired)(void *, std::size_t) noexcept = nullptr;
@@ -22,13 +25,13 @@ inline std::size_t bucket(void *p) {
 inline void begin(std::size_t fail = 0) {
   if (active || counts.blocks) std::abort();
   for (auto &e : table) e = {};
-  counts = {}; fail_at = fail; active = true;
+  counts = {}; fail_at = fail; capture_acquisitions = true; active = true;
 }
 inline void before() {
-  if (active && ++counts.attempts == fail_at) throw std::bad_alloc();
+  if (active && capture_acquisitions && ++counts.attempts == fail_at) throw std::bad_alloc();
 }
 inline void acquired(void *p, std::size_t n) {
-  if (!active) return;
+  if (!active || !capture_acquisitions) return;
   for (std::size_t j = 0, i = bucket(p); j < 65536; ++j, i = (i+1)%65536) {
     auto &e = table[i];
     if (!e.pointer) {

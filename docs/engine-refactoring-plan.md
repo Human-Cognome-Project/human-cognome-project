@@ -211,6 +211,16 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-18 contributor (awaiting review):
+[Private bootstrap consumption](../engine/docs/PREPARED-BOOTSTRAP-CONSUMPTION.md)
+at `9568f7e9` implements #377's reviewed lifetime boundary. Typed rows move after
+final claim checks; replay storage retires before publication. Exact mass uses
+the checked native ledger, composed pins remain, and standalone plans keep their
+lifetime. Actual retained requests fall by 2445/3129 bytes with setup peak +64.
+Quick CI, 17 Clang and seven GCC suites pass; final test-only view scoping
+`14ff61f9` passes focused Clang/GCC and historical comparisons. Authoritative CI
+and review remain pending. Full accounting, GPU and #324 remain separate.
+
+2026-11-18 contributor (awaiting review):
 [Prepared plan lifetime inspection](../engine/docs/PREPARED-PLAN-LIFETIME.md) at
 `b07adf29` traces retained bootstrap descriptors and the published body's exact-mass
 dependency against existing native source/hierarchy ownership. Actual six-buffer

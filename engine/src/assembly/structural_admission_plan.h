@@ -59,8 +59,9 @@ enum class AdmissionPlanStatus {
 struct AdmissionPlanResult;
 
 // Owns only a structural plan and pinned identity values, never a Harness or
-// Program. All outputs are immutable and die with this handle; hierarchy() is a
-// borrowed view into these stable tables. A successful plan is NOT a native
+// Program. Standalone outputs are immutable and die with this handle; hierarchy()
+// borrows these stable tables. A private preparing owner may consume its own
+// unloaned plan after native commit. A successful plan is NOT a native
 // preflight token. The future exclusive owner must revalidate and commit it.
 class StructuralAdmissionPlan {
  public:
@@ -80,6 +81,9 @@ class StructuralAdmissionPlan {
             contributions_.data(), contributions_.size()};
   }
  private:
+  // Only the exclusive preparing owner may consume its own plan after native
+  // commit. Standalone plans retain all immutable output for their lifetime.
+  friend class PreparedStudyOwner;
   explicit StructuralAdmissionPlan(const std::shared_ptr<ReservationDomain> &);
   void prepare(const ActiveAssembly &, const AdmissionBindings &,
                const field::PreparedCapacity &, PreparationWork &);
