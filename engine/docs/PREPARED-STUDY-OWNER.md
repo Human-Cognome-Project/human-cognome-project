@@ -17,6 +17,15 @@ Taichi tree `8b31651be07d8bad0b2a6a261369e8690b9c3b53`, exact recursive pins.
 
 ## Scope and control trace
 
+The [explicit active prepared entry](ACTIVE-PREPARED-SUBMISSION.md) (awaiting
+review) now supplies an outer lifetime owner: ActiveSession constructs the
+matching layout and Harness, delegates prepare/bootstrap here, and publishes its
+handle after success. This class still borrows its Harness. Source/claim report
+metadata now has one builder here, reused by core reports and viewport native
+observation; physical state remains in the Harness. Plan/owner reservations
+remain separate from context/compiler/request/report setup, without a combined
+resource-envelope claim.
+
 [`detail::PreparedStudyOwner`](../src/assembly/prepared_study_owner.h) joins the
 accepted [structural plan builder](STRUCTURAL-ADMISSION-PLAN.md) to existing
 combined native bootstrap. It is an exclusive logical owner on a **borrowed**

@@ -8,6 +8,16 @@ GPU handoff now follows [#170's integrated CPU exit](../../docs/core-operation-r
 but enduring owner refresh, admission and lifecycle remain under #156. Do not
 copy supplied-start/equal-count refresh behavior into that operational path.
 
+**Explicit prepared entry — 2026-11-18 (awaiting review):**
+[`ActiveSession::submit_prepared`](ACTIVE-PREPARED-SUBMISSION.md) is a separate
+opt-in operation for the supported shared v2/f64 subset. It accepts pinned
+source/model/resource choices, provisions its own Program-owned layout/Harness,
+delegates to the existing prepared owner, and publishes a handle after bootstrap.
+Core and viewport observations use its native completed state. Legacy `submit`,
+tick and refresh semantics below remain v1; prepared tick is explicit and legacy
+refresh cannot replace a prepared execution. This does not migrate the retained
+capture executable or qualify actual retained source acquisition.
+
 The [retained-to-C3 source trace](RETAINED-C3-HANDOFF.md) (inspection awaiting
 review) distinguishes this legacy session from the built bounded prepared-owner
 route. `submit` uses v1 binding/FixedStudy and refuses v2; it does not provision a
