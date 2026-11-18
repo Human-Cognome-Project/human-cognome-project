@@ -198,7 +198,7 @@ Numerical inspection can inform earlier boundaries, but mathematical changes nee
 
 ## Relationship to ongoing work
 
-The retained capture front door remains v1/flat: #341's requested C3 diagnostic is honestly unavailable there. The structural source handoff from #342 now has a bounded native route through the accepted `PreparedStudyOwner`, which seals a plan, performs combined native bootstrap and publishes actual committed claim mappings. Those lower operations are built; the remaining retained-entry operation must provision the native context and pass an explicit pinned v2 source plus supported comparison/intrinsic/focus/resource choices to that owner. Legacy `ActiveSession::submit` still calls the v1 binding and rejects v2. See the [source-pinned handoff inspection](../engine/docs/RETAINED-C3-HANDOFF.md) for the executed fixture limits and retained-artifact trace. Do not duplicate native admission/installers or replay report geometry as authoritative state.
+The retained capture executable remains v1/flat and #341's prepared-C3 diagnostic is honestly unavailable there. Structural source, sealed plan, bounded prepared ownership, combined native bootstrap and actual claim mapping are built. The [explicit active prepared submission](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md) (contributor implementation awaiting review) now provisions Program-owned layout and Harness within ActiveSession and delegates to that owner using caller-supplied pinned v2 source, comparisons/intrinsics/focus/resources. Legacy `submit` still uses v1 binding; the separate prepared entry supplies the demonstrated bounded operation. Actual matching retained-source acquisition and client use remain separate; no full retained-C3 execution or inferred Analyst policy follows. Do not duplicate native admission/installers or replay report geometry as authoritative state.
 
 Full accounting/admission acceptance and GPU qualification keep their existing limits. Held #75/#111/#123 are unchanged. This refactoring plan does not activate them or authorize implementing future Analyst decisions.
 
@@ -209,6 +209,22 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-18 contributor (awaiting review):
+[Explicit prepared active submission](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md)
+at `ae9b6485` implements #371 review 5956829592 through the existing session.
+The runtime provisions layout/Harness internally, prepares and bootstraps with
+the existing logical owner, and transfers a preallocated map node only after
+publication. Owner/Harness/Runtime lifetimes and source pins are explicit; core
+and viewport observations share committed-claim metadata. Legacy v1 is retained.
+Quick CI, 13 scoped Clang suites and four GCC suites pass, including six entry
+modes/12 submissions, resource/work refusal/retry, healthy prior executions,
+actual identities and following ticks. No field math/native-fork change or full
+accounting/retained-DB qualification is claimed. #370 is qualified and merged as
+`15299964`; #371 is retargeted to main, native CI pending. Normal merge `718e79a0`
+has the exact tested tree. Review this operation and its authoritative hosted
+gate before integration. Retained producer/client qualification, general prepared
+revision, refresh transport and #324 remain separate.
 
 2026-11-18 contributor (awaiting review):
 [Retained-study/C3 handoff inspection](../engine/docs/RETAINED-C3-HANDOFF.md)

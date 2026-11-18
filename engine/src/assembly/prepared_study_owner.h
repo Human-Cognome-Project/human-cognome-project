@@ -28,6 +28,9 @@ class PreparedStudyOwner {
   field::TickResult tick(const warm::Uuid &owner, const ExecutionHandle &,
       const field::Parameters64 &, std::uint64_t tick_work = UINT64_MAX,
       std::uint64_t geometry_work = UINT64_MAX);
+  // Detached completed physical values; source/claim metadata has one builder
+  // shared with the viewport observer. No comparison policy is selected here.
+  ActiveReport report(const warm::Uuid &, const ExecutionHandle &);
   const ActiveAssembly &source(const warm::Uuid &, const ExecutionHandle &) const;
   const StructuralAdmissionPlan &plan(const warm::Uuid &, const ExecutionHandle &) const;
   const ReservedVector<engine::RecordHandle> &bodies(const warm::Uuid &, const ExecutionHandle &) const;
@@ -65,6 +68,7 @@ class PreparedStudyOwner {
   AssociationView associations(const warm::Uuid &, const ExecutionHandle &) const;
  private:
   friend struct viewport::PreparedOwnerAccess;
+  ActiveReport report_metadata(const warm::Uuid &, const ExecutionHandle &) const;
   PreparedStudyOwner(field::Harness &, const std::shared_ptr<const ActiveAssembly> &,
       ReservedUnique<StructuralAdmissionPlan>, const std::shared_ptr<ReservationDomain> &);
   void reserve_metadata(const warm::Uuid &, const AdmissionBindings &, PreparationWork &);

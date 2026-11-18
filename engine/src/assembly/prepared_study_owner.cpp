@@ -150,6 +150,48 @@ PreparedStudyOwner::AssociationView PreparedStudyOwner::associations(const warm:
   return AssociationView(*this,h_.prepared_storage().completed_ticks);
 }
 
+ActiveReport PreparedStudyOwner::report_metadata(const warm::Uuid &authorization,
+    const ExecutionHandle &handle) const {
+  const auto rows = associations(authorization,handle).read();
+  const auto &plan = rows.plan;
+  ActiveReport report;
+  report.handle = handle_;
+  report.owner = rows.source.owner();
+  report.instance = rows.source.instance();
+  report.origins = rows.source.origins();
+  auto &mapping = report.prepared;
+  mapping.capacity = h_.particle_capacity();
+  mapping.scales.assign(rows.scales.begin(),rows.scales.end());
+  mapping.groups.resize(h_.field_capacity());
+  for (std::size_t i=0; i<plan.fields().size(); ++i) {
+    const auto field = rows.field(i);
+    mapping.groups.at(field.claim.record) = {field.source.field.kind,warm::key(field.source.field.object)};
+  }
+  for (std::size_t i=0; i<plan.occurrences().size(); ++i) {
+    const auto body = rows.body(i);
+    const auto &entry = body.source;
+    Occurrence occurrence{InputText(occurrence_text(plan.source().study,entry.occurrence)),
+        InputText(warm::key(entry.definition.object)),body.claim.record,entry.node,{},{}};
+    mapping.particles.push_back({std::move(occurrence),body.exact_mass,{},{},0,0});
+  }
+  const auto &s = h_.prepared_storage();
+  for (std::size_t i=0; i<s.live.focus; ++i) mapping.focal_groups.push_back(s.focal[i].record);
+  return report;
+}
+ActiveReport PreparedStudyOwner::report(const warm::Uuid &authorization,
+    const ExecutionHandle &handle) {
+  auto out = report_metadata(authorization,handle);
+  h_.inspect_prepared();
+  out.frame_anchor = h_.frame_anchor();
+  out.demand = h_.demand();
+  out.numerical_profile = h_.numerical_profile();
+  out.particles64 = h_.particles64();
+  out.groups64 = h_.groups64();
+  out.determined64 = h_.determined64();
+  require_published(authorization,handle);
+  return out;
+}
+
 field::UpdateResult PreparedStudyOwner::bootstrap(const warm::Uuid &owner,
     const ExecutionHandle &handle, std::uint64_t placement_work,
     std::uint64_t cells, std::uint64_t hierarchy_work) {

@@ -47,20 +47,21 @@ target_include_directories(study_assembly PUBLIC src)
 target_link_libraries(study_assembly PUBLIC field_core)
 target_compile_options(study_assembly PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
-add_library(active_workbench STATIC
-    src/assembly/active_workbench.cpp
-    src/assembly/active_session.cpp)
+add_library(active_assembly STATIC src/assembly/active_workbench.cpp)
+target_link_libraries(active_assembly PUBLIC membership_fields study_assembly)
+target_compile_options(active_assembly PRIVATE -Wall -Wextra -Wno-unused-parameter)
+add_library(active_workbench STATIC src/assembly/active_session.cpp)
 add_library(exchange_coordination STATIC src/assembly/exchange_bindings.cpp
     src/assembly/exchange_coordinator.cpp src/assembly/exchange_owner.cpp
     src/assembly/owner_storage.cpp)
 target_link_libraries(exchange_coordination PUBLIC field_core membership_fields)
 target_compile_options(exchange_coordination PRIVATE -Wall -Wextra -Wno-unused-parameter)
-target_link_libraries(active_workbench PUBLIC membership_fields study_assembly)
+target_link_libraries(active_workbench PUBLIC active_assembly)
 target_compile_options(active_workbench PRIVATE -Wall -Wextra -Wno-unused-parameter)
 
 # Private structural preparation only; retained native commit is a later slice.
 add_library(structural_admission_plan STATIC src/assembly/structural_admission_plan.cpp)
-target_link_libraries(structural_admission_plan PUBLIC active_workbench)
+target_link_libraries(structural_admission_plan PUBLIC active_assembly)
 target_compile_options(structural_admission_plan PRIVATE -Wall -Wextra -Werror)
 add_executable(structural_admission_plan_test tests/structural_admission_plan_test.cpp)
 target_link_libraries(structural_admission_plan_test PRIVATE structural_admission_plan)
@@ -70,6 +71,7 @@ add_test(NAME structural_admission_plan_test COMMAND structural_admission_plan_t
 add_library(prepared_study_owner STATIC src/assembly/prepared_study_owner.cpp)
 target_link_libraries(prepared_study_owner PUBLIC structural_admission_plan)
 target_compile_options(prepared_study_owner PRIVATE -Wall -Wextra -Werror)
+target_link_libraries(active_workbench PUBLIC prepared_study_owner)
 add_executable(prepared_study_owner_test tests/prepared_study_owner_test.cpp)
 target_link_libraries(prepared_study_owner_test PRIVATE prepared_study_owner)
 target_compile_options(prepared_study_owner_test PRIVATE -Wall -Wextra -Werror)
@@ -540,6 +542,20 @@ if(HCP_WITH_VIEWPORT)
                 "${CMAKE_CURRENT_SOURCE_DIR}/../tools/viewport/examples/letter-study-tick0.json")
         set_tests_properties(retained_c3_handoff_${workers}_${path} PROPERTIES
             ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+      endforeach()
+    endforeach()
+    add_executable(active_prepared_submission_test tests/active_prepared_submission_test.cpp)
+    target_link_libraries(active_prepared_submission_test PRIVATE viewport_snapshot)
+    target_compile_options(active_prepared_submission_test PRIVATE -Wall -Wextra -Werror)
+    target_link_options(active_prepared_submission_test PRIVATE
+        "-Wl,--wrap=_ZN5field6detail13LiveHierarchy7installEmRKNS_19WeightedCascadeSpecEm"
+        "-Wl,--wrap=_ZN5field6detail13LiveHierarchy14commit_refreshERNS_12UpdateResultE")
+    foreach(workers 1 2)
+      foreach(path bulk direct)
+        add_test(NAME active_prepared_submission_${workers}_${path}
+            COMMAND active_prepared_submission_test ${workers} ${path})
+        set_tests_properties(active_prepared_submission_${workers}_${path} PROPERTIES
+            ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
       endforeach()
     endforeach()
   endif()

@@ -6,8 +6,11 @@
 #include "assembly/membership_fields.h"
 #include "assembly/study.h"
 
+namespace viewport { struct ActiveSessionAccess; }
 namespace assembly {
-namespace detail { class StructuralAdmissionPlan; }
+namespace detail { class StructuralAdmissionPlan; class PreparedStudyOwner; }
+struct PreparedStudySubmission;
+struct PreparedSubmissionResult;
 struct LocalRef {
   warm::ObjectKey object;
   warm::Uuid version, owner;
@@ -113,6 +116,11 @@ class ActiveSession {
   ExecutionHandle submit(const ActiveAssembly &assembly,
                          const field::Parameters &parameters,
                          field::HostPath path = field::HostPath::BulkCopy);
+  PreparedSubmissionResult submit_prepared(PreparedStudySubmission,
+                                           const warm::Uuid &owner);
+  field::TickResult tick_prepared(const ExecutionHandle &, const warm::Uuid &owner,
+      const field::Parameters64 &, std::uint64_t tick_work = UINT64_MAX,
+      std::uint64_t geometry_work = UINT64_MAX);
   ExecutionHandle refresh(const ExecutionHandle &old,
                           const ActiveAssembly &assembly,
                           const field::Parameters &parameters);
@@ -129,6 +137,8 @@ class ActiveSession {
   bool on_cuda() const { return runtime_->on_cuda(); }
 
  private:
+  friend struct viewport::ActiveSessionAccess;
+  detail::PreparedStudyOwner *prepared_owner(const ExecutionHandle &, const warm::Uuid &) const;
   struct Execution;
   Execution &get(const ExecutionHandle &handle) const;
   warm::Uuid session_{warm::new_uuid()};

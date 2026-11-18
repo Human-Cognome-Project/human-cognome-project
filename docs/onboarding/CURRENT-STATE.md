@@ -1,5 +1,29 @@
 # Current implementation and work
 
+**Contributor explicit prepared active submission — 2026-11-18 (awaiting review):**
+[Operation, ownership, supported inputs and evidence](../../engine/docs/ACTIVE-PREPARED-SUBMISSION.md)
+at `ae9b6485` implements #371 review 5956829592. ActiveSession now has an
+explicit shared-v2/f64 submission taking a pinned source, caller comparison/
+intrinsic/focus/resource choices and pointer-free layout declarations. The session
+provisions Program-owned layout/Harness, delegates prepare/combined bootstrap,
+and publishes an authorized handle only after success. The owner, Harness and
+Runtime teardown order is explicit. Legacy v1 paths remain; no standalone C3
+installer or viewport-derived policy is added. Core/viewport reports share one
+claim metadata builder and use current native physical values.
+
+Quick CI, 13 scoped Clang suites and four GCC suites pass. Six new-entry modes
+cover 12 successful aggregate/parts submissions, early unsupported/scratch
+refusal, placement/plan retry, healthy prior executions, actual claims, source
+lifetime, authorization and following native ticks. Native kernels/fork/common/
+database/workflows are unchanged. Setup/reporting allocate; metadata reservation
+and native capacity are separate, with no full accounting or retained-DB claim.
+#370 passed native/smoke and is integrated as main `15299964`; #371 is retargeted
+to main and its native workflow 44306271650 remains pending. Merge `718e79a0`
+preserves qualified main with the exact tested source tree. Review/authoritative
+hosted gates remain separate. Retained-source acquisition/client use can follow
+once matching sources and explicit choices are available; refresh transport,
+general prepared revisions and #324 remain separate.
+
 **Contributor retained-study/C3 handoff inspection — 2026-11-18 (awaiting review):**
 [Source trace, focused witness and first missing operation](../../engine/docs/RETAINED-C3-HANDOFF.md)
 at `ff27ecac` follows #370 review 5956165492. Main remains `2c7ec4d0`;
