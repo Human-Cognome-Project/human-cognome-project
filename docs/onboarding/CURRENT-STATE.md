@@ -1,6 +1,6 @@
 # Current implementation and work
 
-**Contributor retained positive preset — 2026-11-18 (awaiting review/hosted CI):**
+**Contributor retained positive preset — 2026-11-18 (provisionally accepted; hosted CI pending):**
 [Actual acquired pins, native claims, tick and release](../../engine/docs/RETAINED-POSITIVE-CAPTURE.md)
 at `e86b588e` follows #375's provisional decision, comment 6989241451. Separate
 `prepared-retained-english-pair` preserves the four membership targets/NULL naming
@@ -11,7 +11,10 @@ identities, completes tick 1 and releases its lease; cold fingerprints match.
 The old refusal and populated-warm preservation controls pass. Hosted database
 CI now runs both cases on separate fresh stores; authoritative results remain
 pending. Ten zero responses keep #324 open. Main `22ea6d55` includes #374; this
-slice is stacked on reviewed #375 `eea1314b`. All merges remain maintainer work.
+slice is stacked on reviewed #375 `eea1314b`. #376 review 6990227900 provisionally
+accepts `9fbf11ac`; the requested wording correction attributes populated-store
+refusal to the acceptance wrapper and freshness to the direct caller's precondition.
+All merges remain maintainer work.
 Earlier entries below retain their historical evidence/status.
 
 **Contributor retained membership decision — 2026-11-18 (awaiting review):**
