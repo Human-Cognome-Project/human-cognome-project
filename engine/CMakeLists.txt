@@ -222,6 +222,14 @@ add_executable(weighted_handoff_test tests/weighted_handoff_test.cpp)
 target_link_libraries(weighted_handoff_test PRIVATE field_core)
 add_executable(live_hierarchy_test tests/live_hierarchy_test.cpp)
 target_link_libraries(live_hierarchy_test PRIVATE study_assembly membership_fields exchange_coordination)
+# Observe actual transfer calls without adding instrumentation to runtime code.
+# These mangled names are the Linux Itanium ABI of engine::{upload,readback}.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_definitions(live_hierarchy_test PRIVATE HCP_TRANSFER_AUDIT)
+  target_link_options(live_hierarchy_test PRIVATE
+      "-Wl,--wrap=_ZN6engine6uploadERN6taichi4lang7NdarrayEPKvm"
+      "-Wl,--wrap=_ZN6engine8readbackERN6taichi4lang7NdarrayEPvm")
+endif()
 foreach(threads 1 2)
   foreach(path bulk direct)
     set(live_hierarchy_args --threads ${threads})
@@ -230,6 +238,12 @@ foreach(threads 1 2)
     endif()
     add_test(NAME live_hierarchy_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args})
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+      add_test(NAME hierarchy_seed_transport_${threads}_${path}
+          COMMAND live_hierarchy_test ${live_hierarchy_args} --case hierarchy_seed_transport)
+      set_tests_properties(hierarchy_seed_transport_${threads}_${path} PROPERTIES
+          ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
+    endif()
     add_test(NAME live_intent_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case intent_observation)
     set_tests_properties(live_intent_${threads}_${path} PROPERTIES
