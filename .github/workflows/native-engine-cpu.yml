@@ -75,7 +75,8 @@ jobs:
 
       - name: Check CI orchestration contracts
         run: |
-          shellcheck engine/scripts/hosted_cpu_*.sh engine/scripts/check_hosted_cpu_ci.sh engine/scripts/*hosted_ubuntu_mirror.sh
+          shellcheck engine/scripts/hosted_cpu_*.sh engine/scripts/check_hosted_cpu_ci.sh engine/scripts/*hosted_ubuntu_mirror.sh \
+            engine/scripts/run_warm_active_acceptance.sh engine/scripts/check_retained_prepared_capture.sh
           bash engine/scripts/check_hosted_cpu_ci.sh
           bash engine/scripts/check_hosted_ubuntu_mirror.sh
       - name: Identify compiler cache compatibility
@@ -279,7 +280,7 @@ jobs:
         env:
           BUILD_SHA256: ${{ needs.native-build.outputs.digest }}
         run: bash engine/scripts/hosted_cpu_bundle.sh restore "$RUNNER_TEMP/native-build/native-build.tar.gz" "$BUILD_SHA256"
-      - name: Restore new cold fixtures and run native PostgreSQL-to-active integration
+      - name: Restore retained fixtures, run integration and verify prepared-source refusal
         run: |
           set -euo pipefail
           git lfs pull --include='data/postgres/snapshots/2026-10-13-letter-seed-validation/*.sql.gz' --exclude=''
@@ -305,6 +306,10 @@ jobs:
           done
           bash engine/scripts/run_warm_active_acceptance.sh engine/build \
             "$hcp_active_container" hcp_core hcp_linguistics
+          # This is the actual opt-in producer's retained-source negative case.
+          # Passing verifies its precise membership refusal, never a native tick.
+          bash engine/scripts/run_warm_active_acceptance.sh engine/build \
+            "$hcp_active_container" hcp_core hcp_linguistics prepared-membership-refusal
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -313,6 +318,9 @@ jobs:
           path: |
             engine/build/acceptance-*/native-checks.txt
             engine/build/acceptance-*/cold-*.sha256
+            engine/build/acceptance-*/source-pin.txt
+            engine/build/acceptance-*/source-hashes.txt
+            engine/build/acceptance-*/retained-probe/**
           if-no-files-found: error
 
   # Keep the existing required-check name. Skips/failures never count as success.
