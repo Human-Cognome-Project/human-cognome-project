@@ -1,5 +1,42 @@
 # Current implementation and work
 
+**Hosted transport correction for #374 — 2026-11-18:** Corrected source
+`65b502e9` clears the container `LD_LIBRARY_PATH` and scopes the matching loader/
+`--library-path` to the staged native executable. An awk dependency check fails
+closed without rg. Local transport regression and both restored-defect controls
+pass; the retained probe/runtime are unchanged. Hosted native build and
+[native-database job 134949499123](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/44341840215/job/134949499123)
+pass. Downloaded artifact `14447427435` was inspected: actual membership
+refusal, warm `2|0|0|0|0 → 2|2|0|0|0`, zero publications/leases and unchanged cold
+fingerprints. The test-merge tree matches the corrected source exactly.
+The earlier hosted delivery failure is corrected for this scope; full native
+matrix/review gates remain separate, and all merges remain with the maintainer.
+A retained C3 completed tick is still unqualified; no membership policy changed.
+
+**Contributor actual retained-source qualification — 2026-11-18 (awaiting review):**
+[Source-backed refusal, exact mismatch and CI witness](../../engine/docs/RETAINED-PREPARED-QUALIFICATION.md)
+at `8fa4dbb1` follows #373 review 5959051551. The actual opt-in executable
+runs against isolated PostgreSQL restores of both hash-verified 2026-10-13
+payloads and a fresh, explicitly migrated v2 warm store. English A has memberships
+`02.00.00.00.00` (English) and `02.00.00.00.01` (Alphabet (en)), both with NULL
+whole mass. The profile refuses its unsupported membership comparison choices.
+Source records are preserved; no recipe publication/pin acquisition, native
+claims/comparisons/generation or completed tick is reached. A lease release is
+not applicable. This is a verified refusal, with retained C3 completion still open.
+
+The canonical probe, populated-warm preflight refusal/policy preservation, complete
+cold before/after fingerprints, shell checks and hosted orchestration contracts
+pass locally. Existing database CI now runs this explicit negative case through
+the actual executable and retains its qualification JSON/logs; Docker delivery
+remains a hosted check. Runtime/fork/database implementations are unchanged.
+Corrected #373 `0e2add68` restores the fresh, dedicated qualification-store rule
+for both profiles; ownership/schema alone do not justify persistent binding-policy
+updates. #371 is maintainer-integrated as main `bf47b2ae`; this slice is stacked
+on corrected #373 with remaining hosted gates distinct. All merges remain with
+the maintainer. Next: explicit membership topology/focus/resource decision,
+preserving NULL/unknown mass and both source memberships, then an actual retained
+source-to-tick/lease-release witness. #324 and wider accounting remain separate.
+
 **Contributor opt-in retained prepared capture — 2026-11-18 (awaiting review):**
 [Input trace, profile, acquisition blocker and evidence](../../engine/docs/RETAINED-PREPARED-CAPTURE.md)
 at `3999550e` follows #372 review 5958354207. The existing retained producer now
