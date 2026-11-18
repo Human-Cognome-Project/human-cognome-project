@@ -36,7 +36,9 @@ if test "$hcp_active_mode" = prepared-membership-refusal; then
   (cd "$hcp_active_snapshots" && sha256sum --check "$hcp_active_evidence/source-hashes.txt") \
     > "$hcp_active_evidence/source-hashes-check.txt"
 fi
-if rg -q 'not found' "$hcp_active_evidence/libraries.txt"; then
+# Fail closed on missing libraries or an unsuccessful check; use the portable
+# awk already required below rather than an optional ripgrep installation.
+if ! awk '/not found/ { missing = 1 } END { exit (missing ? 1 : 0) }' "$hcp_active_evidence/libraries.txt"; then
   cat "$hcp_active_evidence/libraries.txt"
   exit 2
 fi
@@ -77,6 +79,8 @@ fi
 docker cp "$hcp_active_evidence/package" "$hcp_active_container:/tmp/$hcp_active_db"
 hcp_active_command=("/tmp/$hcp_active_db/libs/$hcp_active_loader_name"
   --library-path "/tmp/$hcp_active_db/libs" "/tmp/$hcp_active_db/$hcp_active_program")
+# Only this native command uses the staged loader/library path. The surrounding
+# container shell and PostgreSQL utilities must use their own runtime libraries.
 if test "$hcp_active_mode" = prepared-membership-refusal; then
   hcp_active_command=(bash "/tmp/$hcp_active_db/check_retained_prepared_capture.sh"
     "/tmp/$hcp_active_db-probe" "${hcp_active_command[@]}")
@@ -86,7 +90,7 @@ docker exec --user postgres \
   --env "HCP_WARM_TEST_CONNINFO=dbname=$hcp_active_db" \
   --env "HCP_CORE_TEST_CONNINFO=dbname=$hcp_active_core" \
   --env "HCP_LING_TEST_CONNINFO=dbname=$hcp_active_ling" \
-  --env "LD_LIBRARY_PATH=/tmp/$hcp_active_db/libs" \
+  --env "LD_LIBRARY_PATH=" \
   --env "TI_LIB_DIR=/tmp/$hcp_active_db/runtime" \
   --env "XDG_CACHE_HOME=/tmp/$hcp_active_db-cache" \
   "$hcp_active_container" "${hcp_active_command[@]}" \

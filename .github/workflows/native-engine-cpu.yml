@@ -76,8 +76,10 @@ jobs:
       - name: Check CI orchestration contracts
         run: |
           shellcheck engine/scripts/hosted_cpu_*.sh engine/scripts/check_hosted_cpu_ci.sh engine/scripts/*hosted_ubuntu_mirror.sh \
-            engine/scripts/run_warm_active_acceptance.sh engine/scripts/check_retained_prepared_capture.sh
+            engine/scripts/run_warm_active_acceptance.sh engine/scripts/check_retained_prepared_capture.sh \
+            engine/scripts/check_warm_active_transport.sh
           bash engine/scripts/check_hosted_cpu_ci.sh
+          bash engine/scripts/check_warm_active_transport.sh
           bash engine/scripts/check_hosted_ubuntu_mirror.sh
       - name: Identify compiler cache compatibility
         id: toolchain
