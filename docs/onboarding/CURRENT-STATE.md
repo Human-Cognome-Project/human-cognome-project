@@ -1,5 +1,31 @@
 # Current implementation and work
 
+**Contributor retained membership decision — 2026-11-18 (awaiting review):**
+[Explicit comparison/focus/resource proposal and executable evidence](../../engine/docs/RETAINED-MEMBERSHIP-DECISION.md)
+at `9d9d491f` follows #374 comment 6985194174. Read-only traversal of the verified
+retained source finds four unique targets: Alphabet, English, Germanic and
+Indo-European. The two direct paths form a diamond; inherited memberships dedup
+per occurrence. All four source naming masses remain NULL.
+
+Propose a separate explicit six-node qualification chain, retaining the current
+ParentValue focus and 52-bit precision. Raise Fields/Nodes/Levels to 6 and Links
+to 5, with other finite profile bounds retained and scratch recomputed. Existing
+coverage requires a complete rooted tree: omission, independent roots and
+overlapping full-cohort forks reject. Equal-cohort ancestors give zero
+complement response, so this decision does not establish independent category
+forces or #324's structural/nonstructural distinction.
+
+Quick CI, six Clang and three GCC suites pass. Six new fixture modes expose two
+full native body claims, six comparison identities, twelve participation rows,
+one combined bootstrap and a following tick; actual retained ticking stays
+unqualified. Production profiles, runtime, database/common code and workflows
+are unchanged. Review the decision before adding the separate retained preset;
+preserve #374's existing refusal case, source pins/unknown masses and privacy.
+Main `66edfb18` integrates #372/#373. #374 is provisionally accepted at `03e2a6e9`
+with its final CI separate; this witness uses current-main APIs and introduces
+no source dependency on its unmerged transport scripts. All merges remain with
+the maintainer. Earlier handoffs below retain their historical scope/status.
+
 **Contributor opt-in retained prepared capture — 2026-11-18 (awaiting review):**
 [Input trace, profile, acquisition blocker and evidence](../../engine/docs/RETAINED-PREPARED-CAPTURE.md)
 at `3999550e` follows #372 review 5958354207. The existing retained producer now
