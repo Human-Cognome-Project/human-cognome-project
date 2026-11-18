@@ -1,8 +1,14 @@
 #pragma once
 #include <memory>
 #include "field/cascade.h"
+namespace taichi::lang {
+class Ndarray;
+}
 namespace field {
 class Harness;
+namespace testing {
+struct LiveHierarchyAccess;
+}
 namespace detail {
 struct StorageExtent;
 class CentroidCascade {
@@ -20,6 +26,13 @@ class CentroidCascade {
   const CascadeInspection &inspect(const CascadeResult &);
 
  private:
+  friend class LiveHierarchy;
+  friend struct field::testing::LiveHierarchyAccess;
+  void validate_observation(const CascadeResult &);
+  // Synchronous installation-only access; numerical host vectors are not read
+  // back here. Public inspection keeps its full observation/lifetime contract.
+  const CascadeInspection &inspect_descriptors(const CascadeResult &);
+  void copy_published(const CascadeResult &, taichi::lang::Ndarray &);
   CascadeBinding bind_impl(std::uint64_t,
                            const CascadeSpec &,
                            const WeightedCascadeSpec *,

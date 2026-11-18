@@ -222,13 +222,16 @@ add_executable(weighted_handoff_test tests/weighted_handoff_test.cpp)
 target_link_libraries(weighted_handoff_test PRIVATE field_core)
 add_executable(live_hierarchy_test tests/live_hierarchy_test.cpp)
 target_link_libraries(live_hierarchy_test PRIVATE study_assembly membership_fields exchange_coordination)
-# Observe actual transfer calls without adding instrumentation to runtime code.
-# These mangled names are the Linux Itanium ABI of engine::{upload,readback}.
+# Observe transfers/initialization and inject installation failures in this test
+# executable only. These mangled names use the Linux Itanium ABI.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_definitions(live_hierarchy_test PRIVATE HCP_TRANSFER_AUDIT)
   target_link_options(live_hierarchy_test PRIVATE
       "-Wl,--wrap=_ZN6engine6uploadERN6taichi4lang7NdarrayEPKvm"
-      "-Wl,--wrap=_ZN6engine8readbackERN6taichi4lang7NdarrayEPvm")
+      "-Wl,--wrap=_ZN6engine8readbackERN6taichi4lang7NdarrayEPvm"
+      "-Wl,--wrap=_ZN6taichi4lang7Program21fill_ndarray_fast_u32EPNS0_7NdarrayEj"
+      "-Wl,--wrap=_ZN5field6detail15CentroidCascade14copy_publishedERKNS_13CascadeResultERN6taichi4lang7NdarrayE"
+      "-Wl,--wrap=_ZN6engine7Runtime11synchronizeEv")
 endif()
 foreach(threads 1 2)
   foreach(path bulk direct)
@@ -522,6 +525,24 @@ if(HCP_WITH_VIEWPORT)
   add_subdirectory(../tools/viewport/native viewport)
   target_link_libraries(live_hierarchy_test PRIVATE viewport_snapshot)
   target_compile_definitions(live_hierarchy_test PRIVATE HCP_HAS_VIEWPORT=1)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_executable(retained_c3_handoff_test tests/retained_c3_handoff_test.cpp)
+    target_link_libraries(retained_c3_handoff_test PRIVATE viewport_snapshot)
+    target_compile_options(retained_c3_handoff_test PRIVATE -Wall -Wextra -Werror)
+    # Count the two existing native hierarchy publication entries in this test.
+    target_link_options(retained_c3_handoff_test PRIVATE
+        "-Wl,--wrap=_ZN5field6detail13LiveHierarchy7installEmRKNS_19WeightedCascadeSpecEm"
+        "-Wl,--wrap=_ZN5field6detail13LiveHierarchy14commit_refreshERNS_12UpdateResultE")
+    foreach(workers 1 2)
+      foreach(path bulk direct)
+        add_test(NAME retained_c3_handoff_${workers}_${path}
+            COMMAND retained_c3_handoff_test ${workers} ${path}
+                "${CMAKE_CURRENT_SOURCE_DIR}/../tools/viewport/examples/letter-study-tick0.json")
+        set_tests_properties(retained_c3_handoff_${workers}_${path} PROPERTIES
+            ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+      endforeach()
+    endforeach()
+  endif()
 endif()
 
 # Every run needs TI_LIB_DIR pointing at the engine's LLVM runtime bitcode.

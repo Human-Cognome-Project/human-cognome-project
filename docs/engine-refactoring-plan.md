@@ -198,7 +198,7 @@ Numerical inspection can inform earlier boundaries, but mathematical changes nee
 
 ## Relationship to ongoing work
 
-The retained-to-C3 bridge remains incomplete. #341 adds explicit diagnostic requests and honest unavailability for retained flat execution. #342 exposes a structural source handoff but does not admit or execute a retained C3 hierarchy. Owned prepared admission and committed occurrence mapping remain required. Coordinate that work with the ownership map; do not duplicate it in a second producer or replay geometry in a host approximation.
+The retained capture front door remains v1/flat: #341's requested C3 diagnostic is honestly unavailable there. The structural source handoff from #342 now has a bounded native route through the accepted `PreparedStudyOwner`, which seals a plan, performs combined native bootstrap and publishes actual committed claim mappings. Those lower operations are built; the remaining retained-entry operation must provision the native context and pass an explicit pinned v2 source plus supported comparison/intrinsic/focus/resource choices to that owner. Legacy `ActiveSession::submit` still calls the v1 binding and rejects v2. See the [source-pinned handoff inspection](../engine/docs/RETAINED-C3-HANDOFF.md) for the executed fixture limits and retained-artifact trace. Do not duplicate native admission/installers or replay report geometry as authoritative state.
 
 Full accounting/admission acceptance and GPU qualification keep their existing limits. Held #75/#111/#123 are unchanged. This refactoring plan does not activate them or authorize implementing future Analyst decisions.
 
@@ -209,6 +209,35 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-18 contributor (awaiting review):
+[Retained-study/C3 handoff inspection](../engine/docs/RETAINED-C3-HANDOFF.md)
+at `ff27ecac` demonstrates the existing prepared-owner bootstrap/claim/report path
+and the missing retained session entry. Six Clang/GCC modes reproduce the saved
+study's construction paths/notations/masses with fixtures, prove v1 remains flat
+and refuses v2 without losing its execution, and run 12 bounded aggregate/parts
+prepared examples through actual native commit/tick/observation. Linker counters
+show one combined commit and zero standalone installs per prepared bootstrap.
+Quick CI and all four new Clang CTests pass. Byte pins remain fixture-only; no
+current DB or full retained-C3 execution is claimed. Production equals provisional
+#370 `eee4ef07`, preserved with main `2c7ec4d0` in normal merge `543cfbf4`.
+Review the prepared request/context lifetime boundary before a runtime operation;
+dependency/hosted gates remain distinct. Refresh transport and #324 stay separate.
+
+2026-11-18 contributor (awaiting review):
+[Native initial C3 seed transport](../engine/docs/NATIVE-HIERARCHY-SEED-TRANSPORT.md)
+at `98da1f2f` implements #369 review 5955551516 on integrated main `2c7ec4d0`.
+Validated private descriptors and native copies replace the numerical host round
+trip; actual native destination initialization establishes inactive zeros. At
+H=70 actual host traffic reduces by 8,680 bytes, with 4,480 native zero writes
+and 192 native copy-request bytes separately accounted for three nodes. Public
+inspection, guards, work/refusal/retry and publication/failure rules remain.
+Quick CI, 16 scoped Clang CTests, dirty refresh, two GCC seed probes, four GCC
+controls and four GCC public suites pass. Historical binaries establish actual
+before totals; both-bank/Q31/dirty-source-and-destination/16-tick history and
+three exception-boundary controls pass. Review/authoritative hosted CI remain
+pending. Refresh, reservations, validator/capture reuse and #324 stay separate;
+follow-on inspection requires a concrete owner/lifetime/native-cost trace.
 
 2026-11-17 contributor (awaiting review):
 [Hierarchy seed transport inspection](../engine/docs/HIERARCHY-SEED-TRANSPORT.md)

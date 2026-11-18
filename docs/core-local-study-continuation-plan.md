@@ -1,5 +1,49 @@
 # Core continuation after local CUDA corrections
 
+**Contributor retained-study/C3 handoff inspection — 2026-11-18 (awaiting review):**
+[Source trace, focused witness and first missing operation](../engine/docs/RETAINED-C3-HANDOFF.md)
+at `ff27ecac` follows #370 review 5956165492. Main remains `2c7ec4d0`;
+normal merge `543cfbf4` explicitly carries provisionally accepted #370 `eee4ef07`,
+whose native hosted gate is still separate. The retained capture adapter uses v1
+normalization and legacy ActiveSession/FixedStudy, with C3 intent unavailable.
+Bounded v2 PreparedStudyOwner already seals source, bootstraps native C3 through
+combined admission and publishes actual claim maps. It does not call the standalone
+initial installer optimized in #370. No duplicate native installer is required.
+
+The first missing retained entry is an explicit prepared request/context lifetime
+handoff with caller-supplied supported comparisons, intrinsics, focus and resources.
+Review that boundary before runtime implementation; do not infer it from a detached
+report or add Analyst policy. Quick CI, four Clang worker/path CTests and two GCC
+probes pass: six flat/refusal traces and 12 aggregate/parts prepared traces retain
+source pins, actual handle mapping, authorization/currentness and completed ticks.
+The saved study's 16 paths/notations/masses are reproduced with fixtures; byte IDs
+remain synthetic. No current DB reacquisition, numeric replay or full retained-C3
+execution is claimed. Production equals #370. Hosted CI is authoritative; dependency
+and this inspection's gates remain distinct. Refresh transport and #324 stay separate.
+
+**Contributor native initial C3 seed transport — 2026-11-18 (awaiting review):**
+[Implementation, actual before/after transfers and controls](../engine/docs/NATIVE-HIERARCHY-SEED-TRANSPORT.md)
+at `98da1f2f`, based on integrated main `2c7ec4d0`, implements #369 review
+5955551516. Synchronous private descriptor/native-copy access shares the full
+observation/currentness guard. Initial installation clears actual native bank
+storage, then copies the active published XYZ/mass prefix into both banks.
+Public inspection and all source/structural/work/publication/failure checks remain.
+At H=70, actual readback drops 4,448→248 bytes and upload 76,928→72,448:
+8,680 fewer host-transfer bytes. The 4,480 native zero writes and 192 copy-request
+bytes for three nodes are separately measured, not claimed as free or retained
+memory/latency savings.
+
+Quick CI, all 16 scoped Clang suites (four full C3 and four seed modes included),
+dirty refresh, two GCC seed probes, four GCC controls and four GCC public suites
+pass. The 18 fixture comparisons retain Q31/both-bank/source-padding/dirty-native-
+destination controls, exact/short work and healthy retry, 21 provenance refusals,
+public inspection, 16 following owner ticks and injected copy/final-sync unreadiness.
+Historical binaries were actually rerun for before/after totals. Review this
+runtime change and reconcile authoritative GitHub CI before integration. Subsequent
+bounded inspection under #343 should use actual owner/lifetime and native cost
+evidence. Refresh transport, reservations, validator/capture reuse and #324 remain
+separate; CPU passes do not qualify CUDA execution.
+
 **Maintainer integration of #369 (2026-11-18)**
 
 [Review 5955551516](https://github.com/Human-Cognome-Project/human-cognome-project/pull/369#pullrequestreview-5955551516) accepts the C3 seed transport inspection at `473807bb`. All 12 native jobs and smoke passed, including the four seed transport cases and 185 regression passes. Main `22273dd2` also passed native and smoke. The three-node H=70 fixture identifies 4,200 additional host readback bytes and 4,480 seed upload bytes during installation. The CPU scratch witness reproduces the two banks using eight active-prefix copies totaling 192 bytes.

@@ -8,6 +8,14 @@ GPU handoff now follows [#170's integrated CPU exit](../../docs/core-operation-r
 but enduring owner refresh, admission and lifecycle remain under #156. Do not
 copy supplied-start/equal-count refresh behavior into that operational path.
 
+The [retained-to-C3 source trace](RETAINED-C3-HANDOFF.md) (inspection awaiting
+review) distinguishes this legacy session from the built bounded prepared-owner
+route. `submit` uses v1 binding/FixedStudy and refuses v2; it does not provision a
+prepared Harness or accept explicit comparison/resource bindings. The existing
+prepared owner already supplies native bootstrap and actual claim publication.
+The remaining retained-entry request/lifetime operation is a separate boundary;
+it should delegate to that owner rather than duplicate native installation.
+
 Accepted/merged in [#149](https://github.com/Human-Cognome-Project/human-cognome-project/pull/149)
 at `867c310`, under [#148](https://github.com/Human-Cognome-Project/human-cognome-project/issues/148),
 after A/B/C and [design #147](../../docs/pre-d-hot-workbench-design.md) acceptance.
