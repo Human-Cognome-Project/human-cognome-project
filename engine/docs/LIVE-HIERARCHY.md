@@ -20,8 +20,9 @@ damping, contact law or production precision policy is changed.
 Reserve `Budget::LiveResponses` together with weighted Cascade capacities and a
 f64 trial profile before constructing `Harness`. Zero leaves the original storage
 and signatures unchanged. `PreparedStorage::required_scratch` includes the new
-arrays and prepared contexts. Installation currently supports actual LLVM/x64
-execution; other actual backends return `Unsupported`.
+arrays and prepared contexts. Installation supports actual LLVM/x64 execution;
+the existing [device-specific CUDA qualification gate](CUDA-C3-QUALIFICATION.md)
+remains separate. Other actual backends return `Unsupported`.
 
 `install_live_hierarchy(expected_generation, WeightedCascadeSpec, work_limit)`
 validates through the existing weighted candidate binder. The installed subset
@@ -44,6 +45,15 @@ bodies through the explicit candidate operation, then mirrors/history/ownership
 publish under the exclusive synchronized boundary. Existing physical motion is
 preserved and changed force ownership invalidates bodies. Failed validation leaves
 flat execution healthy. Failed replacement attempts preserve an installed tree.
+
+The [native initial seed transport follow-up](NATIVE-HIERARCHY-SEED-TRANSPORT.md)
+(awaiting review) keeps all bind/query, source, currentness and structural/work
+checks. It clears the actual native two-bank destination (`64H` zero bytes),
+then copies the active published XYZ/mass prefix through eight existing Taichi
+intra-device slices (`64N` bytes). Full public candidate/live inspection remains;
+the host seed upload and implicit candidate inspection downloads are removed.
+Initialization traffic is measured separately from host-transfer counters.
+Refresh's stable packet slots and reservation sizes are unchanged.
 
 While installed, every nonempty `update_prepared` returns `Unsupported` before
 structural mutation. Raw prepared publication, upload, seed and focus replacement

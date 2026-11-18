@@ -222,13 +222,16 @@ add_executable(weighted_handoff_test tests/weighted_handoff_test.cpp)
 target_link_libraries(weighted_handoff_test PRIVATE field_core)
 add_executable(live_hierarchy_test tests/live_hierarchy_test.cpp)
 target_link_libraries(live_hierarchy_test PRIVATE study_assembly membership_fields exchange_coordination)
-# Observe actual transfer calls without adding instrumentation to runtime code.
-# These mangled names are the Linux Itanium ABI of engine::{upload,readback}.
+# Observe transfers/initialization and inject installation failures in this test
+# executable only. These mangled names use the Linux Itanium ABI.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_definitions(live_hierarchy_test PRIVATE HCP_TRANSFER_AUDIT)
   target_link_options(live_hierarchy_test PRIVATE
       "-Wl,--wrap=_ZN6engine6uploadERN6taichi4lang7NdarrayEPKvm"
-      "-Wl,--wrap=_ZN6engine8readbackERN6taichi4lang7NdarrayEPvm")
+      "-Wl,--wrap=_ZN6engine8readbackERN6taichi4lang7NdarrayEPvm"
+      "-Wl,--wrap=_ZN6taichi4lang7Program21fill_ndarray_fast_u32EPNS0_7NdarrayEj"
+      "-Wl,--wrap=_ZN5field6detail15CentroidCascade14copy_publishedERKNS_13CascadeResultERN6taichi4lang7NdarrayE"
+      "-Wl,--wrap=_ZN6engine7Runtime11synchronizeEv")
 endif()
 foreach(threads 1 2)
   foreach(path bulk direct)
