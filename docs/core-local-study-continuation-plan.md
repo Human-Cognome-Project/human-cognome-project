@@ -1,5 +1,31 @@
 # Core continuation after local CUDA corrections
 
+**Maintainer integration of #369 (2026-11-18)**
+
+[Review 5955551516](https://github.com/Human-Cognome-Project/human-cognome-project/pull/369#pullrequestreview-5955551516) accepts the C3 seed transport inspection at `473807bb`. All 12 native jobs and smoke passed, including the four seed transport cases and 185 regression passes. Main `22273dd2` also passed native and smoke. The three-node H=70 fixture identifies 4,200 additional host readback bytes and 4,480 seed upload bytes during installation. The CPU scratch witness reproduces the two banks using eight active-prefix copies totaling 192 bytes.
+
+The coding agent can implement native seed transport for initial C3 installation. Preserve currentness, public inspection, work and source validation, publication and failure semantics. Prove inactive destination rows on actual storage with a dirty-destination control, retain both-bank Q31 and tick-history checks, and measure all actual transfers including initialization. Refresh and reservation changes remain separate. See the linked review for the acceptance scope.
+
+**Contributor hierarchy seed transport inspection — 2026-11-17 (awaiting review):**
+[Owner/lifetime trace, actual transfers and native-copy proposal](../engine/docs/HIERARCHY-SEED-TRANSPORT.md)
+at `c2c553c1` completes the inspection requested by #368 review 5949686979,
+starting from integrated main `22273dd2`. Installation reads full reserved centroid
+values/validity to the host, then uploads two live seed banks. At H=70 its actual
+readback is 4,448 bytes versus 248 reported; the extra 4,200 inspection bytes are
+outside that result. Seed upload adds 4,480 reported bytes. Existing Taichi
+intra-device copies reproduce the actual seed bit for bit using eight active
+slices (192 bytes for three nodes), with Q31 and poisoned-padding controls.
+This is isolated scratch evidence, not an implemented transport saving.
+
+Quick CI, four Clang CTests, two GCC probes (18 fixture observations) and eight
+existing basic/publication case runs pass. Production/fork/workflows are unchanged;
+failed development controls are retained. Review the bounded proposal before
+replacing runtime transport; preserve descriptor/source/currentness validation,
+public inspection, zero inactive slots and publication/failure behavior. No full
+local regression or GPU qualification is claimed. GitHub CI is authoritative;
+review/hosted checks remain pending. Validator reuse, capture-buffer resizing,
+refresh slot transport, broader accounting and #324 remain separate.
+
 **Maintainer integration of #366, #367 and #368 (2026-11-17)**
 
 This merge integrates the reviewed heads `dc0854aa`, `d49e6329` and `80b52d34`. All three passed their hosted workflows. [Review 5949686979](https://github.com/Human-Cognome-Project/human-cognome-project/pull/368#pullrequestreview-5949686979) accepts direct capture from the owner's prepaid initial maps. On #368 all 12 native jobs and smoke passed, including 181 regression tests and database verification with 24 addressed reads and zero private reads. Contributor-local comparisons report 48,369 / 205,000 / 149,169 fewer cumulative requested bytes for one/four/three selections. Retained size and whole-adoption peak stayed the same in those fixtures.

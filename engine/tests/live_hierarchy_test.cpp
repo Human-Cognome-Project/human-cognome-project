@@ -53,6 +53,7 @@
 #include "contact_tick_audit.h"
 #include "cuda_selector_audit.h"
 #include "engine/device.h"
+#include "transfer_audit.h"
 #include "placement_reference.h"
 #include "placement_access.h"
 #include <cfenv>
@@ -2830,6 +2831,7 @@ void capture_current(engine::Runtime &r,
 #include "exchange_owner_multiple.inc"
 #include "exchange_owner_equal.inc"
 #include "placement_audit.inc"
+#include "hierarchy_seed_transport.inc"
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -2987,6 +2989,8 @@ int main(int argc, char **argv) {
       run("exchange_recipe_cost", [&] {
         exchange_owner(r,path,true); exchange_owner_multiple(r,path,true); exchange_owner_equal(r,path,true);
       });
+    if (only == "hierarchy_seed_transport")
+      run("hierarchy_seed_transport", [&] { hierarchy_seed_transport(r, path); });
     if (only == "exchange_binding_map_cost")
       run("exchange_binding_map_cost", [&] {
         exchange_owner(r,path,false,true); exchange_owner_multiple(r,path,false,true); exchange_owner_equal(r,path,false,true);
