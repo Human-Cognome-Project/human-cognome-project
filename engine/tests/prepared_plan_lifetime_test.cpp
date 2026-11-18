@@ -84,6 +84,7 @@ void run(engine::Runtime &runtime, field::HostPath path, bool parts, bool baseli
           separate->result().live_bytes == standalone_bytes,"private consumption changed standalone plan lifetime");
   };
   verify();
+  {
   const auto previous = owner.associations(authorization,handle);
   field::Parameters64 parameters; parameters.dt = 0.125;
   check(owner.tick(authorization,handle,parameters).status == field::TickStatus::Ok,"following native tick failed");
@@ -93,6 +94,7 @@ void run(engine::Runtime &runtime, field::HostPath path, bool parts, bool baseli
   verify();
   check(owner.bootstrap(authorization,handle,0,0,0).status == field::UpdateStatus::NoChange &&
         h.prepared_storage().completed_ticks == 1,"published bootstrap replay is not a no-op");
+  } // Every borrowed association view ends before owner teardown.
   const auto detached = owner.report(authorization,handle);
   prepared.owner.reset();
   const auto released = A::end();
