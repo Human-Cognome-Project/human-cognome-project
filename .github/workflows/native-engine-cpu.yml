@@ -77,6 +77,7 @@ jobs:
         run: |
           shellcheck engine/scripts/hosted_cpu_*.sh engine/scripts/check_hosted_cpu_ci.sh engine/scripts/*hosted_ubuntu_mirror.sh \
             engine/scripts/run_warm_active_acceptance.sh engine/scripts/check_retained_prepared_capture.sh \
+            engine/scripts/check_retained_positive_capture.sh \
             engine/scripts/check_warm_active_transport.sh
           bash engine/scripts/check_hosted_cpu_ci.sh
           bash engine/scripts/check_warm_active_transport.sh
@@ -312,6 +313,9 @@ jobs:
           # Passing verifies its precise membership refusal, never a native tick.
           bash engine/scripts/run_warm_active_acceptance.sh engine/build \
             "$hcp_active_container" hcp_core hcp_linguistics prepared-membership-refusal
+          # Separate fresh warm store: reviewed opt-in six-comparison preset.
+          bash engine/scripts/run_warm_active_acceptance.sh engine/build \
+            "$hcp_active_container" hcp_core hcp_linguistics prepared-retained-positive
 
       - uses: actions/upload-artifact@v4
         if: always()
