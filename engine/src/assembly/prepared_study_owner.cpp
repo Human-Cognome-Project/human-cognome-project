@@ -66,6 +66,8 @@ PreparedStudyOwner::PreparedStudyOwner(field::Harness &h,
       bodies_(ReservationAllocator<engine::RecordHandle>(domain.get())),
       fields_(ReservationAllocator<engine::RecordHandle>(domain.get())),
       scales_(ReservationAllocator<ScaleBinding>(domain.get())),
+      occurrences_(ReservationAllocator<AdmissionOccurrenceCommand>(domain.get())),
+      field_sources_(ReservationAllocator<AdmissionFieldCommand>(domain.get())),
       context_(h.prepared_storage().particles.context()), generation_(h.prepared_storage().generation),
       initial_ticks_(h.prepared_storage().completed_ticks) {}
 
@@ -83,9 +85,9 @@ void PreparedStudyOwner::reserve_metadata(const warm::Uuid &session,
     work.charge(1);
     scales_.push_back({{nullptr,layout.node.parent,layout.node.role},layout.units});
   }
-  // Prepay one successful publication's fixed handle verification/assignment
-  // per entry. Preclaim retries never consume this work or publish partial maps.
-  work.elements(bodies_.size(),1); work.elements(fields_.size(),1);
+  // Prepay successful publication's fixed claim checks/assignments and each
+  // body's native exact-source check. Preclaim retries do not publish maps.
+  work.elements(bodies_.size(),2); work.elements(fields_.size(),1);
 }
 
 void PreparedStudyOwner::authorize(const warm::Uuid &owner, const ExecutionHandle &handle) const {
@@ -97,7 +99,8 @@ void PreparedStudyOwner::authorize(const warm::Uuid &owner, const ExecutionHandl
 bool PreparedStudyOwner::ready() const {
   if (phase_ != PreparedOwnerPhase::Published || !h_.ready()) return false;
   const auto &s = h_.prepared_storage();
-  if (s.generation != generation_ || s.particles.context() != context_ ||
+  if (plan_ || occurrences_.size() != bodies_.size() || field_sources_.size() != fields_.size() ||
+      s.generation != generation_ || s.particles.context() != context_ ||
       s.live.particles != bodies_.size() || s.live.fields != fields_.size()) return false;
   const auto current = [](const auto &handles, const auto &headers, std::uint64_t context) {
     for (const auto &v : handles)
@@ -116,9 +119,6 @@ void PreparedStudyOwner::require_published(const warm::Uuid &owner, const Execut
 const ActiveAssembly &PreparedStudyOwner::source(const warm::Uuid &owner, const ExecutionHandle &handle) const {
   require_published(owner,handle); return *source_;
 }
-const StructuralAdmissionPlan &PreparedStudyOwner::plan(const warm::Uuid &owner, const ExecutionHandle &handle) const {
-  require_published(owner,handle); return *plan_;
-}
 const ReservedVector<engine::RecordHandle> &PreparedStudyOwner::bodies(const warm::Uuid &owner, const ExecutionHandle &handle) const {
   require_published(owner,handle); return bodies_;
 }
@@ -127,22 +127,23 @@ const ReservedVector<engine::RecordHandle> &PreparedStudyOwner::fields(const war
 }
 
 PreparedStudyOwner::AssociationRows::Body PreparedStudyOwner::AssociationRows::body(std::size_t ordinal) const {
-  const auto &entry = plan.occurrences().at(ordinal);
-  return {entry,bodies.at(ordinal),scales.at(entry.node),
-          plan.commands().at(entry.command).exact_mass.value()};
+  const auto &entry = occurrences.at(ordinal);
+  const auto &claim = bodies.at(ordinal);
+  return {entry,claim,scales.at(entry.node),exact_masses.at(claim.record)};
 }
 PreparedStudyOwner::AssociationRows::Field PreparedStudyOwner::AssociationRows::field(std::size_t ordinal) const {
-  return {plan.fields().at(ordinal),fields.at(ordinal)};
+  return {field_sources.at(ordinal),fields.at(ordinal)};
 }
 PreparedStudyOwner::AssociationView::AssociationView(const PreparedStudyOwner &owner, std::uint64_t tick)
     : owner_(&owner), generation_(owner.generation_), tick_(tick) {}
 PreparedStudyOwner::AssociationRows PreparedStudyOwner::AssociationView::read() const {
-  // All lifetime/currentness checks precede loaning source or plan references.
+  // All lifetime/currentness checks precede loaning semantic rows/native ledger.
   // ready() retains full context/incarnation/address/record validation.
   if (generation_ != owner_->generation_ || !owner_->ready() ||
       tick_ != owner_->h_.prepared_storage().completed_ticks)
     throw warm::Stale("prepared owner: stale association view");
-  return {*owner_->source_,*owner_->plan_,owner_->bodies_,owner_->fields_,owner_->scales_};
+  return {*owner_->source_,owner_->occurrences_,owner_->field_sources_,owner_->bodies_,owner_->fields_,
+          owner_->scales_,owner_->h_.prepared_storage().source_masses};
 }
 PreparedStudyOwner::AssociationView PreparedStudyOwner::associations(const warm::Uuid &owner,
     const ExecutionHandle &handle) const {
@@ -153,7 +154,6 @@ PreparedStudyOwner::AssociationView PreparedStudyOwner::associations(const warm:
 ActiveReport PreparedStudyOwner::report_metadata(const warm::Uuid &authorization,
     const ExecutionHandle &handle) const {
   const auto rows = associations(authorization,handle).read();
-  const auto &plan = rows.plan;
   ActiveReport report;
   report.handle = handle_;
   report.owner = rows.source.owner();
@@ -163,14 +163,14 @@ ActiveReport PreparedStudyOwner::report_metadata(const warm::Uuid &authorization
   mapping.capacity = h_.particle_capacity();
   mapping.scales.assign(rows.scales.begin(),rows.scales.end());
   mapping.groups.resize(h_.field_capacity());
-  for (std::size_t i=0; i<plan.fields().size(); ++i) {
+  for (std::size_t i=0; i<rows.field_sources.size(); ++i) {
     const auto field = rows.field(i);
     mapping.groups.at(field.claim.record) = {field.source.field.kind,warm::key(field.source.field.object)};
   }
-  for (std::size_t i=0; i<plan.occurrences().size(); ++i) {
+  for (std::size_t i=0; i<rows.occurrences.size(); ++i) {
     const auto body = rows.body(i);
     const auto &entry = body.source;
-    Occurrence occurrence{InputText(occurrence_text(plan.source().study,entry.occurrence)),
+    Occurrence occurrence{InputText(occurrence_text(rows.source.study(),entry.occurrence)),
         InputText(warm::key(entry.definition.object)),body.claim.record,entry.node,{},{}};
     mapping.particles.push_back({std::move(occurrence),body.exact_mass,{},{},0,0});
   }
@@ -237,12 +237,24 @@ field::UpdateResult PreparedStudyOwner::bootstrap(const warm::Uuid &owner,
         throw std::runtime_error("prepared owner: invalid actual native claim");
       return h;
     };
-    for (std::size_t i=0; i<bodies_.size(); ++i)
-      bodies_[i] = resolve(plan_->occurrences()[i].command,s.particles,s.particle_headers);
+    for (std::size_t i=0; i<bodies_.size(); ++i) {
+      const auto command = plan_->occurrences()[i].command;
+      const auto claim = resolve(command,s.particles,s.particle_headers);
+      if (!commands[command].exact_mass || s.source_masses[claim.record] != *commands[command].exact_mass)
+        throw std::runtime_error("prepared owner: inconsistent committed exact source mass");
+      bodies_[i] = claim;
+    }
     for (std::size_t i=0; i<fields_.size(); ++i)
       fields_[i] = resolve(plan_->fields()[i].command,s.fields,s.field_headers);
     if (s.failure_point == 7)
       throw std::runtime_error("injected failure before prepared owner publication");
+    // These vectors share the same reservation allocator. Their constant-time
+    // swaps transfer all nested pins without allocating or copying keys. No
+    // association/plan loan exists before Published. Retire replay data only
+    // after final claim verification; native storage now owns exact masses.
+    occurrences_.swap(plan_->occurrences_);
+    field_sources_.swap(plan_->fields_);
+    plan_.reset();
     generation_ = result.generation;
     phase_ = PreparedOwnerPhase::Published; // The only map visibility boundary.
     return result;
