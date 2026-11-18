@@ -1,5 +1,13 @@
 # Retained source-binding maps and publication transport
 
+**Later disposition:** #365 source was accepted in
+[review 5946869103](https://github.com/Human-Cognome-Project/human-cognome-project/pull/365#pullrequestreview-5946869103),
+which authorized the bounded private removal without another planning round.
+[The implementation and actual before/after evidence](EXCHANGE-OWNER-SOURCE-MAPS.md)
+at `4f74ad11` supersede this record's current-runtime six-store/proposal status.
+The inspection measurements and three-way rotation below describe `120658ca`;
+they remain historical candidate costs and must not be relabeled as its savings.
+
 Contributor inspection under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
 2026-11-17, awaiting review. Public tested source:
 `120658ca6c713b5fd5e0e75bb8aec015ee9954db`.

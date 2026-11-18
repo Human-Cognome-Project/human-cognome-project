@@ -211,6 +211,57 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[Prepaid-map adoption capture](../engine/docs/ADOPTION-SOURCE-CAPTURE.md) at
+`da083031` implements #367 review 5948664040. Temporary validators read the
+initial owner snapshots synchronously with the shared setup meter, keeping
+independent capture buffers, all source checks and independent reservation bounds.
+No stored loan, new wrapper or standalone ownership change. Actual whole-owner
+construction removes 578/2,444/1,779 requests and 48,369/205,000/149,169 cumulative
+requested bytes; setup work reduces by 84,895/377,396/267,927 units. Retained
+bytes/whole peaks remain unchanged. Quick CI, 48 owner modes, 12 standalone
+cases, both compilers' old/new request/ABI probes and exact/short/bound/unwind
+controls pass. Main `8c3d0b93` and provisional #367/#366 are explicit through
+normal merge `7029c078`; review and authoritative hosted CI remain separate.
+Next inspect another concrete duplicated association through its ownership and
+measurements. Capture-buffer reuse/shrinking, indexed guards, broader producers,
+full accounting and #324 stay separate.
+
+2026-11-17 contributor (awaiting review):
+[Temporary adoption validation](../engine/docs/ADOPTION-BINDING-COST.md) at
+`8972cd49` measures each per-selection stack binding in actual adoption.
+Exact-constructor request/release traces match all eight selected roles in the
+three fixtures. The temporary's owned maps, constructor-local trusted/staged maps
+and independent source-validation facts have separate costs/lifetimes; retained
+candidate maps are independently attributed and unchanged. Temporary cumulative
+requests total 91,649 / 378,120 / 279,009 bytes; these are candidate setup costs,
+not implemented savings. Work/full native-fact/mask/domain/weak controls pass
+alongside quick CI, four dedicated Clang/GCC probes and six full changed owner
+cases. Production equals provisional #366; current main `8c3d0b93` and that
+dependency are preserved in normal merge `266bdd8b`. The proposal for private
+synchronous reads of initial owner maps needs review before runtime changes.
+Standalone ownership, capture checks/buffers, one initial prepayment and the
+candidate transaction remain. Indexed guards, broader producers, full accounting
+and #324 stay separate; hosted CI remains authoritative.
+
+2026-11-17 contributor (awaiting review):
+[Direct owner-map publication](../engine/docs/EXCHANGE-OWNER-SOURCE-MAPS.md) at
+`4f74ad11` implements #365 review 5946869103's bounded removal. Current maps
+are synchronous const call arguments; independent candidates publish directly
+into the owner after source access ends. Captured facts, generation/readiness,
+all native/semantic validation and standalone owned adapters remain. No stored
+loan or new registry/wrapper. Actual whole-owner before/after runs remove 562
+allocations and 47,180 retained/scoped-peak requested bytes per fixture, with
+unchanged 608/680/376-byte owner/coordinator/binding extents. Census, removed
+reservation/copy work and lifetime witnesses are coordinated. Initial input
+prepayment and temporary adoption validators remain. Quick CI, 16 Clang/eight
+GCC CTests, all 48 owner and 48 standalone exchange mode runs and both compilers'
+request/ABI/source-death/unwind controls pass. Main `068fe63a` and accepted
+#365/#364 remain explicit dependencies through normal merge `bd4d1658`.
+Review/authoritative hosted gates remain separate. Next, inspect the temporary
+adoption validation maps as a separate measured surface after this review;
+indexed guards, broader producers, full accounting and #324 stay separate.
+
+2026-11-17 contributor (awaiting review):
 [Binding-map request and publication inspection](../engine/docs/EXCHANGE-BINDING-MAP-COST.md)
 at `120658ca` measures the third source-map pair's 47,180 requested bytes across
 562 allocations, with embedded headers and whole-owner overlap separated.

@@ -1,5 +1,17 @@
 # Persistent private exchange owner
 
+[Prepaid-map adoption capture](ADOPTION-SOURCE-CAPTURE.md) at `da083031`,
+awaiting review, lets each temporary validate the owner's initial occurrence/
+field snapshots synchronously with its shared setup meter. Independent captured
+facts and all checks/bounds remain; temporary map copies disappear. Source access
+ends before later map reservation or mutation. Standalone value ownership and
+the persistent candidate/native publication protocol remain unchanged.
+
+[Direct current-map publication](EXCHANGE-OWNER-SOURCE-MAPS.md) at `4f74ad11`,
+awaiting review, removes the persistent binding's copied maps. The owner supplies
+synchronous const source arguments and publishes its independent candidate pair
+directly. Standalone adapters retain owned maps and caller-source independence.
+
 `assembly::detail::ExchangeOwner` retains one logical study across successive
 aggregate/parts exchanges on a borrowed prepared `field::Harness`. The harness
 must outlive the owner, and all owner and harness calls must be exclusive. This
@@ -148,21 +160,24 @@ byte/work gate. The projection-only figures below retain their original scope.
 
 ### Retained nested maps (accepted #228)
 
-The owner, binding and coordinator each retain an occurrence map and a field map.
+The owner and coordinator candidate each retain an occurrence map and a field
+map. The persistent binding's owned map members have no backing; their headers
+remain embedded in its object for the separate standalone ownership path.
 Each `ExchangeMap` separates the active length from constructed reserved slots.
 Adoption reserves occurrence slots to `Particles + Batch` and field slots to
 `Fields + min(Fields, Batch)`, with checked sums. These include candidate metadata
 that may exceed native live capacity: preparation must still describe an oversized
 request so native preflight can report ordinary `CapacityExhausted`. Reserving host
 candidate keys does not increase native claim limits. The same capacity is retained
-in each store because publication rotates their roles.
+in each current/candidate store because publication swaps their roles directly.
 Every slot has UUID storage and a path/address buffer sized from the full pinned
 alternative inventory, including trusted initial field identities. These are host
 identity slots only: unused slots do not become native objects, claims or mass.
 The coordinator reserves the parallel field-command index vector to the same
 candidate field bound.
 
-Staging copy-assigns keys into existing slots. Clearing changes only the active
+Candidate construction copy-assigns keys into existing slots; persistent binding
+staging checks/shares only the operation metadata. Clearing changes only the active
 length; field retirement rotates whole slots, preserving live order and nested
 storage. Incoming keys are assigned by reference without temporary key objects.
 Slot or nested-key exhaustion rejects before the offending append and cannot grow
@@ -181,8 +196,8 @@ and retry. An oversized incoming field key cancels pending intent without growin
 the pools or changing committed state. The independent four-copy sequence retains
 its shared fields and survivor-history checks.
 
-This reservation has a real setup and lifetime cost: three constructed occurrence
-stores, three constructed field stores, all their nested UUID/path/address backing,
+This reservation has a real setup and lifetime cost: two constructed occurrence
+stores, two constructed field stores, all their nested UUID/path/address backing,
 and the field-command vector survive until teardown. They are **not included** in
 `projection_storage()`. The pointer/capacity checks are reuse witnesses, not a total
 byte census or budget. Complete owner peak/lifetime/work accounting remains next,
@@ -319,9 +334,12 @@ tracks live/peak bytes and cumulative request work, and survives constructor unw
 so budget rejection can report full reclamation. Other constructor allocation and
 work domains remain open. See [allocator scope](OWNER-RESOURCES.md#bindingcoordinator-allocation-domain-contribution-awaiting-review).
 
-The map-store contribution extends that allocation domain to all six retained map
-outer vectors, initial owner map copies and explicit temporary validation/staging
-maps. Ordinary copied snapshots detach from the source owner's accounting lifetime;
+The map-store contribution originally extended that allocation domain to six
+retained map outer vectors. The current source-map implementation retains four
+backed stores and initial owner map copies. Private per-selection adoption now
+uses those initial maps synchronously and reserves only its independent capture
+buffers; standalone value setup retains its separate validation/staging maps.
+Ordinary copied snapshots detach from the source owner's accounting lifetime;
 setup-owned copies explicitly attach. Assignment retains the destination domain,
 and swaps move it with the backing. Separately allocated nested key payload remains
 outside this limit. See [map-store scope](OWNER-RESOURCES.md#map-outer-store-allocation-domain-contribution-awaiting-review).

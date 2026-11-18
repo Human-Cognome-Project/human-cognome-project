@@ -73,6 +73,10 @@ class ExchangeBindings {
                std::uint64_t capture_work);
   void stage(std::shared_ptr<const LetterExchangeContract>, warm::Exposure target, std::shared_ptr<const MembershipFields>,
              const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &, PreparationWork &);
+  // Persistent-owner path: maps are synchronous arguments, never retained
+  // loans. Standalone wrappers continue to stage/capture their owned maps.
+  void stage(std::shared_ptr<const LetterExchangeContract>, warm::Exposure target,
+             std::shared_ptr<const MembershipFields>, PreparationWork &);
   // The payload retains its original one-way meaning; only this pending
   // operation selects which immutable side is outgoing/incoming.
   const auto &outgoing_sources() const {
@@ -83,13 +87,26 @@ class ExchangeBindings {
   }
   CaptureResult capture(const LetterProjection &, std::uint64_t capture_work);
   CaptureResult capture(const LetterProjection &, PreparationWork &);
+  CaptureResult capture(const LetterProjection &, const ExchangeMap<OccurrenceBinding> &,
+                        const ExchangeMap<ExchangeFieldBinding> &, std::uint64_t capture_work);
+  CaptureResult capture(const LetterProjection &, const ExchangeMap<OccurrenceBinding> &,
+                        const ExchangeMap<ExchangeFieldBinding> &, PreparationWork &);
   ExchangeBindings(field::Harness &, const LetterProjection &, LetterExchangeContract,
                    const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &);
   ExchangeBindings(field::Harness &, const LetterProjection &,
                    std::shared_ptr<const LetterExchangeContract>,
                    std::shared_ptr<const MembershipFields>,
                    const std::vector<OccurrenceBinding> &, const std::vector<ExchangeFieldBinding> &, const std::shared_ptr<ReservationDomain> & = {}, PreparationWork * = nullptr);
+  // Initial owner adoption: consume prepaid snapshots synchronously. Only the
+  // independent capture buffers survive this constructor's source access.
+  ExchangeBindings(field::Harness &, const LetterProjection &,
+                   std::shared_ptr<const LetterExchangeContract>,
+                   std::shared_ptr<const MembershipFields>,
+                   const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &,
+                   const std::shared_ptr<ReservationDomain> &, PreparationWork &);
   field::UpdateResult validate(std::uint64_t generation, std::uint64_t work) const;
+  field::UpdateResult validate(std::uint64_t generation, std::uint64_t work,
+      const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &) const;
   struct Edge {
     std::size_t row;
     field::detail::RelationshipHeader header;

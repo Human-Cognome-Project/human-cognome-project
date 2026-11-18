@@ -61,8 +61,12 @@ calls the existing private admission boundary in exchange mode. That boundary:
 After that transaction succeeds, the coordinator reads the eight-double outgoing
 and 32-double balance reports, then fills its preallocated incoming mapping entries
 from the actual resolved native claims. The field lifecycle extension resolves
-new field handles in the same way. Vector swaps publish both complete maps,
-followed by their generation and descriptive reports. Surviving
+new field handles in the same way. The common private execution call resolves
+only candidate storage. After its synchronous source-map access returns, the
+standalone wrapper swaps both candidates into its owned binding maps; the
+persistent owner swaps them directly into its current maps with projection,
+reports and generation. No map loans are retained. See the
+[source-map implementation and evidence](EXCHANGE-OWNER-SOURCE-MAPS.md). Surviving
 logical identities and full handles remain unchanged. No fallible preparation or
 allocation follows these fixed-size assignments. All steps remain inside the same
 exclusive operation; no caller can observe a healthy intermediate generation.

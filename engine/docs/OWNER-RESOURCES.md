@@ -1,6 +1,47 @@
 # Private exchange-owner resource inventory
 
-**Contributor binding-map inspection — 2026-11-17 (awaiting review):**
+**Contributor initial-map adoption capture — 2026-11-17 (awaiting review):**
+[Actual whole-owner setup comparison](ADOPTION-SOURCE-CAPTURE.md) at `da083031`
+uses the owner's one prepaid map snapshot synchronously for temporary validation.
+Only five independent capture/mask requests remain per selection (43,280 bytes);
+temporary map backing and local map objects are eliminated on this private route.
+All source checks, fixed fees, checked sums/inventory bounds and standalone owned
+constructors remain. Cumulative construction saves 48,369 / 205,000 / 149,169
+requested bytes and 578 / 2,444 / 1,779 requests; setup work reduces separately.
+Whole-owner retained bytes/peaks and current/candidate census do not change.
+Domain/weak/unwind, source-fact/mask, standalone, retry/publication/tick controls
+are qualified within the recorded CPU scope. Older entries keep their historical
+source pins. Full B/admission and allocator/process-memory claims remain open.
+
+**Contributor temporary-validator inspection — 2026-11-17 (awaiting review):**
+[Per-selection construction, peak, work and cleanup](ADOPTION-BINDING-COST.md)
+at `8972cd49` leaves production unchanged. Actual adoption traces match the
+existing stack constructor for all selected roles. Its 90,460-byte live members
+are 47,180 owned-map bytes and 43,280 capture-buffer bytes; three constructor-local
+maps add 1,189–4,070 bytes, then release on constructor return. All temporary
+backing dies before the next selection; 91,649 / 378,120 / 279,009 cumulative
+requested bytes are not retained-owner savings or summed simultaneous peaks.
+The retained candidate remains 47,180 bytes and current/candidate census 94,360.
+Complete masses, outgoing handles, ledger facts/masks, work and selected-domain/
+weak cleanup are checked. A private synchronous initial-map proposal awaits
+review; temporary validators and current fees remain implemented.
+
+**Contributor direct owner-map publication — 2026-11-17 (awaiting review):**
+[Implementation and actual before/after evidence](EXCHANGE-OWNER-SOURCE-MAPS.md)
+at `4f74ad11` implements #365's authorized private synchronous source-map path.
+The binding keeps captured masses/handles/edges/masks and empty owned-map headers;
+current maps pass only as const call arguments, and resolved candidates swap
+directly into the owner after source access ends. Standalone adapters retain
+independent ownership. Four stores now have backing; all six headers remain
+embedded in unchanged owner/coordinator/binding extents (608/680/376 bytes).
+Actual retained/scoped-peak reductions are 47,180 requested bytes and 562
+construction allocations in each fixture, with no replacement map allocation.
+Full inventory validation work, initial snapshot prepayment, temporary adoption
+validators, failure/retry/unready and domain/weak cleanup remain. The current
+census below reflects this implementation; older source-pinned entries describe
+their historical scopes. Combined admission/full B remains open.
+
+**Historical binding-map inspection — 2026-11-17 (source-accepted #365):**
 [Actual retained map requests and publication roles](EXCHANGE-BINDING-MAP-COST.md)
 at `120658ca` measures 47,180 requested bytes / 562 allocations for each of the
 owner, binding and candidate map pairs (140 occurrence and 140 field slots per
@@ -95,7 +136,7 @@ not an operational memory-budget policy or a second state authority.
 |---|---|
 | `owner` | `sizeof(ExchangeOwner)` plus its separately allocated reservation-domain object, including embedded references, smart pointers, vector/map headers, generation/gates and fixed reports |
 | `projections` | Both mutable projection objects and their independent inputs, occurrences, exposures, active/spare parents and nested keys/pins/text; one shared immutable Bundle header and recursive body |
-| `maps` | Outer capacity of all six stores: occurrence/field maps in owner, binding and coordinator; nested UUID/path/address storage of **every constructed slot**, including inactive slots |
+| `maps` | Outer capacity of four backed stores: current/candidate occurrence and field maps; nested UUID/path/address storage of **every constructed slot**, including inactive slots. The census also visits the empty persistent binding maps; their headers are already in its object |
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
 | `coordinator` | Coordinator object; command, intrinsic, field-command-index, hierarchy-node, child and contribution buffers |
 | `declarations` | Shared-pointer table capacity; one immutable declaration object per selection; owner/recipe pins; both source alternatives and their ordered parent provenance with complete nested keys/pins; operation direction is on the existing binding |
@@ -103,8 +144,9 @@ not an operational memory-budget policy or a second state authority.
 
 Object sizes include embedded member objects. Vector capacity is multiplied by
 element size once; nested backing is then counted only for constructed elements.
-The six map vectors deliberately construct reserved slots, so their nested
-backing is counted even beyond the active length. Other unused vector slots have
+The four backed map vectors deliberately construct reserved slots, so their
+nested backing is counted even beyond the active length. The two empty binding
+vectors contribute no backing and their headers are not counted again. Other unused vector slots have
 no constructed nested storage. `vector<bool>` capacity is in bits and is rounded
 up to bytes. Text includes capacity plus a terminator, conservatively including
 inline string capacity already represented inside object sizes. Checked addition

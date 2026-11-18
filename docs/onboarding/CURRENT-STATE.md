@@ -1,5 +1,77 @@
 # Current implementation and work
 
+**Maintainer integration of #366, #367 and #368 (2026-11-17)**
+
+This merge integrates the reviewed heads `dc0854aa`, `d49e6329` and `80b52d34`. All three passed their hosted workflows. [Review 5949686979](https://github.com/Human-Cognome-Project/human-cognome-project/pull/368#pullrequestreview-5949686979) accepts direct capture from the owner's prepaid initial maps. On #368 all 12 native jobs and smoke passed, including 181 regression tests and database verification with 24 addressed reads and zero private reads. Contributor-local comparisons report 48,369 / 205,000 / 149,169 fewer cumulative requested bytes for one/four/three selections. Retained size and whole-adoption peak stayed the same in those fixtures.
+
+The coding agent can proceed under #343 with one bounded inspection of a remaining duplicated structural responsibility. Identify the owner and lifetime, check existing Taichi support, and measure the actual path before proposing a runtime change. Validator reuse and capture-buffer resizing remain separate decisions.
+
+**Contributor prepaid-map adoption capture — 2026-11-17 (awaiting review):**
+[Implementation, bounds and actual before/after evidence](../../engine/docs/ADOPTION-SOURCE-CAPTURE.md)
+at `da083031` implements the private adoption change authorized by #367 review
+5948664040. Each temporary receives the owner's single prepaid map snapshots
+synchronously through a required shared setup meter. Its independent five
+capture/mask buffers and all typed key/pin/direction/native/ledger/currentness
+checks remain. Checked reservation sums and inventory bounds are preserved.
+No map loan escapes construction; standalone value constructors remain owned.
+Initial prepayment, retained candidates and the native transaction are unchanged.
+
+Actual whole-owner construction removes 578 / 2,444 / 1,779 allocations and
+48,369 / 205,000 / 149,169 cumulative requested bytes in the one/four/three-selection
+fixtures. Setup work reduces by 84,895 / 377,396 / 267,927 units. Retained bytes
+and observed whole-adoption peaks stay 242,404 / 294,636 / 258,014. Each temporary
+retains only its 43,280 capture-buffer bytes; candidate backing stays separate.
+No retained-memory or equal whole-peak saving is claimed.
+
+Quick CI, all 48 owner mode runs, 12 standalone lifetime/exchange cases and four
+new request probes pass. Historical binaries execute both before/after probes;
+source-fact/mask, zero/short/exact work, independent field-bound, all owner
+allocation/budget/unwind, retry, faults 7/8, survivor and following-tick controls
+remain. Object extents are unchanged; two const-map arguments replace vector
+references without a stored view. Local evidence remains contributor-reported.
+
+Main `8c3d0b93` and provisional #367 `d49e6329` (including #366 `dc0854aa`)
+are preserved in normal merge `7029c078`. #366 native run 44193455273 now passes; #367 native 44203059956 remains
+pending in the retained snapshot. Their integration and this head's review/CI
+remain separate; GitHub CI is authoritative.
+Review this implementation and reconcile provisional dependency/head gates
+before integration. Further work should inspect another concrete duplicated
+association through its owner/lifetime and measured cost. Capture-buffer reuse/
+shrinking, indexed guards, collision policy, catalogue/mixed revisions, broader
+producer adoption, full accounting and #324 remain separate; held #75/#111/#123
+unchanged.
+
+**Contributor temporary adoption-binding inspection — 2026-11-17 (awaiting review):**
+[Measured constructor cost, source facts and lifetime](../../engine/docs/ADOPTION-BINDING-COST.md)
+at `8972cd49` completes #366 review 5948024253's inspection-only scope.
+Each selection's real adoption requests match the exact stack constructor's
+complete allocation/release sequence. Per temporary: 90,460 bytes survive
+constructor locals (47,180 owned maps + 43,280 capture buffers); local scratch
+adds 1,189–4,070 requested bytes. All backing dies at that selection's iteration
+end. Cumulative temporary setup requests are 91,649 / 378,120 / 279,009 bytes
+for the one/four/three-selection fixtures, not retained savings or simultaneous
+whole-owner peaks. Constructor work, full masses/handles/ledger/masks and
+generation checks are measured separately from retained candidate backing.
+
+Quick CI, four three-fixture Clang/GCC probe runs and six full changed owner
+cases pass, with original refusal/allocation/work/retry/publication/tick controls
+enabled. Independent native-fact, selected-domain, candidate-buffer and final
+weak/bootstrap cleanup assertions pass. Production is byte-identical to
+provisionally accepted #366; no runtime change or full baseline rerun.
+
+Main `8c3d0b93` integrates #364/#365. Normal merge `266bdd8b` preserves that
+main and #366 `dc0854aa`, including both current maintainer handoffs.
+#366 smoke/warm passed; native run 44193455273 remains pending in the
+retained handoff snapshot. This inspection's review/hosted gates are separate.
+No duplicate workflow was dispatched. Local evidence remains contributor-reported; GitHub CI is authoritative.
+
+Review the bounded proposal to feed these private validators from already copied
+owner maps synchronously, keeping independent capture facts, standalone owned
+adapters and every source/role/pin/work/currentness check. This inspection does
+not authorize implementation. Initial snapshot prepayment, retained candidates,
+indexed guards, collision policy, catalogue/mixed revisions, broader adoption,
+full accounting and #324 remain separate. Held #75/#111/#123 unchanged.
+
 **Maintainer integration of #364 and #365 and review of #366 (2026-11-17)**
 
 This merge integrates reviewed #365 `80922b92`, including reviewed #364 `45d30de3`. Hosted native runs 44166963726 and 44177130927, smoke and warm passed on their respective heads. #364 shares the detached immutable recipe within one owner. #365 measures the persistent binding's duplicate map backing.
@@ -7,6 +79,38 @@ This merge integrates reviewed #365 `80922b92`, including reviewed #364 `45d30de
 [Review 5948024253](https://github.com/Human-Cognome-Project/human-cognome-project/pull/366#pullrequestreview-5948024253) provisionally accepts #366 `dc0854aa`. The owner reads current associations synchronously and publishes the resolved candidate directly. Local fixtures report 47,180 fewer retained requested bytes and 562 fewer allocations per owner. Ten Markdown files separate the head from tested source `4f74ad11`. Hosted smoke and warm passed. Reconcile native run 44193455273 before integrating #366.
 
 The next authorized work is inspection and measurement of the per-selection temporary validation binding during owner adoption. Attribute construction work, temporary peak, lifetime, source associations and captured validation facts separately from retained candidate backing before proposing any runtime change.
+
+**Contributor direct owner-map publication — 2026-11-17 (awaiting review):**
+[Implementation and source-pinned evidence](../../engine/docs/EXCHANGE-OWNER-SOURCE-MAPS.md)
+at `4f74ad11` implements the removal explicitly authorized by #365 review
+5946869103. The private owner passes current maps synchronously by const argument
+for capture/commands/precommit validation; its independent candidate publishes
+directly after source access ends. No stored loan, new registry or wrapper.
+Captured masses/handles/edges/masks, full typed key/pin/claim/source/ledger checks,
+actual-inventory work, standalone ownership and stale-generation authority remain.
+Four stores have backing; six embedded headers and object extents remain.
+Actual whole-owner retained/scoped-peak reduction is 47,180 requested bytes and
+562 construction allocations in each one/four/three-selection fixture. Initial
+input prepayment and temporary adoption validation bindings are unchanged.
+
+Quick CI, 16 Clang/eight GCC native CTests, all 48 owner and all 48 standalone
+exchange mode runs, and both compilers' before/after request/lifetime probes pass.
+Every allocation/admission/work boundary, exact/one-short retry, mixed/equal and
+both-direction publication, survivors, stale/foreign/wrong-role refusal,
+postclaim faults 7/8 and following ticks remain covered. Local evidence is
+contributor-reported; authoritative hosted CI and implementation review remain
+pending. This supersedes the historical six-store description below.
+
+Main `068fe63a`, accepted #365 `80922b92` and its accepted #364 dependency
+`45d30de3` are preserved by normal merge `bd4d1658`. GitHub reports native workflows
+44166963726 (#364) and 44177130927 (#365) completed successfully. Both PRs
+remain open at handoff; integration and this implementation's own hosted gates
+remain separate. No duplicate workflow was dispatched.
+Review this implementation and reconcile hosted/dependency gates before
+integration. After review, inspect the remaining temporary adoption bindings as
+a separate measured surface before proposing another removal. Indexed guards,
+collision policy, catalogue/mixed revisions, broader adoption, full accounting
+and #324 remain separate. Held #75/#111/#123 unchanged.
 
 **Contributor binding-map inspection — 2026-11-17 (awaiting review):**
 [Retained source maps and publication transport](../../engine/docs/EXCHANGE-BINDING-MAP-COST.md)

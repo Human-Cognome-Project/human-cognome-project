@@ -2825,6 +2825,7 @@ void capture_current(engine::Runtime &r,
 #include "owner_lifetime.inc"
 #include "exchange_recipe_cost.inc"
 #include "exchange_map_cost.inc"
+#include "exchange_adoption_cost.inc"
 #include "exchange_owner_cases.inc"
 #include "exchange_owner_multiple.inc"
 #include "exchange_owner_equal.inc"
@@ -2989,6 +2990,12 @@ int main(int argc, char **argv) {
     if (only == "exchange_binding_map_cost")
       run("exchange_binding_map_cost", [&] {
         exchange_owner(r,path,false,true); exchange_owner_multiple(r,path,false,true); exchange_owner_equal(r,path,false,true);
+      });
+    if (only == "exchange_adoption_binding_cost")
+      run("exchange_adoption_binding_cost", [&] {
+        exchange_owner(r,path,false,false,true);
+        exchange_owner_multiple(r,path,false,false,true);
+        exchange_owner_equal(r,path,false,false,true);
       });
     if (only == "placement" || only == "live_focus")
       run("live_focus", [&] { live_focus(r, path); });

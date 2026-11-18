@@ -1,4 +1,4 @@
-void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false) {
+void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only = false, bool map_only = false, bool adoption_only = false) {
   using Access = assembly::testing::ExchangeOwnerAccess;
   using Plan = assembly::testing::ExchangeCoordinatorAccess;
   using assembly::GroupKind;
@@ -38,6 +38,8 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
   fields.push_back({{GroupKind::ParentValue,character.object},f.in.field_rows[6]});
   fields.push_back({{GroupKind::SiblingDefinition,letters.accented},f.in.field_rows[7]});
   fields.push_back({{GroupKind::Membership,group.object},f.in.field_rows[8]});
+  if (adoption_only || (!recipe_only && !map_only)) exchange_adoption_binding_cost(f,initial,rows,fields);
+  if (adoption_only) return;
   if (!map_only) exchange_recipe_cost(f,initial,rows,fields);
   if (!recipe_only) exchange_binding_map_cost(f,initial,rows,fields);
   if (recipe_only || map_only) return;
@@ -92,9 +94,9 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
             "multi-occurrence projection preparation published or grew storage");
     std::shared_ptr<const assembly::LetterExchangeContract> selected;
     no_new([&] { selected = Access::declaration(*owner,key,target); });
-    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,old_rows,Access::fields(*owner),target); });
-    no_new([&] { Plan::capture(Access::plan(*owner),*before_view); });
-    require(Plan::binding_status(Access::plan(*owner)) == UpdateStatus::Ok,
+    no_new([&] { Plan::stage_binding(Access::plan(*owner),selected,memberships,target); });
+    no_new([&] { Plan::capture(Access::plan(*owner),*before_view,Access::mappings(*owner),Access::fields(*owner)); });
+    require(Access::binding_status(*owner) == UpdateStatus::Ok,
             "multi-occurrence source capture failed");
     no_new([&] { Access::prepare(*owner,key,target,incoming,{}); });
     const auto staging_snapshot = TickSnapshot(f);
