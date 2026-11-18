@@ -26,6 +26,31 @@ struct ExchangeBindingAccess {
   static const auto &outgoing_mask(const detail::ExchangeBindings &b) { return b.outgoing_rows_; }
   static const auto &edge_mask(const detail::ExchangeBindings &b) { return b.edge_rows_; }
   static auto generation(const detail::ExchangeBindings &b) { return b.generation_; }
+  static const auto &declaration(const detail::ExchangeBindings &b) { return b.contract_; }
+  static const auto &catalogue(const detail::ExchangeBindings &b) { return b.memberships_; }
+  template<class Inspect> static auto scratch(field::Harness &h,
+      const std::shared_ptr<detail::ReservationDomain> &domain, std::uint64_t allowance, Inspect inspect) {
+    detail::PreparationWork meter(allowance);
+    meter.charge(sizeof(detail::ExchangeBindings));
+    detail::ExchangeBindings check(h,domain,&meter);
+    inspect(check,meter);
+    return meter.result();
+  }
+  static auto recapture(detail::ExchangeBindings &b, const LetterProjection &p,
+      std::shared_ptr<const LetterExchangeContract> declaration, warm::Exposure target,
+      std::shared_ptr<const MembershipFields> memberships,
+      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
+      const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields, detail::PreparationWork &meter) {
+    // Same checked bounds as the actual private adoption constructor. This
+    // adapter borrows maps only during this test call; it adds no runtime API.
+    const auto &limits=b.h_.prepared_storage().capacity.limits();
+    const auto row_bound=detail::exchange_map_capacity(limits[field::Budget::Particles],limits[field::Budget::Batch]);
+    const auto field_bound=detail::exchange_map_capacity(limits[field::Budget::Fields],
+        std::min(limits[field::Budget::Fields],limits[field::Budget::Batch]));
+    if (rows.size()>row_bound || fields.size()>field_bound) throw warm::Error("inspection adoption inventory exceeds bounds");
+    b.stage(std::move(declaration),target,std::move(memberships),meter);
+    return b.capture(p,rows,fields,meter);
+  }
   static auto validate_adoption(const detail::ExchangeBindings &b,
       const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
       const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields) {

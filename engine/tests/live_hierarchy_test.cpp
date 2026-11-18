@@ -2832,6 +2832,7 @@ void capture_current(engine::Runtime &r,
 #include "owner_lifetime.inc"
 #include "exchange_recipe_cost.inc"
 #include "exchange_map_cost.inc"
+#include "adoption_validator_reuse.inc"
 #include "exchange_adoption_cost.inc"
 #include "exchange_owner_cases.inc"
 #include "exchange_owner_multiple.inc"
