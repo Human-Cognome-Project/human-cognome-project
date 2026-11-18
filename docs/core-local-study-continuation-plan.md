@@ -1,5 +1,18 @@
 # Core continuation after local CUDA corrections
 
+**Hosted transport correction for #374 — 2026-11-18:** Corrected source
+`65b502e9` clears the container `LD_LIBRARY_PATH` and scopes the matching loader/
+`--library-path` to the staged native executable. An awk dependency check fails
+closed without rg. Local transport regression and both restored-defect controls
+pass; the retained probe/runtime are unchanged. Hosted native build and
+[native-database job 134949499123](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/44341840215/job/134949499123)
+pass. Downloaded artifact `14447427435` was inspected: actual membership
+refusal, warm `2|0|0|0|0 → 2|2|0|0|0`, zero publications/leases and unchanged cold
+fingerprints. The test-merge tree matches the corrected source exactly.
+The earlier hosted delivery failure is corrected for this scope; full native
+matrix/review gates remain separate, and all merges remain with the maintainer.
+A retained C3 completed tick is still unqualified; no membership policy changed.
+
 **Contributor actual retained-source qualification — 2026-11-18 (awaiting review):**
 [Source-backed refusal, exact mismatch and CI witness](../engine/docs/RETAINED-PREPARED-QUALIFICATION.md)
 at `8fa4dbb1` follows #373 review 5959051551. The actual opt-in executable
