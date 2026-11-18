@@ -1,5 +1,31 @@
 # Core continuation after local CUDA corrections
 
+**Contributor opt-in retained prepared capture — 2026-11-18 (awaiting review):**
+[Input trace, profile, acquisition blocker and evidence](../engine/docs/RETAINED-PREPARED-CAPTURE.md)
+at `3999550e` follows #372 review 5958354207. The existing retained producer now
+offers `--study prepared-english-pair`: two explicit English aggregates with
+caller-selected comparisons, intrinsics, focus and bounded resources. It publishes/
+acquires shared v2, reuses `submit_prepared`, native ticks and the existing observer.
+Default v1 capture remains. Actual claims, completed tick and acquired source pins
+are captured; no detached report supplies admission inputs or comparison policy.
+
+Quick CI, eight Clang suites and four GCC suites pass. Six new profile modes
+preserve exact fixture pins, expose two actual native claims and complete a
+nonzero-dt prepared tick plus a following legacy tick. Evidence is **synthetic
+source only**. Genuine acquisition remains blocked: all three connection settings
+are absent, service `hcp-core` is undefined and PostgreSQL is down. No retained
+store was changed or schema migrated. Acquire matching read-only sources and an
+owned warm v2 store before claiming a retained source-to-tick witness; unsupported
+membership/construction choices need explicit review.
+
+#371's native 44306271650 and smoke 44306271701 passed; it remains open for
+maintainer integration. #372 is provisionally accepted for continued work at
+`3ea13f0e`, with native 44320901936 still pending at this handoff. This slice is
+stacked on that source. All merge events are maintainer operations. The earlier
+contributor entries below retain their historical evidence/status; this entry
+records the current disposition. Full retained execution, broader accounting,
+general prepared revisions, refresh transport and #324 remain separate.
+
 **Contributor explicit prepared active submission — 2026-11-18 (awaiting review):**
 [Operation, ownership, supported inputs and evidence](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md)
 at `ae9b6485` implements #371 review 5956829592. ActiveSession now has an

@@ -1,6 +1,7 @@
 #include "capture_options.h"
 #include "signal_guard.h"
 #include "snapshot.h"
+#include "prepared_letter_profile.h"
 
 #include <algorithm>
 #include <chrono>
@@ -69,16 +70,28 @@ int main(int argc, char **argv) {
                 << (settings.cuda ? " (no CUDA driver or device available); no fallback is permitted\n" : "\n");
       return 1;
     }
+    if (options.prepared_english_pair)
+      for (const auto *name : {"HCP_WARM_TEST_CONNINFO", "HCP_CORE_TEST_CONNINFO", "HCP_LING_TEST_CONNINFO"}) {
+        const auto *value = std::getenv(name);
+        if (!value || !*value) {
+          std::cerr << "prepared capture acquisition unavailable: missing " << name << '\n';
+          return 1;
+        }
+      }
     const auto actor = new_uuid(), owner = new_uuid(), instance = new_uuid(), epoch = new_uuid();
     const auto conn = env("HCP_WARM_TEST_CONNINFO");
+    Toolbox store(conn, {actor, instance, WriterRole::Manager});
+    if (options.prepared_english_pair && store.schema_version() != 2) {
+      std::cerr << "prepared capture acquisition unavailable: owned warm schema v2 required; migration is explicit\n";
+      return 1;
+    }
+    ColdReader core(env("HCP_CORE_TEST_CONNINFO")), ling(env("HCP_LING_TEST_CONNINFO"));
+    if (!core.read_only() || !ling.read_only()) throw Error("read-only sources required");
     Administrator admin(conn);
     admin.configure({{object("00"), BindingKind::Shared, epoch, new_uuid(), "retained-core",
                        "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121", {actor}},
                      {object("02"), BindingKind::Shared, epoch, new_uuid(), "retained-linguistics",
                        "9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296", {actor}}});
-    ColdReader core(env("HCP_CORE_TEST_CONNINFO")), ling(env("HCP_LING_TEST_CONNINFO"));
-    if (!core.read_only() || !ling.read_only()) throw Error("read-only sources required");
-    Toolbox store(conn, {actor, instance, WriterRole::Manager});
     SharedManager manager(store, {object("00"), object("02")}, [&](const ObjectKey &o) {
       return address_text(o.address).substr(0, 2) == "00" ? core.read(o.address) : ling.read(o.address);
     });
@@ -87,7 +100,7 @@ int main(int argc, char **argv) {
       if (tools.count(key)) return tools.at(key).ref;
       const auto record = manager.read(key);
       if (!record) throw Error("required retained letter endpoint absent");
-      Tool t{{key, new_uuid()}, epoch, "viewport-letter-capture-v1", std::optional<RecipeText>(record->notation),
+      Tool t{{key, new_uuid()}, epoch, options.prepared_english_pair ? "viewport-prepared-english-pair" : "viewport-letter-capture-v1", std::optional<RecipeText>(record->notation),
               record->mass, {}, {}, actor};
       tools.emplace(key, t);
       for (const auto &p : record->parents) {
@@ -101,8 +114,8 @@ int main(int argc, char **argv) {
       return t.ref;
     };
     const auto english = follow(object("02.00.00.00.03"));
-    const auto french = follow(object("02.01.00.00.03"));
-    const auto dutch = follow(object("02.00.20.00.1W"));
+    const auto french = options.prepared_english_pair ? english : follow(object("02.01.00.00.03"));
+    const auto dutch = options.prepared_english_pair ? english : follow(object("02.00.20.00.1W"));
     Bundle definitions;
     definitions.ref = {new_uuid(), new_uuid()};
     definitions.owner = instance;
@@ -110,28 +123,31 @@ int main(int argc, char **argv) {
     for (const auto &[key, t] : tools) {
       definitions.tools.push_back(t);
       if (t.mass && *t.mass >= 2)
-        definitions.geometry.push_back({key, {}, {{{}, key == dutch.object ? 0.25 : 0.125}}});
+        definitions.geometry.push_back({key, {}, {{{}, !options.prepared_english_pair && key == dutch.object ? 0.25 : 0.125}}});
     }
-    // Test geometry and placements are supplied, not inferred from cold records.
-    std::vector<LetterRequest> requests;
-    for (std::uint64_t entry = 0; entry < 8; ++entry) {
-      const auto ref = entry < 2 ? english : entry < 4 ? french : dutch;
-      const bool parts = entry % 2 == 1;
-      LetterRequest r{entry, ref, parts ? warm::Exposure::Parts : warm::Exposure::Aggregate,
-        {{double(entry / 2) * 0.8 - 1.2, double(entry % 2), 0}, {}}, {}};
-      // Expand only the source's ordered character/byte construction.
-      const auto &letter = tools.at(ref.object);
-      int index = 0;
-      for (const auto &p : letter.parents) {
-        const auto &character = tools.at(p.target.object);
-        const auto bytes = *character.mass == 2 ? 1 : character.parents.size();
-        for (std::size_t j = 0; j < bytes; ++j, ++index)
-          r.bytes.push_back({{p.ordinal, std::uint32_t(j)},
-             {{double(entry / 2) * 40 - 60 + index * 2.0, 10.0 + entry * 3.0, index % 2 ? 1.0 : -1.0}, {0.01, 0, 0}}});
+    const auto recipe = [&] {
+      if (options.prepared_english_pair) return viewport::prepared_english_pair(definitions,english);
+      // Test geometry and placements are supplied, not inferred from cold records.
+      std::vector<LetterRequest> requests;
+      for (std::uint64_t entry = 0; entry < 8; ++entry) {
+        const auto ref = entry < 2 ? english : entry < 4 ? french : dutch;
+        const bool parts = entry % 2 == 1;
+        LetterRequest r{entry, ref, parts ? warm::Exposure::Parts : warm::Exposure::Aggregate,
+          {{double(entry / 2) * 0.8 - 1.2, double(entry % 2), 0}, {}}, {}};
+        // Expand only the source's ordered character/byte construction.
+        const auto &letter = tools.at(ref.object);
+        int index = 0;
+        for (const auto &p : letter.parents) {
+          const auto &character = tools.at(p.target.object);
+          const auto bytes = *character.mass == 2 ? 1 : character.parents.size();
+          for (std::size_t j = 0; j < bytes; ++j, ++index)
+            r.bytes.push_back({{p.ordinal, std::uint32_t(j)},
+               {{double(entry / 2) * 40 - 60 + index * 2.0, 10.0 + entry * 3.0, index % 2 ? 1.0 : -1.0}, {0.01, 0, 0}}});
+        }
+        requests.push_back(std::move(r));
       }
-      requests.push_back(std::move(r));
-    }
-    const auto recipe = normalize_letters(definitions, requests);
+      return normalize_letters(definitions, requests);
+    }();
     const auto ticket = manager.publish(recipe);
     const auto consumer = new_uuid();
     // acquire commits the persistent lease before it returns. The handlers are already installed,
@@ -140,15 +156,33 @@ int main(int argc, char **argv) {
     // released.
     auto [pinned, pin] = viewport::acquire_guarded(
       [&] { return manager.acquire(ticket, consumer); }, [&] { manager.release(ticket, consumer); });
-    auto logical = ActiveAssembly::assemble(pinned.bundle, owner, false)
-      .focus({{GroupKind::SiblingDefinition, assembly::InputText(key(english.object))}});
+    const auto &pinned_bundle = pinned.bundle;
+    auto logical_pin = std::make_shared<const ActiveAssembly>([&] {
+      auto input = ActiveAssembly::assemble(pinned_bundle, owner, false);
+      if (options.prepared_english_pair) return input;
+      return input.focus({{GroupKind::SiblingDefinition, assembly::InputText(key(english.object))}});
+    }());
+    const auto &logical = *logical_pin;
     field::Parameters parameters;
     parameters.dt = float(options.dt);
-    const auto handle = session.submit(logical, parameters);
+    field::Parameters64 wide_parameters;
+    wide_parameters.dt = options.dt;
+    const auto handle = [&] {
+      if (!options.prepared_english_pair) return session.submit(logical, parameters);
+      auto result = session.submit_prepared(viewport::prepared_english_pair_submission(logical_pin,english),owner);
+      if (!result.handle) {
+        std::cerr << "prepared capture admission refused: plan=" << int(result.preparation_status)
+                  << " publication=" << int(result.publication.status)
+                  << " budget=" << field::budget_name(result.failure.budget) << '\n';
+        throw Error("prepared admission refused");
+      }
+      return *result.handle;
+    }();
     viewport::Json evidence{{"backend", session.on_cuda() ? "native_cuda" : "native_cpu"}, {"requested_ticks", options.ticks},
       {"dt", options.dt}, {"cpu_threads", settings.cpu_threads.value_or(0)},
       {"every", options.every ? viewport::Json(options.every) : viewport::Json()}, {"pace_ms", options.pace_ms},
       {"source_calls", manager.activity().source_calls}};
+    if (options.prepared_english_pair) evidence["study_profile"] = "prepared-english-pair";
     std::uint64_t completed = 0, count = 0;
     viewport::Json first, last;  // Evidence keeps only the first and last captures: bounded for long runs.
     std::optional<Clock::time_point> previous;
@@ -159,16 +193,32 @@ int main(int argc, char **argv) {
              !viewport::stop_requested() && Clock::now() < due;)
           std::this_thread::sleep_for(std::min<Clock::duration>(due - Clock::now(), std::chrono::milliseconds(20)));
       final = final || viewport::stop_requested();
-      auto ctx = viewport::context(logical, handle, completed, "Retained English/French/Dutch letter study");
+      auto ctx = viewport::context(logical, handle, completed, options.prepared_english_pair
+        ? "Retained English pair: explicit prepared profile" : "Retained English/French/Dutch letter study");
       ctx.source = {{"kind", "retained_cold_to_warm_to_active"},
         {"core_export_sha256", "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121"},
         {"linguistics_export_sha256", "9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296"},
         {"geometry", "supplied: centred sphere radius 0.25 for Dutch aggregate, 0.125 otherwise"},
         {"parameters", {{"dt", parameters.dt}, {"gravity", parameters.gravity},
           {"contact_stiffness", parameters.contact_stiffness}, {"reach_strength", parameters.reach_strength}}}};
+      if (options.prepared_english_pair) {
+        ctx.source["study_profile"] = "prepared-english-pair";
+        ctx.source["geometry"] = "supplied: centred sphere radius 0.125; root units 1";
+        ctx.source["parameters"] = {{"dt",wide_parameters.dt},{"gravity",wide_parameters.gravity},
+          {"contact_stiffness",wide_parameters.contact_stiffness},{"reach_strength",wide_parameters.reach_strength}};
+        ctx.source["export_identity"] = "configured provenance; not a fresh source fingerprint";
+        ctx.source["recipe_pin"] = {{"selection",std::string(logical.shared_recipe().ref.selection.str())},
+          {"revision",std::string(logical.shared_recipe().ref.revision.str())}};
+        auto pins = viewport::Json::array();
+        for (const auto &t : logical.shared_recipe().tools)
+          pins.push_back({{"object",key(t.ref.object)},{"revision",std::string(t.ref.revision.str())},
+            {"epoch",std::string(t.epoch.str())}});
+        ctx.source["tool_pins"] = std::move(pins);
+      }
       const auto report_start = Clock::now();
       const auto report = viewport::observe(session, owner, handle, options.intent_work_limit
-        ? std::optional<viewport::IntentRequest>{{parameters.gravity, *options.intent_work_limit}} : std::nullopt);
+        ? std::optional<viewport::IntentRequest>{{options.prepared_english_pair ? wide_parameters.gravity : parameters.gravity,
+            *options.intent_work_limit}} : std::nullopt);
       const auto report_ms = ms(report_start);
       const auto start = Clock::now();
       // One coherent value (one study, generation and tick) is written to every file of this capture.
@@ -187,8 +237,18 @@ int main(int argc, char **argv) {
     };
     bool final = capture(false);  // Tick 0 (already final if stopped before the first tick).
     while (!final) {
-      session.tick(handle, parameters);
-      ++completed;
+      if (options.prepared_english_pair) {
+        const auto tick = session.tick_prepared(handle,owner,wide_parameters,1000000000,1000000);
+        if (tick.status != field::TickStatus::Ok) {
+          std::cerr << "prepared capture tick refused: status=" << int(tick.status)
+                    << " budget=" << field::budget_name(tick.failure.budget) << '\n';
+          return 1;
+        }
+        completed = session.completed_ticks(handle);
+      } else {
+        session.tick(handle, parameters);
+        ++completed;
+      }
       final = completed == options.ticks || viewport::stop_requested();
       if (final || viewport::captures_at(completed, options)) final = capture(final);
     }
@@ -199,6 +259,10 @@ int main(int argc, char **argv) {
     evidence["captures"] = count > 1 ? viewport::Json::array({first, last}) : viewport::Json::array({last});
     viewport::write((std::filesystem::path(options.output) / "native-evidence.json").string(), evidence);
     std::cout << evidence.dump(2) << '\n';
+  } catch (const viewport::PreparedLetterProfileError &e) {
+    // This type contains only fixed profile diagnostics, never source/SQL text.
+    std::cerr << e.what() << '\n';
+    return 1;
   } catch (...) {
     // Source/SQL exceptions can carry deployment details: keep public output generic. The engine
     // fork throws bare strings from some calls; catching everything here guarantees the stack

@@ -19,6 +19,15 @@ int main() {
     const auto d = viewport::parse_options({"out"});
     check(d.output == "out" && !d.cuda && d.ticks == 8 && d.dt == 0.1 && d.cpu_threads == 1, "defaults reproduce the fixed capture");
     check(!d.intent_work_limit, "intent default omitted");
+    check(!d.prepared_english_pair, "legacy study remains the default");
+    check(viewport::parse_options({"out", "--study=prepared-english-pair"}).prepared_english_pair,
+          "explicit prepared profile");
+    check(!viewport::parse_options({"out", "--study", "legacy-letters"}).prepared_english_pair,
+          "explicit legacy profile");
+    check(rejected({"out", "--study", "prepared"}) &&
+          rejected({"out", "--study", "prepared-english-pair", "--backend", "cuda"}) &&
+          rejected({"out", "--backend", "cuda", "--study", "prepared-english-pair"}),
+          "unknown profile and unsupported prepared backend reject in either order");
     check(viewport::parse_options({"out", "--intent-work-limit", "0"}).intent_work_limit == 0, "explicit zero budget");
     check(viewport::parse_options({"out", "--intent-work-limit=18446744073709551615"}).intent_work_limit == UINT64_MAX, "maximum budget");
     for (const char *bad : {"-1", "+1", "1.5", "", " 1", "18446744073709551616"})

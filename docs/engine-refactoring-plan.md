@@ -198,7 +198,7 @@ Numerical inspection can inform earlier boundaries, but mathematical changes nee
 
 ## Relationship to ongoing work
 
-The retained capture executable remains v1/flat and #341's prepared-C3 diagnostic is honestly unavailable there. Structural source, sealed plan, bounded prepared ownership, combined native bootstrap and actual claim mapping are built. The [explicit active prepared submission](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md) (contributor implementation awaiting review) now provisions Program-owned layout and Harness within ActiveSession and delegates to that owner using caller-supplied pinned v2 source, comparisons/intrinsics/focus/resources. Legacy `submit` still uses v1 binding; the separate prepared entry supplies the demonstrated bounded operation. Actual matching retained-source acquisition and client use remain separate; no full retained-C3 execution or inferred Analyst policy follows. Do not duplicate native admission/installers or replay report geometry as authoritative state.
+The default retained capture remains v1/flat, with #341's prepared-C3 diagnostic unavailable in that mode. Structural source, sealed plan, bounded prepared ownership, combined native bootstrap and actual claim mapping are built. The [explicit active prepared submission](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md), provisionally accepted at #372 `3ea13f0e`, provisions Program-owned layout and Harness within ActiveSession and delegates to that owner using caller-supplied pinned v2 source, comparisons/intrinsics/focus/resources. The [opt-in retained English pair profile](../engine/docs/RETAINED-PREPARED-CAPTURE.md) now connects the producer to that entry and native observation with explicit bounded choices. Synthetic-source CPU tests qualify the adapter subset; actual retained acquisition is blocked by absent connections/services and a stopped local PostgreSQL server. No full retained-C3 execution or inferred Analyst policy follows. Do not duplicate native admission/installers or replay report geometry as authoritative state.
 
 Full accounting/admission acceptance and GPU qualification keep their existing limits. Held #75/#111/#123 are unchanged. This refactoring plan does not activate them or authorize implementing future Analyst decisions.
 
@@ -209,6 +209,20 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-18 contributor (awaiting review):
+[Opt-in retained prepared capture](../engine/docs/RETAINED-PREPARED-CAPTURE.md)
+at `3999550e` implements #372 review 5958354207's bounded producer entry.
+The trace distinguishes pinned exact definitions from explicit selection,
+geometry, mass, comparison, precision, focus and resource choices. Default v1
+is retained; the named CPU profile uses shared v2 publication/acquisition,
+`submit_prepared`, native ticks and the existing observer. Quick CI, eight Clang
+and four GCC suites pass, including six synthetic-source profile modes with
+actual claims/completed native ticks. Genuine retained acquisition is blocked
+by missing connection settings/service and a stopped server; no retained store
+changed. #371's native/smoke passed and #372's native remains pending at this
+handoff. All merges remain with the maintainer. Review/hosted qualification and
+matching source acquisition precede any retained end-to-end claim.
 
 2026-11-18 contributor (awaiting review):
 [Explicit prepared active submission](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md)
