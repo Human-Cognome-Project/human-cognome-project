@@ -1,5 +1,12 @@
 # Private structural admission plan builder
 
+**Private owner consumption — 2026-11-18 (awaiting review):**
+[Runtime lifetime change](PREPARED-BOOTSTRAP-CONSUMPTION.md) at `9568f7e9` lets only
+the exclusive preparing owner consume its own unloaned plan after final native
+claim checks. Durable typed rows move into that owner; standalone builder outputs
+and borrowed `hierarchy()` lifetime remain unchanged. A successful plan still
+requires native preflight; full source/currentness validation remains required.
+
 **Study identity implementation — 2026-11-16 (awaiting review):**
 [owned header authority](PLAN-STUDY-AUTHORITY.md) at `57615368` implements the
 removal accepted in #355 review 5929836328. Occurrence commands now retain numeric

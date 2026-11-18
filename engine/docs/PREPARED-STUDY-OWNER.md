@@ -1,5 +1,15 @@
 # Private prepared study bootstrap owner
 
+**Private consumption implementation — 2026-11-18 (awaiting review):**
+[Implemented publication lifetime and measured net effect](PREPARED-BOOTSTRAP-CONSUMPTION.md)
+at `9568f7e9` follows #377 review 6990952403. The owner retains replay data through
+refusal/retry and final native checks, moves durable typed rows, then retires its
+private plan. Published associations use the pinned source and checked native
+exact mass ledger; the borrowed-plan accessor is removed. Standalone plan lifetime
+is unchanged. Retained requests fall by 2445/3129 bytes in the measured cases,
+including replacement headers; setup peak increases 64 bytes. Earlier source-pinned
+contracts/evidence below describe their original implementations.
+
 **Subsequent lifetime inspection — 2026-11-18 (awaiting review):**
 [Actual retained plan buffers and private consumption proposal](PREPARED-PLAN-LIFETIME.md)
 at `b07adf29` measures bootstrap backing through publication/tick and identifies

@@ -1,5 +1,13 @@
 # Checked prepared associations and consuming observation
 
+**Private plan consumption — 2026-11-18 (awaiting review):**
+[Owner lifetime implementation and qualification](PREPARED-BOOTSTRAP-CONSUMPTION.md)
+at `9568f7e9` replaces the published sealed-plan loan with moved typed association
+rows, the existing composed source pin and checked native exact mass ledger.
+Full claims, authorization, stamps, detached observations and allocation-free
+loans remain. The original plan-loan description/evidence below is historical;
+standalone plans retain their complete immutable lifetime.
+
 **Subsequent implementation — 2026-11-16:** #352 is integrated in main
 `5f45f566`. The later [Origin pin-authority removal](ORIGIN-PIN-AUTHORITY.md)
 at `417aed19` removes a duplicate key inside detached origin rows and preserves
