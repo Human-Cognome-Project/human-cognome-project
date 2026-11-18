@@ -1,5 +1,29 @@
 # Core continuation after local CUDA corrections
 
+**Contributor actual retained-source qualification — 2026-11-18 (awaiting review):**
+[Source-backed refusal, exact mismatch and CI witness](../engine/docs/RETAINED-PREPARED-QUALIFICATION.md)
+at `8fa4dbb1` follows #373 review 5959051551. The actual opt-in executable
+runs against isolated PostgreSQL restores of both hash-verified 2026-10-13
+payloads and a fresh, explicitly migrated v2 warm store. English A has memberships
+`02.00.00.00.00` (English) and `02.00.00.00.01` (Alphabet (en)), both with NULL
+whole mass. The profile refuses its unsupported membership comparison choices.
+Source records are preserved; no recipe publication/pin acquisition, native
+claims/comparisons/generation or completed tick is reached. A lease release is
+not applicable. This is a verified refusal, with retained C3 completion still open.
+
+The canonical probe, populated-warm preflight refusal/policy preservation, complete
+cold before/after fingerprints, shell checks and hosted orchestration contracts
+pass locally. Existing database CI now runs this explicit negative case through
+the actual executable and retains its qualification JSON/logs; Docker delivery
+remains a hosted check. Runtime/fork/database implementations are unchanged.
+Corrected #373 `0e2add68` restores the fresh, dedicated qualification-store rule
+for both profiles; ownership/schema alone do not justify persistent binding-policy
+updates. #371 is maintainer-integrated as main `bf47b2ae`; this slice is stacked
+on corrected #373 with remaining hosted gates distinct. All merges remain with
+the maintainer. Next: explicit membership topology/focus/resource decision,
+preserving NULL/unknown mass and both source memberships, then an actual retained
+source-to-tick/lease-release witness. #324 and wider accounting remain separate.
+
 **Contributor opt-in retained prepared capture — 2026-11-18 (awaiting review):**
 [Input trace, profile, acquisition blocker and evidence](../engine/docs/RETAINED-PREPARED-CAPTURE.md)
 at `3999550e` follows #372 review 5958354207. The existing retained producer now

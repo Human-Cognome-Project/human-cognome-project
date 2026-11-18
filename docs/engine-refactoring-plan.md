@@ -211,6 +211,21 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-18 contributor (awaiting review):
+[Actual retained-source qualification](../engine/docs/RETAINED-PREPARED-QUALIFICATION.md)
+at `8fa4dbb1` invokes the actual opt-in executable against verified isolated
+retained restores. English A carries English/Alphabet (en) memberships with NULL
+whole mass; the explicit preset refuses those comparison choices before warm
+publication/acquisition or native admission. Both memberships and all cold records
+are preserved. Local source-backed refusal, populated-store guard/policy
+preservation, cold fingerprints and shell/orchestration checks pass. Existing
+database CI now transports the real executable/probe into a fresh v2 warm fixture
+and records the precise refusal; its success does not qualify a completed tick.
+Docker delivery remains hosted evidence. Corrected #373 `0e2add68` requires fresh,
+dedicated qualification stores for both profiles. All merges remain with the
+maintainer. Next is the explicit membership comparison/focus/resource decision
+and a positive retained witness; no inferred weighting or #324 implementation.
+
+2026-11-18 contributor (awaiting review):
 [Opt-in retained prepared capture](../engine/docs/RETAINED-PREPARED-CAPTURE.md)
 at `3999550e` implements #372 review 5958354207's bounded producer entry.
 The trace distinguishes pinned exact definitions from explicit selection,
