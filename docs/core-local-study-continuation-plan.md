@@ -1,5 +1,25 @@
 # Core continuation after local CUDA corrections
 
+**Contributor hierarchy seed transport inspection — 2026-11-17 (awaiting review):**
+[Owner/lifetime trace, actual transfers and native-copy proposal](../engine/docs/HIERARCHY-SEED-TRANSPORT.md)
+at `c2c553c1` completes the inspection requested by #368 review 5949686979,
+starting from integrated main `22273dd2`. Installation reads full reserved centroid
+values/validity to the host, then uploads two live seed banks. At H=70 its actual
+readback is 4,448 bytes versus 248 reported; the extra 4,200 inspection bytes are
+outside that result. Seed upload adds 4,480 reported bytes. Existing Taichi
+intra-device copies reproduce the actual seed bit for bit using eight active
+slices (192 bytes for three nodes), with Q31 and poisoned-padding controls.
+This is isolated scratch evidence, not an implemented transport saving.
+
+Quick CI, four Clang CTests, two GCC probes (18 fixture observations) and eight
+existing basic/publication case runs pass. Production/fork/workflows are unchanged;
+failed development controls are retained. Review the bounded proposal before
+replacing runtime transport; preserve descriptor/source/currentness validation,
+public inspection, zero inactive slots and publication/failure behavior. No full
+local regression or GPU qualification is claimed. GitHub CI is authoritative;
+review/hosted checks remain pending. Validator reuse, capture-buffer resizing,
+refresh slot transport, broader accounting and #324 remain separate.
+
 **Maintainer integration of #366, #367 and #368 (2026-11-17)**
 
 This merge integrates the reviewed heads `dc0854aa`, `d49e6329` and `80b52d34`. All three passed their hosted workflows. [Review 5949686979](https://github.com/Human-Cognome-Project/human-cognome-project/pull/368#pullrequestreview-5949686979) accepts direct capture from the owner's prepaid initial maps. On #368 all 12 native jobs and smoke passed, including 181 regression tests and database verification with 24 addressed reads and zero private reads. Contributor-local comparisons report 48,369 / 205,000 / 149,169 fewer cumulative requested bytes for one/four/three selections. Retained size and whole-adoption peak stayed the same in those fixtures.

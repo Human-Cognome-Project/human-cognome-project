@@ -211,6 +211,21 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 ## Progress
 
 2026-11-17 contributor (awaiting review):
+[Hierarchy seed transport inspection](../engine/docs/HIERARCHY-SEED-TRANSPORT.md)
+at `c2c553c1`, based on integrated main `22273dd2`, traces C3's full centroid
+inspection readback and live seed upload. Actual H=70 readback is 4,448 bytes
+versus 248 reported; the extra 4,200 inspection bytes and 4,480 seed-upload bytes
+identify a bounded transport opportunity. Existing Taichi intra-device slices
+copy the actual published XYZ/mass into isolated two-bank scratch bit for bit,
+with Q31 sensitivity and poisoned inactive-capacity controls. Quick CI, six
+Clang/GCC probe configurations (18 fixtures) and eight existing basic/publication
+case runs pass. Production is unchanged; failed development controls are retained.
+Review the proposal before a runtime replacement. Preserve validation, currentness,
+public inspection, inactive slots and publication/failure rules. Full regression,
+GPU execution, refresh transport, validator/capture reuse and #324 remain separate;
+hosted CI remains authoritative and pending.
+
+2026-11-17 contributor (awaiting review):
 [Prepaid-map adoption capture](../engine/docs/ADOPTION-SOURCE-CAPTURE.md) at
 `da083031` implements #367 review 5948664040. Temporary validators read the
 initial owner snapshots synchronously with the shared setup meter, keeping
