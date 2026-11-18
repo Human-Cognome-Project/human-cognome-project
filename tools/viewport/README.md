@@ -9,6 +9,10 @@ An explicit `--study prepared-english-pair` profile now uses the existing native
 prepared owner through `submit_prepared`, with supplied comparisons, geometry,
 focus and resources. See the [input trace, usage and acquisition blocker](../../engine/docs/RETAINED-PREPARED-CAPTURE.md).
 Its synthetic-source CPU tests do not qualify actual retained acquisition.
+Both capture profiles require a fresh, dedicated qualification warm store per
+invocation: the producer configures new persistent 00/02 binding policy each
+time. Ownership alone does not make a populated store suitable. Prepared capture
+also requires explicit migration 002; it never migrates a store automatically.
 WebGL rendering is not authoritative numerical precision. See the bounded
 [C1 value implementation](../../engine/docs/LIVE-NUMERICAL-PROFILE.md).
 

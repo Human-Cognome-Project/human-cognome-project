@@ -40,7 +40,8 @@ inline const char *usage() {
     "  --pace-ms M         minimum wall-clock ms between captures, M >= 0 (default 0; does not change the simulation)\n"
     "  --intent-work-limit N  request field diagnostic with unsigned work budget (legacy study reports unavailable)\n"
     "SIGINT/SIGTERM stop after the current tick with a final capture and exit 0.\n"
-    "HCP_WARM_TEST_CONNINFO: owned warm DB with schema.sql (prepared also requires migration 002); "
+    "HCP_WARM_TEST_CONNINFO: fresh, dedicated qualification warm DB with schema.sql "
+    "(both profiles rewrite binding policy; prepared also requires explicit migration 002); "
     "HCP_CORE_TEST_CONNINFO/HCP_LING_TEST_CONNINFO: retained read-only sources\n";
 }
 // Capture schedule: tick 0, every K completed ticks (when set) and the final tick.

@@ -33,11 +33,12 @@ The same native observer produces tick zero and following snapshots. Existing sn
 
 The local environment has **no** `HCP_WARM_TEST_CONNINFO`, `HCP_CORE_TEST_CONNINFO` or `HCP_LING_TEST_CONNINFO`; libpq service `hcp-core` is undefined; PostgreSQL 16/main is down and port 5432 reports no response. The native opt-in executable exits 1 with `prepared capture acquisition unavailable: missing HCP_WARM_TEST_CONNINFO`, before any database connection/configuration/publication, and writes no capture. No service credentials were printed, server started, warm schema migrated or retained store changed.
 
-Consequently **genuine retained acquisition and a retained source → C3 → completed-tick witness remain unqualified**. Reproduction needs owner-provided read-only core/linguistics connections and a dedicated owned warm v2 store. Its English construction must satisfy the stated preset. If membership is present, first choose and review its explicit comparison topology/resources; do not strip source memberships to fit this profile. To qualify export identity, separately verify matching retained source fingerprints; the existing configured labels alone cannot do that.
+Consequently **genuine retained acquisition and a retained source → C3 → completed-tick witness remain unqualified** at the original tested source. Reproduction needs read-only core/linguistics connections and a **fresh, dedicated qualification warm store**. Both profiles call `Administrator::configure` with a new actor, epoch and policy for 00/02 on each invocation, updating persistent binding policy. Ownership and schema version alone do not make a populated deployment suitable. Use a new qualification store for each invocation; the prepared profile additionally requires explicit migration 002 to schema v2. Its English construction must satisfy the stated preset. If membership is present, first choose and review its explicit comparison topology/resources; do not strip source memberships to fit this profile. To qualify export identity, separately verify matching retained source fingerprints; the existing configured labels alone cannot do that.
 
 ```sh
 # Supply the three connection settings through the existing external credential mechanism.
-# Choose an unused output directory; use an owned warm store already at schema v2.
+# Both profiles require a fresh, dedicated qualification warm store per invocation.
+# Choose an unused output directory; prepared additionally requires explicit migration 002.
 source engine/build/engine-env.sh
 engine/build/viewport/viewport_letter_capture /absolute/owned/prepared-pair-output \
   --study prepared-english-pair --backend cpu --ticks 1 --cpu-threads 1 \
