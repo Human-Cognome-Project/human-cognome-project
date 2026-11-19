@@ -1,6 +1,25 @@
 # Core continuation after local CUDA corrections
 
-**Contributor adoption-validator reuse inspection — 2026-11-18 (awaiting review):**
+**Exchange parent ownership inspection — 2026-11-19 (awaiting review):**
+[Actual parent backing, const lookup and bounded proposal](../engine/docs/EXCHANGE-PARENT-OWNERSHIP.md)
+at `50ec736d` starts independently from current main `952e1651`. Exact source parents
+duplicate the owner recipe: 1,285 / 5,140 / 2,313 actual requested bytes for
+one/four/three selections. Runtime saving is zero; only tests change. Full source
+association and ordered provenance, detached public copies, caller/source death,
+staged exposure and explicit recipe-pin/owner/weak/domain lifetime are verified.
+Quick CI, seven Clang/five GCC native cases and four standalone CTests on each
+of GCC 11/13 pass; 4,283 recipe controls per compiler and 34 owner/lifetime
+observations agree. Review private owner recipe-parent reuse before storage
+changes; preserve public value ownership, charged validation and native publication.
+Verified raw evidence and exact scope are in the record. Hosted CI is authoritative;
+all merges remain with the maintainer.
+
+Main `952e1651` integrates #375–#381. #382 `e7915da7` is provisionally accepted
+in maintainer comment 7013865241 and remains open pending hosted native CPU
+qualification; smoke passed. This independent inspection has no dependency on
+that runtime change. Older entries retain their historical source-specific scope.
+
+**Adoption-validator reuse inspection — 2026-11-18 (integrated in #381):**
 [Source-pinned costs, exact scratch replay and proposal](../engine/docs/ADOPTION-VALIDATOR-REUSE.md)
 at `244ef0b0` starts independently from main `4bb937d8`. Actual adoption constructs
 five capture buffers / 43,280 requested bytes for each selection. The existing
@@ -10,15 +29,14 @@ reductions of 129,840/86,560 bytes; neither retained-owner nor whole-peak saving
 implemented. Runtime saving is zero. Quick CI, four Clang/two GCC probe modes and
 a full mixed-owner control pass: nineteen observed fixtures, forward/reverse
 selection order, work/role refusal, exact retry, unchanged maps/native state and
-complete domain/weak release. Review precedes a scoped local validator reuse.
-Preserve shared setup admission and full validation, then measure actual owner
-interleaving/failure/peak behavior; standalone and persistent bindings stay separate.
-Source-pinned evidence is verified; authoritative GitHub CI remains pending.
+complete domain/weak release. The separate #382 runtime follow-up is provisionally
+accepted, preserving shared setup admission/full validation and measuring real
+owner interleaving/failure/peak behavior. This original inspection remains a
+zero-saving historical measurement; standalone and persistent bindings stay separate.
 
-Main `4bb937d8` integrates #377/#378. The maintainer merged qualified #376 into
-#375 (`f5076e72`) for combined checking. Accepted #379/#380 remain open after
-reconciliation with main (`8373ce08`/`2b53d0a8`). This independent inspection does
-not integrate or depend on their code. All merge events remain maintainer work.
+At that historical handoff, main `4bb937d8` integrated #377/#378, #376 was on
+#375's combined-check branch, and reconciled #379/#380 awaited integration.
+Current main `952e1651` supersedes those states. All merges remain maintainer work.
 
 **Contributor native C3 refresh metadata transport — 2026-11-18 (awaiting review):**
 [Runtime change, actual traffic and shared-caller evidence](../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)

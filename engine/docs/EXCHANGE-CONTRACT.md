@@ -1,5 +1,10 @@
 # Prepared logical declaration for letter exchange
 
+[The parent ownership inspection](EXCHANGE-PARENT-OWNERSHIP.md) at `50ec736d`
+measures real declaration parent copies against the same owner's retained recipe.
+It preserves full ordered provenance, explicit lifetime and detached public
+values. Production is unchanged; its bounded private reuse proposal awaits review.
+
 **Contributor implementation — 2026-11-17 (awaiting review):**
 [Retained parent authority](EXCHANGE-LEAF-AUTHORITY.md) at `0750a2cd` implements
 the leaf-vector removal authorized by #359. Canonical byte-source paths and

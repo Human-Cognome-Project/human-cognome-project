@@ -210,19 +210,35 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-18 contributor (inspection/proposal awaiting review):
+2026-11-19 contributor (inspection/proposal awaiting review):
+[Exchange parent ownership](../engine/docs/EXCHANGE-PARENT-OWNERSHIP.md) at
+`50ec736d`, independently based on main `952e1651`, attributes actual duplicate
+parent vectors/pins already retained by the owner recipe: 1,285 / 5,140 / 2,313
+requested bytes for one/four/three selections. Production remains unchanged;
+runtime saving is zero. Allocation-free checked const lookup preserves complete
+identity/order/mass provenance, caller death, exposure staging, explicit recipe
+pin/owner/weak/domain release and independent public declarations. Quick CI,
+seven Clang/five GCC native cases and standalone GCC 11/13 suites pass, with
+4,283 recipe controls per compiler and 34 agreeing native observations. Review
+the bounded private reuse and explicit lifetime/representation before removal;
+preserve all validation/work/census/native publication and standalone ownership.
+Main integrates #375–#381. Separately, #382 `e7915da7` is provisionally accepted
+in comment 7013865241, smoke passed and native CPU remains pending. This slice
+does not depend on that runtime work. Authoritative hosted CI and all maintainer
+merge gates remain separate; no integration merge is created.
+
+2026-11-18 inspection/proposal (integrated in #381; historical evidence):
 [Adoption-validator buffer reuse](../engine/docs/ADOPTION-VALIDATOR-REUSE.md) at
 `244ef0b0`, independently based on main `4bb937d8`, measures five real temporary
 buffer requests / 43,280 bytes per selection and proves existing scratch replay
 against full fresh facts. Four/three selections expose 129,840/86,560 candidate
 cumulative requested-byte reductions; runtime saving is zero. Quick CI, four
 Clang/two GCC modes and the complete mixed-owner control pass, nineteen observed
-fixtures with order/mask/source/work/refusal/retry and lifetime checks. Review
-precedes runtime reuse; preserve the shared setup meter and all full validation,
-then measure actual constructor overlap, budgets, unwind and native publication.
-Main now integrates #377/#378; #376 is on #375's combined-check branch, while
-#379/#380 remain source-accepted and unmerged. No pending code is duplicated or
-integrated here. GitHub CI remains authoritative; all merges stay with the maintainer.
+fixtures with order/mask/source/work/refusal/retry and lifetime checks. The
+separate #382 runtime follow-up is provisionally accepted, retaining shared
+setup/full validation and measuring actual overlap, budgets, unwind and native
+publication. Original pending integration states are superseded by main
+`952e1651`; these measurements remain historical. All merges stay with the maintainer.
 
 2026-11-18 contributor (awaiting runtime review):
 [Native refresh metadata transport](../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)

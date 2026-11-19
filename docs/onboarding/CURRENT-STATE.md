@@ -1,6 +1,26 @@
 # Current implementation and work
 
-**Contributor adoption-validator reuse inspection — 2026-11-18 (awaiting review):**
+**Exchange parent ownership inspection — 2026-11-19 (awaiting review):**
+[Actual backing, pinned lookup and lifetime proposal](../../engine/docs/EXCHANGE-PARENT-OWNERSHIP.md)
+at `50ec736d` starts independently from main `952e1651`. Actual declarations copy
+ordered parents already retained by the owner's exact immutable recipe: 1,285 /
+5,140 / 2,313 requested bytes for one/four/three selections. Production is unchanged;
+runtime saving is zero. Full source/pin/mass/node and ordered provenance checks,
+caller death, exposure staging, explicit recipe-pin/owner/weak/domain lifetime and
+detached public declarations are covered. Quick CI, seven Clang/five GCC native
+cases and both standalone GCC suites pass, including 4,283 recipe checks per
+compiler and 34 agreeing owner/lifetime observations. Review the bounded private
+reuse proposal before changing representation; keep public ownership and all
+validation/publication rules. Source-pinned raw evidence is verified. New hosted
+CI remains authoritative and all merges remain maintainer work.
+
+Main `952e1651` integrates #375–#381. Separately, #382 at `e7915da7` is
+[provisionally accepted](https://github.com/Human-Cognome-Project/human-cognome-project/pull/382#issuecomment-7013865241)
+for continuation; smoke passed and hosted native CPU remains pending at this
+handoff. This inspection neither duplicates nor depends on its runtime change.
+Earlier entries preserve historical source-specific evidence.
+
+**Adoption-validator reuse inspection — 2026-11-18 (integrated in #381):**
 [Actual per-selection costs, scratch proof and bounded proposal](../../engine/docs/ADOPTION-VALIDATOR-REUSE.md)
 at `244ef0b0`, independently based on main `4bb937d8`, observes five capture-buffer
 requests / 43,280 bytes per adoption selection. One independent scratch binding
@@ -10,15 +30,13 @@ bytes; self peak remains one buffer set. Runtime is unchanged and achieved savin
 is zero. Quick CI, four Clang/two GCC probe modes and a complete Clang mixed-owner
 control pass, totaling nineteen observed fixtures with full fact/mask, work/role
 refusal, exact retry, map/native preservation and domain/weak cleanup checks.
-Review precedes runtime reuse; measure its actual owner overlap and preserve the
-existing shared setup meter, full validation, standalone and publication rules.
-Verified source-pinned evidence is linked from the record. GitHub CI is authoritative.
+The separately accepted #382 runtime follow-up measures actual owner overlap and
+preserves the shared setup meter, full validation, standalone and publication rules.
+This inspection's verified evidence and zero runtime saving remain historical.
 
-Maintainer integration now places #377/#378 on main `4bb937d8`. #376 is merged
-into #375's branch `f5076e72`, whose combined checks remain pending. Source-accepted
-#379/#380 remain open on reconciled `8373ce08`/`2b53d0a8` pending hosted integration
-gates. This inspection has no code dependency on those open branches. All merges
-remain with the maintainer; older entries retain their source-specific evidence.
+At that historical handoff, main `4bb937d8` integrated #377/#378, #376 was on #375's
+combined-check branch, and reconciled #379/#380 awaited integration. Current main
+`952e1651` supersedes those pending states. All merges remain with the maintainer.
 
 **Contributor native C3 refresh metadata transport — 2026-11-18 (awaiting review):**
 [#379's authorized runtime follow-up](../../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)
