@@ -210,19 +210,32 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-18 contributor (inspection/proposal awaiting review):
+2026-11-19 contributor (runtime review pending):
+[One adoption-local validator](../engine/docs/ADOPTION-LOCAL-VALIDATOR.md) at
+`3d9424e4` implements #381's accepted scope. One buffer set spans the declaration
+loop, releases before spare/coordinator setup, and retains full validation on
+the existing shared meter. Invalidation precedes inventory/checked-sum refusal.
+Actual whole-construction requests fall by 129,840 / 86,560 bytes for four/three
+selections, with unchanged retained/observed peaks and unchanged single-selection
+control. Quick CI, thirteen Clang/eight GCC cases pass: 27 production allocation
+observations, 54 pre-stage inventory refusals, full owner budget/lifetime/native
+publication/tick and standalone controls. Twelve actual before/after comparisons
+agree; baseline binaries and checked evidence are retained. Stacked on accepted,
+unmerged #381 at `616a2987`; new authoritative hosted CI and runtime review remain.
+Main `3e76bf1e` integrates #375–#380. All merge events remain maintainer work.
+
+2026-11-18 inspection/proposal (accepted in #381; historical measurements):
 [Adoption-validator buffer reuse](../engine/docs/ADOPTION-VALIDATOR-REUSE.md) at
 `244ef0b0`, independently based on main `4bb937d8`, measures five real temporary
 buffer requests / 43,280 bytes per selection and proves existing scratch replay
 against full fresh facts. Four/three selections expose 129,840/86,560 candidate
 cumulative requested-byte reductions; runtime saving is zero. Quick CI, four
 Clang/two GCC modes and the complete mixed-owner control pass, nineteen observed
-fixtures with order/mask/source/work/refusal/retry and lifetime checks. Review
-precedes runtime reuse; preserve the shared setup meter and all full validation,
-then measure actual constructor overlap, budgets, unwind and native publication.
-Main now integrates #377/#378; #376 is on #375's combined-check branch, while
-#379/#380 remain source-accepted and unmerged. No pending code is duplicated or
-integrated here. GitHub CI remains authoritative; all merges stay with the maintainer.
+fixtures with order/mask/source/work/refusal/retry and lifetime checks. The authorized
+runtime follow-up above preserves the shared meter/full validation and measures
+actual constructor overlap, budgets, unwind and native publication. The original
+pending integration states are superseded by main `3e76bf1e`; this inspection's
+local evidence remains source-pinned. GitHub CI remains authoritative.
 
 2026-11-18 contributor (awaiting runtime review):
 [Native refresh metadata transport](../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)

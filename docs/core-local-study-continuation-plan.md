@@ -1,6 +1,25 @@
 # Core continuation after local CUDA corrections
 
-**Contributor adoption-validator reuse inspection — 2026-11-18 (awaiting review):**
+**Contributor adoption-local validator — 2026-11-19 (awaiting runtime review):**
+[Actual production reuse, invalidation, peak and evidence](../engine/docs/ADOPTION-LOCAL-VALIDATOR.md)
+at `3d9424e4` implements #381's explicit authorization on `616a2987`. One existing
+binding owns five buffers for the declaration loop, releases before spare/coordinator
+setup, and performs full per-selection capture/validation on the shared setup meter.
+Validity clears before all helper refusals, including pre-stage inventory bounds.
+Actual cumulative requested-byte reductions are 129,840 / 86,560 for four/three
+selections; retained/observed peaks remain 294,636 / 258,014 and one selection is
+unchanged. Quick CI, thirteen Clang/eight GCC cases and twelve before/after fixture
+comparisons pass. Twenty-seven production observations cover release ordering,
+full facts/masks, 54 inventory refusals, exact retries and full owner/standalone
+allocation/work/unwind/source/native publication/tick controls. Raw evidence and
+both baseline binaries are verified. Runtime review and authoritative hosted CI
+remain pending; all merge events remain maintainer work.
+
+Main `3e76bf1e` integrates #375–#380. Accepted #381 has passing hosted native/smoke
+on reconciled `616a2987` and remains the explicit unmerged dependency here. No
+integration merge is created by this implementation. Older records stay source-specific.
+
+**Adoption-validator reuse inspection — 2026-11-18 (accepted in #381):**
 [Source-pinned costs, exact scratch replay and proposal](../engine/docs/ADOPTION-VALIDATOR-REUSE.md)
 at `244ef0b0` starts independently from main `4bb937d8`. Actual adoption constructs
 five capture buffers / 43,280 requested bytes for each selection. The existing
@@ -10,15 +29,15 @@ reductions of 129,840/86,560 bytes; neither retained-owner nor whole-peak saving
 implemented. Runtime saving is zero. Quick CI, four Clang/two GCC probe modes and
 a full mixed-owner control pass: nineteen observed fixtures, forward/reverse
 selection order, work/role refusal, exact retry, unchanged maps/native state and
-complete domain/weak release. Review precedes a scoped local validator reuse.
-Preserve shared setup admission and full validation, then measure actual owner
-interleaving/failure/peak behavior; standalone and persistent bindings stay separate.
+complete domain/weak release. The authorized runtime follow-up above preserves
+shared setup admission/full validation and measures actual owner interleaving,
+failure and peak behavior; standalone and persistent bindings stay separate.
 Source-pinned evidence is verified; authoritative GitHub CI remains pending.
 
-Main `4bb937d8` integrates #377/#378. The maintainer merged qualified #376 into
-#375 (`f5076e72`) for combined checking. Accepted #379/#380 remain open after
-reconciliation with main (`8373ce08`/`2b53d0a8`). This independent inspection does
-not integrate or depend on their code. All merge events remain maintainer work.
+At that initial handoff, main `4bb937d8` integrated #377/#378, while qualified #376
+was on #375 (`f5076e72`) for combined checking. #379/#380 were accepted on reconciled
+`8373ce08`/`2b53d0a8`. Main `3e76bf1e` now supersedes those pending states; this
+inspection's original code/evidence is independent. All merges remain maintainer work.
 
 **Contributor native C3 refresh metadata transport — 2026-11-18 (awaiting review):**
 [Runtime change, actual traffic and shared-caller evidence](../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)
