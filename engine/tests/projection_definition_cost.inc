@@ -95,7 +95,7 @@ void projection_definition_cost(int mode) {
     check(D::lookup(*projection,bad,projection->recipe().ref,wrong)==SIZE_MAX,"same definition object with a stale revision refuses");
     bad=row;bad.definition.object.scope=warm::new_uuid();
     check(D::lookup(*projection,bad,projection->recipe().ref,wrong)==SIZE_MAX,"different definition scope refuses");
-    bad=row;bad.definition.object.address.push_back(0);
+    bad=row;bad.definition.object.address.push_back(codec::AddressElement{0,0,false});
     check(D::lookup(*projection,bad,projection->recipe().ref,wrong)==SIZE_MAX,"different complete definition address refuses");
     bad=row;bad.definition=fixture->ref(fixture->french);
     check(D::lookup(*projection,bad,projection->recipe().ref,wrong)==SIZE_MAX,"another valid tool cannot replace the occurrence's definition");
