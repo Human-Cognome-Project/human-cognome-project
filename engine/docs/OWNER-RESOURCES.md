@@ -1,15 +1,22 @@
 # Private exchange-owner resource inventory
 
+[Repeated membership target pins](MEMBERSHIP-TARGET-PINS.md) at `01b09c77`
+attributes actual complete pin backing in live/catalogue/copy values and adopted
+owners. Four selections retain 36 target buffers / 1,068 bytes for one distinct
+full target; one observed representative occupies three buffers / 89 bytes.
+Inline pin extent is separate attribution. A catalogue-local ownership/index
+proposal awaits review; no runtime saving or replacement table is implemented.
+
 [Catalogue-owned membership study](MEMBERSHIP-HEADER-IDENTITY.md) at `e7733a8c`,
-awaiting runtime review, retains one existing study header and private numeric
+provisionally accepted in #386, retains one existing study header and private numeric
 row paths. Full public values detach explicitly. The census counts that header
 once and numeric row capacity/paths beside full target pins and kind/count.
 Actual net retained/requested-peak reductions are 303 / 1,212 / 606 bytes;
 cumulative request and work reductions, export/copy costs and source-pinned
 local CI are recorded separately. Authoritative GitHub CI remains pending.
 
-[Private recipe-parent reuse](EXCHANGE-RECIPE-PARENTS.md) at `45ff81f3`, awaiting
-runtime review, retains one strong exact recipe pin per declaration and private
+[Private recipe-parent reuse](EXCHANGE-RECIPE-PARENTS.md) at `45ff81f3`, integrated
+through #384 at main `6dcf3fef`, retains one strong exact recipe pin per declaration and private
 validated source indices. Census counts index/pointer extents inline and recipe
 parent backing once with the projection recipe, preserving its control-block
 identity. Net retained/peak reductions are 1,245 / 4,980 / 2,217 bytes after

@@ -1,12 +1,19 @@
 # Contextual membership fields — Stage C
 
+[Target-pin ownership inspection](MEMBERSHIP-TARGET-PINS.md) at `01b09c77`
+attributes repeated complete pins in actual returned/copy catalogues and native
+owners. Catalogue-local unique ownership/indexing is proposed for review; no
+table or runtime saving is implemented. Full target revision, explicit kind/count,
+detached lifetime and source-pinned local/hosted boundaries remain separate.
+
 [Catalogue-owned study identity](MEMBERSHIP-HEADER-IDENTITY.md) at `e7733a8c`
 implements #385's accepted direction from `fc0e7f65`. Private rows retain numeric
 entry/path under one owned study header; public values keep complete owning
 keys. Actual retained/peak reductions are 680 / 1,360 bytes in live/catalogue
 factories and 303 / 1,212 / 606 in real owners. Explicit export and ordinary
 catalogue copy costs are measured separately. Local CPU qualification passes;
-runtime review and authoritative GitHub CI remain pending. The accepted
+runtime is provisionally accepted in #386; remaining authoritative GitHub checks
+and integration stay separate. The accepted
 [inspection](MEMBERSHIP-STUDY-IDENTITY.md) retains its before evidence.
 
 **Contributor implementation — 2026-11-17 (awaiting review):**

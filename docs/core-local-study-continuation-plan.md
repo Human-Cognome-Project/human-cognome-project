@@ -1,6 +1,25 @@
 # Core continuation after local CUDA corrections
 
-**Catalogue-owned membership study — 2026-11-19 (runtime awaiting review):**
+**Repeated membership target pins — 2026-11-19 (inspection awaiting review):**
+[Actual backing, source lifetime and proposal](../engine/docs/MEMBERSHIP-TARGET-PINS.md)
+at `01b09c77` starts from accepted #386 `1c10f14c`. Returned live/catalogue/copy
+rows retain 676 / 1,352 target-pin bytes for five full targets; one observed
+representative per target occupies 424. Native one/four/three owners repeat one
+full pin across 3 / 12 / 6 rows, requesting 267 / 1,068 / 534 bytes. Inline extent
+is reported separately and achieved runtime saving is zero. Quick CI, membership
+value/native suites, five Clang/three GCC hierarchy cases and both standalone
+compiler suites pass: 4,922 checks, 36 target observations and 52 unchanged
+factory/owner/export records. Context/full-revision refusal, exact work retry,
+allocation/lifetime cleanup, native publication and ticks are preserved. Review
+one owning full pin per catalogue target and checked row indices, including
+table/index overhead and public copy/export lifetime, before implementation.
+
+Main `6dcf3fef` integrates native-qualified combined #383/#384. #386 review
+7018419165 provisionally accepts continuation; remaining hosted regression shards
+and integration stay separate. #385 targets main; #386 and this inspection are
+stacked. Evidence is verified and all merge events stay with the maintainer.
+
+**Catalogue-owned membership study — 2026-11-19 (provisionally accepted in #386):**
 [Numeric rows, explicit public values and net costs](../engine/docs/MEMBERSHIP-HEADER-IDENTITY.md)
 at `e7733a8c` implements #385's accepted direction from `fc0e7f65`, including the
 maintainer's combined #384 baseline. Private rows retain entry/path under one
@@ -12,8 +31,8 @@ GCC 11/13 standalone suites pass: 4,886 value checks, 34 actual comparisons,
 27 owner observations and 872 export refusal/retry sites. Full study association,
 detached/domain/weak lifetime, exact work/unwind, native publication and following
 ticks remain qualified within that CPU scope. Raw evidence and reused before
-source equivalence are verified. Review this runtime and reconcile hosted results
-before maintainer integration; #343's remaining candidates and #324 stay separate.
+source equivalence are verified. #386 accepts this runtime; reconcile remaining
+hosted results before maintainer integration. #343's other candidates and #324 stay separate.
 
 **Membership row study identity — 2026-11-19 (inspection accepted in #385):**
 [Actual strings, inline extent, context/lifetime and proposal](../engine/docs/MEMBERSHIP-STUDY-IDENTITY.md)
@@ -34,7 +53,11 @@ detached-value boundary; the runtime follow-up is above. No registry is introduc
 remains pending after smoke success. Source-pinned raw evidence is verified,
 new hosted CI is authoritative and all merge events remain with the maintainer.
 
-Maintainer update (2026-11-19). #382 merged at `c961fe86`. #384 integrates the [#383 inspection](https://github.com/Human-Cognome-Project/human-cognome-project/pull/383) and checks private recipe-backed parents alongside detached public values. Combined hosted qualification is pending. Earlier entries record their respective handoffs.
+Maintainer update (2026-11-19). Combined #383/#384 passed the native gate and
+landed on main `6dcf3fef`. #385 targets main; #386 is provisionally accepted in
+review 7018419165, with remaining hosted regression checks pending. Its smoke,
+build, database, value and compiler jobs passed. Earlier entries preserve their
+source-specific handoffs; all merges remain with the maintainer.
 
 **Private owner recipe parents — 2026-11-19 (provisionally accepted in #384):**
 [Pinned indices, actual net costs, lifetime and evidence](../engine/docs/EXCHANGE-RECIPE-PARENTS.md)

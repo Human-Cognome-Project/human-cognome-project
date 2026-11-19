@@ -257,6 +257,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   std::weak_ptr<ReservationDomain> weak;
   exchange_parent_observation::Cost parent_cost;
   membership_study_observation::Cost membership_study_cost;
+  membership_target_observation::Cost membership_target_cost;
   {
     O::Observe observe(*real);
     A::begin();
@@ -285,6 +286,12 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
                 require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
                         "catalogue UUID attribution differs from an actual owner request");
+              });
+          membership_target_cost=membership_target_observation::inspect(*memberships,
+              assembly::testing::MembershipFieldsAccess::recipe(*memberships),source,Owner::catalogue_rows(*memberships),
+              Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
+                require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
+                        "catalogue target pin attribution differs from an actual owner request");
               });
         });
         retained_map_bytes=Owner::resources(*owner).maps.charged_bytes();
@@ -458,6 +465,13 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
             << ",outer_requested=" << membership_study_cost.outer_bytes
             << ",header_comparison_work=" << membership_study_cost.comparison_work
             << ",comparison_allocations=0,duplicate_row_study_backing=0,after_destroy_requested=0 PASS\n";
+  std::cout << "membership_target_owner,selections=" << selection_count << ",rows=" << membership_target_cost.rows
+            << ",unique_targets=" << membership_target_cost.unique_targets << ",requests=" << membership_target_cost.requests
+            << ",requested=" << membership_target_cost.bytes << ",unique_requests=" << membership_target_cost.unique_requests
+            << ",unique_requested=" << membership_target_cost.unique_bytes
+            << ",pin_capacity_bytes=" << membership_target_cost.pin_capacity_bytes
+            << ",lookup_work=" << membership_target_cost.lookup_work
+            << ",lookup_allocations=0,after_destroy_requested=0,runtime_saving=0 PASS\n";
   std::cout << "exchange_parent_owner,selections=" << selection_count
             << ",sources=" << parent_cost.sources << ",parents=" << parent_cost.parents
             << ",parent_vector_requested=" << parent_cost.vector_bytes

@@ -42,8 +42,11 @@ focused witness is an inspection fixture, not a production object-model migratio
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
-ordered provenance, detached public values and explicit lifetime controls. Its
-private reuse proposal awaits review; runtime behavior is unchanged.
+ordered provenance, detached public values and explicit lifetime controls. The
+[private recipe-backed implementation](docs/EXCHANGE-RECIPE-PARENTS.md) is
+integrated through #384 at main `6dcf3fef`; the inspection preserves its original
+source measurements. The [membership target-pin inspection](docs/MEMBERSHIP-TARGET-PINS.md)
+now measures repeated complete targets and their catalogue/source lifetime.
 
 ## Python boundary
 
