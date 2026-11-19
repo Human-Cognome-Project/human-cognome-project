@@ -1,5 +1,10 @@
 # Capture adoption facts from prepaid owner maps
 
+The subsequent [validator-buffer reuse inspection](ADOPTION-VALIDATOR-REUSE.md)
+measures the remaining per-selection five-buffer construction and exercises an
+independent scratch replay. Its runtime proposal awaits review; the actual owner
+path below is unchanged by that inspection and achieved runtime saving there is zero.
+
 Status: contributor implementation, 2026-11-17, awaiting review and authoritative
 GitHub CI. Tested public source: `da083031c9d5f6b99880939f5561c311d56ec9cc`,
 tree `ab8aafb378806488bbd5e41a907c4853e5b458aa`. Documentation follows separately.

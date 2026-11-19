@@ -1,6 +1,26 @@
 # Core continuation after local CUDA corrections
 
-**Contributor private bootstrap consumption — 2026-11-18 (awaiting review/hosted CI):**
+**Contributor adoption-validator reuse inspection — 2026-11-18 (awaiting review):**
+[Source-pinned costs, exact scratch replay and proposal](../engine/docs/ADOPTION-VALIDATOR-REUSE.md)
+at `244ef0b0` starts independently from main `4bb937d8`. Actual adoption constructs
+five capture buffers / 43,280 requested bytes for each selection. The existing
+private binding replays fresh-reference facts and masks on one scratch allocation
+set without recapture allocation. Four/three selections expose candidate cumulative
+reductions of 129,840/86,560 bytes; neither retained-owner nor whole-peak saving is
+implemented. Runtime saving is zero. Quick CI, four Clang/two GCC probe modes and
+a full mixed-owner control pass: nineteen observed fixtures, forward/reverse
+selection order, work/role refusal, exact retry, unchanged maps/native state and
+complete domain/weak release. Review precedes a scoped local validator reuse.
+Preserve shared setup admission and full validation, then measure actual owner
+interleaving/failure/peak behavior; standalone and persistent bindings stay separate.
+Source-pinned evidence is verified; authoritative GitHub CI remains pending.
+
+Main `4bb937d8` integrates #377/#378. The maintainer merged qualified #376 into
+#375 (`f5076e72`) for combined checking. Accepted #379/#380 remain open after
+reconciliation with main (`8373ce08`/`2b53d0a8`). This independent inspection does
+not integrate or depend on their code. All merge events remain maintainer work.
+
+**Private bootstrap consumption — 2026-11-18 (integrated in #378):**
 [Publication boundary, actual before/after and evidence](../engine/docs/PREPARED-BOOTSTRAP-CONSUMPTION.md)
 at `9568f7e9` implements #377 review 6990952403 on reviewed `0302c527`.
 After final native claim/source-mass verification, the owner moves typed rows
@@ -10,10 +30,10 @@ Actual owner-domain retained requests fall 3966→1521 / 4870→1741 bytes; repl
 headers and setup peak rise by 64 bytes. Quick CI, 17 Clang and seven GCC suites
 pass. Final probe-only scoping `14ff61f9` passes Clang/GCC and matching historical
 comparisons with unchanged runtime. No database/GPU execution is claimed.
-Review and authoritative GitHub CI remain pending; this is stacked on #377.
-All merges remain maintainer work. Earlier entries retain their historical scope.
+The maintainer integrated #377/#378 as main `4bb937d8`; the local metrics above
+retain their exact historical source. All merges remain maintainer work.
 
-**Contributor prepared-plan lifetime inspection — 2026-11-18 (awaiting review):**
+**Prepared-plan lifetime inspection — 2026-11-18 (integrated in #377):**
 [Ownership trace, measured backing and private consumption proposal](../engine/docs/PREPARED-PLAN-LIFETIME.md)
 at `b07adf29` starts from main `22ea6d55`, independently of open #375/#376.
 Six bootstrap buffers retain 1812/2496 requested bytes through a native tick in
@@ -22,8 +42,8 @@ Published body reports still read command-table exact mass. The proposal must
 preserve full source/typed mappings, current native claims and standalone plan
 lifetime before retiring private bootstrap backing. Quick CI, six Clang and three
 GCC suites pass, including twelve fixture observations and complete measured
-release. Runtime is unchanged; implementation awaits review and authoritative
-GitHub CI remains pending. #324, full accounting and GPU qualification stay separate.
+release. Runtime at the inspection source is unchanged; the authorized #378
+implementation is now integrated above. #324, full accounting and GPU stay separate.
 
 **Hosted transport correction for #374 — 2026-11-18:** Corrected source
 `65b502e9` clears the container `LD_LIBRARY_PATH` and scopes the matching loader/
