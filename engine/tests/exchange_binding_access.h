@@ -41,15 +41,7 @@ struct ExchangeBindingAccess {
       std::shared_ptr<const MembershipFields> memberships,
       const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
       const detail::ExchangeMap<detail::ExchangeFieldBinding> &fields, detail::PreparationWork &meter) {
-    // Same checked bounds as the actual private adoption constructor. This
-    // adapter borrows maps only during this test call; it adds no runtime API.
-    const auto &limits=b.h_.prepared_storage().capacity.limits();
-    const auto row_bound=detail::exchange_map_capacity(limits[field::Budget::Particles],limits[field::Budget::Batch]);
-    const auto field_bound=detail::exchange_map_capacity(limits[field::Budget::Fields],
-        std::min(limits[field::Budget::Fields],limits[field::Budget::Batch]));
-    if (rows.size()>row_bound || fields.size()>field_bound) throw warm::Error("inspection adoption inventory exceeds bounds");
-    b.stage(std::move(declaration),target,std::move(memberships),meter);
-    return b.capture(p,rows,fields,meter);
+    return b.capture_adoption(p,std::move(declaration),target,std::move(memberships),rows,fields,meter);
   }
   static auto validate_adoption(const detail::ExchangeBindings &b,
       const detail::ExchangeMap<detail::OccurrenceBinding> &rows,

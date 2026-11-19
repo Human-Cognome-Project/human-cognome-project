@@ -83,15 +83,24 @@ ExchangeBindings::ExchangeBindings(field::Harness &h, const LetterProjection &pr
     const ExchangeMap<OccurrenceBinding> &occurrences, const ExchangeMap<ExchangeFieldBinding> &fields,
     const std::shared_ptr<ReservationDomain> &domain, PreparationWork &setup)
     : ExchangeBindings(h,domain,&setup) {
-  const auto &limits=h.prepared_storage().capacity.limits();
+  const auto target=contract ? contract->to() : warm::Exposure{};
+  capture_adoption(projection,std::move(contract),target,std::move(memberships),occurrences,fields,setup);
+}
+
+CaptureResult ExchangeBindings::capture_adoption(const LetterProjection &projection,
+    std::shared_ptr<const LetterExchangeContract> contract, warm::Exposure target,
+    std::shared_ptr<const MembershipFields> memberships,
+    const ExchangeMap<OccurrenceBinding> &occurrences, const ExchangeMap<ExchangeFieldBinding> &fields,
+    PreparationWork &setup) {
+  valid_ = false; // Includes checked arithmetic/inventory refusals before stage.
+  const auto &limits=h_.prepared_storage().capacity.limits();
   // Preserve the removed reservation's checked sums and inventory bounds.
   const auto rows=exchange_map_capacity(limits[field::Budget::Particles],limits[field::Budget::Batch]);
   const auto groups=exchange_map_capacity(limits[field::Budget::Fields],
       std::min(limits[field::Budget::Fields],limits[field::Budget::Batch]));
   need(occurrences.size()<=rows && fields.size()<=groups,"exchange adoption inventory exceeds map bounds");
-  const auto target=contract ? contract->to() : warm::Exposure{};
   stage(std::move(contract),target,std::move(memberships),setup);
-  capture(projection,occurrences,fields,setup);
+  return capture(projection,occurrences,fields,setup);
 }
 
 void ExchangeBindings::stage(std::shared_ptr<const LetterExchangeContract> contract,

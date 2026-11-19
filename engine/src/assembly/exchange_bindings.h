@@ -104,6 +104,12 @@ class ExchangeBindings {
                    std::shared_ptr<const MembershipFields>,
                    const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &,
                    const std::shared_ptr<ReservationDomain> &, PreparationWork &);
+  // One adoption-local binding can capture each declaration from unchanged
+  // prepaid maps. Every refusal invalidates the previous capture first.
+  CaptureResult capture_adoption(const LetterProjection &,
+      std::shared_ptr<const LetterExchangeContract>, warm::Exposure,
+      std::shared_ptr<const MembershipFields>, const ExchangeMap<OccurrenceBinding> &,
+      const ExchangeMap<ExchangeFieldBinding> &, PreparationWork &);
   field::UpdateResult validate(std::uint64_t generation, std::uint64_t work) const;
   field::UpdateResult validate(std::uint64_t generation, std::uint64_t work,
       const ExchangeMap<OccurrenceBinding> &, const ExchangeMap<ExchangeFieldBinding> &) const;

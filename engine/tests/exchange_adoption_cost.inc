@@ -12,15 +12,18 @@ struct Trace {
   assembly::detail::ProjectionSetupResult *setup{};
   Phase last{Phase::Admission};
   std::size_t count{},current{},used{},bytes{};
-  bool spare{};
+  bool spare{},spare_with_temporary{};
   void reset(assembly::detail::ProjectionSetupResult *s=nullptr) {
     tags.fill(0); selections.fill({}); setup=s; last=Phase::Admission;
-    count=s?0:1; current=s?0:1; used=bytes=0; spare=false;
+    count=s?0:1; current=s?0:1; used=bytes=0; spare=spare_with_temporary=false;
   }
   void phase() noexcept {
     if (!setup) return;
     const auto now=setup->phase;
-    if (now>=Phase::SpareInspection) spare=true;
+    if (now>=Phase::SpareInspection) {
+      spare=true;
+      for (std::size_t id=1;id<=count;++id) spare_with_temporary |= selections[id].live!=0;
+    }
     if (now!=last) {
       current=0;
       if (now==Phase::Bindings && !spare) {
@@ -95,7 +98,7 @@ bool same_events(const Trace &owner,std::size_t id,const Trace &single) {
 }
 
 template<class Declarations,class Rows,class Fields,class References>
-void adoption_validator_reuse(Fixture &f,const assembly::LetterProjection &projection,
+std::uint64_t adoption_validator_reuse(Fixture &f,const assembly::LetterProjection &projection,
     const Declarations &declarations,std::shared_ptr<const assembly::MembershipFields> memberships,
     const Rows &rows,const Fields &fields,const References &reference,
     adoption_binding_observation::Trace &trace,std::uint64_t fresh_work,
@@ -173,6 +176,32 @@ void adoption_validator_reuse(Fixture &f,const assembly::LetterProjection &proje
         });
         ++retries;
       }
+      const auto &limits=f.h.prepared_storage().capacity.limits();
+      const auto row_bound=exchange_map_capacity(limits[Budget::Particles],limits[Budget::Batch]);
+      const auto field_bound=exchange_map_capacity(limits[Budget::Fields],std::min(limits[Budget::Fields],limits[Budget::Batch]));
+      const ExchangeMap<OccurrenceBinding> too_many_rows(std::vector<OccurrenceBinding>(row_bound+1));
+      const ExchangeMap<ExchangeFieldBinding> too_many_fields(std::vector<ExchangeFieldBinding>(field_bound+1));
+      for (bool bad_rows : {true,false}) {
+        require(Bind::validate_adoption(binding,rows,fields).status==field::UpdateStatus::Ok,
+                "inventory refusal control did not start with a valid capture");
+        PreparationWork rejected_work(UINT64_MAX);
+        bool refused=false;
+        try {
+          Bind::recapture(binding,projection,declarations[0],declarations[0]->to(),memberships,
+              bad_rows ? too_many_rows : rows,bad_rows ? fields : too_many_fields,rejected_work);
+        } catch (const warm::Error &error) {
+          refused=std::strcmp(error.what(),"exchange adoption inventory exceeds map bounds")==0;
+        }
+        require(refused && !rejected_work.result().charged &&
+                Bind::validate_adoption(binding,rows,fields).status==field::UpdateStatus::InvalidInput,
+                "pre-stage inventory refusal advertised the previous valid capture");
+        PreparationWork exact(capture_work[0]);
+        no_new([&] {
+          Bind::recapture(binding,projection,declarations[0],declarations[0]->to(),memberships,rows,fields,exact);
+          compare(0);
+        });
+        ++retries;
+      }
       trace.current=1;
     });
   }
@@ -187,13 +216,14 @@ void adoption_validator_reuse(Fixture &f,const assembly::LetterProjection &proje
   weak.reset();
   require(A::counts.live==prior.live && A::counts.blocks==prior.blocks,
           "scratch validator retained captured source or buffers");
-  std::cout << "adoption_validator_reuse,selections=" << declarations.size()
-    << ",actual_fresh_requests=" << fresh_requests << ",actual_fresh_requested=" << fresh_bytes
+  std::cout << "adoption_validator_recapture,selections=" << declarations.size()
+    << ",fresh_reference_requests=" << fresh_requests << ",fresh_reference_requested=" << fresh_bytes
     << ",scratch_requests=" << scratch.requests << ",scratch_requested=" << scratch.bytes << ",scratch_peak=" << scratch.peak
-    << ",candidate_request_reduction=" << fresh_requests-scratch.requests << ",candidate_requested_reduction=" << fresh_bytes-scratch.bytes
+    << ",fresh_reference_extra_requests=" << fresh_requests-scratch.requests << ",fresh_reference_extra_requested=" << fresh_bytes-scratch.bytes
     << ",base_work=" << base_work << ",fresh_work=" << fresh_work << ",scratch_one_pass_work=" << one_pass
     << ",scratch_two_pass_work=" << two_passes << ",refusal_retries=" << retries
-    << ",full_facts_equal=1,recapture_new=0,runtime_saving=0 PASS\n";
+    << ",inventory_refusals=2,full_facts_equal=1,recapture_new=0 PASS\n";
+  return one_pass;
 }
 
 void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection &projection,
@@ -222,6 +252,8 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   ReservationResult selected;
   std::uint64_t retained_map_bytes=0,candidate_requested=0,candidate_blocks=0;
   std::uint64_t temporary_bytes=0,temporary_requests=0,temporary_work=0,owner_requested=0;
+  std::uint64_t fresh_bytes=0,fresh_requests=0,fresh_work=0;
+  std::size_t selection_count=0;
   std::weak_ptr<ReservationDomain> weak;
   {
     O::Observe observe(*real);
@@ -234,10 +266,11 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
         owner_requested=real->bytes;
         selected=Owner::reservations(*owner);
         weak=Owner::reservation_domain(*owner);
-        require(real->count==projection.recipe().selections.size(),"phase observer lost a temporary selection");
-        for (std::size_t id=1; id<=real->count; ++id)
-          require(real->selections[id].requests && !real->selections[id].live,
-                  "temporary binding backing survived its selection iteration");
+        selection_count=projection.recipe().selections.size();
+        require(real->count==1 && !real->spare_with_temporary && real->selections[1].requests==5 &&
+                    !real->selections[1].live,"shared adoption buffers survived into spare/coordinator preparation");
+        temporary_bytes=real->selections[1].bytes;
+        temporary_requests=real->selections[1].requests;
         require(selected.live_bytes && selected.charged_work<=real->bytes,
                 "selected requests exceed whole-owner observation");
         const auto declarations=Owner::declarations(*owner);
@@ -336,14 +369,14 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               }); });
             work=result.charged;
           }
-          const auto &actual=real->selections[i+1], &isolated=single->selections[1];
+          const auto &actual=real->selections[1], &isolated=single->selections[1];
           require(A::counts.live==baseline.live && A::counts.blocks==baseline.blocks && !domain->result().live_bytes &&
                       A::counts.attempts-baseline.attempts==actual.requests &&
                       isolated.bytes==actual.bytes && isolated.peak==actual.peak &&
-                      O::same_events(*real,i+1,*single),
-                  "isolated constructor does not match actual adoption request/lifetime trace");
-          temporary_bytes+=actual.bytes; temporary_requests+=actual.requests; temporary_work+=work;
-          measurements[i]={actual,alive,map_bytes,map_blocks,fact_bytes,bodies,outgoing,edges,work,validation,declaration->from()};
+                      O::same_events(*real,1,*single),
+                  "fresh reference differs from actual shared buffer acquisition/release trace");
+          fresh_bytes+=isolated.bytes; fresh_requests+=isolated.requests; fresh_work+=work;
+          measurements[i]={isolated,alive,map_bytes,map_blocks,fact_bytes,bodies,outgoing,edges,work,validation,declaration->from()};
           require(Owner::resources(*owner).maps.charged_bytes()==retained_map_bytes &&
                       Owner::map_backing(*owner)==candidate_backing,
                   "temporary validation inspection changed retained current/candidate backing");
@@ -377,8 +410,8 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
             require(refused && !domain->result().live_bytes,"adoption lost independent field reservation bound");
           }
         }
-        adoption_validator_reuse(f,source,declarations,memberships,Owner::mappings(*owner),Owner::fields(*owner),
-            *reference,*reused,temporary_work,temporary_requests,temporary_bytes);
+        temporary_work=adoption_validator_reuse(f,source,declarations,memberships,Owner::mappings(*owner),Owner::fields(*owner),
+            *reference,*reused,fresh_work,fresh_requests,fresh_bytes);
         require(Owner::map_backing(*owner)==candidate_backing &&
                 map_cost_equal(Owner::mappings(*owner),rows) && map_cost_equal(Owner::fields(*owner),fields),
                 "scratch replay changed actual current/candidate owner maps");
@@ -392,12 +425,12 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
           "adoption inspection leaked owner, alias or constructor requests");
   require(temporary_bytes<=owner_requested-whole.live && temporary_work<=setup.work.charged,
           "temporary costs exceed whole-owner construction or setup work");
-  for (std::size_t i=0; i<real->count; ++i) {
+  for (std::size_t i=0; i<selection_count; ++i) {
     const auto &m=measurements[i];
-    std::cout << "exchange_adoption_binding_cost,selections=" << real->count << ",selection=" << i
+    std::cout << "exchange_adoption_fresh_reference_cost,selections=" << selection_count << ",selection=" << i
               << ",source=" << (m.source==warm::Exposure::Aggregate?"aggregate":"parts")
               << ",requests=" << m.actual.requests << ",requested=" << m.actual.bytes << ",peak=" << m.actual.peak
-              << ",whole_overlap_peak=" << m.actual.whole_peak << ",constructor_live=" << m.alive.live
+              << ",constructor_live=" << m.alive.live
               << ",owned_map_requests=" << m.map_blocks << ",owned_map_bytes=" << m.map_bytes
               << ",capture_buffer_bytes=" << m.facts << ",constructor_work=" << m.work
               << ",released_before_constructor_return=" << m.actual.bytes-m.alive.live
@@ -407,7 +440,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               << ",trace_equal=1,after_destroy_requested=0 PASS\n";
   }
   require(before==TickSnapshot(f),"adoption binding inspection changed native execution");
-  std::cout << "exchange_adoption_binding_total,selections=" << real->count
+  std::cout << "exchange_adoption_binding_total,selections=" << selection_count
             << ",temporary_requests=" << temporary_requests << ",temporary_requested=" << temporary_bytes
             << ",temporary_work=" << temporary_work << ",owner_setup_work=" << setup.work.charged
             << ",owner_requests=" << whole.attempts << ",owner_requested=" << owner_requested
@@ -415,5 +448,6 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
             << ",domain_peak=" << selected.peak_bytes << ",current_candidate_map_census=" << retained_map_bytes
             << ",candidate_map_requested=" << candidate_requested << ",candidate_map_requests=" << candidate_blocks
             << ",other_setup_released=" << owner_requested-whole.live-temporary_bytes
-            << ",candidate_unchanged=1,native_unchanged=1 PASS\n";
+            << ",temporary_whole_overlap_peak=" << real->selections[1].whole_peak
+            << ",released_before_spare=1,candidate_unchanged=1,native_unchanged=1 PASS\n";
 }
