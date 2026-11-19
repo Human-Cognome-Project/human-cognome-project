@@ -20,6 +20,36 @@ Main `4bb937d8` integrates #377/#378. The maintainer merged qualified #376 into
 reconciliation with main (`8373ce08`/`2b53d0a8`). This independent inspection does
 not integrate or depend on their code. All merge events remain maintainer work.
 
+**Contributor native C3 refresh metadata transport — 2026-11-18 (awaiting review):**
+[Runtime change, actual traffic and shared-caller evidence](../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)
+at `6196eca8` follows #379's explicit authorization at `5b5fd4c2`. Only three
+second metadata uploads become full reserved native copies. Host requests fall
+8,816 bytes at H8 / 9,312 at H70, with completed native-copy request bytes reported
+separately. Existing staging, semantic/remapped metadata, transaction/work rules,
+allocations, bindings and numerical kernels are preserved. Quick CI, nine Clang
+and five GCC CTests plus fifteen shared cases pass, including 36 refresh
+observations, 30 refresh fault/guard controls and 24 shared commits through actual
+bootstrap/admission/atomic exchange. Exact padding/u64, recycled claims,
+survivor/retirement, healthy retry, late failure and following ticks are checked.
+This is stacked on accepted but unmerged #379. Runtime review and authoritative
+GitHub CI remain pending; all integration stays with the maintainer.
+
+**C3 refresh transport inspection — 2026-11-18 (provisionally accepted in #379):**
+[Source-pinned measurement and narrow native-copy proposal](../engine/docs/REFRESH-METADATA-TRANSPORT.md)
+at `9043bcb8`, independently based on main `22ea6d55`, identifies three identical
+candidate/commit inputs: 8,816 bytes at H8 and 9,312 at H70. Quick CI, five Clang
+and three GCC suites pass, including 36 actual refresh/native scratch comparisons
+and existing refresh regressions. Runtime at that inspection source is unchanged;
+achieved saving is zero. The authorized runtime follow-up is recorded above,
+covering bootstrap/generated admission/atomic exchange and preserving failure,
+full padding, exact u64, generation, history and retry behavior. Authoritative
+GitHub CI and all maintainer integration remain separate gates.
+
+Provisionally accepted #375–#378 remain open at this handoff, including the
+retained prepared witness and private bootstrap plan retirement. Their evidence
+and pending gates remain on those branches; this independent inspection has no
+code dependency on them. Older entries retain their source-specific status.
+
 **Contributor retained positive preset — 2026-11-18 (provisionally accepted; hosted CI pending):**
 [Actual acquired pins, native claims, tick and release](../engine/docs/RETAINED-POSITIVE-CAPTURE.md)
 at `e86b588e` follows #375's provisional decision, comment 6989241451. Separate

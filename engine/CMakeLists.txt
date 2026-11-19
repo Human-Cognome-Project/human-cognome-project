@@ -245,6 +245,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
       "-Wl,--wrap=_ZN6engine8readbackERN6taichi4lang7NdarrayEPvm"
       "-Wl,--wrap=_ZN6taichi4lang7Program21fill_ndarray_fast_u32EPNS0_7NdarrayEj"
       "-Wl,--wrap=_ZN5field6detail15CentroidCascade14copy_publishedERKNS_13CascadeResultERN6taichi4lang7NdarrayE"
+      "-Wl,--wrap=_ZN5field6detail13LiveHierarchy14commit_refreshERNS_12UpdateResultE"
       "-Wl,--wrap=_ZN6engine7Runtime11synchronizeEv")
 endif()
 foreach(threads 1 2)
@@ -259,6 +260,10 @@ foreach(threads 1 2)
       add_test(NAME hierarchy_seed_transport_${threads}_${path}
           COMMAND live_hierarchy_test ${live_hierarchy_args} --case hierarchy_seed_transport)
       set_tests_properties(hierarchy_seed_transport_${threads}_${path} PROPERTIES
+          ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
+      add_test(NAME refresh_transport_${threads}_${path}
+          COMMAND live_hierarchy_test ${live_hierarchy_args} --case refresh_transport)
+      set_tests_properties(refresh_transport_${threads}_${path} PROPERTIES
           ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
     endif()
     add_test(NAME live_intent_${threads}_${path}
@@ -309,7 +314,8 @@ foreach(threads 1 2)
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case contact_tick)
     add_test(NAME placement_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args} --case placement)
-    # The combined placement/admission/exchange/owner matrix now has 22 cases.
+    # The combined placement/admission/exchange/owner matrix includes bootstrap
+    # postclaim failure along with successful shared metadata publication.
     # Hosted placement_2_bulk passed both owner witnesses before the old 20-minute
     # limit killed the final matrix case. Keep every mode/case intact
     # with a bounded 40-minute per-test budget; the hosted job limit stays separate.

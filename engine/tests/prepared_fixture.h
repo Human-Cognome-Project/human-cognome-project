@@ -26,6 +26,24 @@ struct FixtureSource {
       exact_masses;  // Empty retains unknown legacy metadata.
 };
 struct PreparedFixtureAccess {
+  // Empty-fixture setup only. Exercise native recycling before a first model
+  // bootstrap so scratch row order cannot stand in for actual native claims.
+  static void reorder_empty_claims(Harness &h) {
+    auto &s = *h.prepared_;
+    if (s.populated || s.live.references() || s.particles.size() || s.fields.size())
+      throw std::logic_error("claim-order fixture requires empty native maps");
+    for (auto *map : {&s.particles,&s.fields}) {
+      std::array<engine::RecordHandle,3> handles;
+      for (int i=0; i<3; ++i) {
+        const auto result = map->define(i,1);
+        if (result.status != engine::RecordStatus::Ok) throw std::runtime_error("fixture claim-order setup failed");
+        handles[i] = result.handle;
+      }
+      for (int i=2; i>=0; --i)
+        if (map->release(handles[i]).status != engine::RecordStatus::Ok)
+          throw std::runtime_error("fixture claim-order release failed");
+    }
+  }
   static void read_contacts(Harness &h) {
     if (h.path_ == HostPath::BulkCopy)
       engine::readback(*h.contact_int_array_, h.contact_int_data.data(),

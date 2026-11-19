@@ -224,6 +224,33 @@ Main now integrates #377/#378; #376 is on #375's combined-check branch, while
 #379/#380 remain source-accepted and unmerged. No pending code is duplicated or
 integrated here. GitHub CI remains authoritative; all merges stay with the maintainer.
 
+2026-11-18 contributor (awaiting runtime review):
+[Native refresh metadata transport](../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)
+at `6196eca8` follows #379's explicit authorization. Three second host uploads
+become full reserved native copies inside the existing postclaim boundary.
+Host request reduction is 8,816 bytes at H8 / 9,312 at H70, with native-copy bytes
+reported separately. Other staging/metadata, work, allocations/bindings and
+numerical kernels remain. Quick CI, nine Clang/five GCC CTests and fifteen shared
+case runs pass, including exact padding/u64, real bootstrap/admission/exchange,
+recycled claim remapping, survivors/retirement, healthy retry, late failure and
+following ticks. Verified evidence retains 36 refresh observations, 30 refresh
+fault/guard controls, 24 shared commits and the corrected development remap setup.
+Stacked on unmerged #379; authoritative GitHub CI and maintainer integration are
+separate gates. All merges remain with the maintainer.
+
+2026-11-18 inspection (provisionally accepted in #379):
+[C3 refresh metadata transport inspection](../engine/docs/REFRESH-METADATA-TRANSPORT.md)
+at `9043bcb8` observes three full reserved inputs uploaded identically to candidate
+and live arrays. The second uploads total 8,816 bytes at H8 or 9,312 at H70;
+independent full-extent native copies match exactly, while truncated copies fail.
+Quick CI, five Clang and three GCC suites pass, including 36 actual observations
+and existing refresh regressions. Runtime/fork behavior at the inspection source
+is unchanged; achieved saving is zero. The authorized runtime follow-up above
+covers the shared commit routine's bootstrap/admission/exchange callers.
+The inspection starts independently from main `22ea6d55`; accepted
+#375–#378 remain open, with their evidence/integration gates kept on those branches.
+GitHub CI is authoritative; all merges remain with the maintainer.
+
 2026-11-18 contributor (awaiting review):
 [Retained membership comparison/focus/resource decision](../engine/docs/RETAINED-MEMBERSHIP-DECISION.md)
 at `9d9d491f` follows #374 comment 6985194174 from current main `66edfb18`.

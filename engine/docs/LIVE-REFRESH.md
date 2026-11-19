@@ -12,6 +12,14 @@ passed. The earlier initialization failure and job-budget cancellation remain
 separate retained evidence. Native operational admission/contact-safe ticks follow.
 Actual refresh execution on CUDA remains unqualified.
 
+The [refresh metadata transport inspection](REFRESH-METADATA-TRANSPORT.md)
+records identical candidate/commit uploads and independent full-extent native
+scratch copies at `9043bcb8`, provisionally accepted in #379. The contributor
+[native transport implementation](NATIVE-REFRESH-METADATA-TRANSPORT.md) replaces
+only those three second uploads, reports native-copy bytes separately and records
+scoped CPU qualification of refresh/bootstrap/admission/exchange. Its runtime
+review and authoritative hosted gates remain pending.
+
 ## Entry point and references
 
 `Harness::refresh_live_hierarchy(expected_generation, commands, count,

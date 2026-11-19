@@ -20,6 +20,41 @@ into #375's branch `f5076e72`, whose combined checks remain pending. Source-acce
 gates. This inspection has no code dependency on those open branches. All merges
 remain with the maintainer; older entries retain their source-specific evidence.
 
+**Contributor native C3 refresh metadata transport — 2026-11-18 (awaiting review):**
+[#379's authorized runtime follow-up](../../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)
+at `6196eca8` replaces only three second host uploads with full reserved native
+copies inside the existing postclaim commit boundary. Host requests fall by
+8,816 bytes at H8 / 9,312 at H70; `UpdateResult::native_copy_bytes` reports
+completed native request bytes separately. Staging, semantic metadata/remapped
+tables, work, allocations, frozen bindings and numerical kernels are retained.
+Quick CI, nine Clang/five GCC CTests and fifteen shared-caller runs pass: 36
+refresh observations, 30 refresh fault/guard controls and 24 instrumented shared
+commits. Actual bootstrap, generated admission and atomic exchange cover recycled
+claim remapping, survivor/retirement, refusal/retry, postclaim failure and ticks.
+The verified source-pinned bundle and development correction are in the record.
+This is stacked on provisionally accepted, unmerged #379; runtime review and
+authoritative GitHub CI remain pending. All merges remain with the maintainer.
+
+**C3 refresh transport inspection — 2026-11-18 (provisionally accepted in #379):**
+[Actual duplicate uploads and native scratch comparison](../../engine/docs/REFRESH-METADATA-TRANSPORT.md)
+at `9043bcb8` is independently based on current main `22ea6d55`. Three immutable
+candidate inputs are uploaded again at commit: 8,816 bytes at H8 or 9,312 at H70.
+Quick CI, five Clang and three GCC suites pass, including 36 actual refresh/copy
+observations and the existing refresh regressions. Full reserved padding and odd
+u64 values compare bit for bit; no-op/refusal/retry and following ticks pass.
+Runtime at that inspection source is unchanged and achieved saving is zero. The
+maintainer authorized the narrow three-copy follow-up recorded above, with actual
+shared bootstrap/generated-admission/atomic-exchange controls.
+GitHub CI remains authoritative and all merges remain with the maintainer.
+
+The provisionally accepted [membership decision #375](https://github.com/Human-Cognome-Project/human-cognome-project/pull/375),
+[retained prepared witness #376](https://github.com/Human-Cognome-Project/human-cognome-project/pull/376),
+[plan lifetime inspection #377](https://github.com/Human-Cognome-Project/human-cognome-project/pull/377)
+and [private bootstrap plan retirement #378](https://github.com/Human-Cognome-Project/human-cognome-project/pull/378)
+remain open at this handoff. Their evidence and remaining hosted/integration gates
+stay on those branches; this inspection does not duplicate or integrate them.
+Older entries below describe their respective source states.
+
 **Contributor retained positive preset — 2026-11-18 (provisionally accepted; hosted CI pending):**
 [Actual acquired pins, native claims, tick and release](../../engine/docs/RETAINED-POSITIVE-CAPTURE.md)
 at `e86b588e` follows #375's provisional decision, comment 6989241451. Separate
