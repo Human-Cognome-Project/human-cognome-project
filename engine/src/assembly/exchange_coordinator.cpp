@@ -200,7 +200,7 @@ PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncomin
       append(c);
     };
     add(GroupKind::SiblingDefinition, source.definition.object, source.mass, 0);
-    for (const auto &parent : source.parents) {
+    for (const auto &parent : b.contract_->parents(source,&meter)) {
       meter.charge(1);
       add(GroupKind::ParentValue, parent.target.object, parent.contribution, parent.ordinal);
     }

@@ -1,5 +1,7 @@
 # Engine and Analyst-facing refactoring plan
 
+Maintainer update (2026-11-19). #382 merged at `c961fe86`. #384 integrates the [#383 inspection](https://github.com/Human-Cognome-Project/human-cognome-project/pull/383) and checks private recipe-backed parents alongside detached public values. Combined hosted qualification is pending. Earlier entries record their respective handoffs.
+
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
 ## Purpose and boundaries
@@ -210,7 +212,22 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-19 contributor (runtime review pending):
+2026-11-19 contributor (private parent runtime review pending):
+[Owner recipe parents](../engine/docs/EXCHANGE-RECIPE-PARENTS.md) at `45ff81f3`
+implements #383's specified strong-pin/private-index representation on accepted
+#382 `e7915da7`. Ordered parents resolve from the exact owner recipe; public/value
+copies detach. Actual retained/requested peaks fall 1,245 / 4,980 / 2,217 bytes
+after overhead, while equal-three setup work rises 444 units and public value
+extents grow. Quick CI, thirteen Clang/eight GCC native cases and GCC 11/13
+standalone suites pass, including twelve comparisons, nine private pin/index/
+copy/weak lifetime controls and full owner refusal/unwind/publication/ticks.
+Initial Clang assignment accounting failure and the targeted reconstruction
+fix remain in source/evidence. Main `952e1651` integrates #381; accepted #382/#383
+remain separate gates. Maintainer integration must adapt #383's historical
+private-copy observer to indexed parents, retain public controls and qualify
+the combined tree. New hosted CI/runtime review and all merges remain separate.
+
+2026-11-19 contributor (provisionally accepted in #382; historical measurements):
 [One adoption-local validator](../engine/docs/ADOPTION-LOCAL-VALIDATOR.md) at
 `3d9424e4` implements #381's accepted scope. One buffer set spans the declaration
 loop, releases before spare/coordinator setup, and retains full validation on
@@ -220,9 +237,10 @@ selections, with unchanged retained/observed peaks and unchanged single-selectio
 control. Quick CI, thirteen Clang/eight GCC cases pass: 27 production allocation
 observations, 54 pre-stage inventory refusals, full owner budget/lifetime/native
 publication/tick and standalone controls. Twelve actual before/after comparisons
-agree; baseline binaries and checked evidence are retained. Stacked on accepted,
-unmerged #381 at `616a2987`; new authoritative hosted CI and runtime review remain.
-Main `3e76bf1e` integrates #375–#380. All merge events remain maintainer work.
+agree; baseline binaries and checked evidence are retained. #382 `e7915da7`
+is provisionally accepted in comment 7013865241; hosted qualification remains
+separate. Main `952e1651` now integrates #381, superseding the original pending
+dependency state. All merge events remain maintainer work.
 
 2026-11-18 inspection/proposal (accepted in #381; historical measurements):
 [Adoption-validator buffer reuse](../engine/docs/ADOPTION-VALIDATOR-REUSE.md) at

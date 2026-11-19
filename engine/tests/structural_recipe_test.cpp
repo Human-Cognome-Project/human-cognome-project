@@ -12,6 +12,7 @@
 #include "letter_projection_fixture.h"
 #define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
+#include "exchange_parent_observation.h"
 
 namespace assembly::testing {
 struct ExchangeContractAccess {
@@ -223,6 +224,58 @@ std::size_t leaf_inventory_cost(bool mixed, int mode) {
   allocation_observation::enabled = false;
   const auto calls = allocation_observation::calls.load(), requested = allocation_observation::bytes.load();
   const auto retained = allocation_lifetime::counts;
+  allocation_observation::calls = allocation_observation::bytes = 0;
+  allocation_observation::enabled = true;
+  const auto parent_cost=exchange_parent_observation::inspect(*projection,*contract,domain.get(),
+      [&](const void *pointer,std::size_t bytes) {
+        const auto *request=declaration_request(pointer);
+        check(request && request->bytes==bytes,"parent duplicate is an actual independent producer request");
+      });
+  const auto lookup_calls=allocation_observation::calls.load();
+  allocation_observation::enabled = false;
+  check(!lookup_calls && parent_cost.bytes()<=retained.live,
+        "full pinned recipe lookup allocates nothing and parent requests fit actual producer");
+  {
+    namespace P=exchange_parent_observation;
+    const auto &original=contract->outgoing().front();
+    PreparationWork lookup_work(UINT64_MAX);
+    const auto *tool=P::lookup(*projection,*contract,original,lookup_work);
+    check(tool && P::equal(original,*tool),"recipe parent lookup checks exact source association");
+    for (int defect=0;defect<6;++defect) {
+      auto changed=original;
+      if (defect==0) changed.occurrence.study=warm::new_uuid();
+      if (defect==1) ++changed.occurrence.source.entry;
+      if (defect==2) changed.occurrence.source.path.push_back(99);
+      if (defect==3) changed.definition.revision=warm::new_uuid();
+      if (defect==4) ++changed.mass;
+      if (defect==5) ++changed.node;
+      check(!P::lookup(*projection,*contract,changed,lookup_work),
+            "borrowed parent lookup refuses foreign stale path mass or node association");
+    }
+    for (int defect=0;defect<5;++defect) {
+      auto changed=original;
+      if (defect==0) changed.parents.front().target.revision=warm::new_uuid();
+      if (defect==1) ++changed.parents.front().ordinal;
+      if (defect==2) changed.parents.front().stored_mass=999;
+      if (defect==3) ++changed.parents.front().contribution;
+      if (defect==4) changed.parents.push_back(changed.parents.front());
+      check(P::lookup(*projection,*contract,changed,lookup_work)==tool && !P::equal(changed,*tool),
+            "matching source pins alone do not excuse changed parent provenance or order");
+    }
+    PreparationWork zero(0);
+    bool denied=false;
+    try { P::lookup(*projection,*contract,original,zero); }
+    catch (const PreparationStop &) { denied=true; }
+    check(denied,"inspection lookup work is explicit rather than an unlimited operation allowance");
+    PreparationWork measured(UINT64_MAX);
+    check(P::lookup(*projection,*contract,original,measured)==tool,"fresh lookup retains full source identity");
+    PreparationWork short_work(measured.result().charged-1), exact_work(measured.result().charged);
+    denied=false;
+    try { P::lookup(*projection,*contract,original,short_work); }
+    catch (const PreparationStop &) { denied=true; }
+    check(denied && P::lookup(*projection,*contract,original,exact_work)==tool,
+          "one-short lookup refuses and exact retry retains existing recipe parents");
+  }
   const auto &parts = contract->from() == warm::Exposure::Parts ? contract->outgoing() : contract->incoming();
   const auto part_rows = parts.size(), part_capacity = parts.capacity();
   const auto *backing = parts.data();
@@ -277,6 +330,13 @@ std::size_t leaf_inventory_cost(bool mixed, int mode) {
   check(stale_refused,"full parent target revision remains required with borrowed nibble provenance");
   check(retained.acquired == calls && !released.live && !released.blocks && released.acquired == released.released && (!domain || !domain->result().live_bytes),
         "actual factory scratch and detached declaration release every tracked request");
+  std::cout << "exchange_parent_producer,mixed=" << mixed << ",mode=" << mode
+            << ",sources=" << parent_cost.sources << ",parents=" << parent_cost.parents
+            << ",parent_vector_requested=" << parent_cost.vector_bytes
+            << ",parent_pin_requested=" << parent_cost.nested_bytes
+            << ",parent_requests=" << parent_cost.requests << ",parent_requested=" << parent_cost.bytes()
+            << ",repeated_sources=" << parent_cost.repeated_sources << ",lookup_work=" << parent_cost.lookup_work
+            << ",lookup_allocations=" << lookup_calls << ",runtime_saving=0,detached=1 PASS\n";
   std::cout << "exchange_leaf_cost,mixed=" << mixed << ",mode=" << mode << ",rows=" << rows
             << ",part_rows=" << part_rows << ",part_capacity=" << part_capacity
             << ",construction_calls=" << calls << ",construction_requested=" << requested

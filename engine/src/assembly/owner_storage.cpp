@@ -78,7 +78,15 @@ OwnerStorage ExchangeOwner::storage() const {
   declarations.buffer(declarations_);
   // One payload per exact selected owner; the binding's directional alias does
   // not own a second graph or another shared allocation identity.
-  for (const auto &c : declarations_) declarations.contract(*c);
+  for (const auto &c : declarations_) {
+    if (c->recipe_pin_!=projection_->recipe_)
+      throw warm::Error("declaration does not pin its owner's exact recipe");
+    // Validate each recipe-local index; aliased parent backing is already
+    // counted once with the projection recipe, never with the declaration.
+    for (const auto *side : {&c->outgoing(),&c->incoming()})
+      for (const auto &source : *side) (void)c->parents(source);
+    declarations.contract(*c);
+  }
   out.declarations = declarations.result;
   Census memberships;
   memberships.result.object_bytes = sizeof(*memberships_);

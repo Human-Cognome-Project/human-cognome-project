@@ -1,5 +1,14 @@
 # Private exchange-owner resource inventory
 
+[Private recipe-parent reuse](EXCHANGE-RECIPE-PARENTS.md) at `45ff81f3`, awaiting
+runtime review, retains one strong exact recipe pin per declaration and private
+validated source indices. Census counts index/pointer extents inline and recipe
+parent backing once with the projection recipe, preserving its control-block
+identity. Net retained/peak reductions are 1,245 / 4,980 / 2,217 bytes after
+overhead; setup work and public value costs are reported separately. Full byte/
+work/unwind/weak lifetime and native publication controls remain. This supersedes
+the copied private-parent census below; public/value copies still own parents.
+
 **Contributor initial-map adoption capture — 2026-11-17 (awaiting review):**
 [Actual whole-owner setup comparison](ADOPTION-SOURCE-CAPTURE.md) at `da083031`
 uses the owner's one prepaid map snapshot synchronously for temporary validation.

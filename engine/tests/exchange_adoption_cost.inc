@@ -255,6 +255,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   std::uint64_t fresh_bytes=0,fresh_requests=0,fresh_work=0;
   std::size_t selection_count=0;
   std::weak_ptr<ReservationDomain> weak;
+  exchange_parent_observation::Cost parent_cost;
   {
     O::Observe observe(*real);
     A::begin();
@@ -276,6 +277,10 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
         const auto declarations=Owner::declarations(*owner);
         const auto memberships=Owner::memberships(*owner);
         const auto &source=Owner::projection(*owner);
+        no_new([&] {
+          for (const auto &declaration:declarations)
+            parent_cost.add(exchange_parent_observation::inspect_pinned<Owner>(source,*declaration));
+        });
         retained_map_bytes=Owner::resources(*owner).maps.charged_bytes();
         map_cost_pairs(*owner,[&](auto role,const auto &r,const auto &g) {
           if (role!=2) return;
@@ -440,6 +445,13 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               << ",trace_equal=1,after_destroy_requested=0 PASS\n";
   }
   require(before==TickSnapshot(f),"adoption binding inspection changed native execution");
+  std::cout << "exchange_parent_owner,selections=" << selection_count
+            << ",sources=" << parent_cost.sources << ",parents=" << parent_cost.parents
+            << ",parent_vector_requested=" << parent_cost.vector_bytes
+            << ",parent_pin_requested=" << parent_cost.nested_bytes
+            << ",parent_requests=" << parent_cost.requests << ",parent_requested=" << parent_cost.bytes()
+            << ",repeated_sources=" << parent_cost.repeated_sources << ",lookup_work=" << parent_cost.lookup_work
+            << ",lookup_allocations=0,private_parent_backing=0,after_destroy_requested=0 PASS\n";
   std::cout << "exchange_adoption_binding_total,selections=" << selection_count
             << ",temporary_requests=" << temporary_requests << ",temporary_requested=" << temporary_bytes
             << ",temporary_work=" << temporary_work << ",owner_setup_work=" << setup.work.charged

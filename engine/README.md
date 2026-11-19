@@ -40,6 +40,11 @@ compares compiled layouts, indexed runtime cells and HCP occurrences, including
 catalogue revision boundaries, native recycling and accounting limits. Its
 focused witness is an inspection fixture, not a production object-model migration.
 
+The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
+measures declaration copies against the owner's existing pinned recipe, with
+ordered provenance, detached public values and explicit lifetime controls. Its
+private reuse proposal awaits review; runtime behavior is unchanged.
+
 ## Python boundary
 
 Taichi upstream ships a primarily Python-facing abstraction layer for arbitrary
