@@ -2,6 +2,7 @@
 void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
+  owner_recipe_parent_lifetime(f,projection,rows,fields);
   using Access = assembly::testing::ExchangeOwnerAccess;
   namespace A = allocation_lifetime;
   struct Buffer { const void *data; std::size_t bytes; };

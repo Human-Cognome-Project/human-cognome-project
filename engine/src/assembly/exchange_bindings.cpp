@@ -235,7 +235,7 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection,
       meter.charge(1); edges_.push_back({row, s.edges[row], count});
     };
     add(GroupKind::SiblingDefinition, source.definition.object, source.mass);
-    for (const auto &parent : source.parents) {
+    for (const auto &parent : contract_->parents(source,&meter)) {
       meter.charge(1);
       add(GroupKind::ParentValue, parent.target.object, parent.contribution);
     }

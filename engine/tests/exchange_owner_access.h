@@ -347,6 +347,15 @@ struct ExchangeOwnerAccess {
   static auto contract_copy(const LetterExchangeContract &c, const std::shared_ptr<detail::ReservationDomain> &domain) {
     return LetterExchangeContract(c,domain);
   }
+  static auto pinned_contract(const LetterProjection &p,const OccurrenceKey &key,warm::Exposure target,
+      const std::shared_ptr<detail::ReservationDomain> &domain,detail::PreparationWork &work,
+      std::shared_ptr<const warm::Bundle> pin) {
+    return LetterExchangeContract::collect(p,key,target,domain,&work,std::move(pin));
+  }
+  static const auto &contract_recipe(const LetterExchangeContract &c) { return c.recipe_pin_; }
+  static const auto &contract_parents(const LetterExchangeContract &c,const ExchangeSource &s) { return c.parents(s); }
+  static auto source_index(const ExchangeSource &s) { return s.recipe_tool_; }
+  static void source_index(ExchangeSource &s,std::size_t i) { s.recipe_tool_=i; }
   template<class Visit> static void contract_uuids(const LetterExchangeContract &c, Visit visit) {
     visit(c.owner().study); visit(c.recipe().selection); visit(c.recipe().revision);
     const auto reference=[&](const auto &r) { visit(r.object.scope); visit(r.revision); };
@@ -375,19 +384,21 @@ struct ExchangeOwnerAccess {
         a.recipe().revision != b.recipe().revision || (reverse ? a.to() : a.from()) != b.from() ||
         (reverse ? a.from() : a.to()) != b.to() ||
         a.mass() != b.mass() || a.match_work() != b.match_work() ||
-        !b.matches(outgoing.data(),outgoing.size(),incoming.data(),incoming.size(),UINT64_MAX))
+        !b.matches(a,reverse,UINT64_MAX))
       return false;
     // Bijections accept caller permutations; immutable declaration copies also
     // retain canonical source/parent order, which now supplies nibble provenance.
-    const auto ordered = [](const auto &x, const auto &y) {
+    const auto ordered = [&](const auto &x, const auto &y) {
       if (x.size() != y.size()) return false;
       for (std::size_t i=0; i<x.size(); ++i) {
         if (!(x[i].occurrence == y[i].occurrence) || !(x[i].definition == y[i].definition) ||
-            x[i].mass != y[i].mass || x[i].node != y[i].node || x[i].parents.size() != y[i].parents.size()) return false;
-        for (std::size_t j=0; j<x[i].parents.size(); ++j) {
-          const auto &a=x[i].parents[j], &b=y[i].parents[j];
-          if (!(a.target == b.target) || a.ordinal != b.ordinal ||
-              a.stored_mass != b.stored_mass || a.contribution != b.contribution) return false;
+            x[i].mass != y[i].mass || x[i].node != y[i].node) return false;
+        const auto &xp=a.parents(x[i]), &yp=b.parents(y[i]);
+        if (xp.size()!=yp.size()) return false;
+        for (std::size_t j=0; j<xp.size(); ++j) {
+          const auto &p=xp[j], &q=yp[j];
+          if (!(p.target == q.target) || p.ordinal != q.ordinal ||
+              p.stored_mass != q.stored_mass || p.contribution != q.contribution) return false;
         }
       }
       return true;

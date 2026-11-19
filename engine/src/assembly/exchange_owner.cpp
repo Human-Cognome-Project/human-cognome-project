@@ -160,7 +160,7 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
           ? warm::Exposure::Parts : warm::Exposure::Aggregate;
       meter.copy_key(projection_->study());
       auto forward = LetterExchangeContract::collect(*projection_,
-          {warm::Uuid(projection_->study(),domain), {selection.entry,{}}}, target,domain,&meter);
+          {warm::Uuid(projection_->study(),domain), {selection.entry,{}}}, target,domain,&meter,projection_->recipe_);
       meter.charge(sizeof(LetterExchangeContract));
       auto retained = std::allocate_shared<const LetterExchangeContract>(
           SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
