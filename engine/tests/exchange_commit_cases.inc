@@ -150,7 +150,21 @@ void exchange_commit(engine::Runtime &r, HostPath path) {
               "late exchange failure left healthy execution or published owner mapping");
       continue;
     }
-    const auto result = run();
+    UpdateResult result;
+#ifdef HCP_TRANSFER_AUDIT
+    auto transfers = std::make_unique<transfer_audit::Journal>();
+    if (scenario >= 0) refresh_metadata_dirty_tail(f.h);
+    { transfer_audit::Scope trace(*transfers);
+#endif
+    result = run();
+#ifdef HCP_TRANSFER_AUDIT
+    }
+    if (result.status == UpdateStatus::Ok) {
+      refresh_metadata_observe(f.h,*transfers,result,compression ? "atomic_compression" : "atomic_expansion");
+      require(refresh_metadata_remapped(f.h),"exchange transport did not exercise remapped native claims");
+    } else require(!transfers->refresh_commits && !result.native_copy_bytes,
+                   "ordinary exchange refusal performed native metadata copies");
+#endif
     std::cout << "exchange_commit_attempt,scenario=" << scenario << ",status=" << int(result.status)
               << ",budget=" << budget_name(result.failure.budget) << ",required=" << result.failure.required
               << ",generation=" << result.generation << ",expected=" << generation + 1 << std::endl;

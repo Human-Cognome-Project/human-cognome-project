@@ -2824,6 +2824,8 @@ void capture_current(engine::Runtime &r,
 #endif
 
 #include "live_hierarchy_refresh_cases.inc"
+#include "hierarchy_seed_transport.inc"
+#include "refresh_transport_inspection.inc"
 #include "native_selection_cases.inc"
 #include "contact_tick_cases.inc"
 #include "placement_cases.inc"
@@ -2837,7 +2839,6 @@ void capture_current(engine::Runtime &r,
 #include "exchange_owner_multiple.inc"
 #include "exchange_owner_equal.inc"
 #include "placement_audit.inc"
-#include "hierarchy_seed_transport.inc"
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -2904,6 +2905,8 @@ int main(int argc, char **argv) {
             "B1 candidate tick qualification requires actual x64 execution");
     require(!(settings.cuda && only.rfind("placement", 0) == 0),
             "B2 placement qualification requires actual x64 execution");
+    require(!(settings.cuda && only == "refresh_transport"),
+            "refresh transport inspection requires actual x64 execution");
     if (settings.cuda) {
       require(engine::cuda_available(), "CUDA requested but no visible device");
       settings.device_memory_gb = 1.0;
@@ -2912,7 +2915,7 @@ int main(int argc, char **argv) {
     // These qualification cases create many independent owners in one
     // Program. Native SNode IDs are monotonic even after a fixture is released.
     // Reserve this test-runner metadata explicitly; model budgets are unchanged.
-    if (only == "placement" || only == "hierarchy_seed_transport") settings.snode_capacity = 2048;
+    if (only == "placement" || only == "hierarchy_seed_transport" || only == "refresh_transport") settings.snode_capacity = 2048;
     taichi::lang::default_compile_config.print_kernel_asm = dump_code;
     taichi::lang::default_compile_config.print_kernel_llvm_ir_optimized = dump_code;
     engine::Runtime r(settings);
@@ -2973,6 +2976,8 @@ int main(int argc, char **argv) {
       run("admission_commit", [&] { admission_commit(r, path); });
     if (only == "placement" || only == "admission_bootstrap")
       run("admission_bootstrap", [&] { admission_bootstrap(r, path); });
+    if (only == "placement" || only == "admission_bootstrap_failures")
+      run("admission_bootstrap_failures", [&] { admission_bootstrap(r, path, 3); });
     if (only == "placement" || only == "coordinate_rebase")
       run("coordinate_rebase", [&] { coordinate_rebase(r, path); });
     if (only == "placement" || only == "exchange_state")
@@ -3057,6 +3062,10 @@ int main(int argc, char **argv) {
     }
     if (only == "refresh_dirty")
       run("refresh_dirty_counts", [&] { refresh_dirty_and_counts(r, path); });
+#ifdef HCP_TRANSFER_AUDIT
+    if (only == "refresh_transport")
+      run("refresh_transport", [&] { refresh_transport_inspection(r,path); });
+#endif
     if (only == "refresh") {
       run("refresh_basics", [&] { refresh_basics(r, path); });
       run("refresh_dirty_counts", [&] { refresh_dirty_and_counts(r, path); });

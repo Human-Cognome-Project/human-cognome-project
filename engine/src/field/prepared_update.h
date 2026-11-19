@@ -63,5 +63,7 @@ struct UpdateResult {
   std::uint64_t hierarchy_nodes{}, responses{}, repair_visits{};
   // Private admission preflight demand; never an admission-ready token.
   std::uint64_t contact_pairs{}, contact_work{};
+  // Completed intradevice copy requests, separate from host transfer bytes.
+  std::uint64_t native_copy_bytes{};
 };
 }  // namespace field
