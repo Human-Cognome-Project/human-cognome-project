@@ -167,6 +167,17 @@ LetterExchangeContract &LetterExchangeContract::operator=(const LetterExchangeCo
   return *this;
 }
 
+LetterExchangeContract &LetterExchangeContract::operator=(LetterExchangeContract &&other) noexcept {
+  if (this!=&other) {
+    // As for LetterProjection, destroy displaced buffers with their allocators
+    // intact, then transfer the value by noexcept construction. Equal-domain
+    // libstdc++ string assignment can otherwise strand reservation accounting.
+    this->~LetterExchangeContract();
+    ::new (static_cast<void *>(this)) LetterExchangeContract(std::move(other));
+  }
+  return *this;
+}
+
 LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &projection,
     const OccurrenceKey &owner, warm::Exposure target,
     const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork *meter,

@@ -30,9 +30,9 @@ struct ExchangeSource {
 class LetterExchangeContract {
  public:
   LetterExchangeContract(const LetterExchangeContract &);
-  LetterExchangeContract(LetterExchangeContract &&) = default;
+  LetterExchangeContract(LetterExchangeContract &&) noexcept = default;
   LetterExchangeContract &operator=(const LetterExchangeContract &);
-  LetterExchangeContract &operator=(LetterExchangeContract &&) = default;
+  LetterExchangeContract &operator=(LetterExchangeContract &&) noexcept;
   const OccurrenceKey &owner() const { return owner_; }
   const warm::BundleRef &recipe() const { return recipe_; }
   warm::Exposure from() const { return from_; }
