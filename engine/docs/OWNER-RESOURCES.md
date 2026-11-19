@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+[Catalogue-owned membership study](MEMBERSHIP-HEADER-IDENTITY.md) at `e7733a8c`,
+awaiting runtime review, retains one existing study header and private numeric
+row paths. Full public values detach explicitly. The census counts that header
+once and numeric row capacity/paths beside full target pins and kind/count.
+Actual net retained/requested-peak reductions are 303 / 1,212 / 606 bytes;
+cumulative request and work reductions, export/copy costs and source-pinned
+local CI are recorded separately. Authoritative GitHub CI remains pending.
+
 [Private recipe-parent reuse](EXCHANGE-RECIPE-PARENTS.md) at `45ff81f3`, awaiting
 runtime review, retains one strong exact recipe pin per declaration and private
 validated source indices. Census counts index/pointer extents inline and recipe
@@ -149,7 +157,7 @@ not an operational memory-budget policy or a second state authority.
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
 | `coordinator` | Coordinator object; command, intrinsic, field-command-index, hierarchy-node, child and contribution buffers |
 | `declarations` | Shared-pointer table capacity; one immutable declaration object per selection; owner/recipe pins; both source alternatives and their ordered parent provenance with complete nested keys/pins; operation direction is on the existing binding |
-| `memberships` | One catalogue object, study/recipe pins, all-alternative contribution capacity and constructed rows' full occurrence identities and target pins; explicit kind is inline and the field object comes from the target pin |
+| `memberships` | One catalogue object, one owning study header and recipe pins, all-alternative numeric-row capacity, constructed entry/path identities and full target pins; kind/count are inline and the field object comes from the target pin |
 
 Object sizes include embedded member objects. Vector capacity is multiplied by
 element size once; nested backing is then counted only for constructed elements.

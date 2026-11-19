@@ -1,6 +1,21 @@
 # Core continuation after local CUDA corrections
 
-**Membership row study identity — 2026-11-19 (inspection awaiting review):**
+**Catalogue-owned membership study — 2026-11-19 (runtime awaiting review):**
+[Numeric rows, explicit public values and net costs](../engine/docs/MEMBERSHIP-HEADER-IDENTITY.md)
+at `e7733a8c` implements #385's accepted direction from `fc0e7f65`, including the
+maintainer's combined #384 baseline. Private rows retain entry/path under one
+owned study header; public count/index extraction materializes full owning keys.
+Real owner retained/requested peaks fall 303 / 1,212 / 606 bytes; live/catalogue
+factories fall 680 / 1,360. Export and ordinary catalogue copy costs are separate.
+Quick CI, nine Clang/seven GCC CTests, thirteen Clang/eight GCC native cases and
+GCC 11/13 standalone suites pass: 4,886 value checks, 34 actual comparisons,
+27 owner observations and 872 export refusal/retry sites. Full study association,
+detached/domain/weak lifetime, exact work/unwind, native publication and following
+ticks remain qualified within that CPU scope. Raw evidence and reused before
+source equivalence are verified. Review this runtime and reconcile hosted results
+before maintainer integration; #343's remaining candidates and #324 stay separate.
+
+**Membership row study identity — 2026-11-19 (inspection accepted in #385):**
 [Actual strings, inline extent, context/lifetime and proposal](../engine/docs/MEMBERSHIP-STUDY-IDENTITY.md)
 at `47c97926` follows accepted combined #384 `4d4695ac`. Every row study equals
 the catalogue's existing owned header. Public/bounded live output retains eight
@@ -11,8 +26,8 @@ Quick CI, native membership value/physics suites, five Clang/three GCC hierarchy
 cases and GCC 11/13 standalone suites pass: 4,527 value checks, twenty owner and
 sixteen factory/copy observations. Context/key/text equivalence, foreign-study
 refusal, exact work retry, source death and every copy/collector allocation
-failure are retained. Review a numeric-row/header representation and explicit
-detached public identity before implementation; no generic registry is proposed.
+failure are retained. #385 accepted the private numeric-row/header and explicit
+detached-value boundary; the runtime follow-up is above. No registry is introduced.
 
 #384 is provisionally accepted in comment 7015927137, including the maintainer's
 #383 reconciliation. Main `c961fe86` integrates #382; #384 combined native CI
