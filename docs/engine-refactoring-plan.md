@@ -1,6 +1,10 @@
 # Engine and Analyst-facing refactoring plan
 
-Maintainer update (2026-11-19). #382 merged at `c961fe86`. #384 integrates the [#383 inspection](https://github.com/Human-Cognome-Project/human-cognome-project/pull/383) and checks private recipe-backed parents alongside detached public values. Combined hosted qualification is pending. Earlier entries record their respective handoffs.
+Maintainer update (2026-11-19). Combined #383/#384 passed the native gate and
+landed on main `6dcf3fef`. #385 targets main; #386 is provisionally accepted in
+review 7018419165, with remaining hosted regression checks pending. Its smoke,
+build, database, value and compiler jobs passed. Earlier entries preserve their
+source-specific handoffs; all merges remain with the maintainer.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -212,7 +216,24 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-19 contributor (membership header runtime awaiting review):
+2026-11-19 contributor (membership target-pin inspection awaiting review):
+[Actual repeated full pins and catalogue lifetime](../engine/docs/MEMBERSHIP-TARGET-PINS.md)
+at `01b09c77` follows accepted #386 `1c10f14c`. Real returned live/catalogue/copy
+pins request 676 / 1,352 bytes; five observed representatives occupy 424. Native
+owners request 267 / 1,068 / 534 pin bytes while each uses one exact target.
+Inline ToolRef attribution is separate; production and runtime saving remain
+unchanged. Quick CI, membership suites, five Clang/three GCC native cases and
+GCC 11/13 standalone suites pass, including 36 target observations, 4,922 checks
+and 52 unchanged factory/owner/export records. Context/full revision, source and
+detached lifetime, work/allocation refusal, publication and following ticks remain.
+Review catalogue-local unique full-pin ownership and checked indices with actual
+replacement overhead. The recipe reference is not a payload lifetime pin; native
+claims do not replace semantic revisions. Verified evidence and the bounded
+proposal remain separate from implementation. Main `6dcf3fef` integrates #384;
+#386 is accepted with remaining hosted regressions pending. All merges remain
+maintainer work, with #385/#386 and this inspection explicitly stacked.
+
+2026-11-19 contributor (membership header runtime provisionally accepted in #386):
 [Catalogue-owned study and detached exports](../engine/docs/MEMBERSHIP-HEADER-IDENTITY.md)
 at `e7733a8c` implements #385 review 7016915894 from accepted `fc0e7f65`.
 Numeric entry/path stays private under one owned study header; public count/index
@@ -224,8 +245,8 @@ pass, including 34 actual before/after comparisons, 27 owner observations,
 4,886 value checks and 872 export allocation refusals. Foreign-study association,
 source/catalogue/domain/weak death, exact work/unwind and atomic native
 publication/following ticks pass. Verified evidence includes the reused before
-archive and failed development compile. Runtime review and authoritative hosted
-CI remain pending on the accepted #384/#385 stack; all merges are maintainer work.
+archive and failed development compile. #386 provisionally accepts the runtime;
+remaining authoritative CI and maintainer integration stay separate.
 
 2026-11-19 contributor (membership study inspection accepted in #385):
 [Catalogue header identity](../engine/docs/MEMBERSHIP-STUDY-IDENTITY.md) at

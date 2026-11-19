@@ -1,6 +1,26 @@
 # Current implementation and work
 
-**Catalogue-owned membership study — 2026-11-19 (implementation awaiting review):**
+**Membership target-pin inspection — 2026-11-19 (awaiting review):**
+[Actual repeated pins, lifetime and bounded proposal](../../engine/docs/MEMBERSHIP-TARGET-PINS.md)
+at `01b09c77` follows accepted #386 `1c10f14c`. Eight live rows retain 676 pin
+bytes; sixteen catalogue/copy rows retain 1,352, covering five full targets whose
+observed representatives occupy 424 bytes. Real one/four/three owners retain
+267 / 1,068 / 534 pin bytes for one exact target each. Inline ToolRef extent is
+separate attribution; no table/index is implemented and runtime saving is zero.
+Quick CI, native membership suites, five Clang/three GCC hierarchy cases and
+GCC 11/13 standalone suites pass: 4,922 value checks, 36 target observations
+and 52 unchanged factory/owner/export comparisons. Full revision/context,
+allocation/work refusal, detached/domain/weak lifetime and native publication
+remain checked. Review a catalogue-owned unique full-pin table/index and its
+replacement overhead; a source recipe reference alone supplies no lifetime pin.
+Evidence is verified; new authoritative GitHub CI remains separate.
+
+Main `6dcf3fef` integrates combined #383/#384 after its native gate passed.
+#386 is provisionally accepted in review 7018419165; its smoke/build/database/
+value/compiler jobs passed while regression shards remain pending. #385 targets
+main, #386 and this inspection remain stacked. All merges are maintainer work.
+
+**Catalogue-owned membership study — 2026-11-19 (provisionally accepted in #386):**
 [Private numeric rows, detached values and actual costs](../../engine/docs/MEMBERSHIP-HEADER-IDENTITY.md)
 at `e7733a8c` implements #385 review 7016915894 from accepted `fc0e7f65`.
 One owned header supplies row studies; explicit count/index exports still own
@@ -12,8 +32,8 @@ checks, 34 actual before/after comparisons, 27 owner observations and 872 export
 allocation refusals. Foreign-study association, detached/source/domain lifetime,
 exact work/unwind and native atomic publication/following ticks pass. The verified
 bundle retains the original before evidence and failed development compile.
-New runtime review and authoritative GitHub CI remain; #384/#385 are provisional
-stack dependencies and all merge events stay with the maintainer.
+The maintainer accepts continuation in #386; remaining authoritative regression
+checks and integration stay separate. The latest stack state is recorded above.
 
 **Membership study identity inspection — 2026-11-19 (provisionally accepted in #385):**
 [Actual row/header UUID ownership and proposal](../../engine/docs/MEMBERSHIP-STUDY-IDENTITY.md)
@@ -35,7 +55,11 @@ including #383's reconciled private-parent observer. Main `c961fe86` includes
 #382. Combined #384 smoke passed and native qualification is pending; this
 inspection adds no integration merge. All merges remain maintainer work.
 
-Maintainer update (2026-11-19). #382 merged at `c961fe86`. #384 integrates the [#383 inspection](https://github.com/Human-Cognome-Project/human-cognome-project/pull/383) and checks private recipe-backed parents alongside detached public values. Combined hosted qualification is pending. Earlier entries record their respective handoffs.
+Maintainer update (2026-11-19). Combined #383/#384 passed the native gate and
+landed on main `6dcf3fef`. #385 targets main; #386 is provisionally accepted in
+review 7018419165, with remaining hosted regression checks pending. Its smoke,
+build, database, value and compiler jobs passed. Earlier entries preserve their
+source-specific handoffs; all merges remain with the maintainer.
 
 **Private owner recipe parents — 2026-11-19 (provisionally accepted in #384):**
 [Exact recipe pin/index, net costs and qualification](../../engine/docs/EXCHANGE-RECIPE-PARENTS.md)
