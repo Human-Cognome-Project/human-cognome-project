@@ -256,6 +256,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   std::size_t selection_count=0;
   std::weak_ptr<ReservationDomain> weak;
   exchange_parent_observation::Cost parent_cost;
+  membership_study_observation::Cost membership_study_cost;
   {
     O::Observe observe(*real);
     A::begin();
@@ -280,6 +281,11 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
         no_new([&] {
           for (const auto &declaration:declarations)
             parent_cost.add(exchange_parent_observation::inspect_pinned<Owner>(source,*declaration));
+          membership_study_cost=membership_study_observation::inspect(*memberships,source,
+              Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
+                require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
+                        "catalogue UUID attribution differs from an actual owner request");
+              });
         });
         retained_map_bytes=Owner::resources(*owner).maps.charged_bytes();
         map_cost_pairs(*owner,[&](auto role,const auto &r,const auto &g) {
@@ -445,6 +451,13 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               << ",trace_equal=1,after_destroy_requested=0 PASS\n";
   }
   require(before==TickSnapshot(f),"adoption binding inspection changed native execution");
+  std::cout << "membership_study_owner,selections=" << selection_count << ",rows=" << membership_study_cost.rows
+            << ",capacity=" << membership_study_cost.capacity << ",row_uuid_requests=" << membership_study_cost.requests
+            << ",row_uuid_requested=" << membership_study_cost.bytes << ",header_uuid_requested=" << membership_study_cost.header_bytes
+            << ",uuid_member_capacity_bytes=" << membership_study_cost.uuid_member_bytes
+            << ",outer_requested=" << membership_study_cost.outer_bytes
+            << ",header_comparison_work=" << membership_study_cost.comparison_work
+            << ",comparison_allocations=0,runtime_saving=0,after_destroy_requested=0 PASS\n";
   std::cout << "exchange_parent_owner,selections=" << selection_count
             << ",sources=" << parent_cost.sources << ",parents=" << parent_cost.parents
             << ",parent_vector_requested=" << parent_cost.vector_bytes
