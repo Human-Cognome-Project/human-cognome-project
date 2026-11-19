@@ -1,5 +1,7 @@
 # Engine and Analyst-facing refactoring plan
 
+Maintainer update (2026-11-19). #382 merged at `c961fe86`. #384 integrates the [#383 inspection](https://github.com/Human-Cognome-Project/human-cognome-project/pull/383) and checks private recipe-backed parents alongside detached public values. Combined hosted qualification is pending. Earlier entries record their respective handoffs.
+
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
 ## Purpose and boundaries

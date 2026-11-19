@@ -1,5 +1,7 @@
 # Core continuation after local CUDA corrections
 
+Maintainer update (2026-11-19). #382 merged at `c961fe86`. #384 integrates the [#383 inspection](https://github.com/Human-Cognome-Project/human-cognome-project/pull/383) and checks private recipe-backed parents alongside detached public values. Combined hosted qualification is pending. Earlier entries record their respective handoffs.
+
 **Private owner recipe parents — 2026-11-19 (runtime review pending):**
 [Pinned indices, actual net costs, lifetime and evidence](../engine/docs/EXCHANGE-RECIPE-PARENTS.md)
 at `45ff81f3` follows #383 comment 7014581181 on accepted #382 `e7915da7`.

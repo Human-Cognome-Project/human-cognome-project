@@ -37,6 +37,7 @@ void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projecti
   A::Counts retained, released;
   std::uint64_t calls = 0, requested = 0, recipe_bytes = 0, recipe_blocks = 0, recipe_request = 0;
   std::uint64_t borrow_calls = 0, stage_calls = 0;
+  exchange_parent_observation::Cost parent_cost;
   try {
     auto owner = Access::adopt(f.h,*source,rows,fields);
     allocation_observation::enabled = false;
@@ -44,6 +45,16 @@ void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projecti
     retained = A::counts;
     source.reset();
     const auto &current = Access::projection(*owner), &next = Access::spare_projection(*owner);
+    const auto &declarations=Access::declarations(*owner);
+    const warm::Tool *borrowed_tool=nullptr;
+    no_new([&] {
+      for (const auto &declaration:declarations)
+        parent_cost.add(exchange_parent_observation::inspect_pinned<Access>(current,*declaration));
+      assembly::detail::PreparationWork work(UINT64_MAX);
+      borrowed_tool=exchange_parent_observation::lookup(current,*declarations.front(),
+          declarations.front()->outgoing().front(),work);
+      require(borrowed_tool,"caller-source death lost borrowed recipe parent authority");
+    });
     const auto *domain = Access::reservation_domain(*owner).get();
     const auto append = [&](const auto &recipe, auto &out) {
       Access::recipe_backing(recipe,[&](const void *data, std::size_t bytes, const auto *selected) {
@@ -99,6 +110,10 @@ void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projecti
                   next.recipe().selections.front().exposure == expected.selections.front().exposure &&
                   Access::recipe_equivalent(*borrowed,expected) && Access::recipe_equivalent(*borrowed,next.recipe()),
               "live exposure staging changed immutable recipe or committed exposure");
+      assembly::detail::PreparationWork work(UINT64_MAX);
+      require(exchange_parent_observation::lookup(next,*declarations.front(),
+                  declarations.front()->outgoing().front(),work)==borrowed_tool,
+              "prospective exposure changed immutable parent backing");
       for (const auto *view : {&current,&next}) {
         const auto &buffers = view == &current ? committed : spare;
         std::size_t i = 0;
@@ -118,6 +133,11 @@ void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projecti
     std::weak_ptr<const warm::Bundle> weak_recipe = alias;
     std::weak_ptr<assembly::detail::ReservationDomain> weak = Access::reservation_domain(*owner);
     owner.reset();
+    no_new([&] {
+      require(std::any_of(alias->tools.begin(),alias->tools.end(),[&](const auto &tool) {
+                return &tool==borrowed_tool && !tool.parents.empty();
+              }),"explicit recipe pin did not retain borrowed parents after owner death");
+    });
     require(!weak_recipe.expired() && !weak.expired() && Access::recipe_equivalent(*alias,expected) &&
                 A::counts.live == recipe_bytes+recipe_request+bootstrap,
             "recipe alias lost meaning or retained mutable views after owner teardown");
@@ -133,6 +153,11 @@ void exchange_recipe_cost(Fixture &f, const assembly::LetterProjection &projecti
   } catch (...) { allocation_observation::enabled = false; if (A::active) A::end(); throw; }
   require(calls == retained.attempts && !released.live && !released.blocks && released.acquired == released.released &&
               before == TickSnapshot(f), "recipe inspection leaked C++ requests or changed native state");
+  std::cout << "exchange_parent_lifetime,selections=" << expected.selections.size()
+            << ",sources=" << parent_cost.sources << ",parents=" << parent_cost.parents
+            << ",parent_requested=" << parent_cost.bytes() << ",parent_requests=" << parent_cost.requests
+            << ",lookup_work=" << parent_cost.lookup_work
+            << ",caller_dead=1,staged_exposure=1,explicit_pin_after_owner_death=1,weak_release=1,private_parent_backing=0 PASS\n";
   std::cout << "exchange_recipe_cost,selections=" << expected.selections.size()
             << ",construction_calls=" << calls << ",construction_requested=" << requested
             << ",owner_retained=" << retained.live << ",owner_peak=" << retained.peak

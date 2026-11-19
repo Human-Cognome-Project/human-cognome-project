@@ -8,6 +8,8 @@ declarations and copies remain detached; raw caller arrays require owned parent
 descriptors rather than an unpinned private index. See the record for actual net
 costs, lifetime extension, the assignment fix and qualified scope.
 
+The [parent ownership inspection](EXCHANGE-PARENT-OWNERSHIP.md) records the original duplicate allocations.
+
 **Contributor implementation — 2026-11-17 (awaiting review):**
 [Retained parent authority](EXCHANGE-LEAF-AUTHORITY.md) at `0750a2cd` implements
 the leaf-vector removal authorized by #359. Canonical byte-source paths and
