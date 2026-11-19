@@ -542,7 +542,7 @@ void admission_contact_capacity(engine::Runtime &r, HostPath path) {
   }
 }
 
-void admission_bootstrap(engine::Runtime &r, HostPath path) {
+void admission_bootstrap(engine::Runtime &r, HostPath path, int failure = 0) {
   for (int bits : {52, 8}) {
   auto l = placement_limits(bits == 52 ? 70 : 128);
   l[Budget::Batch] = 2;
@@ -550,6 +550,7 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   l[Budget::ScratchBytes] = detail::PreparedStorage::required_scratch(
       l, false, NumericalProfile::trial(bits, 52)) + 256 * 1024 * 1024;
   Harness h(r, PreparedCapacity(l, NumericalProfile::trial(bits, 52)), path);
+  PreparedFixtureAccess::reorder_empty_claims(h);
   std::vector<UpdateCommand> commands;
   for (int i = 0; i < 3; ++i)
     commands.push_back(placement_definition(900 + i));
@@ -709,7 +710,37 @@ void admission_bootstrap(engine::Runtime &r, HostPath path) {
   prepared_test::Metrics metrics(r, PreparedFixtureAccess::nodes(h));
   const auto backing = metrics.sample();
   UpdateResult committed;
+  if (failure) {
+    PreparedFixtureAccess::inject_failure(h,failure);
+    bool failed = false;
+#ifdef HCP_TRANSFER_AUDIT
+    auto transfers = std::make_unique<transfer_audit::Journal>();
+    { transfer_audit::Scope trace(*transfers);
+#endif
+    try { PlacementAccess::bootstrap(h,commands,inputs,spec,focus); }
+    catch (const std::runtime_error &) { failed = true; }
+#ifdef HCP_TRANSFER_AUDIT
+    }
+    require(transfers->refresh_commits == 1 && transfers->refresh_copy_bytes > 0,
+            "bootstrap fault did not follow the real metadata copy commit");
+#endif
+    require(failed && !h.ready() && h.prepared_storage().generation == generation &&
+            h.prepared_storage().completed_ticks == 0 && h.tick_prepared(generation,{}).status == TickStatus::Unready,
+            "postclaim bootstrap failure advertised healthy/completed execution");
+    std::cout << "admission_bootstrap_failure,point=" << failure << ",bits=" << bits << ",unready=1 PASS\n";
+    continue;
+  }
+#ifdef HCP_TRANSFER_AUDIT
+  auto transfers = std::make_unique<transfer_audit::Journal>();
+  refresh_metadata_dirty_tail(h);
+  { transfer_audit::Scope trace(*transfers);
+#endif
   no_new([&] { committed = PlacementAccess::bootstrap(h, commands, inputs, spec, focus); });
+#ifdef HCP_TRANSFER_AUDIT
+  }
+  refresh_metadata_observe(h,*transfers,committed,"bootstrap");
+  require(refresh_metadata_remapped(h),"bootstrap transport did not exercise remapped native claims");
+#endif
   require(committed.status == UpdateStatus::Ok && committed.generation == generation + 1 &&
               h.live_hierarchy_installed() && h.present_particles() == 3 &&
               h.prepared_storage().live.focus == 2 &&
@@ -1898,8 +1929,18 @@ void admission_commit(engine::Runtime &r, HostPath path) {
             "ordinary admission preclaim rejection changed live state");
     PreparedFixtureAccess::inject_failure(f.h, 0);
     UpdateResult result;
+#ifdef HCP_TRANSFER_AUDIT
+    auto transfers = std::make_unique<transfer_audit::Journal>();
+    refresh_metadata_dirty_tail(f.h);
+    { transfer_audit::Scope trace(*transfers);
+#endif
     no_new([&] { result = PlacementAccess::preflight(
         f.h, commands.data(), commands.size(), &input, 1, spec, UINT64_MAX, true); });
+#ifdef HCP_TRANSFER_AUDIT
+    }
+    refresh_metadata_observe(f.h,*transfers,result,"generated_admission");
+    require(refresh_metadata_remapped(f.h),"admission transport did not exercise remapped native claims");
+#endif
     require(result.status == UpdateStatus::Ok && result.generation == generation + 1 &&
                 f.h.prepared_storage().completed_ticks == ticks &&
                 f.h.present_particles() == std::size_t(round + 2),
@@ -1989,7 +2030,7 @@ void admission_contact_remap(engine::Runtime &r, HostPath path) {
 }
 
 void admission_commit_failures(engine::Runtime &r, HostPath path) {
-  for (int failure : {2, 6}) {
+  for (int failure : {2, 3, 6}) {
     const auto limits = placement_limits();
     Fixture f(r, path, {{}}, {{1}}, {1}, {1}, {0}, 52, 52, false, false,
               true, false, 1024, {1}, &limits);

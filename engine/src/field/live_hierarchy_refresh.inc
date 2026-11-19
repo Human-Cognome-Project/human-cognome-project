@@ -896,11 +896,27 @@ void LiveHierarchy::commit_refresh(UpdateResult &out) {
     engine::upload(*a.arrays[index], values.data(), bytes);
     out.upload_bytes += bytes;
   };
+  const auto copy = [&](int staged, int live, const auto &values) {
+    const auto &source = *r.arrays[staged];
+    const auto &target = *a.arrays[live];
+    const auto from = source.get_device_allocation();
+    const auto to = target.get_device_allocation();
+    const auto bytes = values.size() * sizeof(values[0]);
+    if (!from.device || from.device != to.device || from == to ||
+        source.dtype != target.dtype || source.shape != target.shape ||
+        bytes != source.get_nelement() * source.get_element_size() ||
+        bytes != target.get_nelement() * target.get_element_size())
+      throw std::logic_error("incompatible refresh metadata destination");
+    // Both staged kernels keep these inputs read-only. Copy the entire reserved
+    // extent, including padding, into the same live allocations/bindings.
+    from.device->memcpy_internal(to.get_ptr(), from.get_ptr(), bytes);
+    out.native_copy_bytes += bytes;
+  };
   publish(2, r.cfg);
-  publish(3, r.children);
+  copy(4, 3, r.children);
   publish(4, r.sources);
-  publish(5, r.ratios);
-  publish(6, r.masks);
+  copy(6, 5, r.ratios);
+  copy(7, 6, r.masks);
   publish(9, r.coverage);
   publish(10, r.influences);
   publish(11, r.weights);

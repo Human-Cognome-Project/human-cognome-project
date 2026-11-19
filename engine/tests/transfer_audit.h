@@ -8,6 +8,7 @@
 #include "engine/transfer.h"
 #include "engine/runtime.h"
 #include "field/centroid_cascade.h"
+#include "field/live_hierarchy.h"
 
 #ifdef HCP_TRANSFER_AUDIT
 // Linux test executable only. Fixed storage is allocated before observing the
@@ -27,6 +28,8 @@ struct Journal {
   enum class Fault { None, BeforeCopy, AfterCopy, FinalSync };
   Fault fault{Fault::None};
   bool legacy{}, copied{};
+  std::size_t refresh_commits{};
+  std::uint64_t refresh_copy_bytes{};
   field::CascadeResult query{};
   void record(taichi::lang::Ndarray &array, const void *host,
               std::size_t bytes, bool upload) {
@@ -124,5 +127,24 @@ extern "C" void hcp_wrap_sync(engine::Runtime *r) {
   if (transfer_audit::active && transfer_audit::active->copied &&
       transfer_audit::active->fault == transfer_audit::Journal::Fault::FinalSync)
     throw std::runtime_error("test final installation synchronization failure");
+}
+extern "C" void hcp_real_refresh_commit(field::detail::LiveHierarchy *, field::UpdateResult &)
+    __asm__("__real__ZN5field6detail13LiveHierarchy14commit_refreshERNS_12UpdateResultE");
+extern "C" void hcp_wrap_refresh_commit(field::detail::LiveHierarchy *, field::UpdateResult &)
+    __asm__("__wrap__ZN5field6detail13LiveHierarchy14commit_refreshERNS_12UpdateResultE");
+extern "C" void hcp_wrap_refresh_commit(field::detail::LiveHierarchy *owner, field::UpdateResult &out) {
+  auto *journal = transfer_audit::active;
+  using Fault = transfer_audit::Journal::Fault;
+  if (journal && journal->fault == Fault::BeforeCopy)
+    throw std::runtime_error("test refresh commit entry failure after claims");
+  const auto before = out.native_copy_bytes;
+  hcp_real_refresh_commit(owner, out);
+  if (journal) {
+    ++journal->refresh_commits;
+    journal->refresh_copy_bytes += out.native_copy_bytes - before;
+    journal->copied = true;
+    if (journal->fault == Fault::AfterCopy)
+      throw std::runtime_error("test refresh commit completion failure");
+  }
 }
 #endif
