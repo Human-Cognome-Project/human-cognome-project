@@ -198,7 +198,7 @@ Numerical inspection can inform earlier boundaries, but mathematical changes nee
 
 ## Relationship to ongoing work
 
-The default retained capture remains v1/flat, with #341's prepared-C3 diagnostic unavailable in that mode. Structural source, sealed plan, bounded prepared ownership, combined native bootstrap and actual claim mapping are built. The [explicit active prepared submission](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md), provisionally accepted at #372 `3ea13f0e`, provisions Program-owned layout and Harness within ActiveSession and delegates to that owner using caller-supplied pinned v2 source, comparisons/intrinsics/focus/resources. The [opt-in retained English pair profile](../engine/docs/RETAINED-PREPARED-CAPTURE.md) now connects the producer to that entry and native observation with explicit bounded choices. Synthetic-source CPU tests qualify the adapter subset; actual retained acquisition is blocked by absent connections/services and a stopped local PostgreSQL server. No full retained-C3 execution or inferred Analyst policy follows. Do not duplicate native admission/installers or replay report geometry as authoritative state.
+The default retained capture remains v1/flat, with #341's prepared-C3 diagnostic unavailable in that mode. Structural source, sealed plan, bounded prepared ownership, combined native bootstrap and actual claim mapping are built. The [explicit active prepared submission](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md) and [opt-in English pair profile](../engine/docs/RETAINED-PREPARED-CAPTURE.md) are integrated through #372/#373. #374's provisionally accepted actual-source refusal route resolves the earlier missing-connection obstacle using verified isolated restores. The remaining profile blocker is explicit membership comparison choice: English A has four unique inherited targets. The [membership decision](../engine/docs/RETAINED-MEMBERSHIP-DECISION.md) proposes a complete six-node qualification chain, unchanged ParentValue focus and concrete bounds, with native fixture evidence. Production still refuses unsupported memberships; no full retained-C3 execution or inferred Analyst policy follows. Do not duplicate native admission/installers or replay report geometry as authoritative state.
 
 Full accounting/admission acceptance and GPU qualification keep their existing limits. Held #75/#111/#123 are unchanged. This refactoring plan does not activate them or authorize implementing future Analyst decisions.
 
@@ -236,6 +236,21 @@ covers the shared commit routine's bootstrap/admission/exchange callers.
 The inspection starts independently from main `22ea6d55`; accepted
 #375–#378 remain open, with their evidence/integration gates kept on those branches.
 GitHub CI is authoritative; all merges remain with the maintainer.
+
+2026-11-18 contributor (awaiting review):
+[Retained membership comparison/focus/resource decision](../engine/docs/RETAINED-MEMBERSHIP-DECISION.md)
+at `9d9d491f` follows #374 comment 6985194174 from current main `66edfb18`.
+Read-only source closure adds inherited Germanic/Indo-European targets to the two
+direct memberships, with NULL masses and per-occurrence diamond deduplication.
+The proposed complete equal-cohort chain uses six fields/nodes/rounds, five links
+and current ParentValue focus. Executable plan controls reject omission, forests,
+overlapping forks and four one-short budgets; six native fixture modes preserve
+source NULLs, actual claims, complete rows and a following tick. Quick CI, six
+Clang and three GCC suites pass. Unary complement responses are zero; no new
+category-force semantics or #324 mathematics is supplied. Review the explicit
+decision before production preset activation and genuine retained ticking.
+Production/fork/database/workflows remain unchanged, #374's final gates separate
+and all merges with the maintainer.
 
 2026-11-18 contributor (awaiting review):
 [Private bootstrap consumption](../engine/docs/PREPARED-BOOTSTRAP-CONSUMPTION.md)

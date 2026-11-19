@@ -576,6 +576,20 @@ if(HCP_WITH_VIEWPORT)
             ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
       endforeach()
     endforeach()
+    add_executable(retained_membership_decision_test tests/retained_membership_decision_test.cpp)
+    target_link_libraries(retained_membership_decision_test PRIVATE viewport_snapshot)
+    target_compile_options(retained_membership_decision_test PRIVATE -Wall -Wextra -Werror)
+    target_link_options(retained_membership_decision_test PRIVATE
+        "-Wl,--wrap=_ZN5field6detail13LiveHierarchy7installEmRKNS_19WeightedCascadeSpecEm"
+        "-Wl,--wrap=_ZN5field6detail13LiveHierarchy14commit_refreshERNS_12UpdateResultE")
+    foreach(workers 1 2)
+      foreach(path bulk direct)
+        add_test(NAME retained_membership_decision_${workers}_${path}
+            COMMAND retained_membership_decision_test ${workers} ${path})
+        set_tests_properties(retained_membership_decision_${workers}_${path} PROPERTIES
+            ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+      endforeach()
+    endforeach()
   endif()
 endif()
 
