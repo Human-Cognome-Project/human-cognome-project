@@ -1,6 +1,25 @@
 # Current implementation and work
 
-**Contributor adoption-validator reuse inspection — 2026-11-18 (awaiting review):**
+**Contributor adoption-local validator — 2026-11-19 (awaiting runtime review):**
+[#381's authorized implementation and actual before/after](../../engine/docs/ADOPTION-LOCAL-VALIDATOR.md)
+at `3d9424e4` reuses one five-buffer binding around the declaration loop and
+destroys it before spare/coordinator preparation. Every capture uses the same
+shared setup meter and full validation; invalidation precedes even checked
+inventory refusal. Actual whole-construction requests fall 484,240→354,400 bytes
+for four selections / 397,901→311,341 for three. Retained bytes and observed
+requested peaks stay 294,636 / 258,014; the single-selection control is unchanged.
+Quick CI, thirteen Clang/eight GCC cases pass, including 27 production observations,
+54 pre-stage inventory controls, full owner budget/unwind/lifetime/native exchange
+and standalone checks. Twelve actual before/after comparisons agree. The verified
+bundle retains baseline binaries and exact sources. Runtime review and authoritative
+GitHub CI remain pending; this is stacked on accepted #381 at `616a2987`.
+
+Main `3e76bf1e` now integrates #375–#380, including the retained positive preset,
+bootstrap consumption and native refresh copies. #381 is accepted, with hosted
+native/smoke passed on its reconciled head, but remains unmerged. All merges stay
+with the maintainer. Older entries retain their respective source/evidence scope.
+
+**Adoption-validator reuse inspection — 2026-11-18 (accepted in #381):**
 [Actual per-selection costs, scratch proof and bounded proposal](../../engine/docs/ADOPTION-VALIDATOR-REUSE.md)
 at `244ef0b0`, independently based on main `4bb937d8`, observes five capture-buffer
 requests / 43,280 bytes per adoption selection. One independent scratch binding
@@ -10,15 +29,15 @@ bytes; self peak remains one buffer set. Runtime is unchanged and achieved savin
 is zero. Quick CI, four Clang/two GCC probe modes and a complete Clang mixed-owner
 control pass, totaling nineteen observed fixtures with full fact/mask, work/role
 refusal, exact retry, map/native preservation and domain/weak cleanup checks.
-Review precedes runtime reuse; measure its actual owner overlap and preserve the
-existing shared setup meter, full validation, standalone and publication rules.
+The authorized runtime follow-up above measures actual owner overlap and preserves
+the existing shared setup meter, full validation, standalone and publication rules.
 Verified source-pinned evidence is linked from the record. GitHub CI is authoritative.
 
-Maintainer integration now places #377/#378 on main `4bb937d8`. #376 is merged
-into #375's branch `f5076e72`, whose combined checks remain pending. Source-accepted
-#379/#380 remain open on reconciled `8373ce08`/`2b53d0a8` pending hosted integration
-gates. This inspection has no code dependency on those open branches. All merges
-remain with the maintainer; older entries retain their source-specific evidence.
+At that inspection's initial handoff, #377/#378 were on main `4bb937d8` and #376
+was on #375's branch `f5076e72` for combined checks. #379/#380 were source-accepted
+on reconciled `8373ce08`/`2b53d0a8`, pending integration. Main `3e76bf1e` now
+supersedes those pending states. The inspection's original code/evidence is
+independent of them; all merges remain with the maintainer.
 
 **Contributor native C3 refresh metadata transport — 2026-11-18 (awaiting review):**
 [#379's authorized runtime follow-up](../../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)

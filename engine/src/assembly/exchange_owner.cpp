@@ -148,30 +148,35 @@ ExchangeOwner::ExchangeOwner(field::Harness &h, const LetterProjection &projecti
       SharedReservationAllocator<MembershipFields>(domain),MembershipFields::collect(*projection_,true,domain,&meter));
   // Validate each active logical occurrence's exact participation at adoption.
   // Initial identity/layout associations still come from trusted admission claims.
-  setup.phase = ProjectionSetupPhase::Declarations;
-  for (const auto &selection : projection_->recipe().selections) {
-    meter.charge(1);
-    meter.elements(projection_->recipe().selections.size(),1);
-    const auto target = projection_->exposure(selection.entry) == warm::Exposure::Aggregate
-        ? warm::Exposure::Parts : warm::Exposure::Aggregate;
-    meter.copy_key(projection_->study());
-    auto forward = LetterExchangeContract::collect(*projection_,
-        {warm::Uuid(projection_->study(),domain), {selection.entry,{}}}, target,domain,&meter);
-    meter.charge(sizeof(LetterExchangeContract));
-    auto retained = std::allocate_shared<const LetterExchangeContract>(
-        SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
-    setup.phase = ProjectionSetupPhase::Bindings;
-    meter.charge(sizeof(ExchangeBindings));
-    ExchangeBindings check(h_,*projection_,retained,memberships_,occurrences_,fields_,domain,meter);
+  setup.phase = ProjectionSetupPhase::Bindings;
+  meter.charge(sizeof(ExchangeBindings));
+  {
+    ExchangeBindings check(h_,domain,&meter);
     setup.phase = ProjectionSetupPhase::Declarations;
-    const auto append_declaration = [&] {
-      meter.charge(sizeof(declarations_[0]));
-      if (declarations_.size() == declarations_.capacity())
-        meter.elements(declarations_.size(),sizeof(declarations_[0]));
-    };
-    append_declaration();
-    declarations_.push_back(std::move(retained));
+    for (const auto &selection : projection_->recipe().selections) {
+      meter.charge(1);
+      meter.elements(projection_->recipe().selections.size(),1);
+      const auto target = projection_->exposure(selection.entry) == warm::Exposure::Aggregate
+          ? warm::Exposure::Parts : warm::Exposure::Aggregate;
+      meter.copy_key(projection_->study());
+      auto forward = LetterExchangeContract::collect(*projection_,
+          {warm::Uuid(projection_->study(),domain), {selection.entry,{}}}, target,domain,&meter);
+      meter.charge(sizeof(LetterExchangeContract));
+      auto retained = std::allocate_shared<const LetterExchangeContract>(
+          SharedReservationAllocator<LetterExchangeContract>(domain),std::move(forward));
+      setup.phase = ProjectionSetupPhase::Bindings;
+      check.capture_adoption(*projection_,retained,target,memberships_,occurrences_,fields_,meter);
+      setup.phase = ProjectionSetupPhase::Declarations;
+      const auto append_declaration = [&] {
+        meter.charge(sizeof(declarations_[0]));
+        if (declarations_.size() == declarations_.capacity())
+          meter.elements(declarations_.size(),sizeof(declarations_[0]));
+      };
+      append_declaration();
+      declarations_.push_back(std::move(retained));
+    }
   }
+  // The five scratch buffers release before spare/coordinator preparation.
   setup.phase = ProjectionSetupPhase::SpareInspection;
   // The spare copies mutable view state, retaining this owner's immutable
   // recipe. Recipe inventory was already admitted for the initial snapshot.

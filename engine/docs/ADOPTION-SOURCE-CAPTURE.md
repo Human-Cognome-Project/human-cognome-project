@@ -2,8 +2,10 @@
 
 The subsequent [validator-buffer reuse inspection](ADOPTION-VALIDATOR-REUSE.md)
 measures the remaining per-selection five-buffer construction and exercises an
-independent scratch replay. Its runtime proposal awaits review; the actual owner
-path below is unchanged by that inspection and achieved runtime saving there is zero.
+independent scratch replay. #381 accepted that proposal; the separate
+[adoption-local implementation](ADOPTION-LOCAL-VALIDATOR.md) records actual
+production reuse and the required full validation, refusal and lifetime controls.
+The earlier source/evidence below retains its historical per-selection behavior.
 
 Status: contributor implementation, 2026-11-17, awaiting review and authoritative
 GitHub CI. Tested public source: `da083031c9d5f6b99880939f5561c311d56ec9cc`,

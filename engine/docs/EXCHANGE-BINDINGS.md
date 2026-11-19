@@ -1,5 +1,11 @@
 # Private committed-source bindings for exchange
 
+The contributor [adoption-local validator](ADOPTION-LOCAL-VALIDATOR.md) reuses one
+existing five-buffer set only within the owner's declaration loop, invalidates
+before all capture refusals and preserves complete validation on the same shared
+setup meter. It releases before spare/coordinator preparation; standalone maps and
+operational bindings retain their ownership. Runtime review/hosted gates remain.
+
 [Private initial-map capture](ADOPTION-SOURCE-CAPTURE.md) at `da083031`,
 awaiting review, implements #367's authorized adoption path. Each temporary
 borrows the owner's prepaid maps synchronously and keeps independent captured
