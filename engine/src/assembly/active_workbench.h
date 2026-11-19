@@ -8,6 +8,7 @@
 
 namespace viewport { struct ActiveSessionAccess; }
 namespace assembly {
+namespace testing { struct ActiveAssemblyAccess; }
 namespace detail { class StructuralAdmissionPlan; class PreparedStudyOwner; }
 struct PreparedStudySubmission;
 struct PreparedSubmissionResult;
@@ -80,6 +81,7 @@ class ActiveAssembly {
 
  private:
   friend class detail::StructuralAdmissionPlan;
+  friend struct testing::ActiveAssemblyAccess;
   ActiveAssembly(LetterProjection projection, warm::Uuid owner, bool required,
                  std::optional<LocalInput> local);
   LetterProjection projection_;

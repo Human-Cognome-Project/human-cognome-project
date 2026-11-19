@@ -1051,10 +1051,10 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
     {
       auto catalogue = Access::catalogue(projection,domain);
       full = domain->result();
-      const auto &rows = catalogue.contributions();
+      const auto &rows = Access::catalogue_rows(catalogue);
       std::uint64_t path_bytes=0;
       for (const auto &row : rows) {
-        const auto &path=row.occurrence.source.path;
+        const auto &path=row.occurrence.path;
         require(path.get_allocator().domain == domain,"catalogue contribution path detached");
         path_bytes += path.capacity()*sizeof(std::uint32_t);
       }
@@ -1081,9 +1081,9 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
       Access::catalogue_addresses(*snapshot,[&](const auto &address) {
         require(!address.get_allocator().domain,"catalogue snapshot retained address domain");
       });
-      for (const auto &row : snapshot->contributions())
-        require(!row.occurrence.source.path.get_allocator().domain,"catalogue snapshot retained path domain");
-      require(!snapshot->contributions().get_allocator().domain &&
+      for (const auto &row : Access::catalogue_rows(*snapshot))
+        require(!row.occurrence.path.get_allocator().domain,"catalogue snapshot retained path domain");
+      require(!Access::catalogue_rows(*snapshot).get_allocator().domain &&
                   domain->result().live_bytes == full.live_bytes,
               "catalogue value snapshot retained or charged its source domain");
     }
@@ -1100,8 +1100,8 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
     auto value=Access::catalogue(projection,domain);
     moved.emplace(std::move(value));
     require(domain->result().live_bytes == full.live_bytes,"catalogue move changed accounting");
-    for (const auto &row : moved->contributions())
-      require(row.occurrence.source.path.get_allocator().domain == domain,"catalogue move detached path");
+    for (const auto &row : Access::catalogue_rows(*moved))
+      require(row.occurrence.path.get_allocator().domain == domain,"catalogue move detached path");
   }
   require(!watch.expired(),"moved catalogue lost allocation domain");
   require(Access::catalogue_equivalent(*moved,standalone),"catalogue move changed exact rows");
@@ -1205,10 +1205,10 @@ void catalogue_graph_address_controls() {
   const auto temporary=(projection.recipe().tools.size()+2*4+5)*address_size;
   // Each row owns one target address and three UUIDs (occurrence study,
   // target scope and revision); field kind is inline beside that pin.
-  const auto retained=reference.contributions().size()*address_size;
+  const auto retained=reference.contribution_count()*address_size;
   const auto temporary_uuid=(projection.recipe().tools.size()+2*4+5)*37;
-  const auto retained_uuid=(3+reference.contributions().size()*3)*37;
-  require(reference.contributions().size()==projection.occurrences().size()*3,
+  const auto retained_uuid=(3+reference.contribution_count()*2)*37;
+  require(reference.contribution_count()==projection.occurrences().size()*3,
           "diamond catalogue failed per-occurrence deduplication");
   auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
   const auto observe=[&] {
@@ -1787,7 +1787,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
                 "projection address differs from observed allocation request");
         projection_bytes += bytes;
       },p == &Access::projection(*owner));
-    const auto &membership_rows = Access::memberships(*owner)->contributions();
+    const auto &membership_rows = Access::catalogue_rows(*Access::memberships(*owner));
     std::uint64_t declaration_bytes=0;
     for (const auto &declaration : Access::declarations(*owner)) {
       for (const auto &entry : Access::contract_tables(*declaration)) if (entry.second) {
@@ -1829,7 +1829,7 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     require(!membership_bytes || containing_request(membership_rows.data()) == membership_bytes,
             "catalogue table differs from observed allocation request");
     for (const auto &row : membership_rows) {
-      const auto &path=row.occurrence.source.path;
+      const auto &path=row.occurrence.path;
       const auto bytes=path.capacity()*sizeof(std::uint32_t);
       require(!bytes || containing_request(path.data()) == bytes,
               "catalogue path differs from observed allocation request");

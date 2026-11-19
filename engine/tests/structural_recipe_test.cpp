@@ -691,7 +691,7 @@ int main() {
         f2.base, {{0, f2.ref(f2.english), warm::Exposure::Aggregate},
                   {1, f2.ref(f2.english), warm::Exposure::Parts}});
     auto gp = project_letters(grouped);
-    check(membership_fields(gp).contributions().size() == 2,
+    check(membership_fields(gp).contribution_count() == 2,
           "membership retains distinct uses and byte owner inheritance");
     check(
         membership_fields(gp).bind_structure(gp, nodes).memberships.size() == 2,

@@ -196,7 +196,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
         }) == 1, "reused parent pool lost or duplicated a contribution");
     }
     require(parent_count == current.parents().size() && active == Access::mappings(*owner).size() &&
-                assembly::membership_fields(current).contributions().size() == active,
+                assembly::membership_fields(current).contribution_count() == active,
             "multi-occurrence contribution inventory differs from exposure");
     Parameters64 parameters;
     parameters.dt = parameters.gravity = parameters.contact_stiffness = parameters.reach_strength = 0;

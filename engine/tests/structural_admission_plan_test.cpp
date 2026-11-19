@@ -1,6 +1,7 @@
 #include "assembly/structural_admission_plan.h"
 #include "assembly/intrinsic_geometry.h"
 #include "letter_projection_fixture.h"
+#include "membership_fields_access.h"
 #include "taichi/ir/snode.h"
 #include <algorithm>
 #include <cmath>
@@ -8,6 +9,12 @@
 #include <limits>
 #define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
+
+namespace assembly::testing {
+struct ActiveAssemblyAccess {
+  static auto &memberships(ActiveAssembly &value) { return value.memberships_; }
+};
+}
 
 namespace {
 using namespace assembly;
@@ -428,6 +435,24 @@ void bounded_setup() {
   }
 }
 
+void foreign_membership_header() {
+  for (const bool parts:{false,true}) {
+    Example e(parts);
+    auto &catalogue=assembly::testing::ActiveAssemblyAccess::memberships(*e.assembly);
+    const auto original=catalogue.study();
+    const auto numeric=assembly::testing::MembershipFieldsAccess::rows(catalogue).front().occurrence;
+    assembly::testing::MembershipFieldsAccess::study(catalogue,warm::new_uuid());
+    auto d=domain();
+    auto refused=e.build(d);
+    check(refused.status==Status::InvalidInput && !refused.plan && !d->result().live_bytes &&
+              assembly::testing::MembershipFieldsAccess::rows(catalogue).front().occurrence==numeric,
+          "foreign membership header refuses identical numeric plan rows and unwinds");
+    assembly::testing::MembershipFieldsAccess::study(catalogue,original);
+    auto retried=e.build(d);
+    check(retried.status==Status::Ok,"healthy plan retries after foreign catalogue refusal");
+  }
+}
+
 const allocation_lifetime::Entry *tracked(const void *pointer) {
   if (!pointer) return nullptr;
   auto *p = const_cast<void *>(pointer);
@@ -580,7 +605,7 @@ void independent_lifetimes() {
 int main() {
   try {
     source_and_symbols(false); source_and_symbols(true);
-    refusals(); mixed_scale(); bounded_setup(); independent_lifetimes();
+    refusals(); mixed_scale(); bounded_setup(); foreign_membership_header(); independent_lifetimes();
     allocation_failures(false,study_identity_cost(false));
     allocation_failures(true,study_identity_cost(true));
     study_scoping();

@@ -9,16 +9,7 @@
 #define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
 #include "membership_study_observation.h"
-
-namespace assembly::testing {
-struct MembershipFieldsAccess {
-  static auto catalogue(const LetterProjection &p) { return MembershipFields::collect(p,true); }
-  static auto bounded(const LetterProjection &p, bool alternatives,
-      const std::shared_ptr<detail::ReservationDomain> &domain, detail::PreparationWork &work) {
-    return MembershipFields::collect(p,alternatives,domain,&work);
-  }
-};
-}
+#include "membership_fields_access.h"
 
 namespace {
 using namespace membership_fixture;
@@ -44,8 +35,9 @@ void paths_and_contexts() {
                f.request(f.english, 1, warm::Exposure::Aggregate)});
   const auto p = project_letters(b);
   const auto fields = membership_fields(p);
+  const auto values=detached_memberships(fields);
   const auto mass = totals(fields);
-  check(fields.study() == p.study() && fields.contributions().size() == 6,
+  check(fields.study() == p.study() && fields.contribution_count() == 6,
         "two uses of A each reach three membership fields");
   check(mass.at(f.en) == 4 && mass.at(f.en_alphabet) == 4 &&
             mass.at(f.family) == 4,
@@ -53,7 +45,7 @@ void paths_and_contexts() {
         "occurrence");
   std::set<std::pair<std::string, std::string>> unique;
   bool identities = true, naming = true;
-  for (const auto &edge : fields.contributions()) {
+  for (const auto &edge : values) {
     unique.emplace(occurrence_text(edge.occurrence),
                    warm::key(edge.target.object));
     identities &= edge.kind == assembly::GroupKind::Membership &&
@@ -83,8 +75,9 @@ void paths_and_contexts() {
                f.request(f.english, 1, warm::Exposure::Parts),
                f.request(f.french, 2, warm::Exposure::Parts)}));
   const auto contextual = membership_fields(mixed);
+  const auto contextual_values=detached_memberships(contextual);
   check(
-      contextual.contributions().size() == 8,
+      contextual.contribution_count() == 8,
       "mixed exposure emits memberships only for the three active occurrences");
   const auto active_byte =
       [&](std::uint64_t entry) -> const ProjectedOccurrence & {
@@ -96,7 +89,7 @@ void paths_and_contexts() {
         "English/French byte occurrences use exactly the same pinned byte "
         "definition");
   bool isolated = true, owners = true;
-  for (const auto &edge : contextual.contributions()) {
+  for (const auto &edge : contextual_values) {
     const bool french = edge.occurrence.source.entry == 2;
     const bool french_group =
         edge.target.object == f.fr || edge.target.object == f.fr_alphabet;
@@ -118,8 +111,8 @@ void paths_and_contexts() {
     if (o.active) continue;
     check(
         std::none_of(
-            contextual.contributions().begin(),
-            contextual.contributions().end(),
+            contextual_values.begin(),
+            contextual_values.end(),
             [&](const auto &edge) { return edge.occurrence == o.key; }),
         "inactive aggregate/byte alternative has no membership participation");
   }
@@ -134,6 +127,7 @@ void mass_and_repetition() {
         {f.request(f.repeated, 0, exposure), f.request(f.dutch, 1, exposure),
          f.request(f.accented, 2, exposure)}));
     const auto fields = membership_fields(p);
+    const auto values=detached_memberships(fields);
     const auto mass = totals(fields);
     check(
         mass.at(f.nl) == 22 && mass.at(f.nl_alphabet) == 22 && mass.size() == 2,
@@ -150,11 +144,11 @@ void mass_and_repetition() {
           repeated == 2,
           "membership preparation leaves repeated source a ordinals separate");
     } else {
-      check(mass == aggregate_mass && fields.contributions().size() == 22,
+      check(mass == aggregate_mass && fields.contribution_count() == 22,
             "byte exposure conserves membership mass with one edge per target "
             "and byte position");
-      check(std::all_of(fields.contributions().begin(),
-                        fields.contributions().end(),
+      check(std::all_of(values.begin(),
+                        values.end(),
                         [](const auto &edge) {
                           return edge.count == 2 &&
                                  edge.occurrence.source.path.size() == 2;
@@ -169,7 +163,7 @@ void mass_and_repetition() {
   letter_fixture::Fixture bare;
   const auto p = project_letters(normalize_letters(
       bare.base, {bare.request(bare.english, 0, warm::Exposure::Aggregate)}));
-  check(membership_fields(p).contributions().empty(),
+  check(membership_fields(p).contribution_count()==0,
         "absent source ancestry stays absent; no inferred group paths");
 }
 void graph_failures() {
@@ -208,7 +202,7 @@ void bounded_traversal() {
        f.request(f.english,1,warm::Exposure::Parts)}));
   const auto signature = [](const MembershipFields &fields) {
     std::vector<std::string> out;
-    for (const auto &m : fields.contributions())
+    for (const auto &m : detached_memberships(fields))
       out.push_back(occurrence_text(m.occurrence)+"|"+warm::key(m.target.object)+"|"+
           std::string(m.target.revision.str())+"|"+std::to_string(m.count));
     return out;
@@ -301,13 +295,13 @@ void bounded_traversal() {
   PreparationWork deep_work(UINT64_MAX);
   {
     const auto fields = Access::bounded(deep_projection,false,deep_domain,deep_work);
-    check(fields.contributions().size() == depth,
+    check(fields.contribution_count() == depth,
           "deep explicit frame traversal deduplicates repeated terminal reachability");
     std::vector<ObjectKey> expected_keys;
     for (const auto &ref : chain) expected_keys.push_back(ref.object);
     std::sort(expected_keys.begin(),expected_keys.end());
     for (std::size_t i=0; i<depth; ++i)
-      check(fields.contributions()[i].target.object == expected_keys[i],
+      check(fields.contribution(i).target.object == expected_keys[i],
             "deep traversal retains deterministic value order");
   }
   check(!deep_domain->result().live_bytes, "deep frame stack and reached sets fully release");
@@ -324,9 +318,11 @@ void retained_alternatives() {
   const auto recipe = normalize_structural_letters(f.base,requests);
   const auto initial = project_letters(recipe);
   const auto catalogue = assembly::testing::MembershipFieldsAccess::catalogue(initial);
-  const auto *backing = catalogue.contributions().data();
-  const auto count = catalogue.contributions().size();
-  check(std::all_of(catalogue.contributions().begin(),catalogue.contributions().end(),
+  const auto &internal=assembly::testing::MembershipFieldsAccess::rows(catalogue);
+  const auto values=detached_memberships(catalogue);
+  const auto *backing = internal.data();
+  const auto count = catalogue.contribution_count();
+  check(std::all_of(values.begin(),values.end(),
                    [&](const auto &m) { return m.occurrence.study == initial.study(); }),
         "catalogue retains its own complete study identity");
   // Fresh projections mint their own study UUIDs. Compare source paths and all
@@ -338,21 +334,21 @@ void retained_alternatives() {
     const auto current = project_letters(normalize_structural_letters(f.base,requests));
     const auto live = membership_fields(current);
     bool exact = true;
-    for (const auto &m : live.contributions()) {
+    for (const auto &m : detached_memberships(live)) {
       exact &= m.occurrence.study == current.study();
-      exact &= std::count_if(catalogue.contributions().begin(),catalogue.contributions().end(),
+      exact &= std::count_if(values.begin(),values.end(),
           [&](const auto &c) { return c.occurrence.source == m.occurrence.source &&
             c.kind == m.kind && c.target.object == m.target.object &&
             c.target == m.target && c.count == m.count; }) == 1;
     }
     std::size_t active = 0;
-    for (const auto &m : catalogue.contributions())
+    for (const auto &m : values)
       active += std::any_of(current.occurrences().begin(),current.occurrences().end(),
           [&](const auto &o) { return o.active && o.key.source == m.occurrence.source; });
-    check(exact && active == live.contributions().size(),
+    check(exact && active == live.contribution_count(),
           "catalogue matches fresh memberships across exposure, repeated copies, diamonds and language contexts");
   }
-  check(catalogue.contributions().data() == backing && catalogue.contributions().size() == count,
+  check(internal.data() == backing && catalogue.contribution_count() == count,
         "all exposure combinations preserve the retained catalogue");
   rejects([&] { catalogue.bind(initial,{}); }, "alternative catalogue cannot bind as live legacy participation");
   rejects([&] { catalogue.bind_structure(initial,{}); }, "alternative catalogue cannot bind as live structural participation");
@@ -398,6 +394,9 @@ std::size_t membership_key_cost(int mode) {
     for (const auto &group : groups) expected.push_back({o.key,fixture->ref(group),2});
   }
   const auto study = projection->study();
+  std::vector<MembershipContribution> exported;
+  exported.reserve(expected.size()); // Detached output storage is outside the export window.
+  std::array<std::size_t,16> export_sites{};
   auto domain = (mode == 0 || mode == 3) ? std::shared_ptr<ReservationDomain>{} :
       std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
   std::optional<MembershipFields> copied_source;
@@ -421,7 +420,8 @@ std::size_t membership_key_cost(int mode) {
   bool study_attributed=true;
   allocation_observation::calls=allocation_observation::bytes=0;
   allocation_observation::enabled=true;
-  const auto study_cost=membership_study_observation::inspect(*fields,*projection,domain.get(),
+  const auto &internal=Access::rows(*fields);
+  const auto study_cost=membership_study_observation::inspect(*fields,*projection,internal,domain.get(),
       [&](const void *pointer,std::size_t bytes) {
         const auto *request=tracked(pointer);
         study_attributed &= request && request->bytes==bytes;
@@ -429,11 +429,11 @@ std::size_t membership_key_cost(int mode) {
   const auto study_borrow_calls=allocation_observation::calls.load();
   allocation_observation::enabled=false;
   check(study_attributed,"membership header/row UUID is an actual distinct producer request");
-  check(!study_borrow_calls && study_cost.bytes==37*study_cost.rows,
-        "existing catalogue header supplies every row study without comparison allocation");
+  check(!study_borrow_calls && !study_cost.bytes && !study_cost.requests && !study_cost.uuid_member_bytes,
+        "catalogue header supplies numeric rows without duplicate study backing or comparison allocation");
   {
     namespace S=membership_study_observation;
-    const auto &row=fields->contributions().front();
+    const auto &row=internal.front();
     PreparationWork full(UINT64_MAX);
     check(S::matches(*fields,row,expected.front().occurrence,full),"header study and numeric identity retain the complete occurrence");
     auto foreign=expected.front().occurrence;
@@ -453,20 +453,21 @@ std::size_t membership_key_cost(int mode) {
     }
     PreparationWork exact(full.result().charged);
     check(S::matches(*fields,row,expected.front().occurrence,exact),"exact header-comparison retry succeeds");
-    for (const auto &item:fields->contributions())
-      check(occurrence_text(fields->study(),item.occurrence.source)==occurrence_text(item.occurrence),
+    for (std::size_t i=0;i<internal.size();++i)
+      check(occurrence_text(fields->study(),internal[i].occurrence)==occurrence_text(expected[i].occurrence),
             "existing header rendering preserves the complete lossless opaque occurrence name");
   }
-  const auto count = fields->contributions().size(), capacity = fields->contributions().capacity();
-  const auto *outer = tracked(fields->contributions().data());
+  const auto count = fields->contribution_count(), capacity = internal.capacity();
+  const auto row_bytes=sizeof(internal[0]);
+  const auto *outer = tracked(internal.data());
   const auto outer_bytes = outer ? outer->bytes : 0;
   std::size_t pin_object_bytes = 0;
   bool exact = count == expected.size(), attributed = outer;
   for (std::size_t i=0; i<count && i<expected.size(); ++i) {
-    const auto &row = fields->contributions()[i];
+    const auto &row = internal[i];
     const auto &pin = row.target.object;
     exact &= row.kind == GroupKind::Membership &&
-             row.target == expected[i].target && row.occurrence == expected[i].occurrence && row.count == expected[i].count;
+             row.target == expected[i].target && row.occurrence == expected[i].occurrence.source && row.count == expected[i].count;
     const auto *pin_scope = tracked(pin.scope.str().data());
     const auto *pin_address = tracked(pin.address.data());
     attributed &= pin_scope && pin_address &&
@@ -477,45 +478,100 @@ std::size_t membership_key_cost(int mode) {
   allocation_observation::calls = allocation_observation::bytes = 0;
   allocation_observation::enabled = true;
   for (std::size_t i=0; i<count && i<expected.size(); ++i) {
-    const auto &object = fields->contributions()[i].target.object;
+    const auto &object = internal[i].target.object;
     exact &= object == expected[i].target.object;
   }
   allocation_observation::enabled = false;
   const auto borrow_calls = allocation_observation::calls.load(), borrow_bytes = allocation_observation::bytes.load();
-  const auto *backing = fields->contributions().data();
+  const auto *backing = internal.data();
+  const auto export_baseline=allocation_lifetime::counts;
+  allocation_observation::calls=allocation_observation::bytes=0;
+  allocation_observation::enabled=true;
+  for (std::size_t i=0;i<count;++i) {
+    const auto before=allocation_lifetime::counts.attempts;
+    exported.push_back(fields->contribution(i));
+    export_sites[i]=allocation_lifetime::counts.attempts-before;
+  }
+  allocation_observation::enabled=false;
+  const auto export_calls=allocation_observation::calls.load(), export_bytes=allocation_observation::bytes.load();
+  const auto export_live=allocation_lifetime::counts.live-export_baseline.live;
+  const auto source_live=domain?domain->result().live_bytes:0;
+  std::size_t export_refusals=0;
+  for (std::size_t i=0;i<count;++i) {
+    for (std::size_t fail=1;fail<=export_sites[i];++fail) {
+      const auto before=allocation_lifetime::counts;
+      allocation_lifetime::fail_at=before.attempts+fail;
+      bool refused=false;
+      try { fields->contribution(i); } catch (const std::bad_alloc &) {refused=true;}
+      allocation_lifetime::fail_at=0;
+      check(refused && allocation_lifetime::counts.live==before.live &&
+                allocation_lifetime::counts.blocks==before.blocks && (!domain || domain->result().live_bytes==source_live),
+            "every detached export allocation refusal leaves the catalogue and saved values intact");
+      {
+        const auto retried=fields->contribution(i);
+        check(retried.occurrence==expected[i].occurrence && retried.target==expected[i].target &&
+                  retried.kind==GroupKind::Membership && retried.count==expected[i].count,
+              "healthy export retry preserves complete independent identity and pins");
+      }
+      ++export_refusals;
+    }
+  }
+  rejects([&]{fields->contribution(count);},"export refuses the one-past-end index");
+  rejects([&]{fields->contribution(SIZE_MAX);},"export refuses an overflowing index");
   copied_source.reset(); projection.reset(); fixture.reset(); // All borrowed source/graph inputs die.
-  const bool detached = fields->study() == study && fields->contributions().data() == backing &&
-      allocation_lifetime::counts.live == retained.live;
+  const bool detached = fields->study() == study && internal.data() == backing &&
+      allocation_lifetime::counts.live == retained.live+export_live;
   for (std::size_t i=0; i<count && i<expected.size(); ++i) {
-    const auto &row = fields->contributions()[i];
+    const auto row = fields->contribution(i);
     exact &= row.occurrence == expected[i].occurrence && row.target == expected[i].target &&
              row.target.object == expected[i].target.object && row.count == expected[i].count &&
              occurrence_text(fields->study(),row.occurrence.source)==occurrence_text(expected[i].occurrence);
   }
   const auto domain_live = domain ? domain->result().live_bytes : 0;
+  const bool domain_snapshot_valid=!domain || domain_live==retained.live;
   fields.reset();
+  const auto domain_released=!domain || !domain->result().live_bytes;
+  std::weak_ptr<ReservationDomain> weak_domain=domain;
+  domain.reset();
+  bool exports_detached=weak_domain.expired() && allocation_lifetime::counts.live==export_live;
+  for (std::size_t i=0;i<exported.size();++i) {
+    const auto &value=exported[i];
+    exports_detached &= value.occurrence==expected[i].occurrence && value.target==expected[i].target &&
+        value.kind==GroupKind::Membership && value.count==expected[i].count &&
+        !value.occurrence.study.str().get_allocator().domain &&
+        !value.occurrence.source.path.get_allocator().domain &&
+        !value.target.object.scope.str().get_allocator().domain &&
+        !value.target.object.address.get_allocator().domain && !value.target.revision.str().get_allocator().domain;
+  }
+  exported.clear();
+  weak_domain.reset();
   const auto released = allocation_lifetime::end();
   check(exact && detached,"membership field and full target pin retain exact detached context/count/revision after source death");
   check(count == (mode >= 2 ? 16U : 8U) && attributed && pin_object_bytes,
         "actual live/catalogue producer owns one full field-object pin for every occurrence");
-  check(outer_bytes == capacity*sizeof(MembershipContribution) && (!domain || domain_live == retained.live),
+  check(outer_bytes == capacity*row_bytes && domain_snapshot_valid,
         "explicit kind and pin occupy actual vector capacity and selected-domain retained storage");
   check(!borrow_calls && !borrow_bytes,"existing full-pin object comparison allocates no storage");
   check(retained.acquired == calls && !released.live && !released.blocks && released.acquired == released.released &&
-        (!domain || !domain->result().live_bytes),"collector scratch and detached contributions release every tracked request");
+        domain_released,"collector scratch and detached contributions release every tracked request");
+  check(exports_detached && export_live==export_bytes,"public values retain full identity after catalogue and source-domain death");
+  std::cout << "membership_export_cost,mode=" << mode << ",rows=" << count << ",requests=" << export_calls
+            << ",requested=" << export_bytes << ",retained=" << export_live
+            << ",output_capacity_bytes=" << exported.capacity()*sizeof(MembershipContribution)
+            << ",allocation_refusals=" << export_refusals << ",catalogue_dead=1,source_domain_dead=1 PASS\n";
   std::cout << "membership_study_cost,mode=" << mode << ",recipe=" << recipe_version
             << ",rows=" << study_cost.rows << ",capacity=" << study_cost.capacity
             << ",row_uuid_requests=" << study_cost.requests << ",row_uuid_requested=" << study_cost.bytes
             << ",header_uuid_requested=" << study_cost.header_bytes << ",uuid_object_bytes=" << sizeof(warm::Uuid)
             << ",uuid_member_capacity_bytes=" << study_cost.uuid_member_bytes
             << ",outer_requested=" << study_cost.outer_bytes << ",header_comparison_work=" << study_cost.comparison_work
-            << ",comparison_allocations=" << study_borrow_calls << ",detached=1,runtime_saving=0 PASS\n";
+            << ",comparison_allocations=" << study_borrow_calls << ",detached=1,duplicate_row_study_backing=0 PASS\n";
   std::cout << "membership_key_cost,mode=" << mode << ",recipe=" << recipe_version << ",rows=" << count << ",capacity=" << capacity
             << ",construction_calls=" << calls << ",construction_requested=" << requested
             << ",retained_requested=" << retained.live << ",peak_requested=" << retained.peak
             << ",pin_object_requested=" << pin_object_bytes << ",kind_bytes=" << sizeof(GroupKind)
             << ",key_object_bytes=" << sizeof(warm::ObjectKey)
-            << ",row_object_bytes=" << sizeof(MembershipContribution) << ",outer_capacity_bytes=" << outer_bytes
+            << ",row_object_bytes=" << row_bytes << ",export_object_bytes=" << sizeof(MembershipContribution) << ",outer_capacity_bytes=" << outer_bytes
             << ",domain_live=" << domain_live << ",borrow_calls=" << borrow_calls
             << ",after_destroy_requested=" << released.live << ",preparation_work=" << work.result().charged << '\n';
   return calls;

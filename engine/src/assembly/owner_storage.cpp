@@ -95,7 +95,7 @@ OwnerStorage ExchangeOwner::storage() const {
   memberships.uuid(memberships_->recipe_.revision);
   memberships.buffer(memberships_->contributions_);
   for (const auto &row : memberships_->contributions_) {
-    memberships.key(row.occurrence);
+    memberships.buffer(row.occurrence.path);
     memberships.ref(row.target);
   }
   out.memberships = memberships.result;

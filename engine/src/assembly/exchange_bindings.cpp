@@ -239,8 +239,8 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection,
       meter.charge(1);
       add(GroupKind::ParentValue, parent.target.object, parent.contribution);
     }
-    for (const auto &membership : memberships_->contributions())
-      if (meter.equal(membership.occurrence,source.occurrence)) {
+    for (const auto &membership : memberships_->contributions_)
+      if (meter.equal(membership.occurrence,source.occurrence.source)) {
         meter.charge(1);
         need(membership.kind == GroupKind::Membership,"invalid membership field kind");
         add(membership.kind, membership.target.object, membership.count);

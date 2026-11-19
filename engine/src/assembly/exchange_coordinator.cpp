@@ -76,6 +76,9 @@ PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncomin
   nodes_.clear(); children_.clear(); contributions_.clear();
   need(bool(bound_), "missing trusted exchange bindings");
   auto &b = *bound_;
+  need(b.memberships_ && b.contract_ &&
+       meter.equal(b.memberships_->study_,b.contract_->owner().study),
+       "exchange command catalogue belongs to another study");
   const auto &s = b.h_.prepared_storage();
   const auto append = [&](const field::UpdateCommand &command) {
     need(commands_.size() < s.capacity.limits()[field::Budget::Batch],
@@ -208,8 +211,8 @@ PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncomin
     for (const auto &field : current_fields) {
       meter.charge(1);
       if (field.field.kind == GroupKind::Membership)
-      for (const auto &membership : b.memberships_->contributions())
-        if (meter.equal(membership.occurrence,source.occurrence) &&
+      for (const auto &membership : b.memberships_->contributions_)
+        if (meter.equal(membership.occurrence,source.occurrence.source) &&
             membership.kind == field.field.kind && meter.equal(membership.target.object,field.field.object))
           add(membership.kind, membership.target.object, membership.count, 0);
     }
