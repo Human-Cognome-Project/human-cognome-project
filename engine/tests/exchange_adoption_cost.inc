@@ -94,6 +94,108 @@ bool same_events(const Trace &owner,std::size_t id,const Trace &single) {
 }
 }
 
+template<class Declarations,class Rows,class Fields,class References>
+void adoption_validator_reuse(Fixture &f,const assembly::LetterProjection &projection,
+    const Declarations &declarations,std::shared_ptr<const assembly::MembershipFields> memberships,
+    const Rows &rows,const Fields &fields,const References &reference,
+    adoption_binding_observation::Trace &trace,std::uint64_t fresh_work,
+    std::size_t fresh_requests,std::size_t fresh_bytes) {
+  using Bind=assembly::testing::ExchangeBindingAccess;
+  using namespace assembly::detail;
+  namespace O=adoption_binding_observation;
+  namespace A=allocation_lifetime;
+  const auto prior=A::counts;
+  auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  std::weak_ptr<ReservationDomain> weak=domain;
+  trace.reset();
+  std::array<std::uint64_t,16> capture_work{};
+  std::uint64_t base_work=0,one_pass=0,two_passes=0;
+  std::size_t retries=0;
+  {
+    O::Select select(trace);
+    Bind::scratch(f.h,domain,UINT64_MAX,[&](auto &binding,auto &meter) {
+      base_work=meter.result().charged;
+      const auto selected=domain->result();
+      const auto compare=[&](std::size_t i) {
+        reference[i].compare(binding);
+        require(Bind::validate_adoption(binding,rows,fields).status==field::UpdateStatus::Ok &&
+                Bind::mappings(binding).storage().empty() && Bind::fields(binding).storage().empty() &&
+                Bind::validate(binding).status==field::UpdateStatus::InvalidInput,
+                "scratch replay lost actual source validation or retained map ownership");
+      };
+      for (int pass=0;pass<2;++pass) {
+        for (std::size_t step=0;step<declarations.size();++step) {
+          const auto i=pass ? declarations.size()-1-step : step;
+          const auto before=A::counts; const auto work_before=meter.result().charged;
+          no_new([&] {
+            Bind::recapture(binding,projection,declarations[i],declarations[i]->to(),memberships,rows,fields,meter);
+            compare(i);
+          });
+          const auto charged=meter.result().charged-work_before;
+          if (!pass) capture_work[i]=charged;
+          else require(capture_work[i]==charged,"reverse selection order changed complete capture work");
+          require(A::counts.attempts==before.attempts && A::counts.released==before.released &&
+                  domain->result().live_bytes==selected.live_bytes &&
+                  domain->result().charged_work==selected.charged_work,
+                  "recapture resized, replaced or released a reserved capture buffer");
+        }
+        (pass ? two_passes : one_pass)=meter.result().charged;
+      }
+      // Error diagnostics may allocate exception text. They are outside the
+      // successful replay ROI; the binding's five allocations stay tagged.
+      trace.current=0;
+      for (std::size_t i=0;i<declarations.size();++i) {
+        for (const auto allowance : {UINT64_C(0),capture_work[i]-1}) {
+          PreparationWork short_work(allowance);
+          bool refused=false;
+          try { Bind::recapture(binding,projection,declarations[i],declarations[i]->to(),memberships,rows,fields,short_work); }
+          catch (const PreparationStop &stop) { refused=stop.result.status==PreparationStatus::WorkExhausted; }
+          require(refused && Bind::validate_adoption(binding,rows,fields).status==field::UpdateStatus::InvalidInput,
+                  "short recapture advertised previous selection as valid");
+          PreparationWork exact(capture_work[i]);
+          no_new([&] {
+            Bind::recapture(binding,projection,declarations[i],declarations[i]->to(),memberships,rows,fields,exact);
+            compare(i);
+          });
+          require(exact.result().charged==capture_work[i],"exact recapture retry changed work");
+          ++retries;
+        }
+        PreparationWork wrong_role(UINT64_MAX);
+        bool refused=false;
+        try { Bind::recapture(binding,projection,declarations[i],declarations[i]->from(),memberships,rows,fields,wrong_role); }
+        catch (const warm::Error &) { refused=true; }
+        require(refused && Bind::validate_adoption(binding,rows,fields).status==field::UpdateStatus::InvalidInput,
+                "wrong-role recapture retained a valid prior selection");
+        PreparationWork exact(capture_work[i]);
+        no_new([&] {
+          Bind::recapture(binding,projection,declarations[i],declarations[i]->to(),memberships,rows,fields,exact);
+          compare(i);
+        });
+        ++retries;
+      }
+      trace.current=1;
+    });
+  }
+  const auto &scratch=trace.selections[1];
+  require(scratch.requests==5 && !scratch.live && scratch.bytes==scratch.peak &&
+          scratch.bytes==domain->result().charged_work && !domain->result().live_bytes &&
+          fresh_requests==5*declarations.size() && fresh_bytes==declarations.size()*scratch.bytes &&
+          fresh_work==one_pass+(declarations.size()-1)*base_work && two_passes==2*one_pass-base_work,
+          "reused capture cost differs from real per-selection constructors");
+  domain.reset();
+  require(weak.expired(),"scratch validator retained its reservation domain");
+  weak.reset();
+  require(A::counts.live==prior.live && A::counts.blocks==prior.blocks,
+          "scratch validator retained captured source or buffers");
+  std::cout << "adoption_validator_reuse,selections=" << declarations.size()
+    << ",actual_fresh_requests=" << fresh_requests << ",actual_fresh_requested=" << fresh_bytes
+    << ",scratch_requests=" << scratch.requests << ",scratch_requested=" << scratch.bytes << ",scratch_peak=" << scratch.peak
+    << ",candidate_request_reduction=" << fresh_requests-scratch.requests << ",candidate_requested_reduction=" << fresh_bytes-scratch.bytes
+    << ",base_work=" << base_work << ",fresh_work=" << fresh_work << ",scratch_one_pass_work=" << one_pass
+    << ",scratch_two_pass_work=" << two_passes << ",refusal_retries=" << retries
+    << ",full_facts_equal=1,recapture_new=0,runtime_saving=0 PASS\n";
+}
+
 void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection &projection,
     const std::vector<assembly::detail::OccurrenceBinding> &rows,
     const std::vector<assembly::detail::ExchangeFieldBinding> &fields) {
@@ -102,7 +204,9 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   using namespace assembly::detail;
   namespace O=adoption_binding_observation;
   namespace A=allocation_lifetime;
-  auto real=std::make_unique<O::Trace>(), single=std::make_unique<O::Trace>();
+  auto real=std::make_unique<O::Trace>(), single=std::make_unique<O::Trace>(), reused=std::make_unique<O::Trace>();
+  auto reference=std::make_unique<std::array<validator_reuse_observation::Snapshot,16>>();
+  for (auto &snapshot:*reference) snapshot.reserve(f.h);
   ProjectionSetupResult setup;
   real->reset(&setup);
   const TickSnapshot before(f);
@@ -222,6 +326,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
                           "temporary captured ledger omitted or duplicated outgoing participation");
                 }
                 validation=Bind::work(b);
+                (*reference)[i].capture(b);
                 require(validation==16*(rows.size()+fields.size()+edges+native.live.edges+1),
                         "temporary validation work omitted live inventory");
                 require(alive.live==domain->result().live_bytes && alive.live>=map_bytes &&
@@ -272,6 +377,11 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
             require(refused && !domain->result().live_bytes,"adoption lost independent field reservation bound");
           }
         }
+        adoption_validator_reuse(f,source,declarations,memberships,Owner::mappings(*owner),Owner::fields(*owner),
+            *reference,*reused,temporary_work,temporary_requests,temporary_bytes);
+        require(Owner::map_backing(*owner)==candidate_backing &&
+                map_cost_equal(Owner::mappings(*owner),rows) && map_cost_equal(Owner::fields(*owner),fields),
+                "scratch replay changed actual current/candidate owner maps");
       }
       require(weak.expired(),"temporary inspection retained the owner domain");
       weak.reset();

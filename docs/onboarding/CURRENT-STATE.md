@@ -1,5 +1,25 @@
 # Current implementation and work
 
+**Contributor adoption-validator reuse inspection — 2026-11-18 (awaiting review):**
+[Actual per-selection costs, scratch proof and bounded proposal](../../engine/docs/ADOPTION-VALIDATOR-REUSE.md)
+at `244ef0b0`, independently based on main `4bb937d8`, observes five capture-buffer
+requests / 43,280 bytes per adoption selection. One independent scratch binding
+replays complete fresh facts in forward/reverse order with no recapture allocation.
+The four/three-selection candidates remove 129,840/86,560 cumulative requested
+bytes; self peak remains one buffer set. Runtime is unchanged and achieved saving
+is zero. Quick CI, four Clang/two GCC probe modes and a complete Clang mixed-owner
+control pass, totaling nineteen observed fixtures with full fact/mask, work/role
+refusal, exact retry, map/native preservation and domain/weak cleanup checks.
+Review precedes runtime reuse; measure its actual owner overlap and preserve the
+existing shared setup meter, full validation, standalone and publication rules.
+Verified source-pinned evidence is linked from the record. GitHub CI is authoritative.
+
+Maintainer integration now places #377/#378 on main `4bb937d8`. #376 is merged
+into #375's branch `f5076e72`, whose combined checks remain pending. Source-accepted
+#379/#380 remain open on reconciled `8373ce08`/`2b53d0a8` pending hosted integration
+gates. This inspection has no code dependency on those open branches. All merges
+remain with the maintainer; older entries retain their source-specific evidence.
+
 **Contributor native C3 refresh metadata transport — 2026-11-18 (awaiting review):**
 [#379's authorized runtime follow-up](../../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)
 at `6196eca8` replaces only three second host uploads with full reserved native
@@ -78,7 +98,7 @@ with its final CI separate; this witness uses current-main APIs and introduces
 no source dependency on its unmerged transport scripts. All merges remain with
 the maintainer. Earlier handoffs below retain their historical scope/status.
 
-**Contributor private bootstrap consumption — 2026-11-18 (awaiting review/hosted CI):**
+**Private bootstrap consumption — 2026-11-18 (integrated in #378):**
 [Publication boundary, actual before/after and evidence](../../engine/docs/PREPARED-BOOTSTRAP-CONSUMPTION.md)
 at `9568f7e9` implements #377 review 6990952403 on reviewed `0302c527`.
 After final native claim/source-mass verification, the owner moves typed rows
@@ -88,10 +108,10 @@ Actual owner-domain retained requests fall 3966→1521 / 4870→1741 bytes; repl
 headers and setup peak rise by 64 bytes. Quick CI, 17 Clang and seven GCC suites
 pass. Final probe-only scoping `14ff61f9` passes Clang/GCC and matching historical
 comparisons with unchanged runtime. No database/GPU execution is claimed.
-Review and authoritative GitHub CI remain pending; this is stacked on #377.
-All merges remain maintainer work. Earlier entries retain their historical scope.
+The maintainer integrated #377/#378 as main `4bb937d8`; the local metrics above
+retain their exact historical source. All merges remain maintainer work.
 
-**Contributor prepared-plan lifetime inspection — 2026-11-18 (awaiting review):**
+**Prepared-plan lifetime inspection — 2026-11-18 (integrated in #377):**
 [Ownership trace, measured backing and private consumption proposal](../../engine/docs/PREPARED-PLAN-LIFETIME.md)
 at `b07adf29` starts from main `22ea6d55`, independently of open #375/#376.
 Six bootstrap buffers retain 1812/2496 requested bytes through a native tick in
@@ -100,8 +120,8 @@ Published body reports still read command-table exact mass. The proposal must
 preserve full source/typed mappings, current native claims and standalone plan
 lifetime before retiring private bootstrap backing. Quick CI, six Clang and three
 GCC suites pass, including twelve fixture observations and complete measured
-release. Runtime is unchanged; implementation awaits review and authoritative
-GitHub CI remains pending. #324, full accounting and GPU qualification stay separate.
+release. Runtime at the inspection source is unchanged; the authorized #378
+implementation is now integrated above. #324, full accounting and GPU stay separate.
 
 **Hosted transport correction for #374 — 2026-11-18:** Corrected source
 `65b502e9` clears the container `LD_LIBRARY_PATH` and scopes the matching loader/

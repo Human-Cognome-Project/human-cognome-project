@@ -210,6 +210,20 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
+2026-11-18 contributor (inspection/proposal awaiting review):
+[Adoption-validator buffer reuse](../engine/docs/ADOPTION-VALIDATOR-REUSE.md) at
+`244ef0b0`, independently based on main `4bb937d8`, measures five real temporary
+buffer requests / 43,280 bytes per selection and proves existing scratch replay
+against full fresh facts. Four/three selections expose 129,840/86,560 candidate
+cumulative requested-byte reductions; runtime saving is zero. Quick CI, four
+Clang/two GCC modes and the complete mixed-owner control pass, nineteen observed
+fixtures with order/mask/source/work/refusal/retry and lifetime checks. Review
+precedes runtime reuse; preserve the shared setup meter and all full validation,
+then measure actual constructor overlap, budgets, unwind and native publication.
+Main now integrates #377/#378; #376 is on #375's combined-check branch, while
+#379/#380 remain source-accepted and unmerged. No pending code is duplicated or
+integrated here. GitHub CI remains authoritative; all merges stay with the maintainer.
+
 2026-11-18 contributor (awaiting runtime review):
 [Native refresh metadata transport](../engine/docs/NATIVE-REFRESH-METADATA-TRANSPORT.md)
 at `6196eca8` follows #379's explicit authorization. Three second host uploads
@@ -252,25 +266,26 @@ decision before production preset activation and genuine retained ticking.
 Production/fork/database/workflows remain unchanged, #374's final gates separate
 and all merges with the maintainer.
 
-2026-11-18 contributor (awaiting review):
+2026-11-18 integrated in #378 (historical source-pinned local record):
 [Private bootstrap consumption](../engine/docs/PREPARED-BOOTSTRAP-CONSUMPTION.md)
 at `9568f7e9` implements #377's reviewed lifetime boundary. Typed rows move after
 final claim checks; replay storage retires before publication. Exact mass uses
 the checked native ledger, composed pins remain, and standalone plans keep their
 lifetime. Actual retained requests fall by 2445/3129 bytes with setup peak +64.
 Quick CI, 17 Clang and seven GCC suites pass; final test-only view scoping
-`14ff61f9` passes focused Clang/GCC and historical comparisons. Authoritative CI
-and review remain pending. Full accounting, GPU and #324 remain separate.
+`14ff61f9` passes focused Clang/GCC and historical comparisons. Main `4bb937d8`
+now integrates the maintainer-reviewed #377/#378. Full accounting, GPU and #324
+remain separate.
 
-2026-11-18 contributor (awaiting review):
+2026-11-18 integrated in #377 (historical inspection record):
 [Prepared plan lifetime inspection](../engine/docs/PREPARED-PLAN-LIFETIME.md) at
 `b07adf29` traces retained bootstrap descriptors and the published body's exact-mass
 dependency against existing native source/hierarchy ownership. Actual six-buffer
 requests total 1812/2496 bytes in aggregate/parts fixtures, retained through tick 1
 and fully released at owner teardown. No runtime saving is implemented. Quick CI,
-six Clang and three GCC suites pass. Review the private consumption proposal
-before implementation; preserve typed source/claim and standalone plan lifetimes.
-Authoritative hosted CI remains pending; other numerical/accounting scopes stay separate.
+six Clang and three GCC suites pass. The authorized private consumption in #378
+is now integrated, preserving typed source/claim and standalone plan lifetimes.
+Other numerical/accounting scopes stay separate.
 
 2026-11-18 hosted correction for #374: `65b502e9` keeps container bash/PostgreSQL
 utilities on their own runtime and uses the staged loader/library path only for
