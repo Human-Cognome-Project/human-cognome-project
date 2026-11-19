@@ -8,6 +8,7 @@ trap 'rm -rf "$scratch"' EXIT
 mkdir -p "$scratch/bin" "$scratch/build/viewport" "$scratch/build/taichi-runtime" "$scratch/container"
 cp /bin/true "$scratch/build/warm_active_integration"
 cp /bin/true "$scratch/build/viewport/viewport_letter_capture"
+cp /bin/true "$scratch/build/viewport/viewport_retained_capture_check"
 printf 'transport fixture\n' > "$scratch/build/taichi-runtime/runtime_x64.bc"
 ldd /bin/true > "$scratch/real-libraries.txt"
 export HCP_TRANSPORT_TEST_ROOT="$scratch"
@@ -100,12 +101,18 @@ grep -Fq 'libmissing.so => not found' "$scratch/missing.log"
 bash "$scripts/run_warm_active_acceptance.sh" "$scratch/build" fixture core ling > "$scratch/legacy.log" 2>&1
 # Prepared mode executes the real probe shell and reaches a container-side psql
 # with an unpolluted environment. Its controlled SQL failure must be retained.
-set +e
-bash "$scripts/run_warm_active_acceptance.sh" "$scratch/build" fixture core ling prepared-membership-refusal > "$scratch/prepared.log" 2>&1
-code=$?
-set -e
-test "$code" != 0
-test "$(cat "$scratch/utility-runtime.txt")" = 'clean utility runtime'
-grep -Fxq 'last_step=freshness' "$scratch/build/"acceptance-*/retained-probe/result.txt
-grep -Fxq 'exit_code=42' "$scratch/build/"acceptance-*/retained-probe/result.txt
+for mode in prepared-membership-refusal prepared-retained-positive; do
+  set +e
+  bash "$scripts/run_warm_active_acceptance.sh" "$scratch/build" fixture core ling "$mode" > "$scratch/$mode.log" 2>&1
+  code=$?
+  set -e
+  test "$code" != 0
+done
+test "$(cat "$scratch/utility-runtime.txt")" = $'clean utility runtime\nclean utility runtime'
+results=("$scratch/build/"acceptance-*/retained-probe/result.txt)
+test "${#results[@]}" = 2
+for result in "${results[@]}"; do
+  grep -Fxq 'last_step=freshness' "$result"
+  grep -Fxq 'exit_code=42' "$result"
+done
 echo 'PASS: missing-library refusal without rg, native loader transport, clean shell/utility runtime and failed probe evidence'

@@ -1,5 +1,7 @@
 # Retained prepared-source qualification
 
+**Positive follow-up — 2026-11-18:** The separately authorized `prepared-retained-english-pair` now has [actual acquired-source/native-tick/release evidence](RETAINED-POSITIVE-CAPTURE.md) at `e86b588e`, with local CPU checks passing and hosted CI/review pending. The original `prepared-english-pair` refusal below is preserved and rerun beside it; its no-publication/no-acquisition outcome remains unchanged.
+
 Contributor witness under #343, following [#373 review 5959051551](https://github.com/Human-Cognome-Project/human-cognome-project/pull/373#pullrequestreview-5959051551). Tested source: `8fa4dbb139936023e7b881dcc206608a0479c529`, based on corrected #373 `0e2add68`. **Result: verified retained-source membership refusal. A retained C3 publication/completed tick remains unqualified.**
 
 ## Hosted transport correction and inspected evidence — 2026-11-18
