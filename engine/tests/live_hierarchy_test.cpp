@@ -2833,6 +2833,7 @@ void capture_current(engine::Runtime &r,
 #include "exchange_field_cases.inc"
 #include "owner_lifetime.inc"
 #include "exchange_parent_observation.h"
+#include "membership_study_observation.h"
 #include "owner_recipe_parents.inc"
 #include "exchange_recipe_cost.inc"
 #include "exchange_map_cost.inc"

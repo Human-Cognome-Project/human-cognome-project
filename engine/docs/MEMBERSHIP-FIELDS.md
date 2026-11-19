@@ -1,5 +1,12 @@
 # Contextual membership fields — Stage C
 
+[The study identity inspection](MEMBERSHIP-STUDY-IDENTITY.md) at `47c97926`
+attributes study UUID copies repeated beside the existing catalogue header,
+including actual live/catalogue/value-copy and native-owner observations.
+Header/key/text equivalence, detached lifetime and refusal controls are retained.
+Production and the public row contract are unchanged; review the proposed
+numeric-row/header and complete detached-output boundary before implementation.
+
 **Contributor implementation — 2026-11-17 (awaiting review):**
 [target-pin authority](MEMBERSHIP-PIN-AUTHORITY.md) at `4f27d26d` implements
 the duplicate field-object removal authorized by #357. Rows retain explicit

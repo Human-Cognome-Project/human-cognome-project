@@ -1,5 +1,7 @@
 # Private exchange parents from the pinned owner recipe
 
+Maintainer update (2026-11-19): [comment 7015927137](https://github.com/Human-Cognome-Project/human-cognome-project/pull/384#issuecomment-7015927137) provisionally accepts this implementation and continuation from `4d4695ac`, integrating #383's independent parent observation with this runtime. #382 is now main `c961fe86`; combined #384 smoke passed and authoritative native CI remains pending. The earlier source/evidence and integration notes below describe the original handoff.
+
 Status: **contributor runtime implementation awaiting review**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). The maintainer [accepted #383 and specified this representation](https://github.com/Human-Cognome-Project/human-cognome-project/pull/383#issuecomment-7014581181): one strong exact recipe pin per independently retainable private declaration and a validated recipe-local index per source, with detached public/value paths and actual net measurement. This implementation is stacked on provisionally accepted #382 at `e7915da7e1ba38f5e396532b31be688fb1ab7aed`; maintainer integration is still separate. Tested source `45ff81f37a59a09270ccc686b5668ec9c67a2efe`, tree `6a0593a3dc3183352bc5a50b13673554af57dffd`. The [inspection record](https://github.com/Human-Cognome-Project/human-cognome-project/blob/f5409f40de9e58b96ec2b457bd2624b6df67d3ef/engine/docs/EXCHANGE-PARENT-OWNERSHIP.md) retains its source-specific zero-saving baseline.
 
 ## Ownership and read boundary

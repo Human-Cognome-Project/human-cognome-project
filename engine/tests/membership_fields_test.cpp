@@ -8,6 +8,7 @@
 #include "membership_fixture.h"
 #define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
+#include "membership_study_observation.h"
 
 namespace assembly::testing {
 struct MembershipFieldsAccess {
@@ -389,7 +390,7 @@ std::size_t membership_key_cost(int mode) {
   struct Expected { OccurrenceKey occurrence; ToolRef target; std::uint64_t count; };
   std::vector<Expected> expected;
   for (const auto &o : projection->occurrences()) {
-    if (mode != 2 && !o.active) continue;
+    if (mode < 2 && !o.active) continue;
     std::vector<ObjectKey> groups = o.key.source.entry == 20
         ? std::vector<ObjectKey>{fixture->fr,fixture->fr_alphabet}
         : std::vector<ObjectKey>{fixture->en,fixture->en_alphabet,fixture->family};
@@ -397,8 +398,10 @@ std::size_t membership_key_cost(int mode) {
     for (const auto &group : groups) expected.push_back({o.key,fixture->ref(group),2});
   }
   const auto study = projection->study();
-  auto domain = mode == 0 ? std::shared_ptr<ReservationDomain>{} :
+  auto domain = (mode == 0 || mode == 3) ? std::shared_ptr<ReservationDomain>{} :
       std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
+  std::optional<MembershipFields> copied_source;
+  if (mode==3) copied_source.emplace(Access::catalogue(*projection));
   PreparationWork work(UINT64_MAX);
   std::optional<MembershipFields> fields;
   allocation_lifetime::begin();
@@ -406,6 +409,7 @@ std::size_t membership_key_cost(int mode) {
   allocation_observation::enabled = true;
   try {
     if (mode == 0) fields.emplace(membership_fields(*projection));
+    else if (mode == 3) fields.emplace(*copied_source);
     else fields.emplace(Access::bounded(*projection,mode == 2,domain,work));
   } catch (...) {
     allocation_observation::enabled = false;
@@ -414,6 +418,45 @@ std::size_t membership_key_cost(int mode) {
   allocation_observation::enabled = false;
   const auto calls = allocation_observation::calls.load(), requested = allocation_observation::bytes.load();
   const auto retained = allocation_lifetime::counts;
+  bool study_attributed=true;
+  allocation_observation::calls=allocation_observation::bytes=0;
+  allocation_observation::enabled=true;
+  const auto study_cost=membership_study_observation::inspect(*fields,*projection,domain.get(),
+      [&](const void *pointer,std::size_t bytes) {
+        const auto *request=tracked(pointer);
+        study_attributed &= request && request->bytes==bytes;
+      });
+  const auto study_borrow_calls=allocation_observation::calls.load();
+  allocation_observation::enabled=false;
+  check(study_attributed,"membership header/row UUID is an actual distinct producer request");
+  check(!study_borrow_calls && study_cost.bytes==37*study_cost.rows,
+        "existing catalogue header supplies every row study without comparison allocation");
+  {
+    namespace S=membership_study_observation;
+    const auto &row=fields->contributions().front();
+    PreparationWork full(UINT64_MAX);
+    check(S::matches(*fields,row,expected.front().occurrence,full),"header study and numeric identity retain the complete occurrence");
+    auto foreign=expected.front().occurrence;
+    foreign.study=warm::new_uuid();
+    PreparationWork work(UINT64_MAX);
+    check(!S::matches(*fields,row,foreign,work),"equal entry/path in another study is refused by header comparison");
+    foreign=expected.front().occurrence; ++foreign.source.entry;
+    check(!S::matches(*fields,row,foreign,work),"header study does not merge repeated occurrence entries");
+    foreign=expected.front().occurrence; foreign.source.path.push_back(99);
+    check(!S::matches(*fields,row,foreign,work),"header study does not merge distinct constituent paths");
+    for (auto allowance:{UINT64_C(0),full.result().charged-1}) {
+      PreparationWork short_work(allowance);
+      bool refused=false;
+      try { S::matches(*fields,row,expected.front().occurrence,short_work); }
+      catch (const PreparationStop &) {refused=true;}
+      check(refused,"header comparison refuses zero/one-short work before success");
+    }
+    PreparationWork exact(full.result().charged);
+    check(S::matches(*fields,row,expected.front().occurrence,exact),"exact header-comparison retry succeeds");
+    for (const auto &item:fields->contributions())
+      check(occurrence_text(fields->study(),item.occurrence.source)==occurrence_text(item.occurrence),
+            "existing header rendering preserves the complete lossless opaque occurrence name");
+  }
   const auto count = fields->contributions().size(), capacity = fields->contributions().capacity();
   const auto *outer = tracked(fields->contributions().data());
   const auto outer_bytes = outer ? outer->bytes : 0;
@@ -440,25 +483,33 @@ std::size_t membership_key_cost(int mode) {
   allocation_observation::enabled = false;
   const auto borrow_calls = allocation_observation::calls.load(), borrow_bytes = allocation_observation::bytes.load();
   const auto *backing = fields->contributions().data();
-  projection.reset(); fixture.reset(); // All borrowed source/graph inputs die.
+  copied_source.reset(); projection.reset(); fixture.reset(); // All borrowed source/graph inputs die.
   const bool detached = fields->study() == study && fields->contributions().data() == backing &&
       allocation_lifetime::counts.live == retained.live;
   for (std::size_t i=0; i<count && i<expected.size(); ++i) {
     const auto &row = fields->contributions()[i];
     exact &= row.occurrence == expected[i].occurrence && row.target == expected[i].target &&
-             row.target.object == expected[i].target.object && row.count == expected[i].count;
+             row.target.object == expected[i].target.object && row.count == expected[i].count &&
+             occurrence_text(fields->study(),row.occurrence.source)==occurrence_text(expected[i].occurrence);
   }
   const auto domain_live = domain ? domain->result().live_bytes : 0;
   fields.reset();
   const auto released = allocation_lifetime::end();
   check(exact && detached,"membership field and full target pin retain exact detached context/count/revision after source death");
-  check(count == (mode == 2 ? 16U : 8U) && attributed && pin_object_bytes,
+  check(count == (mode >= 2 ? 16U : 8U) && attributed && pin_object_bytes,
         "actual live/catalogue producer owns one full field-object pin for every occurrence");
   check(outer_bytes == capacity*sizeof(MembershipContribution) && (!domain || domain_live == retained.live),
         "explicit kind and pin occupy actual vector capacity and selected-domain retained storage");
   check(!borrow_calls && !borrow_bytes,"existing full-pin object comparison allocates no storage");
   check(retained.acquired == calls && !released.live && !released.blocks && released.acquired == released.released &&
         (!domain || !domain->result().live_bytes),"collector scratch and detached contributions release every tracked request");
+  std::cout << "membership_study_cost,mode=" << mode << ",recipe=" << recipe_version
+            << ",rows=" << study_cost.rows << ",capacity=" << study_cost.capacity
+            << ",row_uuid_requests=" << study_cost.requests << ",row_uuid_requested=" << study_cost.bytes
+            << ",header_uuid_requested=" << study_cost.header_bytes << ",uuid_object_bytes=" << sizeof(warm::Uuid)
+            << ",uuid_member_capacity_bytes=" << study_cost.uuid_member_bytes
+            << ",outer_requested=" << study_cost.outer_bytes << ",header_comparison_work=" << study_cost.comparison_work
+            << ",comparison_allocations=" << study_borrow_calls << ",detached=1,runtime_saving=0 PASS\n";
   std::cout << "membership_key_cost,mode=" << mode << ",recipe=" << recipe_version << ",rows=" << count << ",capacity=" << capacity
             << ",construction_calls=" << calls << ",construction_requested=" << requested
             << ",retained_requested=" << retained.live << ",peak_requested=" << retained.peak
@@ -473,8 +524,10 @@ void membership_allocation_failures(int mode, std::size_t requests) {
   using namespace assembly::detail;
   membership_fixture::Fixture fixture;
   const auto projection = cost_projection(fixture,mode);
+  std::optional<MembershipFields> copied_source;
+  if (mode==3) copied_source.emplace(assembly::testing::MembershipFieldsAccess::catalogue(*projection));
   for (std::size_t fail=1; fail<=requests; ++fail) {
-    auto domain = mode == 0 ? std::shared_ptr<ReservationDomain>{} :
+    auto domain = (mode == 0 || mode == 3) ? std::shared_ptr<ReservationDomain>{} :
         std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
     PreparationWork work(UINT64_MAX);
     std::optional<MembershipFields> fields;
@@ -482,6 +535,7 @@ void membership_allocation_failures(int mode, std::size_t requests) {
     allocation_lifetime::begin(fail);
     try {
       if (mode == 0) fields.emplace(membership_fields(*projection));
+      else if (mode == 3) fields.emplace(*copied_source);
       else fields.emplace(assembly::testing::MembershipFieldsAccess::bounded(*projection,mode == 2,domain,work));
     } catch (const std::bad_alloc &) { refused = true; }
     fields.reset();
@@ -500,7 +554,7 @@ int main() {
     graph_failures();
     retained_alternatives();
     bounded_traversal();
-    for (int mode=0; mode<3; ++mode)
+    for (int mode=0; mode<4; ++mode)
       membership_allocation_failures(mode,membership_key_cost(mode));
   } catch (const std::exception &e) {
     harness::record(false, "unexpected exception", e.what());
