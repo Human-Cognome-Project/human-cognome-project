@@ -448,6 +448,12 @@ void foreign_membership_header() {
               assembly::testing::MembershipFieldsAccess::rows(catalogue).front().occurrence==numeric,
           "foreign membership header refuses identical numeric plan rows and unwinds");
     assembly::testing::MembershipFieldsAccess::study(catalogue,original);
+    const auto index=assembly::testing::MembershipFieldsAccess::rows(catalogue).front().target_index;
+    assembly::testing::MembershipFieldsAccess::index(catalogue,UINT32_MAX);
+    auto invalid=e.build(d);
+    check(invalid.status==Status::InvalidInput && !invalid.plan && !d->result().live_bytes,
+          "invalid catalogue target index refuses plan preparation and unwinds");
+    assembly::testing::MembershipFieldsAccess::index(catalogue,index);
     auto retried=e.build(d);
     check(retried.status==Status::Ok,"healthy plan retries after foreign catalogue refusal");
   }

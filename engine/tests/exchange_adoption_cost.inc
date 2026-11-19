@@ -470,8 +470,10 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
             << ",requested=" << membership_target_cost.bytes << ",unique_requests=" << membership_target_cost.unique_requests
             << ",unique_requested=" << membership_target_cost.unique_bytes
             << ",pin_capacity_bytes=" << membership_target_cost.pin_capacity_bytes
+            << ",table_capacity=" << membership_target_cost.table_capacity
+            << ",index_capacity_bytes=" << membership_target_cost.index_capacity_bytes
             << ",lookup_work=" << membership_target_cost.lookup_work
-            << ",lookup_allocations=0,after_destroy_requested=0,runtime_saving=0 PASS\n";
+            << ",lookup_allocations=0,after_destroy_requested=0,target_table_owned=1 PASS\n";
   std::cout << "exchange_parent_owner,selections=" << selection_count
             << ",sources=" << parent_cost.sources << ",parents=" << parent_cost.parents
             << ",parent_vector_requested=" << parent_cost.vector_bytes

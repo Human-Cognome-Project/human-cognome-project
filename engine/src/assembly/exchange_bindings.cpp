@@ -239,12 +239,14 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection,
       meter.charge(1);
       add(GroupKind::ParentValue, parent.target.object, parent.contribution);
     }
-    for (const auto &membership : memberships_->contributions_)
+    for (const auto &membership : memberships_->contributions_) {
+      const auto &target=memberships_->target(membership,&meter);
       if (meter.equal(membership.occurrence,source.occurrence.source)) {
         meter.charge(1);
         need(membership.kind == GroupKind::Membership,"invalid membership field kind");
-        add(membership.kind, membership.target.object, membership.count);
+        add(membership.kind, target.object, membership.count);
       }
+    }
   }
   need(!outgoing_.empty(), "empty outgoing alternative");
   for (std::size_t row = 0; row < s.live.edges; ++row)

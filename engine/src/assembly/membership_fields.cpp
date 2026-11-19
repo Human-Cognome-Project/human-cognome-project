@@ -3,6 +3,7 @@
 
 #include <map>
 #include <set>
+#include <new>
 
 namespace assembly {
 namespace {
@@ -36,6 +37,68 @@ struct MembershipOwnerLess {
 
 MembershipFields membership_fields(const LetterProjection &projection) {
   return MembershipFields::collect(projection, false);
+}
+MembershipFields::MembershipFields(const MembershipFields &other,
+    const std::shared_ptr<detail::ReservationDomain> &domain)
+    : MembershipFields(other.study_,other.recipe_,domain) {
+  alternatives_=other.alternatives_;
+  targets_.reserve(other.targets_.size());
+  for (const auto &pin:other.targets_) {
+    auto scope=warm::Uuid(pin.object.scope,domain);
+    codec::Address address(pin.object.address.begin(),pin.object.address.end(),
+        detail::SharedReservationAllocator<codec::AddressElement>(domain));
+    auto revision=warm::Uuid(pin.revision,domain);
+    warm::ToolRef copy{{std::move(scope),std::move(address)},std::move(revision)};
+    targets_.push_back(std::move(copy));
+  }
+  contributions_.reserve(other.contributions_.size());
+  for (const auto &row:other.contributions_) {
+    (void)other.target(row);
+    warm::OccurrencePath path(row.occurrence.path.begin(),row.occurrence.path.end(),
+        detail::SharedReservationAllocator<std::uint32_t>(domain));
+    Row copy{{row.occurrence.entry,std::move(path)},row.kind,row.target_index,row.count};
+    contributions_.push_back(std::move(copy));
+  }
+}
+MembershipFields &MembershipFields::operator=(const MembershipFields &other) {
+  if (this!=&other) {
+    MembershipFields copy(other,contributions_.get_allocator().domain);
+    *this=std::move(copy);
+  }
+  return *this;
+}
+MembershipFields &MembershipFields::operator=(MembershipFields &&other) noexcept {
+  if (this!=&other) {
+    // Transfer both correlated tables by construction, with displaced allocators
+    // intact through destruction, as for LetterProjection and exchange values.
+    this->~MembershipFields();
+    ::new (static_cast<void *>(this)) MembershipFields(std::move(other));
+  }
+  return *this;
+}
+const warm::ToolRef &MembershipFields::target(const Row &row,detail::PreparationWork *meter) const {
+  if (meter) meter->charge(1);
+  need(row.target_index<targets_.size(),"membership: target index out of range");
+  return targets_[row.target_index];
+}
+std::uint32_t MembershipFields::retain_target(const warm::ToolRef &target,detail::PreparationWork &work) {
+  std::size_t index=0;
+  for (;index<targets_.size();++index) if (work.equal(targets_[index],target)) break;
+  if (index==targets_.size()) {
+    work.charge(1);
+    need(index<std::size_t(INT32_MAX),"membership: target count overflow");
+    if (targets_.size()==targets_.capacity()) {
+      work.elements(targets_.size(),sizeof(warm::ToolRef));
+      for (const auto &retained:targets_) work.copy_key(retained);
+    }
+    const auto domain=targets_.get_allocator().domain;
+    auto object=catalogue_object(target.object,domain,work);
+    work.copy_key(target.revision);
+    auto revision=warm::Uuid(target.revision,domain);
+    warm::ToolRef pin{std::move(object),std::move(revision)};
+    targets_.push_back(std::move(pin));
+  }
+  return static_cast<std::uint32_t>(index);
 }
 MembershipFields MembershipFields::collect(const LetterProjection &projection, bool alternatives) {
   return collect(projection,alternatives,{});
@@ -159,20 +222,16 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
           detail::SharedReservationAllocator<std::uint32_t>(domain));
       warm::OccurrenceId occurrence{o.key.source.entry,std::move(path)};
       const auto &target=tools.at(group)->ref;
-      work.copy_key(target.revision);
+      const auto target_index=out.retain_target(target,work);
       if (out.contributions_.size() == out.contributions_.capacity()) {
         work.elements(out.contributions_.size(),sizeof(Row));
         // Conservatively admit nested payload relocation even if a move is used.
         for (const auto &retained : out.contributions_) {
           work.copy_key(retained.occurrence);
-          work.copy_key(retained.target);
         }
       }
-      auto target_object = catalogue_object(target.object,domain,work);
-      auto revision = warm::Uuid(target.revision,domain);
       Row contribution{std::move(occurrence),
-          GroupKind::Membership,
-          {std::move(target_object),std::move(revision)},*live.mass};
+          GroupKind::Membership,target_index,*live.mass};
       out.contributions_.push_back(std::move(contribution));
     }
   }
@@ -182,12 +241,13 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
 MembershipContribution MembershipFields::contribution(std::size_t index) const {
   need(index<contributions_.size(),"membership: contribution index out of range");
   const auto &row=contributions_[index];
+  const auto &pin=target(row);
   // Named owners keep every earlier allocation unwind-safe on GCC 11.
   auto study=warm::Uuid(study_,{});
   warm::OccurrencePath path(row.occurrence.path.begin(),row.occurrence.path.end());
-  auto scope=warm::Uuid(row.target.object.scope,{});
-  codec::Address address(row.target.object.address.begin(),row.target.object.address.end());
-  auto revision=warm::Uuid(row.target.revision,{});
+  auto scope=warm::Uuid(pin.object.scope,{});
+  codec::Address address(pin.object.address.begin(),pin.object.address.end());
+  auto revision=warm::Uuid(pin.revision,{});
   OccurrenceKey occurrence{std::move(study),{row.occurrence.entry,std::move(path)}};
   warm::ToolRef target{{std::move(scope),std::move(address)},std::move(revision)};
   return {std::move(occurrence),row.kind,std::move(target),row.count};
@@ -202,7 +262,7 @@ StudyInput MembershipFields::bind(const LetterProjection &projection,
   for (const auto &edge : contributions_) {
     need(edge.kind == GroupKind::Membership, "membership: invalid field kind");
     input.memberships.push_back(
-        {InputText(occurrence_text(study_,edge.occurrence)), InputText(warm::key(edge.target.object))});
+        {InputText(occurrence_text(study_,edge.occurrence)), InputText(warm::key(target(edge).object))});
   }
   return input;
 }
@@ -216,7 +276,7 @@ StructuralStudyInput MembershipFields::bind_structure(
   for (const auto &edge : contributions_) {
     need(edge.kind == GroupKind::Membership, "membership: invalid field kind");
     input.memberships.push_back(
-        {InputText(occurrence_text(study_,edge.occurrence)), InputText(warm::key(edge.target.object))});
+        {InputText(occurrence_text(study_,edge.occurrence)), InputText(warm::key(target(edge).object))});
   }
   return input;
 }
