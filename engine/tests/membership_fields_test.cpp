@@ -9,6 +9,7 @@
 #define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
 #include "membership_study_observation.h"
+#include "membership_target_observation.h"
 #include "membership_fields_access.h"
 
 namespace {
@@ -431,6 +432,50 @@ std::size_t membership_key_cost(int mode) {
   check(study_attributed,"membership header/row UUID is an actual distinct producer request");
   check(!study_borrow_calls && !study_cost.bytes && !study_cost.requests && !study_cost.uuid_member_bytes,
         "catalogue header supplies numeric rows without duplicate study backing or comparison allocation");
+  bool targets_attributed=true;
+  allocation_observation::calls=allocation_observation::bytes=0;
+  allocation_observation::enabled=true;
+  const auto target_cost=membership_target_observation::inspect(*fields,Access::recipe(*fields),*projection,internal,domain.get(),
+      [&](const void *pointer,std::size_t bytes) {
+        const auto *request=tracked(pointer);
+        targets_attributed &= request && request->bytes==bytes;
+      });
+  const auto target_lookup_calls=allocation_observation::calls.load();
+  allocation_observation::enabled=false;
+  check(targets_attributed && !target_lookup_calls && target_cost.rows==expected.size() &&
+            target_cost.unique_targets==5 && target_cost.requests==3*target_cost.rows &&
+            target_cost.unique_requests==15 && target_cost.bytes>target_cost.unique_bytes,
+        "actual catalogue pins independently duplicate five exact recipe targets without lookup allocation");
+  {
+    namespace T=membership_target_observation;
+    const auto &target=internal.front().target;
+    PreparationWork full(UINT64_MAX);
+    check(T::lookup(fields->study(),Access::recipe(*fields),*projection,target,full),
+          "checked recipe lookup preserves the complete target pin");
+    auto foreign=warm::new_uuid();
+    PreparationWork wrong(UINT64_MAX);
+    check(!T::lookup(foreign,Access::recipe(*fields),*projection,target,wrong),
+          "identical numeric rows and targets in a foreign study do not authorize recipe lookup");
+    auto recipe_pin=Access::recipe(*fields); recipe_pin.revision=foreign;
+    check(!T::lookup(fields->study(),recipe_pin,*projection,target,wrong),
+          "a different recipe revision refuses identical target and occurrence values");
+    recipe_pin=Access::recipe(*fields); recipe_pin.selection=foreign;
+    check(!T::lookup(fields->study(),recipe_pin,*projection,target,wrong),
+          "a different recipe selection refuses identical target and occurrence values");
+    auto stale=target; stale.revision=foreign;
+    check(!T::lookup(fields->study(),Access::recipe(*fields),*projection,stale,wrong),
+          "equal target objects with a different full target revision refuse");
+    for (const auto allowance:{UINT64_C(0),full.result().charged-1}) {
+      PreparationWork short_work(allowance);
+      bool refused=false;
+      try { T::lookup(fields->study(),Access::recipe(*fields),*projection,target,short_work); }
+      catch (const PreparationStop &) {refused=true;}
+      check(refused,"target lookup refuses zero and one-short work");
+    }
+    PreparationWork exact(full.result().charged);
+    check(T::lookup(fields->study(),Access::recipe(*fields),*projection,target,exact),
+          "target lookup succeeds with the exact measured allowance");
+  }
   {
     namespace S=membership_study_observation;
     const auto &row=internal.front();
@@ -555,6 +600,12 @@ std::size_t membership_key_cost(int mode) {
   check(retained.acquired == calls && !released.live && !released.blocks && released.acquired == released.released &&
         domain_released,"collector scratch and detached contributions release every tracked request");
   check(exports_detached && export_live==export_bytes,"public values retain full identity after catalogue and source-domain death");
+  std::cout << "membership_target_cost,mode=" << mode << ",rows=" << target_cost.rows
+            << ",unique_targets=" << target_cost.unique_targets << ",requests=" << target_cost.requests
+            << ",requested=" << target_cost.bytes << ",unique_requests=" << target_cost.unique_requests
+            << ",unique_requested=" << target_cost.unique_bytes
+            << ",pin_capacity_bytes=" << target_cost.pin_capacity_bytes << ",lookup_work=" << target_cost.lookup_work
+            << ",lookup_allocations=" << target_lookup_calls << ",source_dead=1,after_destroy_requested=0,runtime_saving=0 PASS\n";
   std::cout << "membership_export_cost,mode=" << mode << ",rows=" << count << ",requests=" << export_calls
             << ",requested=" << export_bytes << ",retained=" << export_live
             << ",output_capacity_bytes=" << exported.capacity()*sizeof(MembershipContribution)
