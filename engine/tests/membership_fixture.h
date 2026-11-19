@@ -43,8 +43,17 @@ struct Fixture : letter_fixture::Fixture {
 inline std::map<ObjectKey, std::uint64_t> totals(
     const MembershipFields &fields) {
   std::map<ObjectKey, std::uint64_t> out;
-  for (const auto &edge : fields.contributions())
+  for (std::size_t i=0;i<fields.contribution_count();++i) {
+    const auto edge=fields.contribution(i);
     out[edge.target.object] += edge.count;
+  }
   return out;
+}
+// Explicit public value snapshot for semantic tests, never an internal view.
+inline std::vector<MembershipContribution> detached_memberships(const MembershipFields &fields) {
+  std::vector<MembershipContribution> result;
+  result.reserve(fields.contribution_count());
+  for (std::size_t i=0;i<fields.contribution_count();++i) result.push_back(fields.contribution(i));
+  return result;
 }
 }  // namespace membership_fixture

@@ -281,7 +281,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
         no_new([&] {
           for (const auto &declaration:declarations)
             parent_cost.add(exchange_parent_observation::inspect_pinned<Owner>(source,*declaration));
-          membership_study_cost=membership_study_observation::inspect(*memberships,source,
+          membership_study_cost=membership_study_observation::inspect(*memberships,source,Owner::catalogue_rows(*memberships),
               Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
                 require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
                         "catalogue UUID attribution differs from an actual owner request");
@@ -457,7 +457,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
             << ",uuid_member_capacity_bytes=" << membership_study_cost.uuid_member_bytes
             << ",outer_requested=" << membership_study_cost.outer_bytes
             << ",header_comparison_work=" << membership_study_cost.comparison_work
-            << ",comparison_allocations=0,runtime_saving=0,after_destroy_requested=0 PASS\n";
+            << ",comparison_allocations=0,duplicate_row_study_backing=0,after_destroy_requested=0 PASS\n";
   std::cout << "exchange_parent_owner,selections=" << selection_count
             << ",sources=" << parent_cost.sources << ",parents=" << parent_cost.parents
             << ",parent_vector_requested=" << parent_cost.vector_bytes

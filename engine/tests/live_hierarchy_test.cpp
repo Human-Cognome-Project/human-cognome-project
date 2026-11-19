@@ -31,6 +31,7 @@
 #include "field/cascade_source.h"
 #include "assembly/study.h"
 #include "membership_fixture.h"
+#include "membership_fields_access.h"
 #include "taichi/program/kernel.h"
 #include "taichi/codegen/llvm/compiled_kernel_data.h"
 #include "llvm/Analysis/ValueTracking.h"

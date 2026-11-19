@@ -229,6 +229,32 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
     no_new([&] { captured = Access::prepare(*owner,key,target,incoming,additions,UINT64_MAX); });
     require(captured.status == assembly::detail::CaptureStatus::Ok && captured.charged,
             "successful owner capture omitted its work charge");
+    {
+      using Coordinator=assembly::testing::ExchangeCoordinatorAccess;
+      auto foreign=std::make_shared<assembly::MembershipFields>(*Access::memberships(*owner));
+      assembly::testing::MembershipFieldsAccess::study(*foreign,warm::new_uuid());
+      auto &plan=Access::plan(*owner);
+      const auto healthy=Access::memberships(*owner);
+      const TickSnapshot before_foreign(f);
+      Coordinator::catalogue(plan,foreign);
+      bool refused=false;
+      try { Coordinator::prepare_commands(plan,incoming,additions,Access::mappings(*owner),Access::fields(*owner)); }
+      catch (const warm::Error &error) {
+        refused=std::string(error.what())=="exchange command catalogue belongs to another study";
+      }
+      require(refused && Coordinator::consumed(plan) && !Coordinator::sealed(plan) && before_foreign==TickSnapshot(f),
+              "foreign catalogue header with identical numeric keys escaped command association");
+      Coordinator::stage_binding(plan,Access::declaration(*owner,key,target),foreign,target);
+      refused=false;
+      try { Coordinator::capture(plan,Access::projection(*owner),Access::mappings(*owner),Access::fields(*owner)); }
+      catch (const warm::Error &error) {
+        refused=std::string(error.what())=="exchange membership catalogue belongs to another projection";
+      }
+      require(refused && before_foreign==TickSnapshot(f),"foreign catalogue header escaped binding association");
+      Coordinator::catalogue(plan,healthy);
+      no_new([&]{captured=Access::prepare(*owner,key,target,incoming,additions,UINT64_MAX);});
+      require(captured.status==assembly::detail::CaptureStatus::Ok,"healthy owner retry failed after foreign header refusals");
+    }
     const auto capture_snapshot = TickSnapshot(f);
     // Normalize the spare pool before each boundary witness. Work depends on
     // retained scratch order; a failed attempt may leave a valid partial partition.
@@ -557,8 +583,8 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
     require(active == (compression ? 1 : 2) && current.parents().size() == (compression ? 1 : 4),
             "owner active contributions did not follow exposure");
     const auto memberships = assembly::membership_fields(current);
-    require(memberships.contributions().size() == active, "owner inherited membership did not follow exposure");
-    for (const auto &m : memberships.contributions())
+    require(memberships.contribution_count() == active, "owner inherited membership did not follow exposure");
+    for (const auto &m : membership_fixture::detached_memberships(memberships))
       require(m.count == (compression ? 4 : 2), "owner membership lost exact source mass");
     for (const auto &v : Access::fields(*owner))
       require(same_handle(v.handle,s.field_headers[v.handle.record]), "owner field handle is stale");

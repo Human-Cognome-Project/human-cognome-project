@@ -37,6 +37,15 @@ struct ExchangeCoordinatorAccess {
     return result;
   }
   static const auto *memberships(const detail::ExchangeCoordinator &c) { return c.bound_->memberships_.get(); }
+  static void catalogue(detail::ExchangeCoordinator &c,std::shared_ptr<const MembershipFields> value) {
+    c.bound_->memberships_=std::move(value);
+  }
+  static auto prepare_commands(detail::ExchangeCoordinator &c,
+      const std::vector<detail::ExchangeIncoming> &incoming,const std::vector<detail::ExchangeNewField> &fields,
+      const detail::ExchangeMap<detail::OccurrenceBinding> &rows,
+      const detail::ExchangeMap<detail::ExchangeFieldBinding> &current_fields) {
+    return c.prepare(incoming,fields,UINT64_MAX,rows,current_fields);
+  }
   static auto stage_binding(detail::ExchangeCoordinator &c,
       std::shared_ptr<const LetterExchangeContract> declaration,
       std::shared_ptr<const MembershipFields> memberships,

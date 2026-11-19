@@ -1,11 +1,13 @@
 # Contextual membership fields — Stage C
 
-[The study identity inspection](MEMBERSHIP-STUDY-IDENTITY.md) at `47c97926`
-attributes study UUID copies repeated beside the existing catalogue header,
-including actual live/catalogue/value-copy and native-owner observations.
-Header/key/text equivalence, detached lifetime and refusal controls are retained.
-Production and the public row contract are unchanged; review the proposed
-numeric-row/header and complete detached-output boundary before implementation.
+[Catalogue-owned study identity](MEMBERSHIP-HEADER-IDENTITY.md) at `e7733a8c`
+implements #385's accepted direction from `fc0e7f65`. Private rows retain numeric
+entry/path under one owned study header; public values keep complete owning
+keys. Actual retained/peak reductions are 680 / 1,360 bytes in live/catalogue
+factories and 303 / 1,212 / 606 in real owners. Explicit export and ordinary
+catalogue copy costs are measured separately. Local CPU qualification passes;
+runtime review and authoritative GitHub CI remain pending. The accepted
+[inspection](MEMBERSHIP-STUDY-IDENTITY.md) retains its before evidence.
 
 **Contributor implementation — 2026-11-17 (awaiting review):**
 [target-pin authority](MEMBERSHIP-PIN-AUTHORITY.md) at `4f27d26d` implements
@@ -49,10 +51,15 @@ the accepted study/entry/path keys. Inactive alternatives emit no membership
 edges. Exact aggregate/byte membership mass is conserved; equality of their
 forces or trajectories is not asserted.
 
-On this contribution, `MembershipContribution` retains `OccurrenceKey`, explicit
+Public `MembershipContribution` retains an owning `OccurrenceKey`, explicit
 `GroupKind::Membership`, the complete target `ToolRef` and exact whole-mass count.
-Its field object is borrowed from `target.object`; no second owning ObjectKey
-is retained beside the pin. Bind readers reject nonmembership kind.
+`contribution_count()` and `contribution(index)` replace the reference accessor;
+each extracted value independently owns its full study/path/pins after catalogue
+and selected-domain death. Export may allocate. Private rows hold only numeric
+entry/path beside kind/target/count, with one owning study header per catalogue.
+Internal consumers validate that full study at association boundaries. The field
+object comes from `target.object`; no second owning ObjectKey is retained beside
+the pin. Bind readers reject nonmembership kind.
 `MembershipFields::bind(projection, nodes)` extends that same study's bounded
 `StudyInput` with explicit `(occurrence, group)` requests. Native opaque names
 encode full keys losslessly. Binding a different study is rejected, even when

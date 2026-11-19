@@ -1,6 +1,21 @@
 # Current implementation and work
 
-**Membership study identity inspection — 2026-11-19 (awaiting review):**
+**Catalogue-owned membership study — 2026-11-19 (implementation awaiting review):**
+[Private numeric rows, detached values and actual costs](../../engine/docs/MEMBERSHIP-HEADER-IDENTITY.md)
+at `e7733a8c` implements #385 review 7016915894 from accepted `fc0e7f65`.
+One owned header supplies row studies; explicit count/index exports still own
+complete keys. Net retained/peak reductions are 303 / 1,212 / 606 bytes in real
+one/four/three owners, and 680 / 1,360 in live/catalogue factories. Export/copy
+costs are separate. Quick CI, nine Clang/seven GCC CTests, thirteen Clang/eight
+GCC native cases and both standalone compiler suites pass: 4,886 membership
+checks, 34 actual before/after comparisons, 27 owner observations and 872 export
+allocation refusals. Foreign-study association, detached/source/domain lifetime,
+exact work/unwind and native atomic publication/following ticks pass. The verified
+bundle retains the original before evidence and failed development compile.
+New runtime review and authoritative GitHub CI remain; #384/#385 are provisional
+stack dependencies and all merge events stay with the maintainer.
+
+**Membership study identity inspection — 2026-11-19 (provisionally accepted in #385):**
 [Actual row/header UUID ownership and proposal](../../engine/docs/MEMBERSHIP-STUDY-IDENTITY.md)
 at `47c97926` starts from accepted combined #384 `4d4695ac`. Returned live rows
 retain 296 bytes of study strings and catalogue/copy rows retain 592, alongside
@@ -11,8 +26,8 @@ full opaque rendering, foreign-context refusal, detached copies/source death and
 allocation/work unwind controls pass. Quick CI, two membership CTests per native
 compiler, five Clang/three GCC hierarchy cases and both standalone suites pass:
 4,527 membership checks per compiler, twenty owner and sixteen factory/copy
-observations. Review the retained numeric-row/public-output boundary before removal;
-preserve complete detached identity, target pins, counts and native publication.
+observations. #385 accepts the numeric-row/public-value boundary; the runtime
+follow-up above preserves detached identity, target pins/counts and publication.
 Source-pinned evidence is verified; new authoritative GitHub CI remains separate.
 
 The maintainer accepted continuation from #384 `4d4695ac` in comment 7015927137,

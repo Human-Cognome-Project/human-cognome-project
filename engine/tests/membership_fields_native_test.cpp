@@ -8,6 +8,7 @@
 #include "assembly/study.h"
 #include "harness.h"
 #include "membership_fixture.h"
+#include "membership_fields_access.h"
 
 namespace {
 using namespace membership_fixture;
@@ -60,8 +61,21 @@ void native_contract() {
   const auto base = assembly::prepare(p.bind(layout.nodes));
   const auto input = fields.bind(p, layout.nodes);
   const auto prepared = assembly::prepare(input);
+  auto independent_value=fields.contribution(0);
+  independent_value.kind=assembly::GroupKind::ParentValue;
+  independent_value.occurrence.study=warm::new_uuid();
+  check(fields.contribution(0).kind==assembly::GroupKind::Membership &&
+            fields.contribution(0).occurrence.study==p.study(),
+        "editing a detached public value cannot mutate retained catalogue rows or study");
+  auto foreign_fields=fields;
+  const auto foreign_study=warm::new_uuid();
+  assembly::testing::MembershipFieldsAccess::study(foreign_fields,foreign_study);
+  check(assembly::testing::MembershipFieldsAccess::rows(foreign_fields).front().occurrence==
+            assembly::testing::MembershipFieldsAccess::rows(fields).front().occurrence,
+        "foreign-study control preserves identical numeric occurrence keys");
+  rejects([&]{foreign_fields.bind(p,layout.nodes);},"foreign catalogue study refuses identical numeric legacy keys");
   auto wrong_kind = fields;
-  const_cast<assembly::MembershipContribution &>(wrong_kind.contributions().front()).kind = assembly::GroupKind::ParentValue;
+  assembly::testing::MembershipFieldsAccess::kind(wrong_kind,assembly::GroupKind::ParentValue);
   rejects([&] { wrong_kind.bind(p,layout.nodes); },"membership kind cannot be relabelled as a parent field");
   auto structural_base = f.base;
   structural_base.focal_fields = {{warm::FieldKind::Membership,f.en}};
@@ -69,11 +83,34 @@ void native_contract() {
       {{0,f.ref(f.english),warm::Exposure::Parts}}));
   auto structural_fields = membership_fields(structural);
   const auto structural_input = structural_fields.bind_structure(structural,layout.nodes);
+  auto foreign_structural=structural_fields;
+  assembly::testing::MembershipFieldsAccess::study(foreign_structural,foreign_study);
+  rejects([&]{foreign_structural.bind_structure(structural,layout.nodes);},
+          "foreign catalogue study refuses identical numeric structural keys");
+  const auto detached_legacy=[&] {
+    const auto local_projection=project_letters(recipe);
+    const auto local_fields=membership_fields(local_projection);
+    return local_fields.bind(local_projection,layout.nodes);
+  }();
+  check(assembly::prepare(detached_legacy).participation.size()==prepared.participation.size() &&
+            std::all_of(detached_legacy.memberships.begin(),detached_legacy.memberships.end(),
+              [](const auto &m){return !m.occurrence.empty() && !m.group.empty();}),
+        "legacy bound identities remain independently usable after catalogue and projection death");
+  const auto detached_structural=[&] {
+    const auto local_projection=project_letters(normalize_structural_letters(structural_base,
+        {{0,f.ref(f.english),warm::Exposure::Parts}}));
+    const auto local_fields=membership_fields(local_projection);
+    return local_fields.bind_structure(local_projection,layout.nodes);
+  }();
+  check(detached_structural.memberships.size()==structural_input.memberships.size() &&
+            std::all_of(detached_structural.memberships.begin(),detached_structural.memberships.end(),
+              [](const auto &m){return !m.occurrence.empty() && !m.group.empty();}),
+        "structural bound identities survive catalogue and projection death");
   std::set<std::string> structural_groups;
   for (const auto &m : structural_input.memberships) structural_groups.emplace(m.group.data(),m.group.size());
   check(structural_groups == std::set<std::string>{warm::key(f.en),warm::key(f.en_alphabet),warm::key(f.family)} &&
         structural_input.memberships.size() == 3,"structural handoff preserves short group names through complete pins");
-  const_cast<assembly::MembershipContribution &>(structural_fields.contributions().front()).kind = assembly::GroupKind::SiblingDefinition;
+  assembly::testing::MembershipFieldsAccess::kind(structural_fields,assembly::GroupKind::SiblingDefinition);
   rejects([&] { structural_fields.bind_structure(structural,layout.nodes); },"structural membership kind cannot be relabelled as a sibling field");
   check(prepared.capacity == base.capacity &&
             prepared.particles.size() == base.particles.size() &&
@@ -81,11 +118,11 @@ void native_contract() {
         "NULL naming anchors add no definitions, slots or particles");
   check(prepared.groups.size() == base.groups.size() + 5 &&
             prepared.participation.size() ==
-                base.participation.size() + fields.contributions().size(),
+                base.participation.size() + fields.contribution_count(),
         "native handoff adds only reached membership fields and active "
         "membership edges");
   bool exact = true;
-  for (const auto &typed : fields.contributions()) {
+  for (const auto &typed : detached_memberships(fields)) {
     int found = 0;
     for (const auto &edge : prepared.participation) {
       const auto &group = prepared.groups[edge.group];

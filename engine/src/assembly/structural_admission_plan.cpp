@@ -135,6 +135,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   using field::UpdateOp;
   using field::UpdateRef;
   const auto &p = assembly.projection_;
+  need(w.equal(assembly.memberships_.study_,p.study()));
   const auto &recipe = p.recipe();
   const auto &limits = capacity.limits();
   const auto cap = [&](Budget kind, std::uint64_t required) {
@@ -207,7 +208,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     edges = sum(edges,sum(1,tool(o.definition).parents.size()));
   }
   need(ordered.size() == b.bodies.size());
-  edges = sum(edges,assembly.memberships_.contributions().size());
+  edges = sum(edges,assembly.memberships_.contributions_.size());
   cap(Budget::Participation,edges); cap(Budget::Contacts,recipe.contacts.size());
   const auto commands = sum(sum(ordered.size(),b.fields.size()),sum(edges,recipe.contacts.size()));
   cap(Budget::BootstrapCommands,commands);
@@ -312,9 +313,9 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
       edge(GroupKind::ParentValue,parent.target.object,parent.contribution,parent.ordinal);
     }
     need(t.parents.empty() || parent_mass == *t.mass);
-    for (const auto &m : assembly.memberships_.contributions()) {
+    for (const auto &m : assembly.memberships_.contributions_) {
       w.charge(1);
-      if (w.equal(m.occurrence,o.key)) {
+      if (w.equal(m.occurrence,o.key.source)) {
         need(m.count == *t.mass);
         // Retain the prior object-association validation charge. The pin now
         // owns the sole object, while explicit kind and full revision still validate.
