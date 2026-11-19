@@ -20,6 +20,11 @@ int main() {
     check(d.output == "out" && !d.cuda && d.ticks == 8 && d.dt == 0.1 && d.cpu_threads == 1, "defaults reproduce the fixed capture");
     check(!d.intent_work_limit, "intent default omitted");
     check(!d.prepared_english_pair, "legacy study remains the default");
+    const auto retained = viewport::parse_options({"out","--study=prepared-retained-english-pair"});
+    check(retained.prepared_english_pair && retained.retained_memberships,"explicit retained profile");
+    check(rejected({"out","--study","prepared-retained-english-pair","--backend","cuda"}) &&
+          rejected({"out","--backend","cuda","--study","prepared-retained-english-pair"}),
+          "retained profile rejects unsupported backend in either order");
     check(viewport::parse_options({"out", "--study=prepared-english-pair"}).prepared_english_pair,
           "explicit prepared profile");
     check(!viewport::parse_options({"out", "--study", "legacy-letters"}).prepared_english_pair,

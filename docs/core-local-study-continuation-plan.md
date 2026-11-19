@@ -20,6 +20,49 @@ Main `4bb937d8` integrates #377/#378. The maintainer merged qualified #376 into
 reconciliation with main (`8373ce08`/`2b53d0a8`). This independent inspection does
 not integrate or depend on their code. All merge events remain maintainer work.
 
+**Contributor retained positive preset — 2026-11-18 (provisionally accepted; hosted CI pending):**
+[Actual acquired pins, native claims, tick and release](../engine/docs/RETAINED-POSITIVE-CAPTURE.md)
+at `e86b588e` follows #375's provisional decision, comment 6989241451. Separate
+`prepared-retained-english-pair` preserves the four membership targets/NULL naming
+masses, reviewed six-comparison chain, ParentValue focus and finite budgets.
+Quick CI, seven Clang and four GCC suites pass. The actual retained producer
+acquires eight exact warm pins, exposes both full body claims/all six comparison
+identities, completes tick 1 and releases its lease; cold fingerprints match.
+The old refusal and populated-warm preservation controls pass. Hosted database
+CI now runs both cases on separate fresh stores; authoritative results remain
+pending. Ten zero responses keep #324 open. Main `22ea6d55` includes #374; this
+slice is stacked on reviewed #375 `eea1314b`. #376 review 6990227900 provisionally
+accepts `9fbf11ac`; the requested wording correction attributes populated-store
+refusal to the acceptance wrapper and freshness to the direct caller's precondition.
+All merges remain maintainer work.
+Earlier entries below retain their historical evidence/status.
+
+**Contributor retained membership decision — 2026-11-18 (awaiting review):**
+[Explicit comparison/focus/resource proposal and executable evidence](../engine/docs/RETAINED-MEMBERSHIP-DECISION.md)
+at `9d9d491f` follows #374 comment 6985194174. Read-only traversal of the verified
+retained source finds four unique targets: Alphabet, English, Germanic and
+Indo-European. The two direct paths form a diamond; inherited memberships dedup
+per occurrence. All four source naming masses remain NULL.
+
+Propose a separate explicit six-node qualification chain, retaining the current
+ParentValue focus and 52-bit precision. Raise Fields/Nodes/Levels to 6 and Links
+to 5, with other finite profile bounds retained and scratch recomputed. Existing
+coverage requires a complete rooted tree: omission, independent roots and
+overlapping full-cohort forks reject. Equal-cohort ancestors give zero
+complement response, so this decision does not establish independent category
+forces or #324's structural/nonstructural distinction.
+
+Quick CI, six Clang and three GCC suites pass. Six new fixture modes expose two
+full native body claims, six comparison identities, twelve participation rows,
+one combined bootstrap and a following tick; actual retained ticking stays
+unqualified. Production profiles, runtime, database/common code and workflows
+are unchanged. Review the decision before adding the separate retained preset;
+preserve #374's existing refusal case, source pins/unknown masses and privacy.
+Main `66edfb18` integrates #372/#373. #374 is provisionally accepted at `03e2a6e9`
+with its final CI separate; this witness uses current-main APIs and introduces
+no source dependency on its unmerged transport scripts. All merges remain with
+the maintainer. Earlier handoffs below retain their historical scope/status.
+
 **Private bootstrap consumption — 2026-11-18 (integrated in #378):**
 [Publication boundary, actual before/after and evidence](../engine/docs/PREPARED-BOOTSTRAP-CONSUMPTION.md)
 at `9568f7e9` implements #377 review 6990952403 on reviewed `0302c527`.
