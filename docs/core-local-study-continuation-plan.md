@@ -1,14 +1,20 @@
 # Core continuation after local CUDA corrections
 
-**Unique membership target table — 2026-11-19 (runtime awaiting review):**
-[#387's implementation, tradeoffs and qualification](../engine/docs/MEMBERSHIP-TARGET-TABLE.md)
-at `6da22846` follows accepted `a912e6a6`. Catalogue-owned complete pins serve
-checked row indices; independent rows/exports, full association and native
-publication remain. Owner retained/requested peaks fall 546 / 2,979 / 1,357 bytes;
-live peak/work and single-row allocation overhead are recorded explicitly.
-Local CI passes. Review this runtime and reconcile its authoritative GitHub
-checks before maintainer integration; #343's other candidates and #324 remain
-separate. Main `0e3c0fdf` integrates #385/#386; #387 is accepted and hosted green.
+**Projected definition pins — 2026-11-19 (inspection awaiting review):**
+[Measured ownership, public values and proposal](../engine/docs/PROJECTION-DEFINITION-PINS.md)
+at `3de88e61` follows provisionally accepted #388 `fa83360e`. Local qualification
+passes with production unchanged. Next review the existing strong recipe pin as
+the source for checked private definition indices, and settle explicit detached
+public output before implementing. Preserve complete provenance, correlated
+recipe/copy/move lifetime, semantic/node/mass association and native authority;
+measure actual replacement overhead and independent export costs. #324 and mixed
+revision policy remain separate. Source-pinned costs/controls belong in the record.
+
+Main `f228581d` integrates qualified #387. #388's target-table runtime and its
+tradeoffs are accepted in [review 7022583392](https://github.com/Human-Cognome-Project/human-cognome-project/pull/388#issuecomment-7022583392).
+Its smoke, native build/database and projection-values passed; remaining native
+jobs run. The inspection remains stacked on #388. Reconcile authoritative hosted
+findings before final acceptance/integration; all merges remain maintainer work.
 
 **Repeated membership target pins — 2026-11-19 (inspection accepted in #387):**
 [Actual backing, source lifetime and proposal](../engine/docs/MEMBERSHIP-TARGET-PINS.md)

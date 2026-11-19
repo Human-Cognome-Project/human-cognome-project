@@ -1,7 +1,13 @@
 # Private exchange-owner resource inventory
 
+[Projected definition pins](PROJECTION-DEFINITION-PINS.md) at `3de88e61`
+attribute actual independent definition buffers in committed/spare projections
+that already share one immutable recipe. Four selections request 1,068 bytes per
+view; inline capacity and public row-copy output are separate. Production/census
+is unchanged and runtime saving is zero; representation/output review remains.
+
 [Catalogue-owned unique membership targets](MEMBERSHIP-TARGET-TABLE.md) at
-`6da22846`, awaiting runtime review, counts one target vector and each complete
+`6da22846`, provisionally accepted in #388, counts one target vector and each complete
 pin once, alongside narrower row/index capacity and numeric paths. Actual owner
 retained/peak savings are 546 / 2,979 / 1,357 bytes after the extra 40-byte header,
 table capacity and indices. The record separates copy/export costs, live peak/
