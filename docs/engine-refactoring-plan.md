@@ -212,7 +212,22 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-19 contributor (private parent runtime review pending):
+2026-11-19 contributor (membership study inspection/proposal awaiting review):
+[Catalogue header identity](../engine/docs/MEMBERSHIP-STUDY-IDENTITY.md) at
+`47c97926`, based on accepted combined #384 `4d4695ac`, attributes actual row
+study strings already owned by the catalogue header: 296 / 592 bytes in live/
+catalogue factories and 111 / 444 / 222 in real owners. Inline UUID extent is
+reported separately; runtime saving is zero. Header/numeric comparison and full
+rendering preserve context, entry/path, complete target pin/count and detached
+catalogue copies. Quick CI, native membership suites, five Clang/three GCC
+hierarchy cases and GCC 11/13 standalone suites pass, with 4,527 value controls,
+twenty owner and sixteen factory/copy observations. Review the retained-row and
+detached public-output boundary before removal; preserve native source/claims/
+publication and price all association work. The maintainer integrated #383 into
+#384 and #382 into main `c961fe86`; combined #384 hosted native and this new
+review/CI remain separate. All merge events stay with the maintainer.
+
+2026-11-19 contributor (private parent runtime provisionally accepted in #384):
 [Owner recipe parents](../engine/docs/EXCHANGE-RECIPE-PARENTS.md) at `45ff81f3`
 implements #383's specified strong-pin/private-index representation on accepted
 #382 `e7915da7`. Ordered parents resolve from the exact owner recipe; public/value

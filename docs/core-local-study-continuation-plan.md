@@ -1,8 +1,27 @@
 # Core continuation after local CUDA corrections
 
+**Membership row study identity — 2026-11-19 (inspection awaiting review):**
+[Actual strings, inline extent, context/lifetime and proposal](../engine/docs/MEMBERSHIP-STUDY-IDENTITY.md)
+at `47c97926` follows accepted combined #384 `4d4695ac`. Every row study equals
+the catalogue's existing owned header. Public/bounded live output retains eight
+duplicate study requests / 296 bytes; all-alternative output and ordinary copy
+retain sixteen / 592. Native owners attribute 111 / 444 / 222 bytes separately
+from inline UUID capacity. Production is unchanged and runtime saving is zero.
+Quick CI, native membership value/physics suites, five Clang/three GCC hierarchy
+cases and GCC 11/13 standalone suites pass: 4,527 value checks, twenty owner and
+sixteen factory/copy observations. Context/key/text equivalence, foreign-study
+refusal, exact work retry, source death and every copy/collector allocation
+failure are retained. Review a numeric-row/header representation and explicit
+detached public identity before implementation; no generic registry is proposed.
+
+#384 is provisionally accepted in comment 7015927137, including the maintainer's
+#383 reconciliation. Main `c961fe86` integrates #382; #384 combined native CI
+remains pending after smoke success. Source-pinned raw evidence is verified,
+new hosted CI is authoritative and all merge events remain with the maintainer.
+
 Maintainer update (2026-11-19). #382 merged at `c961fe86`. #384 integrates the [#383 inspection](https://github.com/Human-Cognome-Project/human-cognome-project/pull/383) and checks private recipe-backed parents alongside detached public values. Combined hosted qualification is pending. Earlier entries record their respective handoffs.
 
-**Private owner recipe parents — 2026-11-19 (runtime review pending):**
+**Private owner recipe parents — 2026-11-19 (provisionally accepted in #384):**
 [Pinned indices, actual net costs, lifetime and evidence](../engine/docs/EXCHANGE-RECIPE-PARENTS.md)
 at `45ff81f3` follows #383 comment 7014581181 on accepted #382 `e7915da7`.
 One strong exact recipe pin per private declaration supplies ordered parents
