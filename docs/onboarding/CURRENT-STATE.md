@@ -1,6 +1,27 @@
 # Current implementation and work
 
-**Contributor adoption-local validator — 2026-11-19 (awaiting runtime review):**
+**Private owner recipe parents — 2026-11-19 (runtime review pending):**
+[Exact recipe pin/index, net costs and qualification](../../engine/docs/EXCHANGE-RECIPE-PARENTS.md)
+at `45ff81f3` implements #383's explicit direction on accepted #382 `e7915da7`.
+Each private declaration retains one exact owner recipe pin and validated tool
+indices; public/value/domain copies detach. Real retained/requested peaks fall
+by 1,245 / 4,980 / 2,217 bytes for one/four/three selections after overhead.
+Cumulative reductions are 1,237 / 4,948 / 2,217 bytes; equal-three setup work rises
+444 units, while one/four work falls. Public value extent and recipe lifetime
+tradeoffs are explicit. Quick CI, thirteen Clang/eight GCC native cases and both
+standalone compiler suites pass, including full owner failure/unwind/publication,
+nine pin/index/copy/weak lifetime controls and twelve reused-baseline comparisons.
+Initial Clang assignment accounting failure and its reconstruction fix are retained.
+New authoritative hosted CI and runtime review remain; all merges stay maintainer work.
+
+Main `952e1651` integrates #381. #382 and #383 are provisionally accepted and
+unmerged, with their hosted gates separate. This implementation explicitly uses
+#382's runtime head and does not duplicate #383's independent inspection commit.
+On maintainer integration, adapt #383's private-parent observer to the indexed
+declaration context; preserve its public/historical witnesses. The combined tree
+needs authoritative CI. Earlier entries retain source-specific evidence.
+
+**Adoption-local validator — 2026-11-19 (provisionally accepted in #382):**
 [#381's authorized implementation and actual before/after](../../engine/docs/ADOPTION-LOCAL-VALIDATOR.md)
 at `3d9424e4` reuses one five-buffer binding around the declaration loop and
 destroys it before spare/coordinator preparation. Every capture uses the same
@@ -11,13 +32,12 @@ requested peaks stay 294,636 / 258,014; the single-selection control is unchange
 Quick CI, thirteen Clang/eight GCC cases pass, including 27 production observations,
 54 pre-stage inventory controls, full owner budget/unwind/lifetime/native exchange
 and standalone checks. Twelve actual before/after comparisons agree. The verified
-bundle retains baseline binaries and exact sources. Runtime review and authoritative
-GitHub CI remain pending; this is stacked on accepted #381 at `616a2987`.
+bundle retains baseline binaries and exact sources. Maintainer comment 7013865241
+accepts continuation from #382 `e7915da7`; its hosted native CPU gate remains separate.
 
-Main `3e76bf1e` now integrates #375–#380, including the retained positive preset,
-bootstrap consumption and native refresh copies. #381 is accepted, with hosted
-native/smoke passed on its reconciled head, but remains unmerged. All merges stay
-with the maintainer. Older entries retain their respective source/evidence scope.
+At that original handoff, main `3e76bf1e` integrated #375–#380 and #381 awaited
+integration. Current main `952e1651` supersedes that pending state. All merges
+remain with the maintainer; the measurements above retain their exact source.
 
 **Adoption-validator reuse inspection — 2026-11-18 (accepted in #381):**
 [Actual per-selection costs, scratch proof and bounded proposal](../../engine/docs/ADOPTION-VALIDATOR-REUSE.md)

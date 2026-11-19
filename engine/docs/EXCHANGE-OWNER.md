@@ -1,5 +1,12 @@
 # Persistent private exchange owner
 
+[Pinned recipe parents](EXCHANGE-RECIPE-PARENTS.md) at `45ff81f3`, awaiting review,
+remove private declaration parent copies through an exact owner recipe pin and
+validated per-source indices. Independently retained declarations keep that recipe
+alive; public/value copies detach. Binding, commands, census and complete lifetime/
+budget/publication controls remain coordinated. Net costs include pin/index and
+public value overhead; these do not establish complete owner accounting.
+
 [Prepaid-map adoption capture](ADOPTION-SOURCE-CAPTURE.md) at `da083031`,
 awaiting review, lets each temporary validate the owner's initial occurrence/
 field snapshots synchronously with its shared setup meter. Independent captured

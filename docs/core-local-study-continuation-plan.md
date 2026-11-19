@@ -1,6 +1,26 @@
 # Core continuation after local CUDA corrections
 
-**Contributor adoption-local validator — 2026-11-19 (awaiting runtime review):**
+**Private owner recipe parents — 2026-11-19 (runtime review pending):**
+[Pinned indices, actual net costs, lifetime and evidence](../engine/docs/EXCHANGE-RECIPE-PARENTS.md)
+at `45ff81f3` follows #383 comment 7014581181 on accepted #382 `e7915da7`.
+One strong exact recipe pin per private declaration supplies ordered parents
+through validated recipe-local indices; public/value/domain copies detach.
+Net retained/requested-peak reductions are 1,245 / 4,980 / 2,217 bytes including
+pin/index overhead. Cumulative reductions differ where relocation adds setup
+bytes. Equal-three setup work rises 444 units; detached value sizes also grow.
+Quick CI, thirteen Clang/eight GCC native cases and GCC 11/13 standalone suites
+pass: twelve actual comparisons, nine complete lifetime controls and existing
+full owner budgets/unwind/native exchange/publication/following ticks. The failed
+initial Clang value-replacement accounting control is preserved with its fix.
+Review and new authoritative GitHub CI remain; all merges stay with the maintainer.
+
+Main `952e1651` integrates #381. #382/#383 are provisionally accepted but unmerged;
+this branch uses #382's runtime, independently of #383's inspection source.
+Maintainer integration must adapt that inspection's private parent-copy observer
+to `ExchangeOwnerAccess::contract_parents` and retain public/historical controls,
+then qualify the combined tree. No integration merge is created here.
+
+**Adoption-local validator — 2026-11-19 (provisionally accepted in #382):**
 [Actual production reuse, invalidation, peak and evidence](../engine/docs/ADOPTION-LOCAL-VALIDATOR.md)
 at `3d9424e4` implements #381's explicit authorization on `616a2987`. One existing
 binding owns five buffers for the declaration loop, releases before spare/coordinator
@@ -12,12 +32,12 @@ unchanged. Quick CI, thirteen Clang/eight GCC cases and twelve before/after fixt
 comparisons pass. Twenty-seven production observations cover release ordering,
 full facts/masks, 54 inventory refusals, exact retries and full owner/standalone
 allocation/work/unwind/source/native publication/tick controls. Raw evidence and
-both baseline binaries are verified. Runtime review and authoritative hosted CI
-remain pending; all merge events remain maintainer work.
+both baseline binaries are verified. Maintainer comment 7013865241 accepts
+continuation from `e7915da7`; its authoritative hosted gate remains separate.
 
-Main `3e76bf1e` integrates #375–#380. Accepted #381 has passing hosted native/smoke
-on reconciled `616a2987` and remains the explicit unmerged dependency here. No
-integration merge is created by this implementation. Older records stay source-specific.
+At that original handoff, main `3e76bf1e` integrated #375–#380 and #381 awaited
+integration. Current main `952e1651` supersedes that state. Older records retain
+their source-specific evidence and all merges remain maintainer work.
 
 **Adoption-validator reuse inspection — 2026-11-18 (accepted in #381):**
 [Source-pinned costs, exact scratch replay and proposal](../engine/docs/ADOPTION-VALIDATOR-REUSE.md)
