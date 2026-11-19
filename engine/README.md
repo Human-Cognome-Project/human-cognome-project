@@ -47,6 +47,10 @@ ordered provenance, detached public values and explicit lifetime controls. The
 integrated through #384 at main `6dcf3fef`; the inspection preserves its original
 source measurements. The [membership target-pin inspection](docs/MEMBERSHIP-TARGET-PINS.md)
 now measures repeated complete targets and their catalogue/source lifetime.
+The [owned membership target table](docs/MEMBERSHIP-TARGET-TABLE.md) implements
+the accepted catalogue-local reuse while preserving independent rows, full
+detached values and native publication. Its actual costs and tradeoffs are scoped
+to the recorded source and local qualification.
 
 ## Python boundary
 

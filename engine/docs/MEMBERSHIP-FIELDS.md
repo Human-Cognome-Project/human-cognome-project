@@ -1,10 +1,12 @@
 # Contextual membership fields — Stage C
 
-[Target-pin ownership inspection](MEMBERSHIP-TARGET-PINS.md) at `01b09c77`
-attributes repeated complete pins in actual returned/copy catalogues and native
-owners. Catalogue-local unique ownership/indexing is proposed for review; no
-table or runtime saving is implemented. Full target revision, explicit kind/count,
-detached lifetime and source-pinned local/hosted boundaries remain separate.
+[Catalogue-owned unique targets](MEMBERSHIP-TARGET-TABLE.md) at `6da22846`
+implements #387's accepted table/index direction. Private rows retain checked
+indices into independently owned complete pins, preserving participation order,
+kind/count and detached public values. Net owner costs, live peak/work increases,
+empty/single/repeated controls, copy/export overhead and qualified local CI are
+recorded there; runtime review and authoritative GitHub CI remain pending.
+The accepted [inspection](MEMBERSHIP-TARGET-PINS.md) retains its before evidence.
 
 [Catalogue-owned study identity](MEMBERSHIP-HEADER-IDENTITY.md) at `e7733a8c`
 implements #385's accepted direction from `fc0e7f65`. Private rows retain numeric
@@ -12,8 +14,7 @@ entry/path under one owned study header; public values keep complete owning
 keys. Actual retained/peak reductions are 680 / 1,360 bytes in live/catalogue
 factories and 303 / 1,212 / 606 in real owners. Explicit export and ordinary
 catalogue copy costs are measured separately. Local CPU qualification passes;
-runtime is provisionally accepted in #386; remaining authoritative GitHub checks
-and integration stay separate. The accepted
+runtime is integrated in #386 at main `0e3c0fdf`. The accepted
 [inspection](MEMBERSHIP-STUDY-IDENTITY.md) retains its before evidence.
 
 **Contributor implementation — 2026-11-17 (awaiting review):**
@@ -63,10 +64,13 @@ Public `MembershipContribution` retains an owning `OccurrenceKey`, explicit
 `contribution_count()` and `contribution(index)` replace the reference accessor;
 each extracted value independently owns its full study/path/pins after catalogue
 and selected-domain death. Export may allocate. Private rows hold only numeric
-entry/path beside kind/target/count, with one owning study header per catalogue.
-Internal consumers validate that full study at association boundaries. The field
-object comes from `target.object`; no second owning ObjectKey is retained beside
-the pin. Bind readers reject nonmembership kind.
+entry/path beside kind/checked target index/count, with one owning study header
+and one target table per catalogue. Copies own independent table/pin/path data;
+copy assignment stages a complete replacement in the destination domain, and
+moves transfer the correlated vectors together. Internal consumers validate full
+study/recipe associations and indices before use. The field object comes from
+the resolved `target.object`; no second owning ObjectKey is retained beside the
+pin. Bind readers reject nonmembership kind.
 `MembershipFields::bind(projection, nodes)` extends that same study's bounded
 `StudyInput` with explicit `(occurrence, group)` requests. Native opaque names
 encode full keys losslessly. Binding a different study is rejected, even when

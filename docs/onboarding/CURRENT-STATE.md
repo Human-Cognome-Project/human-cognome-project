@@ -1,6 +1,27 @@
 # Current implementation and work
 
-**Membership target-pin inspection — 2026-11-19 (awaiting review):**
+**Catalogue-owned unique targets — 2026-11-19 (implementation awaiting review):**
+[Table ownership, net costs, controls and qualification](../../engine/docs/MEMBERSHIP-TARGET-TABLE.md)
+at `6da22846` implements #387 review 7020608389 from accepted `a912e6a6`.
+One complete pin per distinct target serves checked private row indices; every
+participation row, kind/count and detached public value remains. Real owner
+retained/requested peaks fall 546 / 2,979 / 1,357 bytes after table/header/index
+overhead. Live factory retention falls 252 bytes but peak rises 292 and bounded
+work increases; a single row adds one allocation, and the object grows 40 bytes.
+These tradeoffs and separate copy/export costs are explicit. Quick CI, nine
+Clang/seven GCC CTests, thirteen Clang/eight GCC native cases and both standalone
+suites pass: 5,737 value checks, 58 actual before/after comparisons and 27 owner
+observations. Empty/single/repeated, complete revision, invalid-index refusal,
+28 allocation/56 quota copy-assignment refusals, domain/weak/source lifetime and
+native atomic publication/ticks pass. Failed development logs and the isolated
+old-code new-control baseline are retained in verified evidence. New runtime
+review and authoritative GitHub CI remain; merges stay with the maintainer.
+
+Main `0e3c0fdf` integrates hosted-qualified #385/#386. #387 is provisionally
+accepted and all twelve native/six smoke jobs passed. This implementation remains
+stacked on #387 pending maintainer integration.
+
+**Membership target-pin inspection — 2026-11-19 (provisionally accepted in #387):**
 [Actual repeated pins, lifetime and bounded proposal](../../engine/docs/MEMBERSHIP-TARGET-PINS.md)
 at `01b09c77` follows accepted #386 `1c10f14c`. Eight live rows retain 676 pin
 bytes; sixteen catalogue/copy rows retain 1,352, covering five full targets whose
@@ -11,16 +32,14 @@ Quick CI, native membership suites, five Clang/three GCC hierarchy cases and
 GCC 11/13 standalone suites pass: 4,922 value checks, 36 target observations
 and 52 unchanged factory/owner/export comparisons. Full revision/context,
 allocation/work refusal, detached/domain/weak lifetime and native publication
-remain checked. Review a catalogue-owned unique full-pin table/index and its
-replacement overhead; a source recipe reference alone supplies no lifetime pin.
-Evidence is verified; new authoritative GitHub CI remains separate.
+remain checked. #387 accepted the catalogue-owned table/index direction; the
+implementation above measures actual replacement overhead. Its recipe reference
+alone supplies no payload lifetime. Original inspection evidence remains pinned.
 
-Main `6dcf3fef` integrates combined #383/#384 after its native gate passed.
-#386 is provisionally accepted in review 7018419165; its smoke/build/database/
-value/compiler jobs passed while regression shards remain pending. #385 targets
-main, #386 and this inspection remain stacked. All merges are maintainer work.
+At the inspection handoff, main was `6dcf3fef` and #386 awaited its remaining
+gate. Main `0e3c0fdf` and the latest disposition above supersede that pending state.
 
-**Catalogue-owned membership study — 2026-11-19 (provisionally accepted in #386):**
+**Catalogue-owned membership study — 2026-11-19 (integrated in #386):**
 [Private numeric rows, detached values and actual costs](../../engine/docs/MEMBERSHIP-HEADER-IDENTITY.md)
 at `e7733a8c` implements #385 review 7016915894 from accepted `fc0e7f65`.
 One owned header supplies row studies; explicit count/index exports still own
@@ -32,8 +51,8 @@ checks, 34 actual before/after comparisons, 27 owner observations and 872 export
 allocation refusals. Foreign-study association, detached/source/domain lifetime,
 exact work/unwind and native atomic publication/following ticks pass. The verified
 bundle retains the original before evidence and failed development compile.
-The maintainer accepts continuation in #386; remaining authoritative regression
-checks and integration stay separate. The latest stack state is recorded above.
+The maintainer qualified and integrated #386 at `0e3c0fdf`. Its measurements
+retain their original source; the latest stack state is recorded above.
 
 **Membership study identity inspection — 2026-11-19 (provisionally accepted in #385):**
 [Actual row/header UUID ownership and proposal](../../engine/docs/MEMBERSHIP-STUDY-IDENTITY.md)
@@ -55,10 +74,10 @@ including #383's reconciled private-parent observer. Main `c961fe86` includes
 #382. Combined #384 smoke passed and native qualification is pending; this
 inspection adds no integration merge. All merges remain maintainer work.
 
-Maintainer update (2026-11-19). Combined #383/#384 passed the native gate and
-landed on main `6dcf3fef`. #385 targets main; #386 is provisionally accepted in
-review 7018419165, with remaining hosted regression checks pending. Its smoke,
-build, database, value and compiler jobs passed. Earlier entries preserve their
+Maintainer update (2026-11-19). #385/#386 passed hosted qualification and
+landed on main `0e3c0fdf`. #387 at `a912e6a6` is provisionally accepted in review
+7020608389; all twelve native and six smoke jobs passed. Its integration and the
+new table runtime review/CI remain separate. Earlier entries preserve their
 source-specific handoffs; all merges remain with the maintainer.
 
 **Private owner recipe parents — 2026-11-19 (provisionally accepted in #384):**

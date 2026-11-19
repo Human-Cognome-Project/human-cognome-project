@@ -1,9 +1,9 @@
 # Engine and Analyst-facing refactoring plan
 
-Maintainer update (2026-11-19). Combined #383/#384 passed the native gate and
-landed on main `6dcf3fef`. #385 targets main; #386 is provisionally accepted in
-review 7018419165, with remaining hosted regression checks pending. Its smoke,
-build, database, value and compiler jobs passed. Earlier entries preserve their
+Maintainer update (2026-11-19). #385/#386 passed hosted qualification and
+landed on main `0e3c0fdf`. #387 at `a912e6a6` is provisionally accepted in review
+7020608389; all twelve native and six smoke jobs passed. Its integration and the
+new table runtime review/CI remain separate. Earlier entries preserve their
 source-specific handoffs; all merges remain with the maintainer.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
@@ -216,7 +216,19 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-19 contributor (membership target-pin inspection awaiting review):
+2026-11-19 contributor (unique membership target table awaiting runtime review):
+[Owned table, checked indices and actual costs](../engine/docs/MEMBERSHIP-TARGET-TABLE.md)
+at `6da22846` implements #387 review 7020608389. Targets deduplicate by complete
+scope/address/revision within the catalogue, preserving every row and detached
+value. Native owner retained/peak requests fall 546 / 2,979 / 1,357 bytes after
+overhead; increased live peak/setup work and single-row allocation are explicit.
+Staged copy assignment keeps table/index associations intact through refusal;
+allocation-free moves transfer both tables. The source-pinned record owns local
+CI, 58 comparisons, new small controls, failure/retry/lifetime/publication evidence
+and remaining limits. Main `0e3c0fdf` integrates #385/#386; accepted #387 passed
+its hosted gate. New runtime review/CI and maintainer integration remain separate.
+
+2026-11-19 contributor (membership target-pin inspection accepted in #387):
 [Actual repeated full pins and catalogue lifetime](../engine/docs/MEMBERSHIP-TARGET-PINS.md)
 at `01b09c77` follows accepted #386 `1c10f14c`. Real returned live/catalogue/copy
 pins request 676 / 1,352 bytes; five observed representatives occupy 424. Native
@@ -233,7 +245,7 @@ proposal remain separate from implementation. Main `6dcf3fef` integrates #384;
 #386 is accepted with remaining hosted regressions pending. All merges remain
 maintainer work, with #385/#386 and this inspection explicitly stacked.
 
-2026-11-19 contributor (membership header runtime provisionally accepted in #386):
+2026-11-19 contributor (membership header runtime integrated in #386):
 [Catalogue-owned study and detached exports](../engine/docs/MEMBERSHIP-HEADER-IDENTITY.md)
 at `e7733a8c` implements #385 review 7016915894 from accepted `fc0e7f65`.
 Numeric entry/path stays private under one owned study header; public count/index
@@ -245,8 +257,8 @@ pass, including 34 actual before/after comparisons, 27 owner observations,
 4,886 value checks and 872 export allocation refusals. Foreign-study association,
 source/catalogue/domain/weak death, exact work/unwind and atomic native
 publication/following ticks pass. Verified evidence includes the reused before
-archive and failed development compile. #386 provisionally accepts the runtime;
-remaining authoritative CI and maintainer integration stay separate.
+archive and failed development compile. #386 passed hosted qualification and
+is integrated at main `0e3c0fdf`.
 
 2026-11-19 contributor (membership study inspection accepted in #385):
 [Catalogue header identity](../engine/docs/MEMBERSHIP-STUDY-IDENTITY.md) at

@@ -1,19 +1,26 @@
 # Private exchange-owner resource inventory
 
+[Catalogue-owned unique membership targets](MEMBERSHIP-TARGET-TABLE.md) at
+`6da22846`, awaiting runtime review, counts one target vector and each complete
+pin once, alongside narrower row/index capacity and numeric paths. Actual owner
+retained/peak savings are 546 / 2,979 / 1,357 bytes after the extra 40-byte header,
+table capacity and indices. The record separates copy/export costs, live peak/
+work increases, small-case overhead and local versus hosted qualification.
+
 [Repeated membership target pins](MEMBERSHIP-TARGET-PINS.md) at `01b09c77`
 attributes actual complete pin backing in live/catalogue/copy values and adopted
 owners. Four selections retain 36 target buffers / 1,068 bytes for one distinct
 full target; one observed representative occupies three buffers / 89 bytes.
-Inline pin extent is separate attribution. A catalogue-local ownership/index
-proposal awaits review; no runtime saving or replacement table is implemented.
+Inline pin extent is separate attribution. #387 accepted its catalogue-local
+table/index proposal; the implementation above supplies actual after costs.
 
 [Catalogue-owned membership study](MEMBERSHIP-HEADER-IDENTITY.md) at `e7733a8c`,
-provisionally accepted in #386, retains one existing study header and private numeric
+integrated in #386 at main `0e3c0fdf`, retains one existing study header and private numeric
 row paths. Full public values detach explicitly. The census counts that header
 once and numeric row capacity/paths beside full target pins and kind/count.
 Actual net retained/requested-peak reductions are 303 / 1,212 / 606 bytes;
 cumulative request and work reductions, export/copy costs and source-pinned
-local CI are recorded separately. Authoritative GitHub CI remains pending.
+local CI are recorded separately. Its authoritative GitHub gate passed.
 
 [Private recipe-parent reuse](EXCHANGE-RECIPE-PARENTS.md) at `45ff81f3`, integrated
 through #384 at main `6dcf3fef`, retains one strong exact recipe pin per declaration and private
@@ -164,7 +171,7 @@ not an operational memory-budget policy or a second state authority.
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
 | `coordinator` | Coordinator object; command, intrinsic, field-command-index, hierarchy-node, child and contribution buffers |
 | `declarations` | Shared-pointer table capacity; one immutable declaration object per selection; owner/recipe pins; both source alternatives and their ordered parent provenance with complete nested keys/pins; operation direction is on the existing binding |
-| `memberships` | One catalogue object, one owning study header and recipe pins, all-alternative numeric-row capacity, constructed entry/path identities and full target pins; kind/count are inline and the field object comes from the target pin |
+| `memberships` | One catalogue object, owning study header and recipe pins, all-alternative numeric-row/index capacity and constructed paths; one target-vector capacity and each constructed full ToolRef counted once. Kind/count stay inline and the field object comes from the checked target |
 
 Object sizes include embedded member objects. Vector capacity is multiplied by
 element size once; nested backing is then counted only for constructed elements.
