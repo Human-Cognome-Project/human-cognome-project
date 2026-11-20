@@ -882,7 +882,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
         require(!d, "ordinary projection snapshot borrowed source quota");
       });
       require(domain->result().live_bytes == outer && snapshot->study() == copy.study() &&
-                  snapshot->occurrences().size() == copy.occurrences().size() &&
+                  assembly::detail::ProjectionAccess::rows(*snapshot).size() == assembly::detail::ProjectionAccess::rows(copy).size() &&
                   Access::projection_parent_sizes(*snapshot) == Access::projection_parent_sizes(copy),
               "projection snapshot changed source accounting or lost inactive contributions");
     }
@@ -893,7 +893,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     if (reserve) Access::reserve_projection(*snapshot);
     require(Access::projection_equivalent(*snapshot,prepared),"snapshot references depended on destroyed projection");
     require(snapshot->study() == projection.study() &&
-                snapshot->occurrences().front().key == projection.occurrences().front().key,
+                assembly::detail::ProjectionAccess::rows(*snapshot).front().key == assembly::detail::ProjectionAccess::rows(projection).front().key,
             "detached projection snapshot depended on destroyed source storage");
     snapshot.reset();
   } catch (...) { A::end(); throw; }
@@ -968,7 +968,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     domain=std::make_shared<ReservationDomain>(ReservationBudget{full.peak_bytes,full.charged_work});
     auto retry=construct(domain);
     require(domain->result().live_bytes == full.live_bytes && domain->result().charged_work == full.charged_work &&
-                retry.study() == projection.study() && retry.occurrences().size() == projection.occurrences().size(),
+                retry.study() == projection.study() && assembly::detail::ProjectionAccess::rows(retry).size() == assembly::detail::ProjectionAccess::rows(projection).size(),
             "exact projection path construction retry failed");
     require(Access::projection_equivalent(retry,prepared),"projection exact retry changed references or pool order");
   }
@@ -1210,7 +1210,7 @@ void catalogue_graph_address_controls() {
   const auto retained=assembly::testing::MembershipFieldsAccess::targets(reference).size()*address_size;
   const auto temporary_uuid=(projection.recipe().tools.size()+2*4+5)*37;
   const auto retained_uuid=(3+assembly::testing::MembershipFieldsAccess::targets(reference).size()*2)*37;
-  require(reference.contribution_count()==projection.occurrences().size()*3,
+  require(reference.contribution_count()==assembly::detail::ProjectionAccess::rows(projection).size()*3,
           "diamond catalogue failed per-occurrence deduplication");
   auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
   const auto observe=[&] {

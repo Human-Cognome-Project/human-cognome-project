@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include <limits>
 #include <memory>
 #include <set>
@@ -60,7 +61,7 @@ void profiles() {
         name + ": explicit normalized bindings precede native preparation");
     bool values = true, identity = true;
     for (const auto &particle : prepared.particles) {
-      const auto &typed = projection.occurrences().at(particle.occurrence.slot);
+      const auto &typed = assembly::detail::ProjectionAccess::rows(projection).at(particle.occurrence.slot);
       const bool letter = typed.key.source.path.empty();
       const auto units = mode != 0 && letter ? 64.0 : 1.0;
       values &= particle.position.x == 2 * units &&
@@ -69,7 +70,7 @@ void profiles() {
                 particle.exact_mass == 2;
       identity &=
           occurrence_text(typed.key) == std::string(particle.occurrence.id) &&
-          warm::key(typed.definition.object) == std::string(particle.occurrence.definition);
+          warm::key(assembly::detail::ProjectionAccess::definition(projection,typed).object) == std::string(particle.occurrence.definition);
     }
     CHECK_TRUE(values, name +
                            ": supplied position/radius/velocity use 1 or 64; "

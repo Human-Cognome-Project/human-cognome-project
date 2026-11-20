@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -144,7 +145,7 @@ void native_contract() {
         ++found;
         exact &= edge.exact_count == typed.count && edge.share == 1 &&
                  edge.parent_value.empty() &&
-                 p.occurrences().at(edge.slot).key == typed.occurrence;
+                 assembly::detail::ProjectionAccess::rows(p).at(edge.slot).key == typed.occurrence;
       }
     }
     exact &= found == 1;
@@ -363,7 +364,7 @@ void cpu_response() {
     baseline.download();
     bool force = true, delta = true, active_response = false,
          inactive_zero = true;
-    for (const auto &o : p.occurrences()) {
+    for (const auto &o : assembly::detail::ProjectionAccess::rows(p)) {
       const int slot = o.slot;
       const double actual = study.fields().particle(field::kForceX, slot);
       const double base = baseline.fields().particle(field::kForceX, slot);

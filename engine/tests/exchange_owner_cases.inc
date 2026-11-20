@@ -218,6 +218,35 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
                                                  : std::vector<int>{0,1,2,3,4,5,8};
     std::vector<assembly::detail::ExchangeNewField> additions;
     for (int id : next_ids) if (id != 8) additions.push_back({keys[id],1,50+id});
+    if(round==0) for(const bool spare:{false,true}) {
+      auto &view=Access::mutable_projection(*owner,spare);
+      auto &row=assembly::testing::ProjectionIndicesAccess::rows(view).front();
+      const auto definition=row.definition_index,source=row.source_index;
+      std::uint32_t other=0;
+      while(other<view.recipe().tools.size() &&
+            view.recipe().tools[other].ref.object==view.recipe().tools[definition].ref.object)++other;
+      require(other<view.recipe().tools.size(),"native wrong in-range definition control is distinct");
+      for(int fault=0;fault<4;++fault) {
+        if(fault==0)row.definition_index=UINT32_MAX;
+        if(fault==1)row.definition_index=other;
+        if(fault==2)row.source_index=UINT32_MAX;
+        if(fault==3)row.source_index=source==0?1:0;
+        const TickSnapshot before_fault(f);
+        const auto bytes=Access::reservations(*owner).live_bytes;
+        bool refused=false;
+        try {Access::prepare(*owner,key,target,incoming,additions);}
+        catch(const warm::Error &error) {refused=std::string_view(error.what())==
+            "exposure buffers differ in recipe-bound occurrence meaning";}
+        row.definition_index=definition;row.source_index=source;
+        require(refused && !Access::pending(*owner) && unchanged() && before_fault==TickSnapshot(f) &&
+                    bytes==Access::reservations(*owner).live_bytes,
+                "malformed committed/spare definition index changed native state or escaped staging refusal");
+        assembly::detail::CaptureResult retry;
+        no_new([&]{retry=Access::prepare(*owner,key,target,incoming,additions,UINT64_MAX);});
+        require(retry.status==assembly::detail::CaptureStatus::Ok && unchanged(),
+                "healthy native owner retries without allocation after malformed projection index");
+      }
+    }
     bool rejected = false;
     try { Access::prepare(*owner,key,previous->exposure(0),incoming,additions); }
     catch (const warm::Error &) { rejected = true; }
@@ -581,15 +610,15 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
                 current.recipe().ref.revision == recipe.ref.revision &&
                 current.recipe().selections[0].exposure == warm::Exposure::Aggregate &&
                 current.exposure(0) == target, "owner changed identity/recipe or lost live exposure");
-    require(current.occurrences().size() == initial.occurrences().size(), "owner lost alternative inventory");
+    require(assembly::detail::ProjectionAccess::rows(current).size() == assembly::detail::ProjectionAccess::rows(initial).size(), "owner lost alternative inventory");
     const auto structural = current.bind_structure(projection_nodes);
     require(structural.selections.size() == 1 && structural.selections[0].exposure ==
                 (compression ? assembly::Exposure::Aggregate : assembly::Exposure::Parts),
             "structural handoff retained initial exposure");
     std::size_t active = 0;
-    for (std::size_t i = 0; i < current.occurrences().size(); ++i) {
-      const auto &o = current.occurrences()[i];
-      require(o.key == initial.occurrences()[i].key && o.definition == initial.occurrences()[i].definition,
+    for (std::size_t i = 0; i < assembly::detail::ProjectionAccess::rows(current).size(); ++i) {
+      const auto &o = assembly::detail::ProjectionAccess::rows(current)[i];
+      require(o.key == assembly::detail::ProjectionAccess::rows(initial)[i].key && assembly::detail::ProjectionAccess::definition(current,o) == assembly::detail::ProjectionAccess::definition(initial,assembly::detail::ProjectionAccess::rows(initial)[i]),
               "owner changed stable occurrence identity");
       const auto count = std::count_if(Access::mappings(*owner).begin(),Access::mappings(*owner).end(),
           [&](const auto &v) { return v.occurrence == o.key; });

@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include "assembly/membership_fields.h"
 #include "assembly/preparation_work.h"
 
@@ -194,14 +195,14 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
     }
     return *root;
   };
-  using OwnerAllocator = detail::SharedReservationAllocator<std::pair<const std::uint64_t,const ProjectedOccurrence *>>;
-  std::map<std::uint64_t,const ProjectedOccurrence *,MembershipOwnerLess,OwnerAllocator>
+  using OwnerAllocator = detail::SharedReservationAllocator<std::pair<const std::uint64_t,const detail::ProjectionOccurrence *>>;
+  std::map<std::uint64_t,const detail::ProjectionOccurrence *,MembershipOwnerLess,OwnerAllocator>
       owners{MembershipOwnerLess{&work},OwnerAllocator(domain)};
-  for (const auto &o : projection.occurrences()) {
+  for (const auto &o : detail::ProjectionAccess::rows(projection)) {
     work.charge(1);
     if (o.key.source.path.empty()) owners.emplace(o.key.source.entry, &o);
   }
-  for (const auto &o : projection.occurrences()) {
+  for (const auto &o : detail::ProjectionAccess::rows(projection)) {
     work.charge(1);
     if (!alternatives && !o.active) continue;
     const auto it = owners.find(o.key.source.entry);
@@ -210,9 +211,9 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
     need(work.equal(o.key.study,out.study_) && (o.key.source.path.empty() ||
                                        (o.byte && work.equal(o.byte->owner,owner.key))),
          "membership: inconsistent byte ownership");
-    const auto &live = get(o.definition);
+    const auto &live = get(detail::ProjectionAccess::definition(projection,o,&work));
     need(live.mass && *live.mass > 0, "membership: unknown live mass");
-    for (const auto &group : follow(owner.definition)) {
+    for (const auto &group : follow(detail::ProjectionAccess::definition(projection,owner,&work))) {
       work.charge(1);
       work.copy_key(o.key.source);
       need(out.contributions_.size() < std::size_t(INT32_MAX),

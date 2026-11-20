@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -2251,9 +2252,9 @@ LetterData letter_data(engine::Runtime &r) {
   out.mapping = prepared;
   for (auto &scale : out.mapping.scales)
     scale.node.layout = nullptr;
-  for (const auto &o : projection.occurrences())
+  for (const auto &o : assembly::detail::ProjectionAccess::rows(projection))
     if (o.active)
-      out.origins.push_back({o.key, o.definition, {}});
+      out.origins.push_back({o.key, assembly::detail::ProjectionAccess::definition(projection,o), {}});
 #endif
   for (const auto &p : prepared.particles) {
     require(p.exact_mass > 0 && p.mass > 0 && p.radius > 0,

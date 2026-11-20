@@ -1,4 +1,5 @@
 #pragma once
+#include "assembly/projection_access.h"
 #include "assembly/exchange_owner.h"
 #include "exchange_coordinator_access.h"
 namespace assembly::testing {
@@ -57,7 +58,7 @@ struct ExchangeOwnerAccess {
       visit(ref.object.scope.str()); visit(ref.revision.str());
     };
     for (const auto &o : p.occurrences_) {
-      visit(o.key.study.str()); reference(o.definition);
+      visit(o.key.study.str());
       if (o.byte) { visit(o.byte->owner.study.str()); reference(o.byte->character); }
       if (o.complete_character) reference(*o.complete_character);
     }
@@ -94,7 +95,6 @@ struct ExchangeOwnerAccess {
   template<class Visit> static void projection_addresses(const LetterProjection &p, Visit visit, bool recipe = true) {
     if (recipe) recipe_addresses(p.recipe(),visit);
     for (const auto &o : p.occurrences_) {
-      visit(o.definition.object.address);
       if (o.byte) visit(o.byte->character.object.address);
       if (o.complete_character) visit(o.complete_character->object.address);
     }
@@ -230,7 +230,8 @@ struct ExchangeOwnerAccess {
         a.occurrences_.size() != b.occurrences_.size()) return false;
     for (std::size_t i=0; i<a.occurrences_.size(); ++i) {
       const auto &x=a.occurrences_[i], &y=b.occurrences_[i];
-      if (!(x.key == y.key) || !(x.definition == y.definition) || x.slot != y.slot ||
+      if (!(x.key == y.key) || x.definition_index != y.definition_index || x.source_index != y.source_index ||
+          !(detail::ProjectionAccess::definition(a,x) == detail::ProjectionAccess::definition(b,y)) || x.slot != y.slot ||
           x.node != y.node || x.active != y.active || bool(x.byte) != bool(y.byte) ||
           bool(x.complete_character) != bool(y.complete_character)) return false;
       if (x.byte && (!(x.byte->owner == y.byte->owner) || !(x.byte->character == y.byte->character) ||
@@ -491,6 +492,9 @@ struct ExchangeOwnerAccess {
     return o.prepare(key,target,incoming,fields,staging,capture,commands);
   }
   static const auto &projection(const detail::ExchangeOwner &o) { return *o.projection_; }
+  static auto &mutable_projection(detail::ExchangeOwner &o, bool spare) {
+    return spare ? *o.prospective_ : *o.projection_;
+  }
   static const auto &spare_projection(const detail::ExchangeOwner &o) { return *o.prospective_; }
   static auto storage(const detail::ExchangeOwner &o) { return o.projection_storage(); }
   static void stage_projection(detail::ExchangeOwner &o, const OccurrenceKey &key, warm::Exposure target) {

@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include <algorithm>
 #include <iostream>
 #include <set>
@@ -57,7 +58,7 @@ void paths_and_contexts() {
   check(unique.size() == 6 && identities,
         "field kinds, full occurrence identities, pinned groups and exact "
         "counts retained");
-  check(naming && p.occurrences().size() == 4 && p.parents().size() == 2,
+  check(naming && assembly::detail::ProjectionAccess::rows(p).size() == 4 && p.parents().size() == 2,
         "NULL naming anchors add metadata/fields without particles or parent "
         "changes");
   bool unchanged = true;
@@ -81,12 +82,12 @@ void paths_and_contexts() {
       contextual.contribution_count() == 8,
       "mixed exposure emits memberships only for the three active occurrences");
   const auto active_byte =
-      [&](std::uint64_t entry) -> const ProjectedOccurrence & {
+      [&](std::uint64_t entry) -> const detail::ProjectionOccurrence & {
     return *std::find_if(
-        mixed.occurrences().begin(), mixed.occurrences().end(),
+        assembly::detail::ProjectionAccess::rows(mixed).begin(), assembly::detail::ProjectionAccess::rows(mixed).end(),
         [&](const auto &o) { return o.active && o.key.source.entry == entry; });
   };
-  check(active_byte(1).definition == active_byte(2).definition,
+  check(detail::ProjectionAccess::definition(mixed,active_byte(1)) == detail::ProjectionAccess::definition(mixed,active_byte(2)),
         "English/French byte occurrences use exactly the same pinned byte "
         "definition");
   bool isolated = true, owners = true;
@@ -108,7 +109,7 @@ void paths_and_contexts() {
             mixed_mass.at(f.fr) == 2,
         "active aggregate and byte uses contribute their own whole mass once "
         "per field");
-  for (const auto &o : mixed.occurrences()) {
+  for (const auto &o : assembly::detail::ProjectionAccess::rows(mixed)) {
     if (o.active) continue;
     check(
         std::none_of(
@@ -344,7 +345,7 @@ void retained_alternatives() {
     }
     std::size_t active = 0;
     for (const auto &m : values)
-      active += std::any_of(current.occurrences().begin(),current.occurrences().end(),
+      active += std::any_of(assembly::detail::ProjectionAccess::rows(current).begin(),assembly::detail::ProjectionAccess::rows(current).end(),
           [&](const auto &o) { return o.active && o.key.source == m.occurrence.source; });
     check(exact && active == live.contribution_count(),
           "catalogue matches fresh memberships across exposure, repeated copies, diamonds and language contexts");
@@ -386,7 +387,7 @@ std::size_t membership_key_cost(int mode) {
   const auto recipe_version = projection->recipe().recipe_version;
   struct Expected { OccurrenceKey occurrence; ToolRef target; std::uint64_t count; };
   std::vector<Expected> expected;
-  for (const auto &o : projection->occurrences()) {
+  for (const auto &o : assembly::detail::ProjectionAccess::rows(*projection)) {
     if (mode < 2 && !o.active) continue;
     std::vector<ObjectKey> groups = o.key.source.entry == 20
         ? std::vector<ObjectKey>{fixture->fr,fixture->fr_alphabet}

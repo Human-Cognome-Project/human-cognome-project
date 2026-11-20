@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include "assembly/active_workbench.h"
 
 #include <algorithm>
@@ -64,7 +65,7 @@ ActiveAssembly::ActiveAssembly(LetterProjection p, warm::Uuid owner,
   };
   register_ref(local_->source);
   std::set<std::uint64_t> entries;
-  for (const auto &o : projection_.occurrences())
+  for (const auto &o : detail::ProjectionAccess::rows(projection_))
     entries.insert(o.key.source.entry);
   std::set<warm::ObjectKey> definitions;
   for (const auto &v : local_->values) {
@@ -103,8 +104,8 @@ ActiveAssembly ActiveAssembly::focus(std::vector<FocalField> fields) const {
 }
 std::vector<Origin> ActiveAssembly::origins() const {
   std::vector<Origin> out;
-  for (const auto &o : projection_.occurrences())
-    out.push_back({o.key, o.definition, {}});
+  for (const auto &o : detail::ProjectionAccess::rows(projection_))
+    out.push_back({o.key, detail::ProjectionAccess::definition(projection_,o), {}});
   if (local_)
     for (const auto &v : local_->values)
       out.push_back({{study(), {v.entry, {}}}, {}, v.ref});

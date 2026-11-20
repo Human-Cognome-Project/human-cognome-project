@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -195,10 +196,10 @@ std::size_t leaf_inventory_cost(bool mixed, int mode) {
   const auto &selection = *std::find_if(recipe.selections.begin(),recipe.selections.end(),
       [&](const auto &s) { return s.entry == owner.source.entry; });
   for (const auto &id : selection.parts) {
-    const auto &occurrence = *std::find_if(projection->occurrences().begin(),projection->occurrences().end(),
+    const auto &occurrence = *std::find_if(assembly::detail::ProjectionAccess::rows(*projection).begin(),assembly::detail::ProjectionAccess::rows(*projection).end(),
         [&](const auto &o) { return o.key.source == id; });
     const auto &tool = *std::find_if(recipe.tools.begin(),recipe.tools.end(),
-        [&](const auto &t) { return t.ref == occurrence.definition; });
+        [&](const auto &t) { return t.ref == assembly::detail::ProjectionAccess::definition(*projection,occurrence); });
     for (const auto &parent : tool.parents)
       expected.push_back({id.path[0],id.path[1],parent.ordinal,parent.target,parent.contribution});
   }
@@ -554,7 +555,7 @@ int main() {
       std::reverse(source.structural_occurrences.begin(), source.structural_occurrences.end());
       return project_letters(source);
     }();
-    for (const auto &published : p.occurrences()) {
+    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
       const auto selection = std::find_if(b.selections.begin(), b.selections.end(),
           [&](const auto &s) { return s.entry == published.key.source.entry; });
       check(selection != b.selections.end(), "published occurrence has a selection");
@@ -562,16 +563,16 @@ int main() {
       check(published.active == (aggregate ==
                 (selection->exposure == warm::Exposure::Aggregate)),
             "source-death publication retains exact aggregate/parts activity");
-      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published).object));
       const bool complete = aggregate && definition.parents.size() == 1;
       check(bool(published.complete_character) == complete &&
                 (!complete || *published.complete_character == definition.parents.front().target),
             "complete character retains pinned reference even for inactive aggregates");
     }
     std::size_t parent_index = 0;
-    for (const auto &published : p.occurrences()) {
+    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
       if (!published.active) continue;
-      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published).object));
       for (const auto &expected : definition.parents) {
         check(parent_index < p.parents().size(), "all active parent rows are published");
         const auto &parent = p.parents()[parent_index++];
@@ -587,17 +588,17 @@ int main() {
     for (const auto &row : b.structural_occurrences) expected_ids.push_back(row.id);
     std::sort(expected_ids.begin(), expected_ids.end());
     std::vector<warm::OccurrenceId> published_ids;
-    for (const auto &row : p.occurrences()) published_ids.push_back(row.key.source);
+    for (const auto &row : assembly::detail::ProjectionAccess::rows(p)) published_ids.push_back(row.key.source);
     check(published_ids == expected_ids,
           "published occurrence order is by value after shuffled source death");
-    for (const auto &published : p.occurrences()) {
+    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
       const auto source = std::find_if(b.structural_occurrences.begin(), b.structural_occurrences.end(),
           [&](const auto &row) { return row.id == published.key.source; });
       check(source != b.structural_occurrences.end() &&
-                published.definition == f.ref(source->definition) && published.node == source->node,
+                assembly::detail::ProjectionAccess::definition(p,published) == f.ref(source->definition) && published.node == source->node,
             "published occurrence retains exact source definition and node after source death");
     }
-    check(std::all_of(p.occurrences().begin(), p.occurrences().end(),
+    check(std::all_of(assembly::detail::ProjectionAccess::rows(p).begin(), assembly::detail::ProjectionAccess::rows(p).end(),
                       [](const auto &o) { return o.slot == -1; }),
           "structural projection assigns no numerical slots");
     check(p.parents().size() == 14,

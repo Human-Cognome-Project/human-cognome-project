@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #pragma once
 #include <algorithm>
 #include <array>
@@ -31,9 +32,9 @@ template<class Rows,class Visit> Cost inspect(const assembly::MembershipFields &
   out.outer_bytes=out.capacity*sizeof(rows[0]);
   for (const auto &row:rows) {
     ++out.rows;
-    const auto occurrence=std::find_if(projection.occurrences().begin(),projection.occurrences().end(),
+    const auto occurrence=std::find_if(assembly::detail::ProjectionAccess::rows(projection).begin(),assembly::detail::ProjectionAccess::rows(projection).end(),
         [&](const auto &o){return o.key.source==row.occurrence;});
-    need(occurrence!=projection.occurrences().end() && matches(fields,row,occurrence->key,work));
+    need(occurrence!=assembly::detail::ProjectionAccess::rows(projection).end() && matches(fields,row,occurrence->key,work));
   }
   out.comparison_work=work.result().charged;
   return out;

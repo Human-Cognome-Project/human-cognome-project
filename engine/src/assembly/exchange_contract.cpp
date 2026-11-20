@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include "assembly/exchange_contract.h"
 #include "assembly/preparation_work.h"
 
@@ -205,23 +206,22 @@ LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &p
   result.to_ = target;
   const auto source = [&](const warm::OccurrenceId &id) {
     work.charge(sizeof(ExchangeSource));
-    const auto occurrence = std::find_if(projection.occurrences().begin(), projection.occurrences().end(),
+    const auto occurrence = std::find_if(detail::ProjectionAccess::rows(projection).begin(), detail::ProjectionAccess::rows(projection).end(),
         [&](const auto &o) { return work.equal(o.key.source,id); });
-    need(occurrence != projection.occurrences().end(), "missing exchange alternative occurrence");
+    need(occurrence != detail::ProjectionAccess::rows(projection).end(), "missing exchange alternative occurrence");
     need(work.equal(occurrence->key.study,owner.study) && occurrence->key.source.entry==owner.source.entry,
          "foreign exchange alternative occurrence");
-    const auto tool = std::find_if(recipe.tools.begin(), recipe.tools.end(),
-        [&](const auto &t) { return work.equal(t.ref,occurrence->definition); });
-    need(tool != recipe.tools.end() && tool->mass && *tool->mass,
+    const auto *tool = &detail::ProjectionAccess::tool(projection,*occurrence,&work);
+    need(tool->mass && *tool->mass,
          "missing exact exchange definition mass");
     auto key = copy_occurrence(occurrence->key,domain,&work);
-    auto definition = copy_reference(occurrence->definition,domain,&work);
+    auto definition = copy_reference(tool->ref,domain,&work);
     auto parents = result.recipe_pin_
         ? detail::SharedReservedVector<warm::Parent>{detail::SharedReservationAllocator<warm::Parent>(domain)}
         : copy_parents(tool->parents,domain,&work);
     ExchangeSource value{std::move(key),std::move(definition),*tool->mass,
                          occurrence->node,std::move(parents)};
-    if (result.recipe_pin_) { work.charge(1); value.recipe_tool_=std::size_t(tool-recipe.tools.begin()); }
+    if (result.recipe_pin_) { work.charge(1); value.recipe_tool_=std::size_t(tool-recipe.tools.data()); }
     return value;
   };
   detail::SharedReservedVector<ExchangeSource> aggregate{detail::SharedReservationAllocator<ExchangeSource>(domain)},
