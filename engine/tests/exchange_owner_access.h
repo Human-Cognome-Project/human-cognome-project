@@ -66,7 +66,7 @@ struct ExchangeOwnerAccess {
     }
     for (const auto *rows : {&p.parents_,&p.spare_parents_})
       for (const auto &row : *rows) {
-        visit(row.occurrence.study.str()); visit(row.field.object.scope.str());
+        visit(row.field.object.scope.str());
       }
     if (recipe) for (const auto &tool : p.recipe().tools) {
       visit(tool.recipe);
@@ -91,7 +91,7 @@ struct ExchangeOwnerAccess {
       visit(o.source.path);
     }
     for (const auto *rows : {&p.parents_,&p.spare_parents_})
-      for (const auto &row : *rows) visit(row.occurrence.source.path);
+      for (const auto &row : *rows) visit(row.source.path);
   }
   template<class Visit> static void projection_addresses(const LetterProjection &p, Visit visit, bool recipe = true) {
     if (recipe) recipe_addresses(p.recipe(),visit);
@@ -243,7 +243,7 @@ struct ExchangeOwnerAccess {
     const auto same_parents=[](const auto &x, const auto &y) {
       if (x.size() != y.size()) return false;
       for (std::size_t i=0; i<x.size(); ++i)
-        if (!(x[i].occurrence == y[i].occurrence) || x[i].field.kind != y[i].field.kind ||
+        if (!(x[i].source == y[i].source) || x[i].field.kind != y[i].field.kind ||
             !(x[i].field.object == y[i].field.object) ||
             x[i].ordinal != y[i].ordinal || x[i].count != y[i].count) return false;
       return true;

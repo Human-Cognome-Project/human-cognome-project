@@ -76,6 +76,14 @@ struct ParentContribution {
 };
 
 namespace detail {
+// The projection owns the study namespace for both active and inactive pools.
+// Public extraction restores a complete independently owning contribution.
+struct ProjectionParentContribution {
+  warm::OccurrenceId source;
+  FieldKey field;
+  std::uint32_t ordinal{};
+  std::uint64_t count{};
+};
 // Actor provenance retains an independent aggregate selector in this view.
 // Character pins/ordinals remain owning values; public exports restore the key.
 struct ProjectionByteProvenance {
@@ -123,7 +131,10 @@ class LetterProjection {
   std::size_t occurrence_count() const { return occurrences_.size(); }
   // Detached owning value, valid after projection/recipe/domain destruction.
   ProjectedOccurrence occurrence(std::size_t index) const;
-  const auto &parents() const { return parents_; }
+  // Active contributions only; every extracted value owns its complete key.
+  // The inactive pool remains private and both pools reuse their reserved rows.
+  std::size_t parent_count() const { return parents_.size(); }
+  ParentContribution parent(std::size_t index) const;
   // Legacy v1 numerical handoff. Caller owns real SNodes; native prepare
   // verifies their structure and converts local geometry/state. No SNode
   // creation, engine staging, DB acquisition or live refresh happens here.
@@ -157,9 +168,9 @@ class LetterProjection {
   std::shared_ptr<const warm::Bundle> recipe_;
   detail::SharedReservedVector<warm::Exposure> exposures_;
   detail::SharedReservedVector<detail::ProjectionOccurrence> occurrences_;
-  detail::SharedReservedVector<ParentContribution> parents_;
+  detail::SharedReservedVector<detail::ProjectionParentContribution> parents_;
   // Every inactive contribution keeps its nested strings/path alive here.
-  detail::SharedReservedVector<ParentContribution> spare_parents_;
+  detail::SharedReservedVector<detail::ProjectionParentContribution> spare_parents_;
   bool exposure_reserved_{};
   StudyInput input_;
   StructuralStudyInput structural_input_;

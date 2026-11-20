@@ -150,11 +150,12 @@ void contributions() {
   CHECK_TRUE(mass == 28,
              "active masses conserve 8+8+10+2 across aggregate and byte views");
   CHECK_TRUE(prepared.participation.size() ==
-                 prepared.particles.size() + p.parents().size(),
+                 prepared.particles.size() + p.parent_count(),
              "native contributions match typed active parents plus one sibling "
              "edge per live occurrence");
   bool matches = true;
-  for (const auto &typed : p.parents()) {
+  for (std::size_t parent_index=0;parent_index<p.parent_count();++parent_index) {
+    const auto typed=p.parent(parent_index);
     int count = 0;
     for (const auto &edge : prepared.participation)
       if (edge.occurrence == occurrence_text(typed.occurrence) &&

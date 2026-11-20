@@ -577,8 +577,8 @@ int main() {
       if (!published.active) continue;
       const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published_index).object));
       for (const auto &expected : definition.parents) {
-        check(parent_index < p.parents().size(), "all active parent rows are published");
-        const auto &parent = p.parents()[parent_index++];
+        check(parent_index < p.parent_count(), "all active parent rows are published");
+        const auto &parent = p.parent(parent_index++);
         check(parent.occurrence.study == p.study() && parent.occurrence.source == published.source &&
                   parent.field.kind == GroupKind::ParentValue &&
                   parent.field.object == expected.target.object &&
@@ -586,7 +586,7 @@ int main() {
               "parent publication retains full occurrence/field/ordinal/count after source death");
       }
     }
-    check(parent_index == p.parents().size(), "no inactive or duplicate parent rows published");
+    check(parent_index == p.parent_count(), "no inactive or duplicate parent rows published");
     std::vector<warm::OccurrenceId> expected_ids;
     for (const auto &row : b.structural_occurrences) expected_ids.push_back(row.id);
     std::sort(expected_ids.begin(), expected_ids.end());
@@ -605,7 +605,7 @@ int main() {
     check(std::all_of(assembly::detail::ProjectionAccess::rows(p).begin(), assembly::detail::ProjectionAccess::rows(p).end(),
                       [](const auto &o) { return o.slot == -1; }),
           "structural projection assigns no numerical slots");
-    check(p.parents().size() == 14,
+    check(p.parent_count() == 14,
           "ordered parent contribution rows preserved");
     std::vector<StudyNode> nodes;
     for (const auto &n : b.nodes)
@@ -796,7 +796,7 @@ int main() {
     const auto unicode_walked = parent_leaves(unicode_exchange,[&](auto,auto,auto,const auto &,auto) { ++unicode_leaves; });
     check(unicode_walked && unicode_exchange.outgoing().size() == 2 && unicode_leaves == unicode_exchange.mass(),
           "multibyte UTF-8 alternative retains every ordered nibble contribution");
-    check(p.parents().size() == 14 && p.recipe().selections[0].exposure == b.selections[0].exposure &&
+    check(p.parent_count() == 14 && p.recipe().selections[0].exposure == b.selections[0].exposure &&
               p.recipe().ref.revision == b.ref.revision,
           "declaration and rejection leave projection unchanged");
     std::cout << "PASS: " << checks << " structural recipe checks\n";

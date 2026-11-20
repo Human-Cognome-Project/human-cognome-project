@@ -217,12 +217,17 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
       ++active;
       const auto &tool = letters.base.tools.at(letters.tools.at(assembly::detail::ProjectionAccess::definition(current,o_index).object));
       parent_count += tool.parents.size();
-      for (const auto &p : tool.parents)
-        require(std::count_if(current.parents().begin(),current.parents().end(),[&](const auto &v) {
-          return v.occurrence.study == current.study() && v.occurrence.source == o.source && v.ordinal == p.ordinal && v.field.object == p.target.object && v.count == p.contribution;
-        }) == 1, "reused parent pool lost or duplicated a contribution");
+      for (const auto &p : tool.parents) {
+        std::size_t matches=0;
+        for(std::size_t i=0;i<current.parent_count();++i) {
+          const auto v=current.parent(i);
+          matches+=v.occurrence.study == current.study() && v.occurrence.source == o.source &&
+              v.field.kind==GroupKind::ParentValue && v.ordinal==p.ordinal && v.field.object==p.target.object && v.count==p.contribution;
+        }
+        require(matches==1,"reused parent pool lost or duplicated a contribution");
+      }
     }
-    require(parent_count == current.parents().size() && active == Access::mappings(*owner).size() &&
+    require(parent_count == current.parent_count() && active == Access::mappings(*owner).size() &&
                 assembly::membership_fields(current).contribution_count() == active,
             "multi-occurrence contribution inventory differs from exposure");
     std::array<projection_parent_study_observation::Cost,2> parent_studies;

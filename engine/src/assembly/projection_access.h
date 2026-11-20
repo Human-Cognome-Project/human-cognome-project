@@ -7,6 +7,24 @@ namespace assembly::detail {
 // checked index in the owning projection; no reader accepts a detached row.
 // Reads borrow synchronously and allocate nothing on frozen paths.
 struct ProjectionAccess {
+  static std::size_t parent_count(const LetterProjection &p,bool spare) {
+    return spare?p.spare_parents_.size():p.parents_.size();
+  }
+  static const ProjectionParentContribution &parent(const LetterProjection &p,bool spare,std::size_t index) {
+    const auto &parents=spare?p.spare_parents_:p.parents_;
+    if(index>=parents.size())throw warm::Error("projection parent index out of range");
+    return parents[index];
+  }
+  static bool parent_matches(const LetterProjection &p,bool spare,std::size_t index,
+                             const warm::Uuid &study,const warm::OccurrenceId &source,PreparationWork &work) {
+    work.charge(1);
+    return index<parent_count(p,spare) && work.equal(p.study_,study) &&
+        work.equal(parent(p,spare,index).source,source);
+  }
+  static bool parent_matches(const LetterProjection &p,bool spare,std::size_t index,
+                             const OccurrenceKey &key,PreparationWork &work) {
+    return parent_matches(p,spare,index,key.study,key.source,work);
+  }
   static const auto &rows(const LetterProjection &p) { return p.occurrences_; }
   static const ProjectionOccurrence &row(const LetterProjection &p, std::size_t index) {
     if (index >= p.occurrences_.size()) throw warm::Error("projection occurrence index out of range");

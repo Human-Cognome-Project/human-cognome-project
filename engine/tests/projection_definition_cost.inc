@@ -93,8 +93,8 @@ void projection_definition_cost(int mode) {
   check(!byte_owner.requests && !byte_owner.requested && !byte_owner.path_requested &&
         !byte_owner.engaged_key_bytes && !byte_owner.key_capacity_bytes && byte_owner.index_capacity_bytes==byte_owner.capacity*sizeof(std::uint32_t),
         "private byte owners retain only independent checked indices with no complete-key backing");
-  check(parent_study.pools[0].study_requests==projection->parents().size() && parent_study.pools[0].study_bytes &&
-        !parent_study.pools[1].rows,"each actual public/copy parent row retains its own study UUID request");
+  check(!parent_study.pools[0].study_requests && !parent_study.pools[0].study_bytes && !parent_study.pools[0].uuid_capacity_bytes &&
+        !parent_study.pools[1].rows,"private parent rows use their projection's existing study header");
   {
     auto &stored=assembly::testing::ProjectionIndicesAccess::rows(*projection).front();
     const auto definition_index=stored.definition_index,source_index=stored.source_index;

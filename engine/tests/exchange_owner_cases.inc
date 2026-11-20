@@ -666,7 +666,7 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
       require(count == int(o.active), "active projection and native mapping disagree");
       active += o.active;
     }
-    require(active == (compression ? 1 : 2) && current.parents().size() == (compression ? 1 : 4),
+    require(active == (compression ? 1 : 2) && current.parent_count() == (compression ? 1 : 4),
             "owner active contributions did not follow exposure");
     const auto memberships = assembly::membership_fields(current);
     require(memberships.contribution_count() == active, "owner inherited membership did not follow exposure");
