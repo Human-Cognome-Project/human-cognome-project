@@ -1,8 +1,8 @@
 # Projection-owned study identity and contextual row readers
 
-Status: **contributor implementation awaiting review**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Tested source `68062bdea3ea348390a8f910c977e6d6e8e662b0`, tree `cda2652fba5b6400bd320b20b06a5d6b8cd6d583`, follows [#391 review 7045231362](https://github.com/Human-Cognome-Project/human-cognome-project/pull/391#issuecomment-7045231362) at `26dec2a0`. Main remains `646df179`; accepted #390/#391 are unmerged dependencies. Local CPU evidence qualifies only the recorded scope. Authoritative GitHub CI and maintainer integration remain separate.
+Status: **implementation provisionally accepted in #392**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Tested source `68062bdea3ea348390a8f910c977e6d6e8e662b0`, tree `cda2652fba5b6400bd320b20b06a5d6b8cd6d583`, follows [#391 review 7045231362](https://github.com/Human-Cognome-Project/human-cognome-project/pull/391#issuecomment-7045231362) at `26dec2a0`. Main `9d24287a` now integrates qualified #390/#391. Local CPU evidence qualifies only the recorded scope. Authoritative GitHub CI and maintainer integration remain separate.
 
-#390's native/smoke/offline-viewport workflows passed. #391's [native 44774748429](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/44774748429) and smoke passed. Their qualification does not qualify this new runtime; its own authoritative CI remains required.
+#390's native/smoke/offline-viewport workflows passed. #391's [native 44774748429](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/44774748429) and smoke passed. [#392 review 7047017029](https://github.com/Human-Cognome-Project/human-cognome-project/pull/392#issuecomment-7047017029) accepts final `51912690` and confirms all nine post-test files are Markdown. Its smoke, build, database, values and compiler jobs passed; remaining native regression qualification and maintainer integration remain pending. The [byte-owner inspection](PROJECTION-BYTE-OWNER-KEYS.md) follows that explicit continuation. Original costs/evidence below remain source-pinned.
 
 ## Owned context and independent source validation
 
@@ -70,4 +70,4 @@ Verified archive: `/tmp/hcp-projection-keys-68062bde-evidence.tar.gz`, SHA-256 `
 
 The before archive is contributor-retained evidence, not a new baseline run. Tested `6a208a14` and accepted `26dec2a0` differ only in documentation. Its runtime is identical to accepted #390's tested `223e874a`; source-equivalence patches and nested manifests are retained. Machine-local hashes identify inputs/artifacts without making raw evidence remotely accessible.
 
-Next: review this bounded runtime migration and reconcile authoritative checks, parent-first on main through the maintainer. After scoped acceptance, select a separately bounded remaining #343 responsibility from actual ownership/native-cost evidence. #324, broader revision/admission policy and full GPU qualification remain separate.
+Next: reconcile the remaining authoritative regression checks before maintainer integration. The next bounded #343 byte-owner inspection is linked above and requires its own review before runtime changes. #324, broader revision/admission policy and full GPU qualification remain separate.

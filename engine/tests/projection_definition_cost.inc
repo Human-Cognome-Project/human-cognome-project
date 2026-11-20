@@ -77,11 +77,18 @@ void projection_definition_cost(int mode) {
     const auto *found=std::find_if(std::begin(A::table),std::end(A::table),[&](const auto &e){return e.pointer==pointer;});
     attributed &= found!=std::end(A::table) && found->bytes==bytes;
   });
+  const auto byte_owner=projection_byte_owner_observation::inspect(*projection,domain.get(),[&](const void *pointer,std::size_t bytes) {
+    const auto *found=std::find_if(std::begin(A::table),std::end(A::table),[&](const auto &e){return e.pointer==pointer;});
+    attributed &= found!=std::end(A::table) && found->bytes==bytes;
+  });
   const auto lookup_calls=allocation_observation::calls.load();allocation_observation::enabled=false;
   check(attributed && !lookup_calls && cost.rows==expected.size() && !cost.requests && !cost.bytes && !cost.pin_capacity_bytes,
         "projected definition indices borrow only the projection's already owned exact recipe");
   check(!study.requests && !study.bytes && !study.uuid_capacity_bytes && study.header_bytes,
         "numeric rows use the existing owned study header with no repeated row-study storage");
+  check(byte_owner.requests==study.byte_owner_requests && byte_owner.requested==study.byte_owner_bytes &&
+        !byte_owner.path_requested && byte_owner.byte_rows==byte_owner.requests,
+        "actual byte-owner complete keys retain independent study strings and empty numeric owner paths");
   {
     auto &stored=assembly::testing::ProjectionIndicesAccess::rows(*projection).front();
     const auto definition_index=stored.definition_index,source_index=stored.source_index;
@@ -188,7 +195,8 @@ void projection_definition_cost(int mode) {
     const auto &row=exported[i];
     exact &= matches(row,i,exported.front().key.study) && !row.key.study.str().get_allocator().domain &&
         !row.key.source.path.get_allocator().domain && detached_pin(row.definition) &&
-        (!row.byte || (!row.byte->owner.study.str().get_allocator().domain && detached_pin(row.byte->character))) &&
+        (!row.byte || (!row.byte->owner.study.str().get_allocator().domain &&
+          !row.byte->owner.source.path.get_allocator().domain && detached_pin(row.byte->character))) &&
         (!row.complete_character || detached_pin(*row.complete_character));
   }
   const bool detached=weak.expired() && A::counts.live==export_bytes;
@@ -212,4 +220,14 @@ void projection_definition_cost(int mode) {
             << ",byte_owner_uuid_requested=" << study.byte_owner_bytes << ",header_comparison_work=" << study.comparison_work
             << ",source_validation_work=" << study.source_work << ",comparison_allocations=" << lookup_calls
             << ",source_projection_domain_dead=1,after_destroy_requested=0,duplicate_row_study_backing=0 PASS\n";
+  std::cout << "projection_byte_owner_cost,mode=" << mode << ",recipe=" << version << ",rows=" << byte_owner.rows
+            << ",capacity=" << byte_owner.capacity << ",byte_rows=" << byte_owner.byte_rows << ",active_bytes=" << byte_owner.active
+            << ",unique_owners=" << byte_owner.owners << ",owner_requests=" << byte_owner.requests
+            << ",owner_requested=" << byte_owner.requested << ",owner_path_requested=" << byte_owner.path_requested
+            << ",header_requested=" << byte_owner.header_requested << ",engaged_key_bytes=" << byte_owner.engaged_key_bytes
+            << ",owner_key_bytes=" << sizeof(OccurrenceKey) << ",owner_entry_bytes=" << sizeof(std::uint64_t)
+            << ",owner_path_header_bytes=" << sizeof(warm::OccurrencePath)
+            << ",key_capacity_bytes=" << byte_owner.key_capacity_bytes << ",outer_requested=" << byte_owner.outer_requested
+            << ",full_key_witness_work=" << byte_owner.full_key_work << ",index_relation_work=" << byte_owner.index_relation_work
+            << ",observer_allocations=" << lookup_calls << ",source_projection_domain_dead=1,runtime_saving=0 PASS\n";
 }

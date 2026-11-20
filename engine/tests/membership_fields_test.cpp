@@ -124,26 +124,32 @@ void paths_and_contexts() {
 void foreign_projected_byte_owner() {
   for(const bool structural:{false,true}) {
     membership_fixture::Fixture fixture;
-    if(structural)fixture.base.focal_fields={{warm::FieldKind::SiblingDefinition,fixture.byte('A').object}};
+    if(structural)fixture.base.focal_fields={{warm::FieldKind::SiblingDefinition,fixture.french}};
     const auto bundle=structural?normalize_structural_letters(fixture.base,
-        {{4,fixture.ref(fixture.english),warm::Exposure::Parts}}):normalize_letters(fixture.base,
-        {fixture.request(fixture.english,4,warm::Exposure::Parts)});
+        {{4,fixture.ref(fixture.english),warm::Exposure::Parts},{8,fixture.ref(fixture.french),warm::Exposure::Aggregate}}):normalize_letters(fixture.base,
+        {fixture.request(fixture.english,4,warm::Exposure::Parts),fixture.request(fixture.french,8,warm::Exposure::Aggregate)});
     auto projection=project_letters(bundle);
     const auto foreign=project_letters(bundle);
     auto &rows=assembly::testing::ProjectionIndicesAccess::rows(projection);
     auto &byte=*std::find_if(rows.begin(),rows.end(),[](const auto &row){return row.byte.has_value();});
-    const auto study=byte.byte->owner.study;
-    byte.byte->owner.study=foreign.study();
-    allocation_lifetime::begin();bool refused=false;
-    try{auto fields=membership_fields(projection);}catch(const warm::Error &error){
-      refused=std::string_view(error.what())=="membership: inconsistent byte ownership";
+    const auto original=byte.byte->owner;
+    for(int fault=0;fault<3;++fault) {
+      if(fault==0)byte.byte->owner.study=foreign.study();
+      if(fault==1)byte.byte->owner.source.entry=8; // Another valid letter using the same byte.
+      if(fault==2)byte.byte->owner.source.path.push_back(0);
+      allocation_lifetime::begin();bool refused=false;
+      try{auto fields=membership_fields(projection);}catch(const warm::Error &error){
+        refused=std::string_view(error.what())=="membership: inconsistent byte ownership";
+      }
+      const auto released=allocation_lifetime::end();
+      byte.byte->owner=original;
+      check(refused && !released.live && !released.blocks && released.acquired==released.released,
+            "actual membership consumer refuses foreign study, wrong in-range owner entry or nonempty owner path and unwinds");
+      check(membership_fields(projection).contribution_count()==5,
+            "healthy membership retry preserves English/French owner context after each refusal");
     }
-    const auto released=allocation_lifetime::end();
-    byte.byte->owner.study=study;
-    check(refused && !released.live && !released.blocks && released.acquired==released.released,
-          "membership consumer refuses a foreign byte-owner study with identical numeric occurrence identity and unwinds");
-    check(membership_fields(projection).contribution_count()==3,
-          "healthy membership retry preserves byte ownership after foreign study refusal");
+    std::cout << "projection_byte_owner_consumer,recipe=" << (structural?2:1)
+              << ",refusals=3,exact_owner_retry=3,language_context=1,after_refusal_requested=0,runtime_saving=0 PASS\n";
   }
 }
 void mass_and_repetition() {
