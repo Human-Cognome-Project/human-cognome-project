@@ -1,25 +1,25 @@
 # Current implementation and work
 
-**Catalogue-owned unique targets — 2026-11-19 (implementation awaiting review):**
-[Table ownership, net costs, controls and qualification](../../engine/docs/MEMBERSHIP-TARGET-TABLE.md)
-at `6da22846` implements #387 review 7020608389 from accepted `a912e6a6`.
-One complete pin per distinct target serves checked private row indices; every
-participation row, kind/count and detached public value remains. Real owner
-retained/requested peaks fall 546 / 2,979 / 1,357 bytes after table/header/index
-overhead. Live factory retention falls 252 bytes but peak rises 292 and bounded
-work increases; a single row adds one allocation, and the object grows 40 bytes.
-These tradeoffs and separate copy/export costs are explicit. Quick CI, nine
-Clang/seven GCC CTests, thirteen Clang/eight GCC native cases and both standalone
-suites pass: 5,737 value checks, 58 actual before/after comparisons and 27 owner
-observations. Empty/single/repeated, complete revision, invalid-index refusal,
-28 allocation/56 quota copy-assignment refusals, domain/weak/source lifetime and
-native atomic publication/ticks pass. Failed development logs and the isolated
-old-code new-control baseline are retained in verified evidence. New runtime
-review and authoritative GitHub CI remain; merges stay with the maintainer.
+**Projected definition pins — 2026-11-19 (inspection awaiting review):**
+[Actual recipe ownership, row values and bounded proposal](../../engine/docs/PROJECTION-DEFINITION-PINS.md)
+at `3de88e61` follows accepted #388 `fa83360e`. Committed/spare projections
+already share their exact immutable recipe, yet separately own all definition
+pins. Four selections attribute 1,068 pin bytes per view; the record separates
+inline capacity, public construction/copy and detached row output. Production
+is unchanged and achieved runtime saving is zero. Quick CI, both projection
+CTests with Clang/GCC, five Clang/three GCC hierarchy cases and both standalone
+suites pass: 4,965 projection checks, 186 unchanged cost records, forty owner
+views and 1,808 row-copy allocation refusals. Full identity/provenance, domain/
+source death, work retry, native publication and ticks remain checked. Review
+recipe-local definition indices and an explicit detached public output contract
+before implementation; see the owning continuation plan. GitHub CI is authoritative.
 
-Main `0e3c0fdf` integrates hosted-qualified #385/#386. #387 is provisionally
-accepted and all twelve native/six smoke jobs passed. This implementation remains
-stacked on #387 pending maintainer integration.
+Main `f228581d` integrates hosted-qualified #387. Catalogue-owned unique targets
+are provisionally accepted in [#388 review 7022583392](https://github.com/Human-Cognome-Project/human-cognome-project/pull/388#issuecomment-7022583392),
+including the [net costs and tradeoffs](../../engine/docs/MEMBERSHIP-TARGET-TABLE.md).
+Its smoke jobs passed; native build, database and projection-values passed while
+remaining native jobs run. This inspection is stacked on #388. All merges remain
+maintainer work; reconcile hosted findings before final acceptance/integration.
 
 **Membership target-pin inspection — 2026-11-19 (provisionally accepted in #387):**
 [Actual repeated pins, lifetime and bounded proposal](../../engine/docs/MEMBERSHIP-TARGET-PINS.md)

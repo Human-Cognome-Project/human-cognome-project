@@ -8,6 +8,7 @@
 #include "assembly/preparation_work.h"
 #define HCP_ALLOCATION_LIFETIME
 #include "allocation_observation.h"
+#include "projection_definition_observation.h"
 
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
@@ -112,12 +113,14 @@ void projection_copy_unwind() {
     }
   }
 }
+#include "projection_definition_cost.inc"
 }  // namespace
 
 int main() {
   using namespace letter_fixture;
   try {
     projection_copy_unwind();
+    for(int mode=0;mode<4;++mode)projection_definition_cost(mode);
     const warm::Uuid text_study("12345678-1234-1234-1234-123456789ABC");
     check(occurrence_text({text_study,{UINT64_MAX,{}}}) ==
               "12345678-1234-1234-1234-123456789abc/18446744073709551615",

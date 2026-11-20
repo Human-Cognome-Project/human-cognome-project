@@ -258,6 +258,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   exchange_parent_observation::Cost parent_cost;
   membership_study_observation::Cost membership_study_cost;
   membership_target_observation::Cost membership_target_cost;
+  std::array<projection_definition_observation::Cost,2> projection_definition_cost;
   {
     O::Observe observe(*real);
     A::begin();
@@ -280,6 +281,15 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
         const auto memberships=Owner::memberships(*owner);
         const auto &source=Owner::projection(*owner);
         no_new([&] {
+          const auto &spare=Owner::spare_projection(*owner);
+          projection_definition_observation::independent(source,spare);
+          std::size_t view=0;
+          for(const auto *p:{&source,&spare})
+            projection_definition_cost[view++]=projection_definition_observation::inspect(*p,
+                Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
+                  require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
+                          "projected definition pin differs from its actual owner allocation");
+                });
           for (const auto &declaration:declarations)
             parent_cost.add(exchange_parent_observation::inspect_pinned<Owner>(source,*declaration));
           membership_study_cost=membership_study_observation::inspect(*memberships,source,Owner::catalogue_rows(*memberships),
@@ -458,6 +468,15 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               << ",trace_equal=1,after_destroy_requested=0 PASS\n";
   }
   require(before==TickSnapshot(f),"adoption binding inspection changed native execution");
+  for(std::size_t view=0;view<projection_definition_cost.size();++view) {
+    const auto &cost=projection_definition_cost[view];
+    std::cout << "projection_definition_owner,selections=" << selection_count << ",view=" << view
+              << ",rows=" << cost.rows << ",active=" << cost.active << ",unique_definitions=" << cost.unique_definitions
+              << ",requests=" << cost.requests << ",requested=" << cost.bytes
+              << ",pin_capacity_bytes=" << cost.pin_capacity_bytes << ",outer_bytes=" << cost.outer_bytes
+              << ",lookup_work=" << cost.lookup_work
+              << ",lookup_allocations=0,recipe_shared=1,row_pins_independent=1,after_destroy_requested=0,runtime_saving=0 PASS\n";
+  }
   std::cout << "membership_study_owner,selections=" << selection_count << ",rows=" << membership_study_cost.rows
             << ",capacity=" << membership_study_cost.capacity << ",row_uuid_requests=" << membership_study_cost.requests
             << ",row_uuid_requested=" << membership_study_cost.bytes << ",header_uuid_requested=" << membership_study_cost.header_bytes

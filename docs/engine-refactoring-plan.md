@@ -1,10 +1,11 @@
 # Engine and Analyst-facing refactoring plan
 
-Maintainer update (2026-11-19). #385/#386 passed hosted qualification and
-landed on main `0e3c0fdf`. #387 at `a912e6a6` is provisionally accepted in review
-7020608389; all twelve native and six smoke jobs passed. Its integration and the
-new table runtime review/CI remain separate. Earlier entries preserve their
-source-specific handoffs; all merges remain with the maintainer.
+Current disposition (2026-11-19). Main `f228581d` integrates hosted-qualified
+#387. #388 at `fa83360e` is provisionally accepted in review 7022583392, including
+its target-table tradeoffs. Smoke, native build/database and projection-values
+passed; remaining native jobs run. The projected-definition inspection below is
+stacked on #388 and awaits review. Earlier entries preserve their source-specific
+handoffs; all merges remain with the maintainer.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -216,7 +217,16 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-19 contributor (unique membership target table awaiting runtime review):
+2026-11-19 contributor (projected definition-pin inspection awaiting review):
+[Existing recipe lifetime, actual pins and public row values](../engine/docs/PROJECTION-DEFINITION-PINS.md)
+at `3de88e61` follows accepted #388 `fa83360e`. Real committed/spare rows repeat
+definition buffers despite an already shared exact recipe; production saving is
+zero. Focused local CI passes with 186 unchanged cost records, forty owner-view
+observations and 1,808 detached row-copy allocation refusals. Review checked
+recipe-local indices and explicit owning public output before implementation;
+measure replacement overhead and preserve provenance/native publication.
+
+2026-11-19 contributor (unique membership target table accepted in #388):
 [Owned table, checked indices and actual costs](../engine/docs/MEMBERSHIP-TARGET-TABLE.md)
 at `6da22846` implements #387 review 7020608389. Targets deduplicate by complete
 scope/address/revision within the catalogue, preserving every row and detached
@@ -225,8 +235,9 @@ overhead; increased live peak/setup work and single-row allocation are explicit.
 Staged copy assignment keeps table/index associations intact through refusal;
 allocation-free moves transfer both tables. The source-pinned record owns local
 CI, 58 comparisons, new small controls, failure/retry/lifetime/publication evidence
-and remaining limits. Main `0e3c0fdf` integrates #385/#386; accepted #387 passed
-its hosted gate. New runtime review/CI and maintainer integration remain separate.
+and remaining limits. Main `f228581d` integrates qualified #387; #388's runtime
+review accepts the implementation and measured tradeoffs. Remaining hosted
+qualification and maintainer integration stay separate.
 
 2026-11-19 contributor (membership target-pin inspection accepted in #387):
 [Actual repeated full pins and catalogue lifetime](../engine/docs/MEMBERSHIP-TARGET-PINS.md)

@@ -52,6 +52,11 @@ the accepted catalogue-local reuse while preserving independent rows, full
 detached values and native publication. Its actual costs and tradeoffs are scoped
 to the recorded source and local qualification.
 
+The [projected definition-pin inspection](docs/PROJECTION-DEFINITION-PINS.md)
+measures repeated full definitions against each projection's already owned
+immutable recipe. It records detached public row costs/lifetime and proposes a
+bounded representation/output review; production and runtime saving are unchanged.
+
 ## Python boundary
 
 Taichi upstream ships a primarily Python-facing abstraction layer for arbitrary
