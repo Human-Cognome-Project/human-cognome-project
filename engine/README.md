@@ -78,6 +78,9 @@ for private rows while preserving complete public output. It changes no runtime 
 Its [approved header implementation](docs/PROJECTION-PARENT-HEADER.md) records
 actual narrower pools, complete indexed active exports, refusal/lifetime controls
 and measured whole-owner storage/work costs. The inactive pool stays private.
+The [parent field-target inspection](docs/PROJECTION-PARENT-TARGETS.md) measures
+remaining scoped-object copies against the existing recipe, with checked source/
+parent selectors and explicit guard-work overhead. Runtime remains unchanged.
 
 ## Python boundary
 

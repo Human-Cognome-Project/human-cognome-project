@@ -1,29 +1,30 @@
 # Core continuation after local CUDA corrections
 
-**Projection-owned parent study — 2026-11-20 (implementation awaiting review):**
-[Private numeric pools, complete active exports and actual costs](../engine/docs/PROJECTION-PARENT-HEADER.md)
-at `22482caa` implements [#395 review 7050686178](https://github.com/Human-Cognome-Project/human-cognome-project/pull/395#issuecomment-7050686178)
-from accepted `c68d3751`. Active/spare parent rows share their projection's
-existing owned study header and shrink 208→160 bytes. Full numeric source,
-field kind/object, ordinal and count remain. Public active count/index extraction
-returns complete independent 208-byte values; the inactive pool stays private.
-Actual factory/copy and both-view retained/peak reductions, work and unchanged
-detached output costs are recorded separately. Scoped local CI passes through
-constructor/copy/domain/work refusals, frozen pool reuse and native publication/ticks.
+**Parent field-target inspection — 2026-11-20 (awaiting review):**
+[Actual field buffers, checked recipe selectors and tradeoff](../engine/docs/PROJECTION-PARENT-TARGETS.md)
+at `f551d14f` follows [#396 review 7051718353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/396#issuecomment-7051718353)
+from accepted `2fc9d157`. Private parent fields duplicate scoped objects already
+owned by the exact recipe. Both native views retain 520 / 2,080 / 936 nested
+target bytes for one/four/three selections; inline field capacity is separate.
+A test-only 72-byte candidate retains full source, kind/ordinal/count and two
+independent selectors. Its guard and stored-object comparison have different
+duties and work totals. Production/census are unchanged
+and achieved runtime saving is zero. Scoped local CI and unchanged before evidence
+cover wrong valid selectors, repeated ordinals, work refusal/exact retry, source
+and domain lifetime and both-view publication/following ticks.
 
-Next: review this bounded runtime and reconcile authoritative GitHub CI. After
-scoped acceptance, choose one further #343 inspection from actual ownership and
-native-overlap evidence before another runtime change. Character/complete-character
-pins, field-target ownership, broader revision/admission policy, #324 and GPU
-qualification remain separate.
+Next: review this bounded proposal and reconcile authoritative GitHub CI before
+a runtime follow-up. Any implementation must measure actual replacement and
+guard/setup/output costs, retained and whole-operation peak bytes, and frozen
+pool reuse. Character/complete-character pins, broader revision/admission policy,
+#324 and GPU qualification remain separate.
 
-The [accepted parent study inspection](../engine/docs/PROJECTION-PARENT-STUDY-IDENTITY.md)
-keeps its original `a9011a88` attribution and zero saving at that source.
-Main `66b7ef3a` integrates qualified #394 and has reviewed `1f71eb76`'s tree.
-#395 at `c68d3751` is provisionally accepted; smoke/values/build/database and
-all compiler jobs passed while regression shards finish. This runtime follows
-the explicitly authorized head. Reconcile remaining authoritative qualification
-before parent-first maintainer integration; every merge stays with the maintainer.
+[Projection-owned parent study](../engine/docs/PROJECTION-PARENT-HEADER.md) at `22482caa`
+is provisionally accepted in #396 at `2fc9d157`. Main `5d8c08ce` integrates
+qualified #395 and has reviewed `c68d3751`'s tree. #396 smoke/values passed;
+its remaining native gate and maintainer integration remain separate. This
+inspection follows the explicitly authorized head. Original storage/work/output
+measurements stay source-pinned; every merge remains with the maintainer.
 
 **Repeated membership target pins — 2026-11-19 (inspection accepted in #387):**
 [Actual backing, source lifetime and proposal](../engine/docs/MEMBERSHIP-TARGET-PINS.md)
