@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+[Parent-contribution study ownership](PROJECTION-PARENT-STUDY-IDENTITY.md) at
+`a9011a88` observes actual active/spare pools in both adopted views. Repeated
+study strings occupy 370 / 1,480 / 666 bytes per one/four/three owner. Inline
+UUID capacity is already part of the 208-byte row extent and is reported
+separately from nested requests. The test-only numeric shape is 160 bytes;
+no representation, census or runtime saving changes. Context/work, complete
+value-copy refusals/lifetime and frozen native publication remain checked.
+
 [Checked byte-owner indices](PROJECTION-BYTE-OWNER-INDICES.md) at `ec5ca687`
 implement #393's explicit authorization. Census counts actual 376-byte private
 rows with retained owner indices, existing headers/recipe and full character/
@@ -8,7 +16,8 @@ retain complete 640-byte values. Both-view retained/peak reductions are
 676 / 2,704 / 1,278 bytes after actual index/reader overhead; removed membership
 owner-map requests affect temporary setup, not retained memberships. Stronger
 source/provenance guard work rises and is measured separately. Local full
-lifetime/refusal/frozen publication/tick checks pass; review and GitHub CI remain.
+lifetime/refusal/frozen publication/tick checks pass. #394 provisionally accepts
+final `1f71eb76`; native and smoke workflows passed, with maintainer integration separate.
 
 [Projected byte-owner keys](PROJECTION-BYTE-OWNER-KEYS.md) at `502f555d`
 attribute actual independent full-owner backing: 333 UUID bytes in the fourteen-row

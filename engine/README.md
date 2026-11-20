@@ -71,6 +71,10 @@ with actual consumer refusals and a checked association proposal. Production
 remains unchanged by the inspection. Its [approved owner-index implementation](docs/PROJECTION-BYTE-OWNER-INDICES.md)
 records actual narrower rows, complete detached output, consumer guards and
 retained/peak/work changes while preserving native execution authority.
+The [parent-contribution study inspection](docs/PROJECTION-PARENT-STUDY-IDENTITY.md)
+attributes the remaining repeated study strings in active/spare parent pools,
+checks detached values and publication, and proposes using the projection header
+for private rows while preserving complete public output. It changes no runtime behavior.
 
 ## Python boundary
 

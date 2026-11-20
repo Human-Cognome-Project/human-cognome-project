@@ -13,9 +13,16 @@
 #include "projection_definition_observation.h"
 #include "projection_study_observation.h"
 #include "projection_byte_owner_observation.h"
+#include "projection_parent_study_observation.h"
 
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
+  static const auto &parent_rows(const LetterProjection &p,bool spare) {
+    return spare?p.spare_parents_:p.parents_;
+  }
+  static void reserve(LetterProjection &p) {
+    detail::PreparationWork work(UINT64_MAX);p.reserve_exposure(work);
+  }
   static auto copy(const LetterProjection &p,
       const std::shared_ptr<detail::ReservationDomain> &domain, bool reserve) {
     auto result = LetterProjection(p,domain);
@@ -121,6 +128,7 @@ void projection_copy_unwind() {
 #include "projection_index_cases.inc"
 #include "projection_study_cases.inc"
 #include "projection_byte_owner_cases.inc"
+#include "projection_parent_study_cases.inc"
 }  // namespace
 
 int main() {
@@ -132,6 +140,7 @@ int main() {
       if(mode || !selected)projection_index_case(mode,structural,selected);
     projection_study_identity_cases();
     projection_byte_owner_cases();
+    projection_parent_study_cases();
     const warm::Uuid text_study("12345678-1234-1234-1234-123456789ABC");
     check(occurrence_text({text_study,{UINT64_MAX,{}}}) ==
               "12345678-1234-1234-1234-123456789abc/18446744073709551615",
