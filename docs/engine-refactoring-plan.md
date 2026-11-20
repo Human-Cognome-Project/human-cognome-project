@@ -1,14 +1,13 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-20). Main `5d8c08ce` integrates qualified #395.
-#396 `2fc9d157` is provisionally accepted in review 7051718353; smoke and values
-passed while its remaining native gate finishes. The [parent field-target
-inspection](../engine/docs/PROJECTION-PARENT-TARGETS.md) at `f551d14f` follows
-that explicit authorization. It measures actual duplicate field objects and
-independent recipe selectors, with higher guard work and complete public values.
-Scoped local CI passes; inspection review and its authoritative CI remain.
-Production is unchanged and achieved saving is zero. Earlier entries preserve
-source-specific handoffs; every integration remains maintainer work.
+Current disposition (2026-11-20). Initial main `5d8c08ce` integrates qualified
+#395. #396 passed native/smoke; integration remains maintainer work. #397
+`f27db64d` is provisionally accepted in review 7052622147 while its remaining
+native gate finishes. The [parent-target implementation](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
+at `c63bf01d` follows that explicit direction, passes scoped local CI and
+measures actual selector, phase-correct preparation, output and whole-owner
+costs. Runtime review and authoritative CI remain separate. Earlier entries
+preserve source-specific handoffs; all integration remains with the maintainer.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
