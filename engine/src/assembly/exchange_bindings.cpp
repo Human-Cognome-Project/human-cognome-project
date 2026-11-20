@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include "assembly/exchange_bindings.h"
 #include "assembly/membership_fields.h"
 
@@ -177,21 +178,20 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection,
        s.live.edges <= edge_rows_.capacity() && s.particle_headers.size() <= outgoing_rows_.capacity(),
        "exchange binding reservation exceeded");
   std::size_t active = 0;
-  for (const auto &o : projection.occurrences()) { meter.charge(1); active += o.active; }
+  for (const auto &o : ProjectionAccess::rows(projection)) { meter.charge(1); active += o.active; }
   need(active == current_occurrences.size(), "exchange owner exposure is incomplete");
   for (std::size_t i = 0; i < current_occurrences.size(); ++i) {
     meter.charge(1);
     const auto &binding = current_occurrences[i];
-    const auto o = std::find_if(projection.occurrences().begin(), projection.occurrences().end(),
+    const auto o = std::find_if(ProjectionAccess::rows(projection).begin(), ProjectionAccess::rows(projection).end(),
         [&](const auto &v) { return meter.equal(v.key,binding.occurrence); });
-    need(o != projection.occurrences().end() && o->active && current(binding.handle, s.particle_headers),
+    need(o != ProjectionAccess::rows(projection).end() && o->active && current(binding.handle, s.particle_headers),
          "exchange occurrence is inactive, foreign or stale");
     for (std::size_t j = 0; j < i; ++j)
       need(!meter.equal(current_occurrences[j].occurrence,binding.occurrence) &&
            !same(current_occurrences[j].handle, binding.handle), "duplicate exchange occurrence binding");
-    const auto tool = std::find_if(projection.recipe().tools.begin(), projection.recipe().tools.end(),
-        [&](const auto &v) { return meter.equal(v.ref,o->definition); });
-    need(tool != projection.recipe().tools.end() && tool->mass &&
+    const auto *tool = &ProjectionAccess::tool(projection,*o,&meter);
+    need(tool->mass &&
          *tool->mass == s.source_masses[binding.handle.record], "bound exact source mass differs");
     meter.charge(1); masses_.push_back(*tool->mass);
   }

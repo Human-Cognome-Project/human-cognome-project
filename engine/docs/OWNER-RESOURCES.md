@@ -1,10 +1,20 @@
 # Private exchange-owner resource inventory
 
-[Projected definition pins](PROJECTION-DEFINITION-PINS.md) at `3de88e61`
+[Recipe-backed projected definitions](PROJECTION-DEFINITION-INDICES.md) at
+`223e874a`, awaiting runtime review, remove per-row definition buffers from both
+views while reusing their existing exact immutable recipe. Census counts the
+512-byte row/index capacity, keys and complete byte/character provenance, with
+recipe pins counted once. Actual net retained/peak reductions are 651 / 2,604 /
+1,302 bytes per view, twice those totals per owner. Public owning exports keep
+their 640-byte shape and separate costs. Guard work and temporary factory overhead
+are explicit; native claims/publication and full domain release remain checked.
+
+[The original definition-pin inspection](PROJECTION-DEFINITION-PINS.md) at `3de88e61`
 attribute actual independent definition buffers in committed/spare projections
 that already share one immutable recipe. Four selections request 1,068 bytes per
 view; inline capacity and public row-copy output are separate. Production/census
-is unchanged and runtime saving is zero; representation/output review remains.
+is unchanged and runtime saving is zero at that source. #389 accepted its direction;
+the implementation above measures the replacement and separate output costs.
 
 [Catalogue-owned unique membership targets](MEMBERSHIP-TARGET-TABLE.md) at
 `6da22846`, provisionally accepted in #388, counts one target vector and each complete
@@ -172,7 +182,7 @@ not an operational memory-budget policy or a second state authority.
 | Family | Owned surfaces counted |
 |---|---|
 | `owner` | `sizeof(ExchangeOwner)` plus its separately allocated reservation-domain object, including embedded references, smart pointers, vector/map headers, generation/gates and fixed reports |
-| `projections` | Both mutable projection objects and their independent inputs, occurrences, exposures, active/spare parents and nested keys/pins/text; one shared immutable Bundle header and recursive body |
+| `projections` | Both mutable projection objects and independent inputs, numeric definition/source-index row capacity, exposures, active/spare parents and nested keys/byte/complete-character pins/text; one shared immutable Bundle header/body owns the definition pins once |
 | `maps` | Outer capacity of four backed stores: current/candidate occurrence and field maps; nested UUID/path/address storage of **every constructed slot**, including inactive slots. The census also visits the empty persistent binding maps; their headers are already in its object |
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
 | `coordinator` | Coordinator object; command, intrinsic, field-command-index, hierarchy-node, child and contribution buffers |

@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include "assembly/structural_admission_plan.h"
 #include "assembly/intrinsic_geometry.h"
 #include "field/cascade_source.h"
@@ -196,16 +197,17 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     }
     need(found); return *found;
   };
-  ReservedVector<const ProjectedOccurrence *> ordered{
-      ReservationAllocator<const ProjectedOccurrence *>(domain_.get())};
+  ReservedVector<const ProjectionOccurrence *> ordered{
+      ReservationAllocator<const ProjectionOccurrence *>(domain_.get())};
   reserve(ordered,b.bodies.size(),w);
   std::uint64_t edges = 0;
-  for (const auto &o : p.occurrences()) {
+  for (const auto &o : ProjectionAccess::rows(p)) {
     w.charge(1);
     if (!o.active) continue;
     need(ordered.size() < b.bodies.size());
     ordered.push_back(&o);
-    edges = sum(edges,sum(1,tool(o.definition).parents.size()));
+    const auto *definition=ProjectionAccess::resolve(p,o,&w); need(definition);
+    edges = sum(edges,sum(1,definition->parents.size()));
   }
   need(ordered.size() == b.bodies.size());
   edges = sum(edges,assembly.memberships_.contributions_.size());
@@ -230,13 +232,15 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   };
   for (std::size_t i=0; i<ordered.size(); ++i) {
     const auto &o = *ordered[i];
+    const auto *resolved=ProjectionAccess::resolve(p,o,&w); need(resolved);
+    const auto &pin=resolved->ref;
     need(w.equal(o.key.study,source_.study));
     const AdmissionBody *input = nullptr;
     for (const auto &v : b.bodies) {
       w.charge(1);
       if (w.equal(v.occurrence,o.key)) { need(!input); input = &v; }
     }
-    need(input && w.equal(input->definition,o.definition) && input->node == o.node &&
+    need(input && w.equal(input->definition,pin) && input->node == o.node &&
          o.node >= 0 && std::size_t(o.node) < units.size());
     need(input->kind > 0 && input->kind <= 255 && input->address >= 0);
     cap(Budget::Potential,std::uint64_t(input->address)+1);
@@ -250,12 +254,12 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
       need(same ? (g.definition == input->geometry.definition && g.revision == input->geometry.revision)
                 : (g.definition != input->geometry.definition || g.revision != input->geometry.revision));
     }
-    const auto &definition = tool(o.definition);
+    const auto &definition = tool(pin);
     need(definition.mass && *definition.mass);
     const warm::Geometry *geometry = nullptr;
     for (const auto &g : recipe.geometry) {
       w.charge(1);
-      if (w.equal(g.object,o.definition.object)) { need(!geometry); geometry = &g; }
+      if (w.equal(g.object,pin.object)) { need(!geometry); geometry = &g; }
     }
     need(geometry);
     w.elements(geometry->spheres.size(),sizeof(warm::Sphere));
@@ -268,7 +272,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     w.charge(sizeof(field::PlacementIntrinsic));
     intrinsics_.push_back({std::uint64_t(command),i,input->mass,radius,input->geometry});
     auto key = copy_occurrence(o.key.source,domain_,w);
-    auto ref = copy_ref(o.definition,domain_,w);
+    auto ref = copy_ref(pin,domain_,w);
     w.charge(sizeof(AdmissionOccurrenceCommand));
     occurrences_.push_back({std::move(key),std::move(ref),command,o.node,units[o.node]});
   }
@@ -295,7 +299,9 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   };
   std::uint64_t position = 0;
   for (std::size_t i=0; i<ordered.size(); ++i) {
-    const auto &o = *ordered[i]; const auto &t = tool(o.definition);
+    const auto &o = *ordered[i];
+    const auto *resolved=ProjectionAccess::resolve(p,o,&w); need(resolved);
+    const auto &t = *resolved;
     const auto edge = [&](GroupKind kind, const warm::ObjectKey &object,
                           std::uint64_t count, std::uint64_t ordinal) {
       const auto f = field_index(kind,object);

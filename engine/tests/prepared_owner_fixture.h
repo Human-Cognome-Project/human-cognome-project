@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #pragma once
 #include "assembly/prepared_study_owner.h"
 #include "letter_projection_fixture.h"
@@ -35,9 +36,9 @@ struct Input {
     bindings.source = {source->owner(),source->study(),source->generation(),recipe.ref};
     const auto projected = project_letters(recipe);
     int address = 40;
-    for (const auto &o : projected.occurrences()) if (o.active) {
+    for (const auto &o : assembly::detail::ProjectionAccess::rows(projected)) if (o.active) {
       auto key = o.key; key.study = source->study();
-      bindings.bodies.push_back({std::move(key),o.definition,o.node,3,address++,1.5,{1,7,true}});
+      bindings.bodies.push_back({std::move(key),assembly::detail::ProjectionAccess::definition(projected,o),o.node,3,address++,1.5,{1,7,true}});
     }
     const auto add = [&](GroupKind kind, const warm::ObjectKey &key, std::vector<int> children) {
       const int i = int(bindings.fields.size()); const FieldKey field{kind,key};

@@ -102,7 +102,9 @@ assembly::PreparedStudySubmission submission(
   b.source = {source->owner(),source->study(),source->generation(),recipe.ref};
   b.layout.push_back({{nullptr,-1,ScaleRole::Root},1});
   const auto projected = project_letters(recipe);
-  for (const auto &o : projected.occurrences()) if (o.active) {
+  for (std::size_t i=0;i<projected.occurrence_count();++i) {
+    const auto o=projected.occurrence(i);
+    if (!o.active) continue;
     if (!(o.definition.object == english.object) || o.definition.revision != english.revision ||
         o.node != 0 || !o.key.source.path.empty() ||
         (o.key.source.entry != 2 && o.key.source.entry != 10) || b.bodies.size() >= 2)

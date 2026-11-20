@@ -265,6 +265,8 @@ std::string occurrence_text(const OccurrenceKey &k) {
 
 LetterProjection project_letters(const warm::Bundle &b) {
   warm::validate(b);
+  need(b.tools.size() <= UINT32_MAX && b.occurrences.size() <= UINT32_MAX &&
+       b.structural_occurrences.size() <= UINT32_MAX,"projection recipe index overflow");
   LetterProjection out;
   out.study_ = warm::new_uuid();
   out.recipe_ = std::make_shared<warm::Bundle>(b);
@@ -278,17 +280,20 @@ LetterProjection project_letters(const warm::Bundle &b) {
     bool active;
     const warm::Occurrence *initial; // Legacy state only; null for structural input.
     const warm::ToolRef *complete_character;
+    std::uint32_t source_index;
   };
   std::map<std::reference_wrapper<const warm::OccurrenceId>, OccurrenceSource,
            OccurrenceIdLess> ordered;
   // Borrow stable input definition keys; value ordering still deduplicates them.
   std::set<std::reference_wrapper<const warm::ObjectKey>, ToolKeyLess> used;
   for (const auto &o : b.occurrences) {
-    ordered.emplace(std::cref(o.id), OccurrenceSource{&o.definition, o.node, false, &o, nullptr});
+    ordered.emplace(std::cref(o.id), OccurrenceSource{&o.definition, o.node, false, &o, nullptr,
+        std::uint32_t(&o-b.occurrences.data())});
     used.insert(std::cref(o.definition));
   }
   for (const auto &o : b.structural_occurrences) {
-    ordered.emplace(std::cref(o.id), OccurrenceSource{&o.definition, o.node, false, nullptr, nullptr});
+    ordered.emplace(std::cref(o.id), OccurrenceSource{&o.definition, o.node, false, nullptr, nullptr,
+        std::uint32_t(&o-b.structural_occurrences.data())});
     used.insert(std::cref(o.definition));
   }
   // Temporary lookup metadata borrows only from the stable source tool table.
@@ -345,9 +350,10 @@ LetterProjection project_letters(const warm::Bundle &b) {
     // initialization also unwinds correctly on the supported GCC 11 path.
     auto study = out.study_;
     auto occurrence = id;
-    auto definition = t.ref;
-    ProjectedOccurrence record{{std::move(study),std::move(occurrence)},
-                               std::move(definition),slot,o.node,o.active,{}, {}};
+    detail::ProjectionOccurrence record{{std::move(study),std::move(occurrence)},
+        std::uint32_t(&t-b.tools.data()),o.source_index,slot,o.node,o.active,{}, {}};
+    const auto *resolved=out.resolve_definition(record,nullptr);
+    need(resolved && resolved->ref == t.ref,"projection definition/source revision mismatch");
     const auto &k = record.key; // Stable local storage until final publication.
     if (const auto found = provenance.find(id); found != provenance.end()) {
       const auto &source = found->second;
@@ -501,7 +507,7 @@ warm::Bundle projection_recipe(const warm::Bundle &b,
       std::move(tools),std::move(geometry),std::move(nodes),std::move(occurrences),
       std::move(selections),std::move(contacts),std::move(structural_occurrences),std::move(focal_fields)};
 }
-ProjectedOccurrence projection_row(const ProjectedOccurrence &o,
+detail::ProjectionOccurrence projection_row(const detail::ProjectionOccurrence &o,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   std::optional<ByteProvenance> byte;
   if (o.byte) {
@@ -512,8 +518,7 @@ ProjectedOccurrence projection_row(const ProjectedOccurrence &o,
   std::optional<warm::ToolRef> complete;
   if (o.complete_character) complete.emplace(projection_reference(*o.complete_character,domain));
   auto key = projection_key(o.key,domain);
-  auto definition = projection_reference(o.definition,domain);
-  return {std::move(key),std::move(definition),o.slot,o.node,o.active,
+  return {std::move(key),o.definition_index,o.source_index,o.slot,o.node,o.active,
       std::move(byte),std::move(complete)};
 }
 ParentContribution projection_row(const ParentContribution &p,
@@ -645,6 +650,35 @@ LetterProjection::LetterProjection(const LetterProjection &other,
       spare_parents_(projection_rows(other.spare_parents_,domain)),
       exposure_reserved_(other.exposure_reserved_), input_(projection_input(other.input_,domain)), structural_input_(projection_input(other.structural_input_,domain)) {}
 
+const warm::Tool *LetterProjection::resolve_definition(const detail::ProjectionOccurrence &row,
+                                                       detail::PreparationWork *work) const {
+  const auto equal=[&](const auto &a,const auto &b) { return work ? work->equal(a,b) : a==b; };
+  if (work) work->charge(1);
+  const auto &b=recipe();
+  if (row.definition_index>=b.tools.size() || !equal(row.key.study,study_)) return nullptr;
+  const auto &tool=b.tools[row.definition_index];
+  const auto source=[&](const auto &rows) {
+    if (row.source_index>=rows.size()) return false;
+    const auto &original=rows[row.source_index];
+    return equal(original.id,row.key.source) && original.node==row.node &&
+        equal(original.definition,tool.ref.object);
+  };
+  if (!(b.recipe_version==1 ? source(b.occurrences) : b.recipe_version==2 && source(b.structural_occurrences)) ||
+      !tool.mass || !*tool.mass) return nullptr;
+  return &tool;
+}
+
+ProjectedOccurrence LetterProjection::occurrence(std::size_t index) const {
+  need(index<occurrences_.size(),"projection occurrence index out of range");
+  const auto &row=occurrences_[index];
+  const auto *tool=resolve_definition(row,nullptr);
+  need(tool,"projection definition index/source mismatch");
+  auto value=projection_row(row,{});
+  auto definition=projection_reference(tool->ref,{});
+  return {std::move(value.key),std::move(definition),value.slot,value.node,value.active,
+      std::move(value.byte),std::move(value.complete_character)};
+}
+
 warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
   for (std::size_t i = 0; i < recipe().selections.size(); ++i)
     if (recipe().selections[i].entry == entry) return exposures_[i];
@@ -657,9 +691,8 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
   std::size_t count = 0;
   for (const auto &o : occurrences_) {
     meter.charge(1);
-    const auto t = std::find_if(recipe().tools.begin(),recipe().tools.end(),
-        [&](const auto &v) { return meter.equal(v.ref,o.definition); });
-    need(t != recipe().tools.end() && t->parents.size() <= SIZE_MAX - count,
+    const auto *t = resolve_definition(o,&meter);
+    need(t && t->parents.size() <= SIZE_MAX - count,
          "projection parent reservation overflow");
     count += t->parents.size();
   }
@@ -673,8 +706,8 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
   for (const auto &o : occurrences_) {
     meter.charge(1);
     if (exposure_reserved_ || o.active) continue;
-    const auto t = std::find_if(recipe().tools.begin(),recipe().tools.end(),
-        [&](const auto &v) { return meter.equal(v.ref,o.definition); });
+    const auto *t = resolve_definition(o,&meter);
+    need(t,"projection definition index/source mismatch");
     for (const auto &p : t->parents) {
       meter.charge(sizeof(ParentContribution));
       meter.copy_key(o.key); meter.copy_key(p.target.object);
@@ -703,6 +736,13 @@ void LetterProjection::prepare_exposure(LetterProjection &next, const Occurrence
   need(&next != this && next.exposure_reserved_ && meter.equal(next.study_,study_) &&
        meter.equal(next.recipe().ref.selection,recipe().ref.selection) && meter.equal(next.recipe().ref.revision,recipe().ref.revision) &&
        next.occurrences_.size() == occurrences_.size(), "foreign or unreserved projection buffer");
+  for (std::size_t i=0;i<occurrences_.size();++i) {
+    const auto *current=resolve_definition(occurrences_[i],&meter);
+    const auto *candidate=next.resolve_definition(next.occurrences_[i],&meter);
+    need(current && candidate && meter.equal(current->ref,candidate->ref) &&
+         meter.equal(occurrences_[i].key,next.occurrences_[i].key),
+         "exposure buffers differ in recipe-bound occurrence meaning");
+  }
   for (std::size_t i = 0; i < recipe().selections.size(); ++i)
     {
       meter.charge(1);
@@ -728,9 +768,8 @@ void LetterProjection::prepare_exposure(LetterProjection &next, const Occurrence
   for (const auto &o : next.occurrences_) {
     meter.charge(1);
     if (!o.active) continue;
-    const auto tool = std::find_if(next.recipe().tools.begin(), next.recipe().tools.end(),
-        [&](const auto &t) { return meter.equal(t.ref,o.definition); });
-    need(tool != next.recipe().tools.end(), "missing immutable projected definition");
+    const auto *tool = next.resolve_definition(o,&meter);
+    need(tool, "missing immutable projected definition");
     for (const auto &p : tool->parents) {
       meter.charge(1);
       const auto found = std::find_if(next.parents_.begin()+active,next.parents_.end(),[&](const auto &v) {
@@ -749,6 +788,7 @@ void LetterProjection::prepare_exposure(LetterProjection &next, const Occurrence
 }
 
 StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {
+  for (const auto &row : occurrences_) need(resolve_definition(row,nullptr),"projection definition index/source mismatch");
   need(recipe().recipe_version == 1,
        "legacy numerical binding requires recipe v1");
   need(nodes.size() == recipe().nodes.size(),
@@ -763,6 +803,7 @@ StudyInput LetterProjection::bind(const std::vector<StudyNode> &nodes) const {
 }
 StructuralStudyInput LetterProjection::bind_structure(
     const std::vector<StudyNode> &nodes) const {
+  for (const auto &row : occurrences_) need(resolve_definition(row,nullptr),"projection definition index/source mismatch");
   need(
       recipe().recipe_version == 2,
       "structural binding requires recipe v2; explicitly adapt legacy recipes");

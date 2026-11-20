@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #pragma once
 
 #include <algorithm>
@@ -21,11 +22,11 @@ inline const warm::Tool *lookup(const assembly::LetterProjection &projection,
       !work.equal(contract.recipe().revision,projection.recipe().ref.revision) ||
       !work.equal(source.occurrence.study,projection.study()) ||
       source.occurrence.source.entry!=contract.owner().source.entry) return nullptr;
-  const auto &occurrences=projection.occurrences();
+  const auto &occurrences=assembly::detail::ProjectionAccess::rows(projection);
   const auto occurrence=std::find_if(occurrences.begin(),occurrences.end(),[&](const auto &o) {
     return work.equal(o.key,source.occurrence);
   });
-  if (occurrence==occurrences.end() || !work.equal(occurrence->definition,source.definition) ||
+  if (occurrence==occurrences.end() || !work.equal(assembly::detail::ProjectionAccess::definition(projection,*occurrence,&work),source.definition) ||
       occurrence->node!=source.node) return nullptr;
   const auto &tools=projection.recipe().tools;
   const auto tool=std::find_if(tools.begin(),tools.end(),[&](const auto &t) {

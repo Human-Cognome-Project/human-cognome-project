@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #pragma once
 
 #include "assembly/exchange_contract.h"
@@ -47,7 +48,7 @@ inline void reserve_exchange_maps(const LetterProjection &p, std::size_t particl
     ExchangeMap<ExchangeFieldBinding> &groups,
     const ExchangeMap<ExchangeFieldBinding> *trusted = nullptr, PreparationWork *meter = nullptr) {
   std::size_t path = 0, address = 0;
-  for (const auto &o : p.occurrences()) { if (meter) meter->charge(1); path = std::max(path,o.key.source.path.size()); }
+  for (const auto &o : ProjectionAccess::rows(p)) { if (meter) meter->charge(1); path = std::max(path,o.key.source.path.size()); }
   for (const auto &t : p.recipe().tools) { if (meter) meter->charge(1); address = std::max(address,t.ref.object.address.size()); }
   for (const auto &g : groups) { if (meter) meter->charge(1); address = std::max(address,g.field.object.address.size()); }
   if (trusted) for (const auto &g : *trusted)

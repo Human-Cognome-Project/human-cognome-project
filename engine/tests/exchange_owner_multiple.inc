@@ -21,7 +21,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
       52,52,false,true,true,false,1024,{},&limits,true);
   f.install();
   std::vector<assembly::detail::OccurrenceBinding> rows;
-  for (const auto &o : initial.occurrences()) if (o.active) {
+  for (const auto &o : assembly::detail::ProjectionAccess::rows(initial)) if (o.active) {
     const auto index = o.key.source.entry < 2 ? o.key.source.entry
         : 2 + 2 * (o.key.source.entry-2) + o.key.source.path[1];
     rows.push_back({o.key,f.in.particle_rows[index]});
@@ -186,9 +186,9 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
               "shared field or focal identity changed");
     }
     std::size_t parent_count = 0, active = 0;
-    for (const auto &o : current.occurrences()) if (o.active) {
+    for (const auto &o : assembly::detail::ProjectionAccess::rows(current)) if (o.active) {
       ++active;
-      const auto &tool = letters.base.tools.at(letters.tools.at(o.definition.object));
+      const auto &tool = letters.base.tools.at(letters.tools.at(assembly::detail::ProjectionAccess::definition(current,o).object));
       parent_count += tool.parents.size();
       for (const auto &p : tool.parents)
         require(std::count_if(current.parents().begin(),current.parents().end(),[&](const auto &v) {

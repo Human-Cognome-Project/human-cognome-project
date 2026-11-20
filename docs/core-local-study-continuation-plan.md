@@ -1,20 +1,19 @@
 # Core continuation after local CUDA corrections
 
-**Projected definition pins — 2026-11-19 (inspection awaiting review):**
-[Measured ownership, public values and proposal](../engine/docs/PROJECTION-DEFINITION-PINS.md)
-at `3de88e61` follows provisionally accepted #388 `fa83360e`. Local qualification
-passes with production unchanged. Next review the existing strong recipe pin as
-the source for checked private definition indices, and settle explicit detached
-public output before implementing. Preserve complete provenance, correlated
-recipe/copy/move lifetime, semantic/node/mass association and native authority;
-measure actual replacement overhead and independent export costs. #324 and mixed
-revision policy remain separate. Source-pinned costs/controls belong in the record.
+**Projected definition indices — 2026-11-20 (runtime awaiting review):**
+[Implementation, net costs and qualification](../engine/docs/PROJECTION-DEFINITION-INDICES.md)
+at `223e874a` implements [#389's approved direction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/389#issuecomment-7023633130)
+from main `646df179`. Definition/source indices remain coupled to the existing
+owned immutable recipe; explicit owning exports and contextual internal readers
+preserve complete provenance and native authority. Both-view retained/peak savings
+and separate export/guard-work tradeoffs are measured. Local CI passes.
 
-Main `f228581d` integrates qualified #387. #388's target-table runtime and its
-tradeoffs are accepted in [review 7022583392](https://github.com/Human-Cognome-Project/human-cognome-project/pull/388#issuecomment-7022583392).
-Its smoke, native build/database and projection-values passed; remaining native
-jobs run. The inspection remains stacked on #388. Reconcile authoritative hosted
-findings before final acceptance/integration; all merges remain maintainer work.
+Next review this runtime and reconcile its authoritative GitHub checks before
+maintainer integration. #388/#389 are fully qualified and integrated on current
+main; the [inspection](../engine/docs/PROJECTION-DEFINITION-PINS.md) preserves its
+before evidence. Continue #343's next bounded candidate after this representation
+review; #324, mixed-revision adoption and full resource/admission policy remain
+separate. All merge events remain maintainer work.
 
 **Repeated membership target pins — 2026-11-19 (inspection accepted in #387):**
 [Actual backing, source lifetime and proposal](../engine/docs/MEMBERSHIP-TARGET-PINS.md)

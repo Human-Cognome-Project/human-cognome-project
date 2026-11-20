@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -64,7 +65,7 @@ void projection_copy_unwind() {
         exact = copy.study() == projection.study() &&
                   copy.recipe().ref.selection == projection.recipe().ref.selection &&
                   copy.recipe().ref.revision == projection.recipe().ref.revision &&
-                  copy.occurrences().size() == projection.occurrences().size();
+                  assembly::detail::ProjectionAccess::rows(copy).size() == assembly::detail::ProjectionAccess::rows(projection).size();
       }
       const auto observed = allocation_lifetime::end();
       check(exact,"explicit projection copy preserves source identity and occurrence count");
@@ -114,6 +115,7 @@ void projection_copy_unwind() {
   }
 }
 #include "projection_definition_cost.inc"
+#include "projection_index_cases.inc"
 }  // namespace
 
 int main() {
@@ -121,6 +123,8 @@ int main() {
   try {
     projection_copy_unwind();
     for(int mode=0;mode<4;++mode)projection_definition_cost(mode);
+    for(int mode=0;mode<3;++mode)for(const bool structural:{false,true})for(const bool selected:{false,true})
+      if(mode || !selected)projection_index_case(mode,structural,selected);
     const warm::Uuid text_study("12345678-1234-1234-1234-123456789ABC");
     check(occurrence_text({text_study,{UINT64_MAX,{}}}) ==
               "12345678-1234-1234-1234-123456789abc/18446744073709551615",
@@ -154,7 +158,7 @@ int main() {
       std::reverse(source.occurrences.begin(), source.occurrences.end());
       return project_letters(source);
     }();
-    for (const auto &published : p.occurrences()) {
+    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
       const auto selection = std::find_if(b.selections.begin(), b.selections.end(),
           [&](const auto &s) { return s.entry == published.key.source.entry; });
       check(selection != b.selections.end(), "published occurrence has a selection");
@@ -162,16 +166,16 @@ int main() {
       check(published.active == (aggregate ==
                 (selection->exposure == warm::Exposure::Aggregate)),
             "source-death publication retains exact aggregate/parts activity");
-      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published).object));
       const bool complete = aggregate && definition.parents.size() == 1;
       check(bool(published.complete_character) == complete &&
                 (!complete || *published.complete_character == definition.parents.front().target),
             "complete character retains pinned reference even for inactive aggregates");
     }
     std::size_t parent_index = 0;
-    for (const auto &published : p.occurrences()) {
+    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
       if (!published.active) continue;
-      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published).object));
       for (const auto &expected : definition.parents) {
         check(parent_index < p.parents().size(), "all active parent rows are published");
         const auto &parent = p.parents()[parent_index++];
@@ -187,14 +191,14 @@ int main() {
     for (const auto &row : b.occurrences) expected_ids.push_back(row.id);
     std::sort(expected_ids.begin(), expected_ids.end());
     std::vector<warm::OccurrenceId> published_ids;
-    for (const auto &row : p.occurrences()) published_ids.push_back(row.key.source);
+    for (const auto &row : assembly::detail::ProjectionAccess::rows(p)) published_ids.push_back(row.key.source);
     check(published_ids == expected_ids,
           "published occurrence order is by value after shuffled source death");
-    for (const auto &published : p.occurrences()) {
+    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
       const auto source = std::find_if(b.occurrences.begin(), b.occurrences.end(),
           [&](const auto &row) { return row.id == published.key.source; });
       check(source != b.occurrences.end() &&
-                published.definition == f.ref(source->definition) && published.node == source->node,
+                assembly::detail::ProjectionAccess::definition(p,published) == f.ref(source->definition) && published.node == source->node,
             "published occurrence retains exact source definition and node after source death");
     }
     std::vector<StudyNode> binding_nodes;
@@ -223,7 +227,7 @@ int main() {
                 row->velocity.y == source.velocity.y && row->velocity.z == source.velocity.z,
             "legacy initial position/velocity survives source death with exact occurrence association");
     }
-    check(p.occurrences().size() == 18,
+    check(assembly::detail::ProjectionAccess::rows(p).size() == 18,
           "five aggregates and thirteen byte alternatives; no character/nibble "
           "particles");
     check(b.nodes.size() == 1 &&
@@ -258,8 +262,8 @@ int main() {
     std::vector<std::vector<std::uint32_t>> dutch_paths;
     bool provenance = true, equivalence = true, slots = true;
     std::set<std::string> ids;
-    for (std::size_t i = 0; i < p.occurrences().size(); ++i) {
-      const auto &o = p.occurrences()[i];
+    for (std::size_t i = 0; i < assembly::detail::ProjectionAccess::rows(p).size(); ++i) {
+      const auto &o = assembly::detail::ProjectionAccess::rows(p)[i];
       const auto request = std::find_if(requests.begin(), requests.end(),
           [&](const auto &r) { return r.entry == o.key.source.entry; });
       check(request != requests.end(), "projected provenance has a source request");
@@ -278,7 +282,7 @@ int main() {
                       o.byte->character == letter.parents.at(o.key.source.path[0]).target;
         if (o.key.source.entry == 4) {
           dutch_bytes.push_back(
-              std::string(*b.tools.at(f.tools.at(o.definition.object)).notation));
+              std::string(*b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,o).object)).notation));
           dutch_paths.emplace_back(o.key.source.path.begin(),o.key.source.path.end());
         }
       }
@@ -294,7 +298,7 @@ int main() {
     check(equivalence,
           "whole-value character equivalence exists only for single-scalar "
           "letters");
-    check(slots && p.occurrences().front().key.source.entry == 3,
+    check(slots && assembly::detail::ProjectionAccess::rows(p).front().key.source.entry == 3,
           "slots include inactive alternatives in entry/path order");
     check(f.base.occurrences.empty() && f.base.nodes.empty(),
           "normalization leaves supplied definition inputs unchanged");
@@ -309,7 +313,7 @@ int main() {
       std::reverse(source.occurrences.begin(), source.occurrences.end());
       return project_letters(source);
     }();
-    for (const auto &published : p.occurrences()) {
+    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
       const auto selection = std::find_if(b.selections.begin(), b.selections.end(),
           [&](const auto &s) { return s.entry == published.key.source.entry; });
       check(selection != b.selections.end(), "published occurrence has a selection");
@@ -317,14 +321,14 @@ int main() {
       check(published.active == (aggregate ==
                 (selection->exposure == warm::Exposure::Aggregate)),
             "source-death publication retains exact aggregate/parts activity");
-      const auto &definition = b.tools.at(f.tools.at(published.definition.object));
+      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published).object));
       const bool complete = aggregate && definition.parents.size() == 1;
       check(bool(published.complete_character) == complete &&
                 (!complete || *published.complete_character == definition.parents.front().target),
             "complete character retains pinned reference even for inactive aggregates");
     }
-    check(p.occurrences().size() == 4 && p.parents().size() == 3 &&
-              std::count_if(p.occurrences().begin(), p.occurrences().end(),
+    check(assembly::detail::ProjectionAccess::rows(p).size() == 4 && p.parents().size() == 3 &&
+              std::count_if(assembly::detail::ProjectionAccess::rows(p).begin(), assembly::detail::ProjectionAccess::rows(p).end(),
                             [](const auto &o) { return o.active; }) == 2,
           "two uses of A have distinct alternatives, one active aggregate and "
           "one active byte");
@@ -333,12 +337,12 @@ int main() {
           "mixed normalization assigns root bytes and primary-step letters "
           "before native prepare");
     check(
-        occurrence_text(p.occurrences()[2].key).find("18446744073709551615") !=
+        occurrence_text(assembly::detail::ProjectionAccess::rows(p)[2].key).find("18446744073709551615") !=
             std::string::npos,
         "native occurrence identity retains full uint64 entry");
     const auto second = project_letters(b);
     check(p.study() != second.study() &&
-              !(p.occurrences()[0].key == second.occurrences()[0].key),
+              !(assembly::detail::ProjectionAccess::rows(p)[0].key == assembly::detail::ProjectionAccess::rows(second)[0].key),
           "every new projection has a distinct study identity, including "
           "equal-count exposure changes");
     both[1].exposure = warm::Exposure::Parts;
@@ -348,7 +352,7 @@ int main() {
           "byte-only keeps inactive letter alternatives at primary binding");
     const auto changed = project_letters(bytes_only);
     check(changed.study() != p.study() &&
-              changed.occurrences().size() == p.occurrences().size(),
+              assembly::detail::ProjectionAccess::rows(changed).size() == assembly::detail::ProjectionAccess::rows(p).size(),
           "equal-count exposure change creates a new study rather than "
           "refreshing live identity");
     auto dutch_parts = normalize_letters(
@@ -372,7 +376,7 @@ int main() {
           wide.base.geometry.push_back({t.ref.object, {}, {{{}, 0.25}}});
       const auto w = project_letters(normalize_letters(
           wide.base, {wide.request(id, 0, warm::Exposure::Parts)}));
-      check(w.occurrences().size() == form.size() + 1 &&
+      check(assembly::detail::ProjectionAccess::rows(w).size() == form.size() + 1 &&
                 w.parents().size() == form.size() * 2,
             "valid three/four-byte source scalar projects exact byte and "
             "nibble occurrences");

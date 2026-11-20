@@ -74,10 +74,53 @@ void projection_definition_cost(int mode) {
     attributed &= found!=std::end(A::table) && found->bytes==bytes;
   });
   const auto lookup_calls=allocation_observation::calls.load();allocation_observation::enabled=false;
-  check(attributed && !lookup_calls && cost.rows==expected.size() && cost.requests==3*cost.rows,
-        "every full projected definition pin independently duplicates an exact recipe tool allocation");
+  check(attributed && !lookup_calls && cost.rows==expected.size() && !cost.requests && !cost.bytes && !cost.pin_capacity_bytes,
+        "projected definition indices borrow only the projection's already owned exact recipe");
   {
-    const auto &row=projection->occurrences().front();
+    auto &stored=assembly::testing::ProjectionIndicesAccess::rows(*projection).front();
+    const auto definition_index=stored.definition_index,source_index=stored.source_index;
+    std::uint32_t other=0;
+    while(other<projection->recipe().tools.size() &&
+          projection->recipe().tools[other].ref.object==expected.front().definition.object)++other;
+    check(other<projection->recipe().tools.size(),"wrong in-range definition control has a distinct source object");
+    for(int fault=0;fault<4;++fault) {
+      if(fault==0)stored.definition_index=UINT32_MAX;
+      if(fault==1)stored.definition_index=other;
+      if(fault==2)stored.source_index=UINT32_MAX;
+      if(fault==3)stored.source_index=source_index==0?1:0;
+      const auto before=A::counts;
+      PreparationWork work(UINT64_MAX);
+      check(!assembly::detail::ProjectionAccess::resolve(*projection,stored,&work),
+            "malformed definition/source index including a wrong in-range tool refuses contextual read");
+      bool refused=false;
+      try{auto value=projection->occurrence(0);}catch(const warm::Error &){refused=true;}
+      stored.definition_index=definition_index;stored.source_index=source_index;
+      check(refused && A::counts.live==before.live && A::counts.blocks==before.blocks &&
+                matches(projection->occurrence(0),0,projection->study()),
+            "malformed index export refuses before copying and healthy retry preserves the source");
+    }
+    PreparationWork full(UINT64_MAX);
+    const auto *tool=assembly::detail::ProjectionAccess::resolve(*projection,stored,&full);
+    check(tool && tool->ref==expected.front().definition,"production contextual read resolves the exact full pin");
+    for(const auto limit:{UINT64_C(0),full.result().charged-1}) {
+      PreparationWork denied(limit);bool refused=false;
+      try{assembly::detail::ProjectionAccess::resolve(*projection,stored,&denied);}catch(const PreparationStop &){refused=true;}
+      check(refused,"production definition read refuses zero/one-short work");
+    }
+    PreparationWork exact(full.result().charged);
+    check(assembly::detail::ProjectionAccess::resolve(*projection,stored,&exact)==tool,
+          "production definition read retries with exact work");
+    auto foreign=stored;foreign.key.study=warm::new_uuid();
+    check(!assembly::detail::ProjectionAccess::resolve(*projection,foreign),"production read rejects a foreign study");
+    foreign=stored;foreign.node+=1;
+    check(!assembly::detail::ProjectionAccess::resolve(*projection,foreign),"production read rejects the wrong source node");
+    foreign=stored;foreign.key.source.path.push_back(UINT32_MAX);
+    check(!assembly::detail::ProjectionAccess::resolve(*projection,foreign),"production read compares the complete source path");
+    bool refused=false;try{auto value=projection->occurrence(projection->occurrence_count());}catch(const warm::Error &){refused=true;}
+    check(refused,"public occurrence export checks its row index");
+  }
+  {
+    const auto row=projection->occurrence(0);
     PreparationWork full(UINT64_MAX);
     const auto index=D::lookup(*projection,row,projection->recipe().ref,full);
     check(index<projection->recipe().tools.size() && projection->recipe().tools[index].ref==expected.front().definition,
@@ -111,25 +154,25 @@ void projection_definition_cost(int mode) {
     PreparationWork exact(full.result().charged);
     check(D::lookup(*projection,row,projection->recipe().ref,exact)==index,"definition lookup retries with its exact work allowance");
   }
-  bool exact=projection->occurrences().size()==expected.size();
-  for(std::size_t i=0;i<expected.size();++i)exact &= matches(projection->occurrences()[i],i,projection->study());
+  bool exact=projection->occurrence_count()==expected.size();
+  for(std::size_t i=0;i<expected.size();++i)exact &= matches(projection->occurrence(i),i,projection->study());
   allocation_observation::calls=allocation_observation::bytes=0;allocation_observation::enabled=true;
-  for(std::size_t i=0;i<expected.size();++i){const auto before=A::counts.attempts;exported.push_back(projection->occurrences()[i]);sites[i]=A::counts.attempts-before;}
+  for(std::size_t i=0;i<expected.size();++i){const auto before=A::counts.attempts;exported.push_back(projection->occurrence(i));sites[i]=A::counts.attempts-before;}
   allocation_observation::enabled=false;
   const auto export_calls=allocation_observation::calls.load(),export_bytes=allocation_observation::bytes.load();
   std::size_t refusals=0;
   const auto selected_live=domain?domain->result().live_bytes:0;
   for(std::size_t i=0;i<sites.size();++i)for(std::size_t fail=1;fail<=sites[i];++fail) {
     const auto before=A::counts;A::fail_at=before.attempts+fail;bool refused=false;
-    try{auto value=projection->occurrences()[i];}catch(const std::bad_alloc &){refused=true;}
+    try{auto value=projection->occurrence(i);}catch(const std::bad_alloc &){refused=true;}
     A::fail_at=0;
     check(refused && A::counts.live==before.live && A::counts.blocks==before.blocks &&
               (!domain || domain->result().live_bytes==selected_live),"every detached row-copy refusal preserves projection and prior values");
-    {const auto retry=projection->occurrences()[i];check(matches(retry,i,projection->study()),"detached row-copy healthy retry retains full provenance and identity");}
+    {const auto retry=projection->occurrence(i);check(matches(retry,i,projection->study()),"detached row-copy healthy retry retains full provenance and identity");}
     ++refusals;
   }
   source.reset();bundle.reset();fixture.reset();
-  for(std::size_t i=0;i<expected.size();++i)exact &= matches(projection->occurrences()[i],i,projection->study());
+  for(std::size_t i=0;i<expected.size();++i)exact &= matches(projection->occurrence(i),i,projection->study());
   projection.reset();domain.reset();
   const auto detached_pin=[](const warm::ToolRef &ref){return !ref.object.scope.str().get_allocator().domain &&
       !ref.object.address.get_allocator().domain && !ref.revision.str().get_allocator().domain;};
@@ -147,10 +190,10 @@ void projection_definition_cost(int mode) {
   std::cout << "projection_definition_cost,mode=" << mode << ",recipe=" << version << ",rows=" << cost.rows
             << ",active=" << cost.active << ",unique_definitions=" << cost.unique_definitions
             << ",pin_requests=" << cost.requests << ",pin_requested=" << cost.bytes
-            << ",pin_capacity_bytes=" << cost.pin_capacity_bytes << ",outer_bytes=" << cost.outer_bytes
+            << ",pin_capacity_bytes=" << cost.pin_capacity_bytes << ",index_capacity_bytes=" << cost.index_capacity_bytes << ",outer_bytes=" << cost.outer_bytes
             << ",construction_requests=" << construction.attempts << ",construction_requested=" << requested
             << ",retained=" << construction.live << ",peak=" << construction.peak << ",lookup_work=" << cost.lookup_work
-            << ",lookup_allocations=" << lookup_calls << ",runtime_saving=0 PASS\n";
+            << ",lookup_allocations=" << lookup_calls << ",recipe_definition_owned=1 PASS\n";
   std::cout << "projection_row_copy_cost,mode=" << mode << ",rows=" << cost.rows << ",requests=" << export_calls
             << ",requested=" << export_bytes << ",output_capacity_bytes=" << exported.capacity()*sizeof(ProjectedOccurrence)
             << ",allocation_refusals=" << refusals << ",source_projection_domain_dead=1,after_destroy_requested=0 PASS\n";

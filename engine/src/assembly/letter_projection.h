@@ -8,8 +8,8 @@
 #include "warm/values.h"
 
 namespace assembly {
-namespace detail { class ExchangeOwner; class PreparationWork; }
-namespace testing { struct ExchangeOwnerAccess; }
+namespace detail { class ExchangeOwner; class PreparationWork; struct ProjectionAccess; struct ProjectionOccurrence; }
+namespace testing { struct ExchangeOwnerAccess; struct ProjectionIndicesAccess; }
 
 struct InitialState {
   warm::Point position, velocity;
@@ -75,6 +75,19 @@ struct ParentContribution {
   std::uint64_t count{0};
 };
 
+namespace detail {
+// Indices are meaningful only in this projection's retained immutable recipe.
+// Actor exposure and provenance stay in the view; public values own full pins.
+struct ProjectionOccurrence {
+  OccurrenceKey key;
+  std::uint32_t definition_index{}, source_index{};
+  int slot{-1}, node{};
+  bool active{};
+  std::optional<ByteProvenance> byte;
+  std::optional<warm::ToolRef> complete_character;
+};
+}
+
 // Retained host capacity charge, not allocator/RSS/driver accounting. Text
 // capacity includes its terminator and conservatively counts inline strings.
 struct ProjectionStorage {
@@ -98,9 +111,9 @@ class LetterProjection {
   }
   // Current owner-local exposure; recipe() remains the immutable initial recipe.
   warm::Exposure exposure(std::uint64_t entry) const;
-  const auto &occurrences() const {
-    return occurrences_;
-  }
+  std::size_t occurrence_count() const { return occurrences_.size(); }
+  // Detached owning value, valid after projection/recipe/domain destruction.
+  ProjectedOccurrence occurrence(std::size_t index) const;
   const auto &parents() const { return parents_; }
   // Legacy v1 numerical handoff. Caller owns real SNodes; native prepare
   // verifies their structure and converts local geometry/state. No SNode
@@ -121,16 +134,19 @@ class LetterProjection {
                    std::shared_ptr<const warm::Bundle>);
   friend LetterProjection project_letters(const warm::Bundle &);
   friend class detail::ExchangeOwner;
+  friend struct detail::ProjectionAccess;
   friend struct testing::ExchangeOwnerAccess;
+  friend struct testing::ProjectionIndicesAccess;
   void reserve_exposure(detail::PreparationWork &);
   void prepare_exposure(LetterProjection &, const OccurrenceKey &, warm::Exposure,
                         detail::PreparationWork &) const;
   ProjectionStorage storage() const;
   ProjectionStorage storage(detail::PreparationWork *, bool logical, bool include_recipe = true) const;
+  const warm::Tool *resolve_definition(const detail::ProjectionOccurrence &, detail::PreparationWork *) const;
   warm::Uuid study_;
   std::shared_ptr<const warm::Bundle> recipe_;
   detail::SharedReservedVector<warm::Exposure> exposures_;
-  detail::SharedReservedVector<ProjectedOccurrence> occurrences_;
+  detail::SharedReservedVector<detail::ProjectionOccurrence> occurrences_;
   detail::SharedReservedVector<ParentContribution> parents_;
   // Every inactive contribution keeps its nested strings/path alive here.
   detail::SharedReservedVector<ParentContribution> spare_parents_;

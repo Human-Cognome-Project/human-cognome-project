@@ -1,3 +1,4 @@
+#include "assembly/projection_access.h"
 #pragma once
 #include "prepared_owner_fixture.h"
 
@@ -49,9 +50,9 @@ struct Input {
     bindings.layout = {{{root.get(),-1,ScaleRole::Root},1}};
     bindings.source = {source->owner(),source->study(),source->generation(),recipe.ref};
     const auto projection = project_letters(recipe);
-    for (const auto &o : projection.occurrences()) if (o.active) {
+    for (const auto &o : assembly::detail::ProjectionAccess::rows(projection)) if (o.active) {
       auto occurrence = o.key; occurrence.study = source->study();
-      bindings.bodies.push_back({std::move(occurrence),o.definition,0,3,40+int(bindings.bodies.size()),1.5,{1,1,true}});
+      bindings.bodies.push_back({std::move(occurrence),assembly::detail::ProjectionAccess::definition(projection,o),0,3,40+int(bindings.bodies.size()),1.5,{1,1,true}});
     }
     const auto add = [&](FieldKey field) {
       const int i = int(bindings.fields.size());
