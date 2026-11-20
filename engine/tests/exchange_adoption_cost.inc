@@ -259,6 +259,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   membership_study_observation::Cost membership_study_cost;
   membership_target_observation::Cost membership_target_cost;
   std::array<projection_definition_observation::Cost,2> projection_definition_cost;
+  std::array<projection_study_observation::Cost,2> projection_study_cost;
   {
     O::Observe observe(*real);
     A::begin();
@@ -283,12 +284,20 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
         no_new([&] {
           const auto &spare=Owner::spare_projection(*owner);
           projection_definition_observation::independent(source,spare);
+          projection_study_observation::independent(source,spare);
           std::size_t view=0;
           for(const auto *p:{&source,&spare})
             projection_definition_cost[view++]=projection_definition_observation::inspect(*p,
                 Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
                   require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
                           "projected definition pin differs from its actual owner allocation");
+                });
+          view=0;
+          for(const auto *p:{&source,&spare})
+            projection_study_cost[view++]=projection_study_observation::inspect(*p,
+                Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
+                  require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
+                          "projection study attribution differs from its actual owner allocation");
                 });
           for (const auto &declaration:declarations)
             parent_cost.add(exchange_parent_observation::inspect_pinned<Owner>(source,*declaration));
@@ -477,6 +486,16 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               << ",outer_bytes=" << cost.outer_bytes
               << ",lookup_work=" << cost.lookup_work
               << ",lookup_allocations=0,recipe_shared=1,recipe_definition_shared=1,after_destroy_requested=0 PASS\n";
+  }
+  for(std::size_t view=0;view<projection_study_cost.size();++view) {
+    const auto &cost=projection_study_cost[view];
+    std::cout << "projection_study_owner,selections=" << selection_count << ",view=" << view << ",rows=" << cost.rows
+              << ",capacity=" << cost.capacity << ",row_uuid_requests=" << cost.requests << ",row_uuid_requested=" << cost.bytes
+              << ",header_uuid_requested=" << cost.header_bytes << ",uuid_member_capacity_bytes=" << cost.uuid_capacity_bytes
+              << ",outer_requested=" << cost.outer_bytes << ",byte_owner_uuid_requests=" << cost.byte_owner_requests
+              << ",byte_owner_uuid_requested=" << cost.byte_owner_bytes << ",header_comparison_work=" << cost.comparison_work
+              << ",source_validation_work=" << cost.source_work
+              << ",comparison_allocations=0,independent_views=1,after_destroy_requested=0,runtime_saving=0 PASS\n";
   }
   std::cout << "membership_study_owner,selections=" << selection_count << ",rows=" << membership_study_cost.rows
             << ",capacity=" << membership_study_cost.capacity << ",row_uuid_requests=" << membership_study_cost.requests

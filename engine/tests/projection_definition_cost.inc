@@ -73,9 +73,15 @@ void projection_definition_cost(int mode) {
     const auto *found=std::find_if(std::begin(A::table),std::end(A::table),[&](const auto &e){return e.pointer==pointer;});
     attributed &= found!=std::end(A::table) && found->bytes==bytes;
   });
+  const auto study=projection_study_observation::inspect(*projection,domain.get(),[&](const void *pointer,std::size_t bytes) {
+    const auto *found=std::find_if(std::begin(A::table),std::end(A::table),[&](const auto &e){return e.pointer==pointer;});
+    attributed &= found!=std::end(A::table) && found->bytes==bytes;
+  });
   const auto lookup_calls=allocation_observation::calls.load();allocation_observation::enabled=false;
   check(attributed && !lookup_calls && cost.rows==expected.size() && !cost.requests && !cost.bytes && !cost.pin_capacity_bytes,
         "projected definition indices borrow only the projection's already owned exact recipe");
+  check(study.requests==expected.size() && study.bytes==study.requests*study.header_bytes,
+        "every row owns an independent observed study buffer equal to the projection's existing header");
   {
     auto &stored=assembly::testing::ProjectionIndicesAccess::rows(*projection).front();
     const auto definition_index=stored.definition_index,source_index=stored.source_index;
@@ -197,4 +203,11 @@ void projection_definition_cost(int mode) {
   std::cout << "projection_row_copy_cost,mode=" << mode << ",rows=" << cost.rows << ",requests=" << export_calls
             << ",requested=" << export_bytes << ",output_capacity_bytes=" << exported.capacity()*sizeof(ProjectedOccurrence)
             << ",allocation_refusals=" << refusals << ",source_projection_domain_dead=1,after_destroy_requested=0 PASS\n";
+  std::cout << "projection_study_cost,mode=" << mode << ",recipe=" << version << ",rows=" << study.rows
+            << ",capacity=" << study.capacity << ",row_uuid_requests=" << study.requests << ",row_uuid_requested=" << study.bytes
+            << ",header_uuid_requested=" << study.header_bytes << ",uuid_member_capacity_bytes=" << study.uuid_capacity_bytes
+            << ",outer_requested=" << study.outer_bytes << ",byte_owner_uuid_requests=" << study.byte_owner_requests
+            << ",byte_owner_uuid_requested=" << study.byte_owner_bytes << ",header_comparison_work=" << study.comparison_work
+            << ",source_validation_work=" << study.source_work << ",comparison_allocations=" << lookup_calls
+            << ",source_projection_domain_dead=1,after_destroy_requested=0,runtime_saving=0 PASS\n";
 }
