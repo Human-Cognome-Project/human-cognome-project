@@ -97,11 +97,13 @@ struct Example {
     }
     const auto projection = project_letters(recipe);
     int address = 40;
-    for (const auto &o : assembly::detail::ProjectionAccess::rows(projection)) if (o.active) {
-      const bool aggregate = o.key.source.path.empty();
-      auto key = o.key;
+    for (std::size_t o_index=0;o_index<projection.occurrence_count();++o_index) {
+      const auto &o=assembly::detail::ProjectionAccess::row(projection,o_index);
+      if (!o.active) continue;
+      const bool aggregate = o.source.path.empty();
+      assembly::OccurrenceKey key{projection.study(),o.source};
       key.study = assembly->study();
-      bindings.bodies.push_back({std::move(key),assembly::detail::ProjectionAccess::definition(projection,o),o.node,3,address++,1.25,
+      bindings.bodies.push_back({std::move(key),assembly::detail::ProjectionAccess::definition(projection,o_index),o.node,3,address++,1.25,
                                 {aggregate ? 900U : 901U,7,true}});
     }
     const auto byte = fixture.byte('A');
@@ -328,10 +330,12 @@ void mixed_scale() {
   e.bindings.bodies.clear(); e.bindings.fields.clear(); e.bindings.comparisons.clear();
   const auto projection = project_letters(recipe);
   int address = 40;
-  for (const auto &o : assembly::detail::ProjectionAccess::rows(projection)) if (o.active) {
-    auto key = o.key; key.study = e.assembly->study();
-    const bool aggregate = o.key.source.path.empty();
-    e.bindings.bodies.push_back({std::move(key),assembly::detail::ProjectionAccess::definition(projection,o),o.node,3,address++,2.5,
+  for (std::size_t o_index=0;o_index<projection.occurrence_count();++o_index) {
+      const auto &o=assembly::detail::ProjectionAccess::row(projection,o_index);
+      if (!o.active) continue;
+    assembly::OccurrenceKey key{e.assembly->study(),o.source};
+    const bool aggregate = o.source.path.empty();
+    e.bindings.bodies.push_back({std::move(key),assembly::detail::ProjectionAccess::definition(projection,o_index),o.node,3,address++,2.5,
                                {aggregate ? 900U : 901U,7,true}});
   }
   const auto byte = e.fixture.byte('A');
@@ -460,6 +464,17 @@ void foreign_membership_header() {
     auto retried=e.build(d);
     check(retried.status==Status::Ok,"healthy plan retries after foreign catalogue refusal");
     auto &projection=assembly::testing::ActiveAssemblyAccess::projection(*e.assembly);
+    const auto foreign_projection=assembly::project_letters(projection.recipe());
+    auto foreign_bindings=e.bindings;
+    foreign_bindings.bodies.front().occurrence.study=foreign_projection.study();
+    auto foreign_domain=domain();
+    auto foreign_body=e.build(foreign_bindings,foreign_domain);
+    check(foreign_body.status==Status::InvalidInput && !foreign_body.plan && !foreign_domain->result().live_bytes &&
+          foreign_projection.study()!=projection.study() &&
+          assembly::detail::ProjectionAccess::rows(foreign_projection).front().source==
+              assembly::detail::ProjectionAccess::rows(projection).front().source,
+          "actual admission consumer refuses a foreign study with identical numeric projection keys");
+    check(e.build(foreign_domain).status==Status::Ok,"healthy admission retries after foreign projected body refusal");
     auto &rows=assembly::testing::ProjectionIndicesAccess::rows(projection);
     auto &row=*std::find_if(rows.begin(),rows.end(),[](const auto &v){return v.active;});
     const auto definition=row.definition_index,source=row.source_index;
@@ -468,15 +483,20 @@ void foreign_membership_header() {
     while(other<projection.recipe().tools.size() &&
           projection.recipe().tools[other].ref.object==projection.recipe().tools[definition].ref.object)++other;
     check(other<projection.recipe().tools.size(),"plan wrong in-range definition control is distinct");
-    for(int fault=0;fault<5;++fault) {
+    for(int fault=0;fault<7;++fault) {
+      auto path=row.source.path;
       if(fault==0)row.definition_index=UINT32_MAX;
       if(fault==1)row.definition_index=other;
       if(fault==2)row.source_index=UINT32_MAX;
       if(fault==3)row.source_index=source==0?1:0;
       if(fault==4)row.node+=1;
+      if(fault==5)row.source.entry^=1;
+      if(fault==6)row.source.path.push_back(UINT32_MAX);
       auto rejected_domain=domain();
       auto rejected=e.build(rejected_domain);
       row.definition_index=definition;row.source_index=source;row.node=node;
+      if(fault==5)row.source.entry^=1;
+      if(fault==6)row.source.path=std::move(path);
       check(rejected.status==Status::InvalidInput && !rejected.plan && !rejected_domain->result().live_bytes,
             "malformed projection definition/source/node refuses structured plan preparation and unwinds");
       check(e.build(rejected_domain).status==Status::Ok,"healthy plan retries after projection index refusal");

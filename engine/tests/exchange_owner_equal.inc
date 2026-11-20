@@ -27,7 +27,7 @@ void exchange_owner_equal(engine::Runtime &r, HostPath path, bool recipe_only = 
   f.install();
   std::vector<OccurrenceBinding> rows;
   for (const auto &o : assembly::detail::ProjectionAccess::rows(initial)) if (o.active)
-    rows.push_back({o.key,f.in.particle_rows[o.key.source.entry]});
+    rows.push_back({{initial.study(),o.source},f.in.particle_rows[o.source.entry]});
   std::vector<ExchangeFieldBinding> fields;
   for (std::size_t i=0; i<keys.size(); ++i) fields.push_back({keys[i],f.in.field_rows[i]});
   if (adoption_only || (!recipe_only && !map_only)) exchange_adoption_binding_cost(f,initial,rows,fields);

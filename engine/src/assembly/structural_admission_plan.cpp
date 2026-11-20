@@ -197,16 +197,16 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     }
     need(found); return *found;
   };
-  ReservedVector<const ProjectionOccurrence *> ordered{
-      ReservationAllocator<const ProjectionOccurrence *>(domain_.get())};
+  ReservedVector<std::size_t> ordered{ReservationAllocator<std::size_t>(domain_.get())};
   reserve(ordered,b.bodies.size(),w);
   std::uint64_t edges = 0;
-  for (const auto &o : ProjectionAccess::rows(p)) {
+  for (std::size_t index=0;index<p.occurrence_count();++index) {
+    const auto &o=ProjectionAccess::row(p,index);
     w.charge(1);
     if (!o.active) continue;
     need(ordered.size() < b.bodies.size());
-    ordered.push_back(&o);
-    const auto *definition=ProjectionAccess::resolve(p,o,&w); need(definition);
+    ordered.push_back(index);
+    const auto *definition=ProjectionAccess::resolve(p,index,&w); need(definition);
     edges = sum(edges,sum(1,definition->parents.size()));
   }
   need(ordered.size() == b.bodies.size());
@@ -215,9 +215,10 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   const auto commands = sum(sum(ordered.size(),b.fields.size()),sum(edges,recipe.contacts.size()));
   cap(Budget::BootstrapCommands,commands);
   need(commands <= INT_MAX,AdmissionPlanStatus::Overflow);
-  std::sort(ordered.begin(),ordered.end(),[&](const auto *a, const auto *c) {
-    w.copy_key(a->key); w.copy_key(c->key);
-    return a->key.source < c->key.source;
+  std::sort(ordered.begin(),ordered.end(),[&](std::size_t a, std::size_t c) {
+    const auto &left=ProjectionAccess::row(p,a).source,&right=ProjectionAccess::row(p,c).source;
+    w.copy_key(left); w.copy_key(right);
+    return left < right;
   });
   reserve(commands_,commands,w); reserve(intrinsics_,ordered.size(),w);
   reserve(occurrences_,ordered.size(),w); reserve(fields_,b.fields.size(),w);
@@ -231,14 +232,14 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     const int index = int(commands_.size()); commands_.push_back(command); return index;
   };
   for (std::size_t i=0; i<ordered.size(); ++i) {
-    const auto &o = *ordered[i];
-    const auto *resolved=ProjectionAccess::resolve(p,o,&w); need(resolved);
+    const auto &o = ProjectionAccess::row(p,ordered[i]);
+    const auto *resolved=ProjectionAccess::resolve(p,ordered[i],&w); need(resolved);
     const auto &pin=resolved->ref;
-    need(w.equal(o.key.study,source_.study));
+    need(w.equal(p.study(),source_.study));
     const AdmissionBody *input = nullptr;
     for (const auto &v : b.bodies) {
       w.charge(1);
-      if (w.equal(v.occurrence,o.key)) { need(!input); input = &v; }
+      if (ProjectionAccess::matches(p,ordered[i],v.occurrence,w)) { need(!input); input = &v; }
     }
     need(input && w.equal(input->definition,pin) && input->node == o.node &&
          o.node >= 0 && std::size_t(o.node) < units.size());
@@ -271,7 +272,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     const int command = append(c);
     w.charge(sizeof(field::PlacementIntrinsic));
     intrinsics_.push_back({std::uint64_t(command),i,input->mass,radius,input->geometry});
-    auto key = copy_occurrence(o.key.source,domain_,w);
+    auto key = copy_occurrence(o.source,domain_,w);
     auto ref = copy_ref(pin,domain_,w);
     w.charge(sizeof(AdmissionOccurrenceCommand));
     occurrences_.push_back({std::move(key),std::move(ref),command,o.node,units[o.node]});
@@ -299,8 +300,8 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   };
   std::uint64_t position = 0;
   for (std::size_t i=0; i<ordered.size(); ++i) {
-    const auto &o = *ordered[i];
-    const auto *resolved=ProjectionAccess::resolve(p,o,&w); need(resolved);
+    const auto &o = ProjectionAccess::row(p,ordered[i]);
+    const auto *resolved=ProjectionAccess::resolve(p,ordered[i],&w); need(resolved);
     const auto &t = *resolved;
     const auto edge = [&](GroupKind kind, const warm::ObjectKey &object,
                           std::uint64_t count, std::uint64_t ordinal) {
@@ -324,7 +325,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
       w.charge(1);
       need(m.target_index<assembly.memberships_.targets_.size());
       const auto &target=assembly.memberships_.targets_[m.target_index];
-      if (w.equal(m.occurrence,o.key.source)) {
+      if (w.equal(m.occurrence,o.source)) {
         need(m.count == *t.mass);
         // Retain the prior object-association validation charge. The pin now
         // owns the sole object, while explicit kind and full revision still validate.

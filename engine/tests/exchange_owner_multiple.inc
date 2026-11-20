@@ -21,10 +21,12 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
       52,52,false,true,true,false,1024,{},&limits,true);
   f.install();
   std::vector<assembly::detail::OccurrenceBinding> rows;
-  for (const auto &o : assembly::detail::ProjectionAccess::rows(initial)) if (o.active) {
-    const auto index = o.key.source.entry < 2 ? o.key.source.entry
-        : 2 + 2 * (o.key.source.entry-2) + o.key.source.path[1];
-    rows.push_back({o.key,f.in.particle_rows[index]});
+  for (std::size_t o_index=0;o_index<initial.occurrence_count();++o_index) {
+      const auto &o=assembly::detail::ProjectionAccess::row(initial,o_index);
+      if (!o.active) continue;
+    const auto index = o.source.entry < 2 ? o.source.entry
+        : 2 + 2 * (o.source.entry-2) + o.source.path[1];
+    rows.push_back({{initial.study(),o.source},f.in.particle_rows[index]});
   }
   const auto character = letters.base.tools.at(letters.tools.at(letters.accented)).parents[0].target;
   const auto &ct = letters.base.tools.at(letters.tools.at(character.object));
@@ -186,13 +188,15 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
               "shared field or focal identity changed");
     }
     std::size_t parent_count = 0, active = 0;
-    for (const auto &o : assembly::detail::ProjectionAccess::rows(current)) if (o.active) {
+    for (std::size_t o_index=0;o_index<current.occurrence_count();++o_index) {
+      const auto &o=assembly::detail::ProjectionAccess::row(current,o_index);
+      if (!o.active) continue;
       ++active;
-      const auto &tool = letters.base.tools.at(letters.tools.at(assembly::detail::ProjectionAccess::definition(current,o).object));
+      const auto &tool = letters.base.tools.at(letters.tools.at(assembly::detail::ProjectionAccess::definition(current,o_index).object));
       parent_count += tool.parents.size();
       for (const auto &p : tool.parents)
         require(std::count_if(current.parents().begin(),current.parents().end(),[&](const auto &v) {
-          return v.occurrence == o.key && v.ordinal == p.ordinal && v.field.object == p.target.object && v.count == p.contribution;
+          return v.occurrence.study == current.study() && v.occurrence.source == o.source && v.ordinal == p.ordinal && v.field.object == p.target.object && v.count == p.contribution;
         }) == 1, "reused parent pool lost or duplicated a contribution");
     }
     require(parent_count == current.parents().size() && active == Access::mappings(*owner).size() &&

@@ -145,7 +145,7 @@ void native_contract() {
         ++found;
         exact &= edge.exact_count == typed.count && edge.share == 1 &&
                  edge.parent_value.empty() &&
-                 assembly::detail::ProjectionAccess::rows(p).at(edge.slot).key == typed.occurrence;
+                 p.study() == typed.occurrence.study && assembly::detail::ProjectionAccess::row(p,edge.slot).source == typed.occurrence.source;
       }
     }
     exact &= found == 1;
@@ -373,7 +373,7 @@ void cpu_response() {
       if (!o.active) {
         for (int f = 0; f < field::kParticleFieldCount; ++f)
           inactive_zero &= study.fields().particle(f, slot) == 0;
-      } else if (o.key.source.entry < 2) {
+      } else if (o.source.entry < 2) {
         active_response |= std::abs(actual - base) > 1e-7 &&
                            (profile == 0 || o.byte.has_value());
       }

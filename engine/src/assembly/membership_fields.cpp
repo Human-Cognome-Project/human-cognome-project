@@ -195,33 +195,34 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
     }
     return *root;
   };
-  using OwnerAllocator = detail::SharedReservationAllocator<std::pair<const std::uint64_t,const detail::ProjectionOccurrence *>>;
-  std::map<std::uint64_t,const detail::ProjectionOccurrence *,MembershipOwnerLess,OwnerAllocator>
+  using OwnerAllocator = detail::SharedReservationAllocator<std::pair<const std::uint64_t,std::size_t>>;
+  std::map<std::uint64_t,std::size_t,MembershipOwnerLess,OwnerAllocator>
       owners{MembershipOwnerLess{&work},OwnerAllocator(domain)};
-  for (const auto &o : detail::ProjectionAccess::rows(projection)) {
+  for (std::size_t i=0;i<projection.occurrence_count();++i) {
+    const auto &o=detail::ProjectionAccess::row(projection,i);
     work.charge(1);
-    if (o.key.source.path.empty()) owners.emplace(o.key.source.entry, &o);
+    if (o.source.path.empty()) owners.emplace(o.source.entry,i);
   }
-  for (const auto &o : detail::ProjectionAccess::rows(projection)) {
+  for (std::size_t i=0;i<projection.occurrence_count();++i) {
+    const auto &o=detail::ProjectionAccess::row(projection,i);
     work.charge(1);
     if (!alternatives && !o.active) continue;
-    const auto it = owners.find(o.key.source.entry);
+    const auto it = owners.find(o.source.entry);
     need(it != owners.end(), "membership: missing owning letter occurrence");
-    const auto &owner = *it->second;
-    need(work.equal(o.key.study,out.study_) && (o.key.source.path.empty() ||
-                                       (o.byte && work.equal(o.byte->owner,owner.key))),
+    need(o.source.path.empty() || (o.byte &&
+         detail::ProjectionAccess::matches(projection,it->second,o.byte->owner,work)),
          "membership: inconsistent byte ownership");
-    const auto &live = get(detail::ProjectionAccess::definition(projection,o,&work));
+    const auto &live = get(detail::ProjectionAccess::definition(projection,i,&work));
     need(live.mass && *live.mass > 0, "membership: unknown live mass");
-    for (const auto &group : follow(detail::ProjectionAccess::definition(projection,owner,&work))) {
+    for (const auto &group : follow(detail::ProjectionAccess::definition(projection,it->second,&work))) {
       work.charge(1);
-      work.copy_key(o.key.source);
+      work.copy_key(o.source);
       need(out.contributions_.size() < std::size_t(INT32_MAX),
            "membership: native contribution count overflow");
       // Independent owners keep every allocation unwind-safe on GCC 11.
-      warm::OccurrencePath path(o.key.source.path.begin(),o.key.source.path.end(),
+      warm::OccurrencePath path(o.source.path.begin(),o.source.path.end(),
           detail::SharedReservationAllocator<std::uint32_t>(domain));
-      warm::OccurrenceId occurrence{o.key.source.entry,std::move(path)};
+      warm::OccurrenceId occurrence{o.source.entry,std::move(path)};
       const auto &target=tools.at(group)->ref;
       const auto target_index=out.retain_target(target,work);
       if (out.contributions_.size() == out.contributions_.capacity()) {

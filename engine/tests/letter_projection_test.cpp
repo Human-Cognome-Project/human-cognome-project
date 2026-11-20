@@ -3,6 +3,7 @@
 #include <iostream>
 #include <limits>
 #include <set>
+#include <type_traits>
 
 #include "harness.h"
 #include "letter_projection_fixture.h"
@@ -161,28 +162,30 @@ int main() {
       std::reverse(source.occurrences.begin(), source.occurrences.end());
       return project_letters(source);
     }();
-    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
+    for (std::size_t published_index=0;published_index<p.occurrence_count();++published_index) {
+      const auto &published=assembly::detail::ProjectionAccess::row(p,published_index);
       const auto selection = std::find_if(b.selections.begin(), b.selections.end(),
-          [&](const auto &s) { return s.entry == published.key.source.entry; });
+          [&](const auto &s) { return s.entry == published.source.entry; });
       check(selection != b.selections.end(), "published occurrence has a selection");
-      const bool aggregate = published.key.source.path.empty();
+      const bool aggregate = published.source.path.empty();
       check(published.active == (aggregate ==
                 (selection->exposure == warm::Exposure::Aggregate)),
             "source-death publication retains exact aggregate/parts activity");
-      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published).object));
+      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published_index).object));
       const bool complete = aggregate && definition.parents.size() == 1;
       check(bool(published.complete_character) == complete &&
                 (!complete || *published.complete_character == definition.parents.front().target),
             "complete character retains pinned reference even for inactive aggregates");
     }
     std::size_t parent_index = 0;
-    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
+    for (std::size_t published_index=0;published_index<p.occurrence_count();++published_index) {
+      const auto &published=assembly::detail::ProjectionAccess::row(p,published_index);
       if (!published.active) continue;
-      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published).object));
+      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published_index).object));
       for (const auto &expected : definition.parents) {
         check(parent_index < p.parents().size(), "all active parent rows are published");
         const auto &parent = p.parents()[parent_index++];
-        check(parent.occurrence == published.key &&
+        check(parent.occurrence.study == p.study() && parent.occurrence.source == published.source &&
                   parent.field.kind == GroupKind::ParentValue &&
                   parent.field.object == expected.target.object &&
                   parent.ordinal == expected.ordinal && parent.count == expected.contribution,
@@ -194,14 +197,15 @@ int main() {
     for (const auto &row : b.occurrences) expected_ids.push_back(row.id);
     std::sort(expected_ids.begin(), expected_ids.end());
     std::vector<warm::OccurrenceId> published_ids;
-    for (const auto &row : assembly::detail::ProjectionAccess::rows(p)) published_ids.push_back(row.key.source);
+    for (const auto &row : assembly::detail::ProjectionAccess::rows(p)) published_ids.push_back(row.source);
     check(published_ids == expected_ids,
           "published occurrence order is by value after shuffled source death");
-    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
+    for (std::size_t published_index=0;published_index<p.occurrence_count();++published_index) {
+      const auto &published=assembly::detail::ProjectionAccess::row(p,published_index);
       const auto source = std::find_if(b.occurrences.begin(), b.occurrences.end(),
-          [&](const auto &row) { return row.id == published.key.source; });
+          [&](const auto &row) { return row.id == published.source; });
       check(source != b.occurrences.end() &&
-                assembly::detail::ProjectionAccess::definition(p,published) == f.ref(source->definition) && published.node == source->node,
+                assembly::detail::ProjectionAccess::definition(p,published_index) == f.ref(source->definition) && published.node == source->node,
             "published occurrence retains exact source definition and node after source death");
     }
     std::vector<StudyNode> binding_nodes;
@@ -268,25 +272,25 @@ int main() {
     for (std::size_t i = 0; i < assembly::detail::ProjectionAccess::rows(p).size(); ++i) {
       const auto &o = assembly::detail::ProjectionAccess::rows(p)[i];
       const auto request = std::find_if(requests.begin(), requests.end(),
-          [&](const auto &r) { return r.entry == o.key.source.entry; });
+          [&](const auto &r) { return r.entry == o.source.entry; });
       check(request != requests.end(), "projected provenance has a source request");
       const auto &letter = b.tools.at(f.tools.at(request->letter.object));
       if (o.complete_character)
         equivalence &= *o.complete_character == letter.parents.front().target;
-      slots &= o.slot == int(i) && ids.insert(occurrence_text(o.key)).second;
-      if (o.key.source.path.empty())
+      slots &= o.slot == int(i) && ids.insert(occurrence_text(p.study(),o.source)).second;
+      if (o.source.path.empty())
         equivalence &= bool(o.complete_character) ==
-                       (o.key.source.entry != 4 && o.key.source.entry != 6);
+                       (o.source.entry != 4 && o.source.entry != 6);
       if (o.byte) {
         provenance &= o.byte->owner ==
-                          OccurrenceKey{p.study(), {o.key.source.entry, {}}} &&
-                      o.byte->character_ordinal == o.key.source.path[0] &&
-                      o.byte->byte_ordinal == o.key.source.path[1] &&
-                      o.byte->character == letter.parents.at(o.key.source.path[0]).target;
-        if (o.key.source.entry == 4) {
+                          OccurrenceKey{p.study(), {o.source.entry, {}}} &&
+                      o.byte->character_ordinal == o.source.path[0] &&
+                      o.byte->byte_ordinal == o.source.path[1] &&
+                      o.byte->character == letter.parents.at(o.source.path[0]).target;
+        if (o.source.entry == 4) {
           dutch_bytes.push_back(
-              std::string(*b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,o).object)).notation));
-          dutch_paths.emplace_back(o.key.source.path.begin(),o.key.source.path.end());
+              std::string(*b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,i).object)).notation));
+          dutch_paths.emplace_back(o.source.path.begin(),o.source.path.end());
         }
       }
     }
@@ -301,7 +305,7 @@ int main() {
     check(equivalence,
           "whole-value character equivalence exists only for single-scalar "
           "letters");
-    check(slots && assembly::detail::ProjectionAccess::rows(p).front().key.source.entry == 3,
+    check(slots && assembly::detail::ProjectionAccess::rows(p).front().source.entry == 3,
           "slots include inactive alternatives in entry/path order");
     check(f.base.occurrences.empty() && f.base.nodes.empty(),
           "normalization leaves supplied definition inputs unchanged");
@@ -316,15 +320,16 @@ int main() {
       std::reverse(source.occurrences.begin(), source.occurrences.end());
       return project_letters(source);
     }();
-    for (const auto &published : assembly::detail::ProjectionAccess::rows(p)) {
+    for (std::size_t published_index=0;published_index<p.occurrence_count();++published_index) {
+      const auto &published=assembly::detail::ProjectionAccess::row(p,published_index);
       const auto selection = std::find_if(b.selections.begin(), b.selections.end(),
-          [&](const auto &s) { return s.entry == published.key.source.entry; });
+          [&](const auto &s) { return s.entry == published.source.entry; });
       check(selection != b.selections.end(), "published occurrence has a selection");
-      const bool aggregate = published.key.source.path.empty();
+      const bool aggregate = published.source.path.empty();
       check(published.active == (aggregate ==
                 (selection->exposure == warm::Exposure::Aggregate)),
             "source-death publication retains exact aggregate/parts activity");
-      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published).object));
+      const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published_index).object));
       const bool complete = aggregate && definition.parents.size() == 1;
       check(bool(published.complete_character) == complete &&
                 (!complete || *published.complete_character == definition.parents.front().target),
@@ -340,12 +345,12 @@ int main() {
           "mixed normalization assigns root bytes and primary-step letters "
           "before native prepare");
     check(
-        occurrence_text(assembly::detail::ProjectionAccess::rows(p)[2].key).find("18446744073709551615") !=
+        occurrence_text(p.study(),assembly::detail::ProjectionAccess::rows(p)[2].source).find("18446744073709551615") !=
             std::string::npos,
         "native occurrence identity retains full uint64 entry");
     const auto second = project_letters(b);
     check(p.study() != second.study() &&
-              !(assembly::detail::ProjectionAccess::rows(p)[0].key == assembly::detail::ProjectionAccess::rows(second)[0].key),
+              !(p.occurrence(0).key == second.occurrence(0).key),
           "every new projection has a distinct study identity, including "
           "equal-count exposure changes");
     both[1].exposure = warm::Exposure::Parts;

@@ -62,15 +62,15 @@ void profiles() {
     bool values = true, identity = true;
     for (const auto &particle : prepared.particles) {
       const auto &typed = assembly::detail::ProjectionAccess::rows(projection).at(particle.occurrence.slot);
-      const bool letter = typed.key.source.path.empty();
+      const bool letter = typed.source.path.empty();
       const auto units = mode != 0 && letter ? 64.0 : 1.0;
       values &= particle.position.x == 2 * units &&
                 particle.radius == 0.5 * units &&
                 particle.velocity.x == (letter ? 0.25 : -0.5) * units &&
                 particle.exact_mass == 2;
       identity &=
-          occurrence_text(typed.key) == std::string(particle.occurrence.id) &&
-          warm::key(assembly::detail::ProjectionAccess::definition(projection,typed).object) == std::string(particle.occurrence.definition);
+          occurrence_text(projection.study(),typed.source) == std::string(particle.occurrence.id) &&
+          warm::key(assembly::detail::ProjectionAccess::definition(projection,particle.occurrence.slot).object) == std::string(particle.occurrence.definition);
     }
     CHECK_TRUE(values, name +
                            ": supplied position/radius/velocity use 1 or 64; "

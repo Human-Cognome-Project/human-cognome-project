@@ -66,7 +66,7 @@ ActiveAssembly::ActiveAssembly(LetterProjection p, warm::Uuid owner,
   register_ref(local_->source);
   std::set<std::uint64_t> entries;
   for (const auto &o : detail::ProjectionAccess::rows(projection_))
-    entries.insert(o.key.source.entry);
+    entries.insert(o.source.entry);
   std::set<warm::ObjectKey> definitions;
   for (const auto &v : local_->values) {
     register_ref(v.ref);
@@ -104,8 +104,13 @@ ActiveAssembly ActiveAssembly::focus(std::vector<FocalField> fields) const {
 }
 std::vector<Origin> ActiveAssembly::origins() const {
   std::vector<Origin> out;
-  for (const auto &o : detail::ProjectionAccess::rows(projection_))
-    out.push_back({o.key, detail::ProjectionAccess::definition(projection_,o), {}});
+  for (std::size_t i=0;i<projection_.occurrence_count();++i) {
+    const auto &o=detail::ProjectionAccess::row(projection_,i);
+    auto study=projection_.study();
+    auto source=o.source;
+    auto definition=detail::ProjectionAccess::definition(projection_,i);
+    out.push_back({{std::move(study),std::move(source)},std::move(definition),{}});
+  }
   if (local_)
     for (const auto &v : local_->values)
       out.push_back({{study(), {v.entry, {}}}, {}, v.ref});
