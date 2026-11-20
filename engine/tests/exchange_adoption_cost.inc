@@ -512,11 +512,11 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               << ",unique_owners=" << cost.owners << ",owner_requests=" << cost.requests << ",owner_requested=" << cost.requested
               << ",owner_path_requested=" << cost.path_requested << ",header_requested=" << cost.header_requested
               << ",engaged_key_bytes=" << cost.engaged_key_bytes << ",key_capacity_bytes=" << cost.key_capacity_bytes
-              << ",owner_key_bytes=" << sizeof(assembly::OccurrenceKey) << ",owner_entry_bytes=" << sizeof(std::uint64_t)
-              << ",owner_path_header_bytes=" << sizeof(warm::OccurrencePath)
-              << ",outer_requested=" << cost.outer_requested << ",full_key_witness_work=" << cost.full_key_work
+              << ",public_owner_key_bytes=" << sizeof(assembly::OccurrenceKey) << ",owner_index_bytes=" << sizeof(std::uint32_t)
+              << ",owner_index_capacity_bytes=" << cost.index_capacity_bytes
+              << ",outer_requested=" << cost.outer_requested << ",owner_resolution_work=" << cost.full_key_work
               << ",index_relation_work=" << cost.index_relation_work
-              << ",observer_allocations=0,independent_views=1,after_destroy_requested=0,runtime_saving=0 PASS\n";
+              << ",observer_allocations=0,independent_views=1,after_destroy_requested=0,private_owner_key_backing=0 PASS\n";
   }
   std::cout << "membership_study_owner,selections=" << selection_count << ",rows=" << membership_study_cost.rows
             << ",capacity=" << membership_study_cost.capacity << ",row_uuid_requests=" << membership_study_cost.requests

@@ -1,12 +1,11 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-20). Main `9d24287a` integrates qualified #390/#391.
-#392 `51912690` is provisionally accepted in review 7047017029; smoke, build,
-database, values and all compiler jobs passed, with final regression qualification
-pending. The byte-owner inspection at `502f555d` follows that explicit reviewed-head
-continuation with unchanged production and scoped local CI. Its proposal awaits
-review and new authoritative CI. Earlier entries preserve source-specific handoffs;
-all integration remains maintainer work.
+Current disposition (2026-11-20). Main `8627c262` integrates qualified #392.
+#393 `521afbda` is provisionally accepted in review 7047998750; its remaining
+compiler/regression gate is pending. The byte-owner index runtime at `ec5ca687`
+follows that explicit reviewed-head authorization, passes scoped local CI and
+awaits review/new authoritative qualification. Earlier entries preserve their
+source-specific handoffs; all integration remains maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -218,7 +217,18 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-20 contributor (projected byte-owner inspection awaiting review):
+2026-11-20 contributor (checked byte-owner runtime awaiting review):
+[Independent index, complete provenance and actual costs](../engine/docs/PROJECTION-BYTE-OWNER-INDICES.md)
+at `ec5ca687` implements #393 review 7047998750 from `521afbda`. Private rows
+shrink 464→376 bytes, preserving an independent aggregate-owner selector, both
+source checks and complete public identities/pins. Membership follows that index
+without its old temporary owner map. Both-view retained/peak reductions are
+676 / 2,704 / 1,278 bytes; stronger guard work and separate output costs are
+explicit. Scoped local CI passes through actual foreign/wrong-owner consumers,
+full lifetime/quota/work refusal/retry and frozen native publication/following ticks.
+Runtime review, new authoritative CI and parent-first integration remain separate.
+
+2026-11-20 contributor (projected byte-owner inspection accepted in #393):
 [Actual complete-key ownership and checked association](../engine/docs/PROJECTION-BYTE-OWNER-KEYS.md)
 at `502f555d` follows accepted #392 `51912690`. Fourteen-row output retains nine
 independent owner UUID requests / 333 bytes; real mixed owners retain 296 per view.
@@ -226,8 +236,9 @@ Inline 96-byte owner keys and empty path headers are separate attribution within
 the existing rows. Production is unchanged and runtime saving is zero. Scoped
 local CI passes, including actual language/foreign-context consumer refusals,
 independent byte/owner index replay, full pin/path/role, exact work/no-new retry,
-detached outputs and frozen native publication/ticks. Review before runtime
-migration; preserve independent association and measure actual replacement costs.
+detached outputs and frozen native publication/ticks. Review 7047998750 accepts
+final `521afbda` and authorizes the independent owner-index runtime above. The
+original inspection remains source-pinned with zero saving at that source.
 
 2026-11-20 contributor (projection-owned study runtime accepted in #392):
 [Checked contextual indices, complete output and replacement costs](../engine/docs/PROJECTION-HEADER-IDENTITY.md)

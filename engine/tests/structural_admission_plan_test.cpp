@@ -483,7 +483,10 @@ void foreign_membership_header() {
     while(other<projection.recipe().tools.size() &&
           projection.recipe().tools[other].ref.object==projection.recipe().tools[definition].ref.object)++other;
     check(other<projection.recipe().tools.size(),"plan wrong in-range definition control is distinct");
-    for(int fault=0;fault<7;++fault) {
+    const auto owner_index=row.byte ? row.byte->owner_index : 0;
+    const auto other_owner=std::find_if(rows.begin(),rows.end(),[&](const auto &v){return v.source.path.empty() && v.source.entry!=row.source.entry;});
+    check(!row.byte || other_owner!=rows.end(),"byte-owner plan refusal has another valid aggregate index");
+    for(int fault=0;fault<(row.byte?10:7);++fault) {
       auto path=row.source.path;
       if(fault==0)row.definition_index=UINT32_MAX;
       if(fault==1)row.definition_index=other;
@@ -492,11 +495,15 @@ void foreign_membership_header() {
       if(fault==4)row.node+=1;
       if(fault==5)row.source.entry^=1;
       if(fault==6)row.source.path.push_back(UINT32_MAX);
+      if(fault==7)row.byte->owner_index=UINT32_MAX;
+      if(fault==8)row.byte->owner_index=std::uint32_t(&row-rows.data());
+      if(fault==9)row.byte->owner_index=std::uint32_t(other_owner-rows.begin());
       auto rejected_domain=domain();
       auto rejected=e.build(rejected_domain);
       row.definition_index=definition;row.source_index=source;row.node=node;
       if(fault==5)row.source.entry^=1;
       if(fault==6)row.source.path=std::move(path);
+      if(row.byte)row.byte->owner_index=owner_index;
       check(rejected.status==Status::InvalidInput && !rejected.plan && !rejected_domain->result().live_bytes,
             "malformed projection definition/source/node refuses structured plan preparation and unwinds");
       check(e.build(rejected_domain).status==Status::Ok,"healthy plan retries after projection index refusal");

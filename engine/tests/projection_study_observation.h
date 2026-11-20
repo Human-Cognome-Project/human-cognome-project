@@ -35,10 +35,7 @@ template<class Visit> Cost inspect(const assembly::LetterProjection &p,
     const auto &row=rows[index];
     need(assembly::detail::ProjectionAccess::resolve(p,index,&source));
     if(row.byte) {
-      need(work.equal(p.study(),row.byte->owner.study) &&
-           row.byte->owner.source.entry==row.source.entry && row.byte->owner.source.path.empty());
-      const auto owner_bytes=buffer(row.byte->owner.study);
-      out.byte_owner_requests+=bool(owner_bytes);out.byte_owner_bytes+=owner_bytes;
+      need(assembly::detail::ProjectionAccess::byte_owner_index(p,index,&work)<rows.size());
     }
   }
   out.comparison_work=work.result().charged;out.source_work=source.result().charged;
@@ -47,10 +44,8 @@ template<class Visit> Cost inspect(const assembly::LetterProjection &p,
 inline void independent(const assembly::LetterProjection &a,const assembly::LetterProjection &b) {
   const auto &left=assembly::detail::ProjectionAccess::rows(a),&right=assembly::detail::ProjectionAccess::rows(b);
   need(a.study()==b.study() && a.study().str().data()!=b.study().str().data() && left.data()!=right.data());
-  for(const auto &x:left)for(const auto &y:right) {
-    if(x.byte)need(x.byte->owner.study.str().data()!=b.study().str().data());
-    if(y.byte)need(a.study().str().data()!=y.byte->owner.study.str().data());
-    if(x.byte && y.byte)need(x.byte->owner.study.str().data()!=y.byte->owner.study.str().data());
-  }
+  need(left.size()==right.size());
+  for(std::size_t i=0;i<left.size();++i)if(left[i].byte)
+    need(right[i].byte && left[i].byte->owner_index==right[i].byte->owner_index);
 }
 }

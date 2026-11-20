@@ -37,5 +37,13 @@ struct ProjectionAccess {
                                        PreparationWork *work = nullptr) {
     return tool(p,index,work).ref;
   }
+  // A byte's logical aggregate can be inactive and have no native claim.
+  // Invalid source/provenance/index associations never acquire owner context.
+  static std::size_t byte_owner_index(const LetterProjection &p, std::size_t index,
+                                     PreparationWork *work = nullptr) {
+    if (!resolve(p,index,work)) return p.occurrence_count();
+    const auto &value=row(p,index);
+    return value.byte ? value.byte->owner_index : p.occurrence_count();
+  }
 };
 }

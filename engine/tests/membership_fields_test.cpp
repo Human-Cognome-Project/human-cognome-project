@@ -100,7 +100,7 @@ void paths_and_contexts() {
     isolated &= french == french_group && !(edge.target.object == f.core_class);
     if (!edge.occurrence.source.path.empty())
       owners &=
-          detail::ProjectionAccess::row(mixed,active_byte(edge.occurrence.source.entry)).byte->owner ==
+          mixed.occurrence(active_byte(edge.occurrence.source.entry)).byte->owner ==
           OccurrenceKey{mixed.study(), {edge.occurrence.source.entry, {}}};
   }
   check(isolated && owners,
@@ -132,24 +132,33 @@ void foreign_projected_byte_owner() {
     const auto foreign=project_letters(bundle);
     auto &rows=assembly::testing::ProjectionIndicesAccess::rows(projection);
     auto &byte=*std::find_if(rows.begin(),rows.end(),[](const auto &row){return row.byte.has_value();});
-    const auto original=byte.byte->owner;
+    const auto original=byte.byte->owner_index;
+    const auto other=std::find_if(rows.begin(),rows.end(),[](const auto &row){return row.source.entry==8 && row.source.path.empty();});
+    const auto byte_index=std::size_t(&byte-rows.data());
     for(int fault=0;fault<3;++fault) {
-      if(fault==0)byte.byte->owner.study=foreign.study();
-      if(fault==1)byte.byte->owner.source.entry=8; // Another valid letter using the same byte.
-      if(fault==2)byte.byte->owner.source.path.push_back(0);
+      if(fault==0)byte.byte->owner_index=UINT32_MAX;
+      if(fault==1)byte.byte->owner_index=std::uint32_t(other-rows.begin());
+      if(fault==2)byte.byte->owner_index=std::uint32_t(byte_index);
       allocation_lifetime::begin();bool refused=false;
       try{auto fields=membership_fields(projection);}catch(const warm::Error &error){
         refused=std::string_view(error.what())=="membership: inconsistent byte ownership";
       }
       const auto released=allocation_lifetime::end();
-      byte.byte->owner=original;
+      byte.byte->owner_index=original;
       check(refused && !released.live && !released.blocks && released.acquired==released.released,
-            "actual membership consumer refuses foreign study, wrong in-range owner entry or nonempty owner path and unwinds");
+            "actual membership consumer refuses out-of-range, wrong language owner or byte-role indices and unwinds");
       check(membership_fields(projection).contribution_count()==5,
             "healthy membership retry preserves English/French owner context after each refusal");
     }
+    const auto fields=membership_fields(projection);
+    bool refused=false;
+    try {
+      if(structural)fields.bind_structure(foreign,{});else fields.bind(foreign,{});
+    }catch(const warm::Error &error){refused=std::string_view(error.what())=="membership: fields belong to another study";}
+    check(refused && fields.contribution_count()==5 && membership_fields(projection).contribution_count()==5,
+          "actual membership binding refuses another study with identical numeric byte/owner indices and retains healthy fields");
     std::cout << "projection_byte_owner_consumer,recipe=" << (structural?2:1)
-              << ",refusals=3,exact_owner_retry=3,language_context=1,after_refusal_requested=0,runtime_saving=0 PASS\n";
+              << ",refusals=4,exact_owner_retry=3,language_context=1,foreign_binding_refusal=1,after_refusal_requested=0 PASS\n";
   }
 }
 void mass_and_repetition() {

@@ -76,6 +76,13 @@ struct ParentContribution {
 };
 
 namespace detail {
+// Actor provenance retains an independent aggregate selector in this view.
+// Character pins/ordinals remain owning values; public exports restore the key.
+struct ProjectionByteProvenance {
+  std::uint32_t owner_index{};
+  warm::ToolRef character;
+  std::uint32_t character_ordinal{}, byte_ordinal{};
+};
 // Indices are meaningful only in this projection's retained immutable recipe.
 // The projection owns the study namespace; entry/full path independently check
 // the indexed source. Contextual readers accept that projection and an index.
@@ -85,7 +92,7 @@ struct ProjectionOccurrence {
   std::uint32_t definition_index{}, source_index{};
   int slot{-1}, node{};
   bool active{};
-  std::optional<ByteProvenance> byte;
+  std::optional<ProjectionByteProvenance> byte;
   std::optional<warm::ToolRef> complete_character;
 };
 }
@@ -145,6 +152,7 @@ class LetterProjection {
   ProjectionStorage storage() const;
   ProjectionStorage storage(detail::PreparationWork *, bool logical, bool include_recipe = true) const;
   const warm::Tool *resolve_definition(std::size_t, detail::PreparationWork *) const;
+  const warm::Tool *resolve_source(std::size_t, detail::PreparationWork *) const;
   warm::Uuid study_;
   std::shared_ptr<const warm::Bundle> recipe_;
   detail::SharedReservedVector<warm::Exposure> exposures_;

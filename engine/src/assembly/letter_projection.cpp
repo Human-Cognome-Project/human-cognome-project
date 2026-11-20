@@ -280,7 +280,7 @@ LetterProjection project_letters(const warm::Bundle &b) {
     bool active;
     const warm::Occurrence *initial; // Legacy state only; null for structural input.
     const warm::ToolRef *complete_character;
-    std::uint32_t source_index;
+    std::uint32_t source_index, projection_index{};
   };
   std::map<std::reference_wrapper<const warm::OccurrenceId>, OccurrenceSource,
            OccurrenceIdLess> ordered;
@@ -296,6 +296,9 @@ LetterProjection project_letters(const warm::Bundle &b) {
         std::uint32_t(&o-b.structural_occurrences.data())});
     used.insert(std::cref(o.definition));
   }
+  need(ordered.size()<=UINT32_MAX,"projection owner index overflow");
+  std::uint32_t projection_index=0;
+  for (auto &entry : ordered) entry.second.projection_index=projection_index++;
   // Temporary lookup metadata borrows only from the stable source tool table.
   // Published records below construct independent identity values.
   struct ProvenanceSource {
@@ -353,9 +356,9 @@ LetterProjection project_letters(const warm::Bundle &b) {
         std::uint32_t(&t-b.tools.data()),o.source_index,slot,o.node,o.active,{}, {}};
     if (const auto found = provenance.find(id); found != provenance.end()) {
       const auto &source = found->second;
-      auto byte_study = out.study_;
       auto character = *source.character;
-      record.byte = ByteProvenance{{std::move(byte_study), {source.owner, {}}}, std::move(character),
+      const warm::OccurrenceId aggregate{source.owner,{}};
+      record.byte = detail::ProjectionByteProvenance{ordered.at(std::cref(aggregate)).projection_index,std::move(character),
           source.character_ordinal, source.byte_ordinal};
     }
     if (o.complete_character) record.complete_character = *o.complete_character;
@@ -515,11 +518,10 @@ warm::Bundle projection_recipe(const warm::Bundle &b,
 }
 detail::ProjectionOccurrence projection_row(const detail::ProjectionOccurrence &o,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  std::optional<ByteProvenance> byte;
+  std::optional<detail::ProjectionByteProvenance> byte;
   if (o.byte) {
-    auto owner = projection_key(o.byte->owner,domain);
     auto character = projection_reference(o.byte->character,domain);
-    byte.emplace(ByteProvenance{std::move(owner),std::move(character),o.byte->character_ordinal,o.byte->byte_ordinal});
+    byte.emplace(detail::ProjectionByteProvenance{o.byte->owner_index,std::move(character),o.byte->character_ordinal,o.byte->byte_ordinal});
   }
   std::optional<warm::ToolRef> complete;
   if (o.complete_character) complete.emplace(projection_reference(*o.complete_character,domain));
@@ -656,7 +658,7 @@ LetterProjection::LetterProjection(const LetterProjection &other,
       spare_parents_(projection_rows(other.spare_parents_,domain)),
       exposure_reserved_(other.exposure_reserved_), input_(projection_input(other.input_,domain)), structural_input_(projection_input(other.structural_input_,domain)) {}
 
-const warm::Tool *LetterProjection::resolve_definition(std::size_t index,
+const warm::Tool *LetterProjection::resolve_source(std::size_t index,
                                                        detail::PreparationWork *work) const {
   const auto equal=[&](const auto &a,const auto &b) { return work ? work->equal(a,b) : a==b; };
   if (work) work->charge(1);
@@ -676,6 +678,29 @@ const warm::Tool *LetterProjection::resolve_definition(std::size_t index,
   return &tool;
 }
 
+const warm::Tool *LetterProjection::resolve_definition(std::size_t index,
+                                                       detail::PreparationWork *work) const {
+  const auto *tool=resolve_source(index,work);
+  if (!tool) return nullptr;
+  const auto &row=occurrences_[index];
+  if (!row.byte) return row.source.path.empty() ? tool : nullptr;
+  const auto &byte=*row.byte;
+  const auto *owner_tool=resolve_source(byte.owner_index,work);
+  if (!owner_tool) return nullptr;
+  const auto &owner=occurrences_[byte.owner_index];
+  if (work) work->charge(1);
+  if (owner.byte || !owner.source.path.empty() || owner.source.entry!=row.source.entry ||
+      row.source.path.size()!=2 || byte.character_ordinal!=row.source.path[0] ||
+      byte.byte_ordinal!=row.source.path[1] || byte.character_ordinal>=owner_tool->parents.size()) return nullptr;
+  const auto &parent=owner_tool->parents[byte.character_ordinal];
+  if (parent.ordinal!=byte.character_ordinal ||
+      !(work ? work->equal(parent.target,byte.character) : parent.target==byte.character)) return nullptr;
+  // Immutable recipe validation sealed character -> byte and selection-part
+  // construction. Independent byte/owner source checks plus the full parent pin
+  // and ordinals preserve that association without rescanning recipe tables.
+  return tool;
+}
+
 ProjectedOccurrence LetterProjection::occurrence(std::size_t index) const {
   need(index<occurrences_.size(),"projection occurrence index out of range");
   const auto &row=occurrences_[index];
@@ -684,8 +709,14 @@ ProjectedOccurrence LetterProjection::occurrence(std::size_t index) const {
   auto value=projection_row(row,{});
   auto study=warm::Uuid(study_,{});
   auto definition=projection_reference(tool->ref,{});
+  std::optional<ByteProvenance> byte;
+  if (value.byte) {
+    auto owner=projection_key(study_,occurrences_[value.byte->owner_index].source,{});
+    byte.emplace(ByteProvenance{std::move(owner),std::move(value.byte->character),
+        value.byte->character_ordinal,value.byte->byte_ordinal});
+  }
   return {{std::move(study),std::move(value.source)},std::move(definition),value.slot,value.node,value.active,
-      std::move(value.byte),std::move(value.complete_character)};
+      std::move(byte),std::move(value.complete_character)};
 }
 
 warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {

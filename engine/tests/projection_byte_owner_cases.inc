@@ -24,12 +24,23 @@ void projection_byte_owner_cases() {
       ++bytes;inactive|=!row.active;
       multi_digit|=row.source.entry==UINT64_MAX && row.source.path[0]==10;multi_byte|=row.source.path[1]>0;
       PreparationWork lookup(UINT64_MAX);
-      const auto owner=ProjectionAccess::find(projection,row.byte->owner,lookup);
+      const auto owner=ProjectionAccess::byte_owner_index(projection,i,&lookup);
       const auto value=projection.occurrence(i);
       PreparationWork full(UINT64_MAX);
       check(B::matches(projection,i,owner,value.byte->owner,full),
             "checked byte/owner indices preserve the actual complete owner and character/byte relation");
       replay_work+=full.result().charged;
+      for(const auto allowance:{UINT64_C(0),lookup.result().charged-1}) {
+        PreparationWork limited(allowance);bool refused=false;
+        try{ProjectionAccess::byte_owner_index(projection,i,&limited);}catch(const PreparationStop &){refused=true;}
+        check(refused,"production byte-owner resolution refuses zero/one-short work");
+      }
+      PreparationWork exact_lookup(lookup.result().charged);
+      allocation_lifetime::begin(1);
+      const auto resolved_owner=ProjectionAccess::byte_owner_index(projection,i,&exact_lookup);
+      const auto lookup_released=allocation_lifetime::end();
+      check(resolved_owner==owner && !lookup_released.attempts && !lookup_released.live && !lookup_released.blocks,
+            "production owner index resolves with exact work and every allocation refused");
       const auto foreign_value=foreign.occurrence(i);
       PreparationWork invalid(UINT64_MAX);
       check(!B::matches(projection,i,owner,foreign_value.byte->owner,invalid) &&
@@ -57,6 +68,22 @@ void projection_byte_owner_cases() {
             "byte-owner replay succeeds with exact work and every allocation refused");
       if(bytes==1) {
         auto &stored=assembly::testing::ProjectionIndicesAccess::rows(projection)[i];
+        const auto original_owner=stored.byte->owner_index;
+        const auto character_ordinal=stored.byte->character_ordinal,byte_ordinal=stored.byte->byte_ordinal;
+        for(int fault=0;fault<5;++fault) {
+          if(fault==0)stored.byte->owner_index=UINT32_MAX;
+          if(fault==1)stored.byte->owner_index=std::uint32_t(i);
+          if(fault==2)stored.byte->owner_index=std::uint32_t(other);
+          if(fault==3)stored.byte->character_ordinal^=1;
+          if(fault==4)stored.byte->byte_ordinal^=1;
+          const auto refused_owner=ProjectionAccess::byte_owner_index(projection,i);
+          bool refused=false;try{auto output=projection.occurrence(i);}catch(const warm::Error &){refused=true;}
+          stored.byte->owner_index=original_owner;stored.byte->character_ordinal=character_ordinal;stored.byte->byte_ordinal=byte_ordinal;
+          check(refused && refused_owner==projection.occurrence_count(),
+                "production owner/source/ordinal guards refuse malformed in-range association before owning export");
+          check(ProjectionAccess::byte_owner_index(projection,i)==owner,
+                "healthy production byte-owner resolution retries after each provenance fault");
+        }
         const auto revision=stored.byte->character.revision;
         stored.byte->character.revision=warm::new_uuid();
         check(!B::relation(projection,i,owner,invalid),"byte character full revision cannot change under the owner index");

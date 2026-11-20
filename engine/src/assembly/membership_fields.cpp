@@ -28,12 +28,6 @@ struct MembershipKeyLess {
     return a < b;
   }
 };
-struct MembershipOwnerLess {
-  detail::PreparationWork *work;
-  bool operator()(std::uint64_t a, std::uint64_t b) const {
-    work->charge(1); return a < b;
-  }
-};
 }  // namespace
 
 MembershipFields membership_fields(const LetterProjection &projection) {
@@ -195,26 +189,16 @@ MembershipFields MembershipFields::collect(const LetterProjection &projection, b
     }
     return *root;
   };
-  using OwnerAllocator = detail::SharedReservationAllocator<std::pair<const std::uint64_t,std::size_t>>;
-  std::map<std::uint64_t,std::size_t,MembershipOwnerLess,OwnerAllocator>
-      owners{MembershipOwnerLess{&work},OwnerAllocator(domain)};
-  for (std::size_t i=0;i<projection.occurrence_count();++i) {
-    const auto &o=detail::ProjectionAccess::row(projection,i);
-    work.charge(1);
-    if (o.source.path.empty()) owners.emplace(o.source.entry,i);
-  }
   for (std::size_t i=0;i<projection.occurrence_count();++i) {
     const auto &o=detail::ProjectionAccess::row(projection,i);
     work.charge(1);
     if (!alternatives && !o.active) continue;
-    const auto it = owners.find(o.source.entry);
-    need(it != owners.end(), "membership: missing owning letter occurrence");
-    need(o.source.path.empty() || (o.byte &&
-         detail::ProjectionAccess::matches(projection,it->second,o.byte->owner,work)),
+    const auto owner=o.byte ? detail::ProjectionAccess::byte_owner_index(projection,i,&work) : i;
+    need(owner<projection.occurrence_count(),
          "membership: inconsistent byte ownership");
     const auto &live = get(detail::ProjectionAccess::definition(projection,i,&work));
     need(live.mass && *live.mass > 0, "membership: unknown live mass");
-    for (const auto &group : follow(detail::ProjectionAccess::definition(projection,it->second,&work))) {
+    for (const auto &group : follow(detail::ProjectionAccess::definition(projection,owner,&work))) {
       work.charge(1);
       work.copy_key(o.source);
       need(out.contributions_.size() < std::size_t(INT32_MAX),

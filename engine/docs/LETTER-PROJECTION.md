@@ -1,14 +1,20 @@
 # Native letter/byte projection — Stage B
 
+The [checked byte-owner implementation](PROJECTION-BYTE-OWNER-INDICES.md), tested
+source `ec5ca687`, implements #393 review 7047998750. Private byte provenance
+retains an independent aggregate-owner index; reads validate byte/owner recipe
+sources and full character/ordinal association in the owning projection.
+Construction-time invariants avoid frozen recipe rescans. Full public provenance,
+parent keys and native execution authority remain. Review and hosted CI are pending.
+
 The [projection-owned study implementation](PROJECTION-HEADER-IDENTITY.md), tested
 source `68062bde`, implements #391 review 7045231362. Private rows keep numeric
 entry/full path under their existing owned header; contextual reads take the
 owning projection and checked index. Public exports, byte-owner and parent keys
 remain complete. Source/revision/node/mass and native claim/generation validation
-retain their separate authorities. #392 review 7047017029 provisionally accepts
-the runtime; remaining hosted regression qualification and integration stay
-separate. The [byte-owner key inspection](PROJECTION-BYTE-OWNER-KEYS.md) measures
-the next bounded association without changing this production contract.
+retain their separate authorities. #392 passed hosted qualification and is
+integrated at `8627c262`. The [accepted byte-owner key inspection](PROJECTION-BYTE-OWNER-KEYS.md)
+records original attribution before the independent-index runtime above.
 
 The [recipe-index implementation](PROJECTION-DEFINITION-INDICES.md), source
 `223e874a`, implements #389's accepted ownership/output contract. Private rows

@@ -1,5 +1,15 @@
 # Private exchange-owner resource inventory
 
+[Checked byte-owner indices](PROJECTION-BYTE-OWNER-INDICES.md) at `ec5ca687`
+implement #393's explicit authorization. Census counts actual 376-byte private
+rows with retained owner indices, existing headers/recipe and full character/
+complete/parent pins, with no private owner UUID/path backing. Public exports
+retain complete 640-byte values. Both-view retained/peak reductions are
+676 / 2,704 / 1,278 bytes after actual index/reader overhead; removed membership
+owner-map requests affect temporary setup, not retained memberships. Stronger
+source/provenance guard work rises and is measured separately. Local full
+lifetime/refusal/frozen publication/tick checks pass; review and GitHub CI remain.
+
 [Projected byte-owner keys](PROJECTION-BYTE-OWNER-KEYS.md) at `502f555d`
 attribute actual independent full-owner backing: 333 UUID bytes in the fourteen-row
 factory/copy and 74 / 296 / 111 per real view. Empty owner paths allocate nothing;
@@ -9,7 +19,7 @@ aggregate-owner index with complete contextual/source/provenance and public-outp
 boundaries; replacement overhead and whole-owner savings require separate review.
 
 [Projection-owned study identity](PROJECTION-HEADER-IDENTITY.md) at `68062bde`
-implements #391's reviewed direction and is provisionally accepted in #392. Both
+implements #391's reviewed direction and is integrated in #392. Both
 views retain one owned study header each and numeric occurrence rows with checked
 definition/source indices. Census
 counts actual 464-byte row capacity and paths, preserves full byte/complete and
@@ -17,8 +27,8 @@ parent keys, and retains full recipe accounting. Net both-view retained/requeste
 peak reductions are 510 / 2,040 / 1,020 bytes after actual reader/index overhead;
 public exports remain complete with unchanged independent costs. Full consumer
 context/refusal/lifetime and frozen native publication/tick controls pass locally.
-Review 7047017029 accepts final `51912690`; the remaining authoritative native
-regression gate and maintainer integration remain separate.
+Review 7047017029 accepts final `51912690`; hosted qualification passed and the
+maintainer integrated it at `8627c262`. Original source-specific costs remain.
 
 The [accepted study inspection](PROJECTION-STUDY-IDENTITY.md) at `6a208a14`
 attributes 111 / 444 / 222 repeated UUID bytes per view beside each original

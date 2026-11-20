@@ -285,7 +285,7 @@ int main() {
         equivalence &= bool(o.complete_character) ==
                        (o.source.entry != 4 && o.source.entry != 6);
       if (o.byte) {
-        provenance &= o.byte->owner ==
+        provenance &= p.occurrence(i).byte->owner ==
                           OccurrenceKey{p.study(), {o.source.entry, {}}} &&
                       o.byte->character_ordinal == o.source.path[0] &&
                       o.byte->byte_ordinal == o.source.path[1] &&
