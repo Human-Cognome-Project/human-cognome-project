@@ -38,6 +38,7 @@
 #include "projection_study_observation.h"
 #include "projection_byte_owner_observation.h"
 #include "projection_parent_study_observation.h"
+#include "projection_parent_target_observation.h"
 #include "taichi/program/kernel.h"
 #include "taichi/codegen/llvm/compiled_kernel_data.h"
 #include "llvm/Analysis/ValueTracking.h"

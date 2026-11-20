@@ -231,6 +231,7 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
                 assembly::membership_fields(current).contribution_count() == active,
             "multi-occurrence contribution inventory differs from exposure");
     std::array<projection_parent_study_observation::Cost,2> parent_studies;
+    std::array<projection_parent_target_observation::Cost,2> parent_targets;
     no_new([&] {
       const auto &spare=Access::spare_projection(*owner);
       projection_parent_study_observation::independent<Access>(current,spare);
@@ -238,10 +239,16 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
       for(const auto *p:{&current,&spare})
         parent_studies[view++]=projection_parent_study_observation::inspect<Access>(*p,
             Access::reservation_domain(*owner).get(),[](const void *,std::size_t) {});
+      view=0;
+      for(const auto *p:{&current,&spare})
+        parent_targets[view++]=projection_parent_target_observation::inspect<Access>(*p,
+            Access::reservation_domain(*owner).get(),[](const void *,std::size_t) {});
     });
     if(round==0 || round==1 || round==31)
-      for(std::size_t view=0;view<parent_studies.size();++view)
+      for(std::size_t view=0;view<parent_studies.size();++view) {
         projection_parent_study_observation::print("projection_parent_study_publication",round,view,parent_studies[view]);
+        projection_parent_target_observation::print("projection_parent_target_publication",round,view,parent_targets[view]);
+      }
     Parameters64 parameters;
     parameters.dt = parameters.gravity = parameters.contact_stiffness = parameters.reach_strength = 0;
     TickResult tick;

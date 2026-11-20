@@ -85,6 +85,10 @@ void projection_definition_cost(int mode) {
     const auto *found=std::find_if(std::begin(A::table),std::end(A::table),[&](const auto &e){return e.pointer==pointer;});
     attributed &= found!=std::end(A::table) && found->bytes==bytes;
   });
+  const auto parent_target=projection_parent_target_observation::inspect<Access>(*projection,domain.get(),[&](const void *pointer,std::size_t bytes) {
+    const auto *found=std::find_if(std::begin(A::table),std::end(A::table),[&](const auto &e){return e.pointer==pointer;});
+    attributed &= found!=std::end(A::table) && found->bytes==bytes;
+  });
   const auto lookup_calls=allocation_observation::calls.load();allocation_observation::enabled=false;
   check(attributed && !lookup_calls && cost.rows==expected.size() && !cost.requests && !cost.bytes && !cost.pin_capacity_bytes,
         "projected definition indices borrow only the projection's already owned exact recipe");
@@ -220,6 +224,7 @@ void projection_definition_cost(int mode) {
             << ",requested=" << export_bytes << ",output_capacity_bytes=" << exported.capacity()*sizeof(ProjectedOccurrence)
             << ",allocation_refusals=" << refusals << ",source_projection_domain_dead=1,after_destroy_requested=0 PASS\n";
   projection_parent_study_observation::print("projection_parent_study_cost",mode,0,parent_study);
+  projection_parent_target_observation::print("projection_parent_target_cost",mode,0,parent_target);
   std::cout << "projection_study_cost,mode=" << mode << ",recipe=" << version << ",rows=" << study.rows
             << ",capacity=" << study.capacity << ",row_uuid_requests=" << study.requests << ",row_uuid_requested=" << study.bytes
             << ",header_uuid_requested=" << study.header_bytes << ",uuid_member_capacity_bytes=" << study.uuid_capacity_bytes

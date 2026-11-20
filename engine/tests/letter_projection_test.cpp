@@ -14,6 +14,7 @@
 #include "projection_study_observation.h"
 #include "projection_byte_owner_observation.h"
 #include "projection_parent_study_observation.h"
+#include "projection_parent_target_observation.h"
 
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
@@ -129,6 +130,7 @@ void projection_copy_unwind() {
 #include "projection_study_cases.inc"
 #include "projection_byte_owner_cases.inc"
 #include "projection_parent_study_cases.inc"
+#include "projection_parent_target_cases.inc"
 }  // namespace
 
 int main() {
@@ -141,6 +143,7 @@ int main() {
     projection_study_identity_cases();
     projection_byte_owner_cases();
     projection_parent_study_cases();
+    projection_parent_target_cases();
     const warm::Uuid text_study("12345678-1234-1234-1234-123456789ABC");
     check(occurrence_text({text_study,{UINT64_MAX,{}}}) ==
               "12345678-1234-1234-1234-123456789abc/18446744073709551615",

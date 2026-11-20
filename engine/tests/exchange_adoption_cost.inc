@@ -262,6 +262,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   std::array<projection_study_observation::Cost,2> projection_study_cost;
   std::array<projection_byte_owner_observation::Cost,2> projection_byte_owner_cost;
   std::array<projection_parent_study_observation::Cost,2> projection_parent_study_cost;
+  std::array<projection_parent_target_observation::Cost,2> projection_parent_target_cost;
   {
     O::Observe observe(*real);
     A::begin();
@@ -315,6 +316,13 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
                 Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
                   require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
                           "parent study attribution differs from its actual owner allocation");
+                });
+          view=0;
+          for(const auto *p:{&source,&spare})
+            projection_parent_target_cost[view++]=projection_parent_target_observation::inspect<Owner>(*p,
+                Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
+                  require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
+                          "parent target attribution differs from its actual owner allocation");
                 });
           for (const auto &declaration:declarations)
             parent_cost.add(exchange_parent_observation::inspect_pinned<Owner>(source,*declaration));
@@ -496,6 +504,8 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   require(before==TickSnapshot(f),"adoption binding inspection changed native execution");
   for(std::size_t view=0;view<projection_parent_study_cost.size();++view)
     projection_parent_study_observation::print("projection_parent_study_owner",selection_count,view,projection_parent_study_cost[view]);
+  for(std::size_t view=0;view<projection_parent_target_cost.size();++view)
+    projection_parent_target_observation::print("projection_parent_target_owner",selection_count,view,projection_parent_target_cost[view]);
   for(std::size_t view=0;view<projection_definition_cost.size();++view) {
     const auto &cost=projection_definition_cost[view];
     std::cout << "projection_definition_owner,selections=" << selection_count << ",view=" << view
