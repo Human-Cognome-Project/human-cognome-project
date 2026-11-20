@@ -12,6 +12,7 @@
 #include "allocation_observation.h"
 #include "projection_definition_observation.h"
 #include "projection_study_observation.h"
+#include "projection_byte_owner_observation.h"
 
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
@@ -119,6 +120,7 @@ void projection_copy_unwind() {
 #include "projection_definition_cost.inc"
 #include "projection_index_cases.inc"
 #include "projection_study_cases.inc"
+#include "projection_byte_owner_cases.inc"
 }  // namespace
 
 int main() {
@@ -129,6 +131,7 @@ int main() {
     for(int mode=0;mode<3;++mode)for(const bool structural:{false,true})for(const bool selected:{false,true})
       if(mode || !selected)projection_index_case(mode,structural,selected);
     projection_study_identity_cases();
+    projection_byte_owner_cases();
     const warm::Uuid text_study("12345678-1234-1234-1234-123456789ABC");
     check(occurrence_text({text_study,{UINT64_MAX,{}}}) ==
               "12345678-1234-1234-1234-123456789abc/18446744073709551615",

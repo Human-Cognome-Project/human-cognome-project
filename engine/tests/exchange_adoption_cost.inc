@@ -260,6 +260,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
   membership_target_observation::Cost membership_target_cost;
   std::array<projection_definition_observation::Cost,2> projection_definition_cost;
   std::array<projection_study_observation::Cost,2> projection_study_cost;
+  std::array<projection_byte_owner_observation::Cost,2> projection_byte_owner_cost;
   {
     O::Observe observe(*real);
     A::begin();
@@ -298,6 +299,13 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
                 Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
                   require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
                           "projection study attribution differs from its actual owner allocation");
+                });
+          view=0;
+          for(const auto *p:{&source,&spare})
+            projection_byte_owner_cost[view++]=projection_byte_owner_observation::inspect(*p,
+                Owner::reservation_domain(*owner).get(),[&](const void *pointer,std::size_t bytes) {
+                  require(A::table[real->slot(const_cast<void *>(pointer))].bytes==bytes,
+                          "byte-owner key attribution differs from its actual owner allocation");
                 });
           for (const auto &declaration:declarations)
             parent_cost.add(exchange_parent_observation::inspect_pinned<Owner>(source,*declaration));
@@ -496,6 +504,19 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               << ",byte_owner_uuid_requested=" << cost.byte_owner_bytes << ",header_comparison_work=" << cost.comparison_work
               << ",source_validation_work=" << cost.source_work
               << ",comparison_allocations=0,independent_views=1,after_destroy_requested=0,duplicate_row_study_backing=0 PASS\n";
+  }
+  for(std::size_t view=0;view<projection_byte_owner_cost.size();++view) {
+    const auto &cost=projection_byte_owner_cost[view];
+    std::cout << "projection_byte_owner,selections=" << selection_count << ",view=" << view << ",rows=" << cost.rows
+              << ",capacity=" << cost.capacity << ",byte_rows=" << cost.byte_rows << ",active_bytes=" << cost.active
+              << ",unique_owners=" << cost.owners << ",owner_requests=" << cost.requests << ",owner_requested=" << cost.requested
+              << ",owner_path_requested=" << cost.path_requested << ",header_requested=" << cost.header_requested
+              << ",engaged_key_bytes=" << cost.engaged_key_bytes << ",key_capacity_bytes=" << cost.key_capacity_bytes
+              << ",owner_key_bytes=" << sizeof(assembly::OccurrenceKey) << ",owner_entry_bytes=" << sizeof(std::uint64_t)
+              << ",owner_path_header_bytes=" << sizeof(warm::OccurrencePath)
+              << ",outer_requested=" << cost.outer_requested << ",full_key_witness_work=" << cost.full_key_work
+              << ",index_relation_work=" << cost.index_relation_work
+              << ",observer_allocations=0,independent_views=1,after_destroy_requested=0,runtime_saving=0 PASS\n";
   }
   std::cout << "membership_study_owner,selections=" << selection_count << ",rows=" << membership_study_cost.rows
             << ",capacity=" << membership_study_cost.capacity << ",row_uuid_requests=" << membership_study_cost.requests
