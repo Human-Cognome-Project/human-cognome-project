@@ -116,7 +116,7 @@ ProjectionStorage LetterProjection::storage(detail::PreparationWork *meter, bool
   c.buffer(exposures_); c.buffer(occurrences_);
   for (const auto &o : occurrences_) {
     c.id(o.source);
-    if (o.byte) { c.key(o.byte->owner); c.tool_ref(o.byte->character); }
+    if (o.byte) c.tool_ref(o.byte->character);
     if (o.complete_character) c.tool_ref(*o.complete_character);
   }
   c.parents(parents_); c.parents(spare_parents_);

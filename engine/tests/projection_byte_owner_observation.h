@@ -3,9 +3,8 @@
 #include <array>
 #include "assembly/projection_access.h"
 
-// Inspection only. Actual complete owner keys remain in production rows.
-// The index replay keeps an independent owner association and borrows no row
-// from a different projection. Only integer observations escape its lifetime.
+// Observe the actual retained owner index beside a stronger independent
+// construction/provenance replay. Only integer observations escape its lifetime.
 namespace projection_byte_owner_observation {
 using assembly::detail::PreparationWork;
 using assembly::detail::ProjectionAccess;
@@ -50,7 +49,7 @@ inline bool matches(const assembly::LetterProjection &p,std::size_t byte_index,s
 }
 struct Cost {
   std::size_t rows{},capacity{},byte_rows{},active{},owners{},requests{},requested{},path_requested{},header_requested{};
-  std::size_t engaged_key_bytes{},key_capacity_bytes{},outer_requested{};
+  std::size_t engaged_key_bytes{},key_capacity_bytes{},outer_requested{},index_capacity_bytes{};
   std::uint64_t full_key_work{},index_relation_work{};
 };
 template<class Visit> Cost inspect(const assembly::LetterProjection &p,
@@ -59,30 +58,19 @@ template<class Visit> Cost inspect(const assembly::LetterProjection &p,
   const auto &rows=ProjectionAccess::rows(p);
   need(rows.get_allocator().domain.get()==domain && p.study().str().get_allocator().domain.get()==domain);
   out.rows=rows.size();out.capacity=rows.capacity();out.outer_requested=rows.capacity()*sizeof(rows[0]);
-  out.key_capacity_bytes=rows.capacity()*sizeof(assembly::OccurrenceKey);
+  out.index_capacity_bytes=rows.capacity()*sizeof(std::uint32_t);
   out.header_requested=warm::recipe_text_backing(p.study().str());
   visit(p.study().str().data(),out.header_requested);
-  std::array<const void *,4096> seen{};std::size_t used=0;
-  seen[used++]=p.study().str().data();
   PreparationWork full(UINT64_MAX),replay(UINT64_MAX);
   for(std::size_t i=0;i<rows.size();++i) {
     const auto &row=rows[i];if(!row.byte)continue;
     ++out.byte_rows;out.active+=row.active;
-    const auto &key=row.byte->owner;
-    need(key.study.str().get_allocator().domain.get()==domain && key.source.path.get_allocator().domain.get()==domain &&
-         key.source.path.empty() && key.source.path.capacity()==0);
-    const auto owner=ProjectionAccess::find(p,key,full);
-    need(owner<p.occurrence_count() && ProjectionAccess::matches(p,owner,key,full) && relation(p,i,owner,replay));
+    const auto owner=ProjectionAccess::byte_owner_index(p,i,&full);
+    need(owner<p.occurrence_count() && relation(p,i,owner,replay));
     bool first=true;
-    for(std::size_t j=0;j<i;++j)if(rows[j].byte && rows[j].byte->owner.source.entry==key.source.entry)first=false;
+    for(std::size_t j=0;j<i;++j)if(rows[j].byte && rows[j].byte->owner_index==owner)first=false;
     out.owners+=first;
-    const auto n=warm::recipe_text_backing(key.study.str());
-    need(n && used<seen.size() && std::find(seen.begin(),seen.begin()+used,key.study.str().data())==seen.begin()+used);
-    seen[used++]=key.study.str().data();visit(key.study.str().data(),n);
-    ++out.requests;out.requested+=n;
-    out.path_requested+=key.source.path.capacity()*sizeof(std::uint32_t);
   }
-  out.engaged_key_bytes=out.byte_rows*sizeof(assembly::OccurrenceKey);
   out.full_key_work=full.result().charged;out.index_relation_work=replay.result().charged;
   return out;
 }

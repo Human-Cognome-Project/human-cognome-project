@@ -86,9 +86,9 @@ void projection_definition_cost(int mode) {
         "projected definition indices borrow only the projection's already owned exact recipe");
   check(!study.requests && !study.bytes && !study.uuid_capacity_bytes && study.header_bytes,
         "numeric rows use the existing owned study header with no repeated row-study storage");
-  check(byte_owner.requests==study.byte_owner_requests && byte_owner.requested==study.byte_owner_bytes &&
-        !byte_owner.path_requested && byte_owner.byte_rows==byte_owner.requests,
-        "actual byte-owner complete keys retain independent study strings and empty numeric owner paths");
+  check(!byte_owner.requests && !byte_owner.requested && !byte_owner.path_requested &&
+        !byte_owner.engaged_key_bytes && !byte_owner.key_capacity_bytes && byte_owner.index_capacity_bytes==byte_owner.capacity*sizeof(std::uint32_t),
+        "private byte owners retain only independent checked indices with no complete-key backing");
   {
     auto &stored=assembly::testing::ProjectionIndicesAccess::rows(*projection).front();
     const auto definition_index=stored.definition_index,source_index=stored.source_index;
@@ -225,9 +225,9 @@ void projection_definition_cost(int mode) {
             << ",unique_owners=" << byte_owner.owners << ",owner_requests=" << byte_owner.requests
             << ",owner_requested=" << byte_owner.requested << ",owner_path_requested=" << byte_owner.path_requested
             << ",header_requested=" << byte_owner.header_requested << ",engaged_key_bytes=" << byte_owner.engaged_key_bytes
-            << ",owner_key_bytes=" << sizeof(OccurrenceKey) << ",owner_entry_bytes=" << sizeof(std::uint64_t)
-            << ",owner_path_header_bytes=" << sizeof(warm::OccurrencePath)
-            << ",key_capacity_bytes=" << byte_owner.key_capacity_bytes << ",outer_requested=" << byte_owner.outer_requested
-            << ",full_key_witness_work=" << byte_owner.full_key_work << ",index_relation_work=" << byte_owner.index_relation_work
-            << ",observer_allocations=" << lookup_calls << ",source_projection_domain_dead=1,runtime_saving=0 PASS\n";
+            << ",public_owner_key_bytes=" << sizeof(OccurrenceKey) << ",owner_index_bytes=" << sizeof(std::uint32_t)
+            << ",key_capacity_bytes=" << byte_owner.key_capacity_bytes << ",owner_index_capacity_bytes=" << byte_owner.index_capacity_bytes
+            << ",outer_requested=" << byte_owner.outer_requested
+            << ",owner_resolution_work=" << byte_owner.full_key_work << ",index_relation_work=" << byte_owner.index_relation_work
+            << ",observer_allocations=" << lookup_calls << ",source_projection_domain_dead=1,private_owner_key_backing=0 PASS\n";
 }

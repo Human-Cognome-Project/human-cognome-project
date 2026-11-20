@@ -224,11 +224,13 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
       auto &row=*std::find_if(rows.begin(),rows.end(),[](const auto &v){return !v.source.path.empty();});
       const auto definition=row.definition_index,source=row.source_index;
       const auto node=row.node;
+      const auto byte_owner=row.byte->owner_index,character_ordinal=row.byte->character_ordinal,byte_ordinal=row.byte->byte_ordinal;
+      const auto character_revision=row.byte->character.revision;
       std::uint32_t other=0;
       while(other<view.recipe().tools.size() &&
             view.recipe().tools[other].ref.object==view.recipe().tools[definition].ref.object)++other;
       require(other<view.recipe().tools.size(),"native wrong in-range definition control is distinct");
-      for(int fault=0;fault<7;++fault) {
+      for(int fault=0;fault<12;++fault) {
         if(fault==0)row.definition_index=UINT32_MAX;
         if(fault==1)row.definition_index=other;
         if(fault==2)row.source_index=UINT32_MAX;
@@ -236,6 +238,11 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
         if(fault==4)row.node+=1;
         if(fault==5)row.source.entry^=1;
         if(fault==6)row.source.path.back()^=1;
+        if(fault==7)row.byte->owner_index=UINT32_MAX;
+        if(fault==8)row.byte->owner_index=std::uint32_t(&row-rows.data());
+        if(fault==9)row.byte->character_ordinal^=1;
+        if(fault==10)row.byte->byte_ordinal^=1;
+        if(fault==11)row.byte->character.revision=warm::new_uuid();
         const TickSnapshot before_fault(f);
         const auto bytes=Access::reservations(*owner).live_bytes;
         bool refused=false;
@@ -245,6 +252,8 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
         row.definition_index=definition;row.source_index=source;row.node=node;
         if(fault==5)row.source.entry^=1;
         if(fault==6)row.source.path.back()^=1;
+        row.byte->owner_index=byte_owner;row.byte->character_ordinal=character_ordinal;row.byte->byte_ordinal=byte_ordinal;
+        row.byte->character.revision=character_revision;
         require(refused && !Access::pending(*owner) && unchanged() && before_fault==TickSnapshot(f) &&
                     bytes==Access::reservations(*owner).live_bytes,
                 "malformed committed/spare definition index changed native state or escaped staging refusal");

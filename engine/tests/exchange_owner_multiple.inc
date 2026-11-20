@@ -90,6 +90,29 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
     const auto generation = f.h.prepared_storage().generation, ticks = f.h.prepared_storage().completed_ticks;
     f.h.inspect_prepared();
     const auto old_values = f.h.particles64();
+    if(round==0) {
+      for(const bool spare:{false,true}) {
+        auto &view=Access::mutable_projection(*owner,spare);
+        auto &stored=assembly::testing::ProjectionIndicesAccess::rows(view);
+        auto &byte=*std::find_if(stored.begin(),stored.end(),[](const auto &row){return row.byte && row.source.entry==2;});
+        const auto other=std::find_if(stored.begin(),stored.end(),[](const auto &row){return row.source.entry==3 && row.source.path.empty();});
+        require(other!=stored.end(),"wrong in-range owner control requires another aggregate");
+        const auto original=byte.byte->owner_index;
+        const TickSnapshot snapshot(f);
+        const auto live_bytes=Access::reservations(*owner).live_bytes;
+        byte.byte->owner_index=std::uint32_t(other-stored.begin());
+        bool refused=false;
+        try{Access::prepare(*owner,key,target,incoming,{});}catch(const warm::Error &error){
+          refused=std::string_view(error.what())=="exposure buffers differ in recipe-bound occurrence meaning";
+        }
+        byte.byte->owner_index=original;
+        require(refused && !Access::pending(*owner) && snapshot==TickSnapshot(f) &&
+                &Access::projection(*owner)==before_view && live_bytes==Access::reservations(*owner).live_bytes,
+                "wrong in-range aggregate owner changed native state or escaped committed/spare refusal");
+        no_new([&]{Access::prepare(*owner,key,target,incoming,{});});
+      }
+      std::cout << "projection_byte_owner_native_faults,views=2,wrong_in_range_owner=1,allocation_free_retry=1,native_unchanged=1 PASS\n";
+    }
     no_new([&] { Access::stage_projection(*owner,key,target); });
     require(&Access::projection(*owner) == before_view &&
                 Access::storage(*owner).charged_bytes() == reserved.charged_bytes(),

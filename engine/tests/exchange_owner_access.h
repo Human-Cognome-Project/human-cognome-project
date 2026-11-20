@@ -58,7 +58,7 @@ struct ExchangeOwnerAccess {
       visit(ref.object.scope.str()); visit(ref.revision.str());
     };
     for (const auto &o : p.occurrences_) {
-      if (o.byte) { visit(o.byte->owner.study.str()); reference(o.byte->character); }
+      if (o.byte) reference(o.byte->character);
       if (o.complete_character) reference(*o.complete_character);
     }
     for (const auto *rows : {&p.parents_,&p.spare_parents_})
@@ -86,7 +86,6 @@ struct ExchangeOwnerAccess {
     if (recipe) for (const auto &c : p.recipe().contacts) { visit(c.a.path); visit(c.b.path); }
     for (const auto &o : p.occurrences_) {
       visit(o.source.path);
-      if (o.byte) visit(o.byte->owner.source.path);
     }
     for (const auto *rows : {&p.parents_,&p.spare_parents_})
       for (const auto &row : *rows) visit(row.occurrence.source.path);
@@ -233,7 +232,7 @@ struct ExchangeOwnerAccess {
           !(detail::ProjectionAccess::definition(a,i) == detail::ProjectionAccess::definition(b,i)) || x.slot != y.slot ||
           x.node != y.node || x.active != y.active || bool(x.byte) != bool(y.byte) ||
           bool(x.complete_character) != bool(y.complete_character)) return false;
-      if (x.byte && (!(x.byte->owner == y.byte->owner) || !(x.byte->character == y.byte->character) ||
+      if (x.byte && (x.byte->owner_index != y.byte->owner_index || !(x.byte->character == y.byte->character) ||
           x.byte->character_ordinal != y.byte->character_ordinal || x.byte->byte_ordinal != y.byte->byte_ordinal))
         return false;
       if (x.complete_character && !(*x.complete_character == *y.complete_character)) return false;
