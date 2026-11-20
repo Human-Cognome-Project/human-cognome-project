@@ -1,9 +1,10 @@
 # Engine and Analyst-facing refactoring plan
 
 Current disposition (2026-11-20). Main `646df179` integrates hosted-qualified
-#388/#389. Review 7023633130 approves the recipe-backed projection/index and
-explicit owning output direction. The implementation below starts from current
-main, passes scoped local CI and awaits new review/authoritative GitHub CI.
+#388/#389. #390 `db6a4bda` is provisionally accepted in review 7044020673; smoke,
+offline viewport, projection-values and native build/database passed, with the
+remaining native gate in progress. The row-study inspection below follows that
+explicit reviewed-head continuation and awaits its own review/authoritative CI.
 Earlier entries preserve source-specific handoffs; all merges remain maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
@@ -216,7 +217,17 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-20 contributor (projected definition-index runtime awaiting review):
+2026-11-20 contributor (projected row-study inspection awaiting review):
+[Actual strings, complete keys and header ownership](../engine/docs/PROJECTION-STUDY-IDENTITY.md)
+at `6a208a14` follows accepted #390 `db6a4bda`. Public fourteen-row output owns
+518 repeated study bytes; mixed owners own 444 per view beside existing headers.
+Byte-owner studies and inline capacity are separate, with zero runtime saving.
+Local CI passes: 304 existing measurements stay unchanged, forty owner views,
+sixteen factory/copy observations and real foreign/max-entry/path/work controls.
+Review header/numeric keys with explicit reader ownership, preserved full exports
+and actual overhead before implementation. Broader provenance and #324 remain separate.
+
+2026-11-20 contributor (projected definition-index runtime accepted in #390):
 [Checked recipe indices, explicit owning output and net costs](../engine/docs/PROJECTION-DEFINITION-INDICES.md)
 at `223e874a` implements #389 review 7023633130 from main `646df179`. Contextual
 reads preserve source/node/full-pin meaning while owning exports detach complete
@@ -225,7 +236,8 @@ provenance; private rows shrink 640→512 bytes. Both real views save 1,302 / 5,
 GCC CTests, thirteen/eight hierarchy cases and both standalone suites pass,
 including malformed in-range indices, source/domain/work/quota retry and frozen
 native publication/ticks. Export costs stay separate; increased membership guard
-work and temporary factory overhead are explicit. New runtime review/CI remain.
+work and temporary factory overhead are explicit. Review 7044020673 accepts scoped
+continuation; remaining authoritative qualification and integration stay separate.
 
 2026-11-19 contributor (projected definition-pin inspection integrated in #389):
 [Existing recipe lifetime, actual pins and public row values](../engine/docs/PROJECTION-DEFINITION-PINS.md)

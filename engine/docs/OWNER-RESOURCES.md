@@ -1,7 +1,14 @@
 # Private exchange-owner resource inventory
 
+[Projected row study identity](PROJECTION-STUDY-IDENTITY.md) at `6a208a14`
+attributes 111 / 444 / 222 repeated UUID bytes per real owner view beside each
+existing 37-byte header. Byte-owner UUIDs and inline row capacity are labeled
+separately. Production/census is unchanged and runtime saving is zero; review
+header/numeric-key ownership before implementation. Detached outputs keep full
+study/revision/provenance and their existing independent costs.
+
 [Recipe-backed projected definitions](PROJECTION-DEFINITION-INDICES.md) at
-`223e874a`, awaiting runtime review, remove per-row definition buffers from both
+`223e874a`, provisionally accepted in #390, remove per-row definition buffers from both
 views while reusing their existing exact immutable recipe. Census counts the
 512-byte row/index capacity, keys and complete byte/character provenance, with
 recipe pins counted once. Actual net retained/peak reductions are 651 / 2,604 /
