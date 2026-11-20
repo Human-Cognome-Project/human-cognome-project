@@ -1,11 +1,19 @@
 # Private exchange-owner resource inventory
 
+[Projection-owned parent study](PROJECTION-PARENT-HEADER.md) at `22482caa`
+implements #395's explicit direction. Census counts actual 160-byte numeric
+parent rows, full source paths and field objects in both reserved pools; the
+existing projection header supplies study context once. Public active exports
+remain complete 208-byte values. Actual both-view retained/peak savings, setup
+work and unchanged output costs are recorded separately. Full refusal/lifetime
+and frozen publication/tick checks pass locally; runtime review and hosted CI remain.
+
 [Parent-contribution study ownership](PROJECTION-PARENT-STUDY-IDENTITY.md) at
 `a9011a88` observes actual active/spare pools in both adopted views. Repeated
 study strings occupy 370 / 1,480 / 666 bytes per one/four/three owner. Inline
 UUID capacity is already part of the 208-byte row extent and is reported
 separately from nested requests. The test-only numeric shape is 160 bytes;
-no representation, census or runtime saving changes. Context/work, complete
+no representation, census or runtime saving changes at that inspection source. Context/work, complete
 value-copy refusals/lifetime and frozen native publication remain checked.
 
 [Checked byte-owner indices](PROJECTION-BYTE-OWNER-INDICES.md) at `ec5ca687`
@@ -17,7 +25,7 @@ retain complete 640-byte values. Both-view retained/peak reductions are
 owner-map requests affect temporary setup, not retained memberships. Stronger
 source/provenance guard work rises and is measured separately. Local full
 lifetime/refusal/frozen publication/tick checks pass. #394 provisionally accepts
-final `1f71eb76`; native and smoke workflows passed, with maintainer integration separate.
+final `1f71eb76`; native/smoke passed and the maintainer integrated it at `66b7ef3a`.
 
 [Projected byte-owner keys](PROJECTION-BYTE-OWNER-KEYS.md) at `502f555d`
 attribute actual independent full-owner backing: 333 UUID bytes in the fourteen-row

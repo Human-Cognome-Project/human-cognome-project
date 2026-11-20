@@ -1,30 +1,29 @@
 # Core continuation after local CUDA corrections
 
-**Parent-contribution study inspection — 2026-11-20 (awaiting review):**
-[Actual active/spare backing, lifetime and bounded proposal](../engine/docs/PROJECTION-PARENT-STUDY-IDENTITY.md)
-at `a9011a88` follows [#394 review 7049930164](https://github.com/Human-Cognome-Project/human-cognome-project/pull/394#issuecomment-7049930164)
-from accepted `1f71eb76`. Each private active/spare parent contribution still
-owns the projection's study UUID. Actual one/four/three owners repeat 370 /
-1,480 / 666 study-string bytes across both views, separately from inline row
-capacity. Complete 208-byte values and a proposed 160-byte numeric shape are
-measured separately; production and runtime saving remain unchanged. Scoped
-local CI passes, including full source/field/ordinal/count replay, foreign-study,
-full-path and work controls, detached copies/domain release and native publication.
-The record preserves actual copy costs and unchanged accepted-baseline evidence.
+**Projection-owned parent study — 2026-11-20 (implementation awaiting review):**
+[Private numeric pools, complete active exports and actual costs](../engine/docs/PROJECTION-PARENT-HEADER.md)
+at `22482caa` implements [#395 review 7050686178](https://github.com/Human-Cognome-Project/human-cognome-project/pull/395#issuecomment-7050686178)
+from accepted `c68d3751`. Active/spare parent rows share their projection's
+existing owned study header and shrink 208→160 bytes. Full numeric source,
+field kind/object, ordinal and count remain. Public active count/index extraction
+returns complete independent 208-byte values; the inactive pool stays private.
+Actual factory/copy and both-view retained/peak reductions, work and unchanged
+detached output costs are recorded separately. Scoped local CI passes through
+constructor/copy/domain/work refusals, frozen pool reuse and native publication/ticks.
 
-Next: review the proposal to use the projection header for private parent rows and reconcile
-its authoritative GitHub CI before a runtime follow-up. Any replacement must
-measure actual width, requests, retained/whole-operation peak, work and public
-output costs in both views; preserve frozen pool reuse and complete public values.
+Next: review this bounded runtime and reconcile authoritative GitHub CI. After
+scoped acceptance, choose one further #343 inspection from actual ownership and
+native-overlap evidence before another runtime change. Character/complete-character
+pins, field-target ownership, broader revision/admission policy, #324 and GPU
+qualification remain separate.
 
-[Checked byte-owner indices](../engine/docs/PROJECTION-BYTE-OWNER-INDICES.md) at `ec5ca687`
-are provisionally accepted in #394 at `1f71eb76`; native run 44803914461 and
-smoke run 44803914617 passed. Main `dffbed2f` integrates qualified #393 and
-has its reviewed `521afbda` tree. #394 integration remains maintainer-only;
-this inspection follows the explicitly authorized head. Original byte-owner
-storage/work measurements remain pinned. #324, character/complete-character
-and field-target ownership, broader revision/admission policy and GPU qualification
-remain separate. Every merge stays with the maintainer.
+The [accepted parent study inspection](../engine/docs/PROJECTION-PARENT-STUDY-IDENTITY.md)
+keeps its original `a9011a88` attribution and zero saving at that source.
+Main `66b7ef3a` integrates qualified #394 and has reviewed `1f71eb76`'s tree.
+#395 at `c68d3751` is provisionally accepted; smoke/values/build/database and
+all compiler jobs passed while regression shards finish. This runtime follows
+the explicitly authorized head. Reconcile remaining authoritative qualification
+before parent-first maintainer integration; every merge stays with the maintainer.
 
 **Repeated membership target pins — 2026-11-19 (inspection accepted in #387):**
 [Actual backing, source lifetime and proposal](../engine/docs/MEMBERSHIP-TARGET-PINS.md)

@@ -75,6 +75,9 @@ The [parent-contribution study inspection](docs/PROJECTION-PARENT-STUDY-IDENTITY
 attributes the remaining repeated study strings in active/spare parent pools,
 checks detached values and publication, and proposes using the projection header
 for private rows while preserving complete public output. It changes no runtime behavior.
+Its [approved header implementation](docs/PROJECTION-PARENT-HEADER.md) records
+actual narrower pools, complete indexed active exports, refusal/lifetime controls
+and measured whole-owner storage/work costs. The inactive pool stays private.
 
 ## Python boundary
 
