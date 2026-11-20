@@ -1,26 +1,25 @@
 # Current implementation and work
 
-**Projected row study identity — 2026-11-20 (inspection awaiting review):**
-[Actual UUID requests, complete-key equivalence and proposal](../../engine/docs/PROJECTION-STUDY-IDENTITY.md)
-at `6a208a14` follows provisionally accepted #390 `db6a4bda`. Every row study
-equals its projection's existing owned header but has independent backing:
-four selections request 444 bytes per view / 888 across both views. The public
-fourteen-row fixture requests 518; byte-owner studies and inline UUID capacity
-are separate attribution. Production is unchanged and runtime saving is zero.
-Quick CI, both projection suites per native compiler, five Clang/three GCC
-hierarchy cases and both standalone suites pass: 5,380 projection checks, 304
-unchanged records, forty owner views and 1,808 export allocation refusals. Real
-max-entry/multi-digit-path keys preserve text, foreign-study refusal, exact work
-and allocation-free comparison. Review numeric row keys under the existing header
-with explicitly owned contextual reads; full public/provenance identity remains.
+**Projection-owned study identity — 2026-11-20 (implementation awaiting review):**
+[Checked row context, detached output and actual costs](../../engine/docs/PROJECTION-HEADER-IDENTITY.md)
+at `68062bde` implements [#391 review 7045231362](https://github.com/Human-Cognome-Project/human-cognome-project/pull/391#issuecomment-7045231362)
+from accepted `26dec2a0`. Private rows use numeric entry/full path beneath their
+existing owned study header; contextual readers select checked indices and accept
+no detached raw row. Full source/definition/provenance and native claims remain.
+Both owner views save 510 / 2,040 / 1,020 retained/peak bytes for one/four/three
+selections, including actual row/index/reader costs. Public exports remain complete
+independent values with unchanged costs. Scoped local quick, native Clang/GCC
+and standalone GCC 11/13 checks pass, including actual foreign-context consumers,
+malformed indices, quotas/work/lifetime and frozen publication/following ticks.
+Review and new authoritative GitHub CI remain; all merges remain maintainer work.
 
-Main `646df179` integrates qualified #388/#389. [#390 review 7044020673](https://github.com/Human-Cognome-Project/human-cognome-project/pull/390#issuecomment-7044020673)
-accepts the [recipe-index runtime](../../engine/docs/PROJECTION-DEFINITION-INDICES.md)
-for scoped continuation. Smoke, offline viewport, projection-values and native
-build/database passed; remaining native compiler/regression jobs run. This
-inspection is explicitly stacked on that reviewed head. GitHub CI remains
-authoritative and every merge remains maintainer work. #324 and broader resource/
-revision policy stay separate.
+The [original row-study inspection](../../engine/docs/PROJECTION-STUDY-IDENTITY.md)
+at `6a208a14` is provisionally accepted in #391, with its original measured
+attribution and zero runtime saving preserved. Main `646df179` remains current.
+#390 passed native, smoke and offline viewport; #391 passed native and smoke.
+Both remain unmerged. This runtime is stacked on its explicitly reviewed head.
+Reconcile parent-first qualification before maintainer integration. #324, broader
+revision/admission policy and full GPU qualification remain separate.
 
 **Membership target-pin inspection — 2026-11-19 (provisionally accepted in #387):**
 [Actual repeated pins, lifetime and bounded proposal](../../engine/docs/MEMBERSHIP-TARGET-PINS.md)

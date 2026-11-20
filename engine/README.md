@@ -62,7 +62,9 @@ exports. Contextual internal readers, complete provenance, actual replacement
 costs and the CPU qualification scope are recorded there.
 The [row-study identity inspection](docs/PROJECTION-STUDY-IDENTITY.md) measures
 repeated UUID backing against the existing projection header and preserves full
-key/provenance and public export costs. Its header/reader proposal awaits review.
+key/provenance and public export costs. #391 accepted the bounded header/reader
+proposal; its [checked contextual implementation](docs/PROJECTION-HEADER-IDENTITY.md)
+records actual retained/peak/work changes while public exports remain complete.
 
 ## Python boundary
 

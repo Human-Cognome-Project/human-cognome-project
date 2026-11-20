@@ -1,22 +1,25 @@
 # Core continuation after local CUDA corrections
 
-**Projected row study identity — 2026-11-20 (inspection awaiting review):**
-[Actual backing, full-key controls and bounded proposal](../engine/docs/PROJECTION-STUDY-IDENTITY.md)
-at `6a208a14` follows [#390's approved continuation](https://github.com/Human-Cognome-Project/human-cognome-project/pull/390#issuecomment-7044020673)
-from `db6a4bda`. Local qualification passes with production unchanged. Next review
-numeric occurrence entry/path under the projection's existing owned study header,
-keeping the independent source-index check and all definition/node/provenance
-facts. Settle reads tied to the owning projection and checked row index before
-removing a study stamp; a foreign raw row must not acquire a different header.
-Preserve full owning public keys, opaque text, native claims and frozen no-new
-publication. Measure actual replacement overhead separately from exports.
+**Projection-owned study identity — 2026-11-20 (implementation awaiting review):**
+[Owned header, checked row indices and net costs](../engine/docs/PROJECTION-HEADER-IDENTITY.md)
+at `68062bde` implements [#391's explicit authorization](https://github.com/Human-Cognome-Project/human-cognome-project/pull/391#issuecomment-7045231362)
+from `26dec2a0`. Private numeric rows preserve independent full-path/source checks;
+contextual consumers select rows in the owning projection. Complete public keys,
+byte-owner/parent keys, full revision/provenance and native claims remain. Real
+both-view retained/peak reductions are 510 / 2,040 / 1,020 bytes, with export
+costs unchanged. Scoped local CI passes with source-pinned refusal/retry, full
+lifetime and frozen native publication/tick evidence in the component record.
 
-Main `646df179` remains current. #390 is provisionally accepted, with smoke,
-offline viewport, projection-values and native build/database passed; remaining
-native compiler/regression jobs run. This inspection stays stacked on the
-reviewed head. Reconcile authoritative CI before maintainer integration. #324,
-mixed-revision adoption and complete resource/admission policy remain separate;
-all merge events remain maintainer work.
+Next: review this runtime and reconcile its new authoritative GitHub CI.
+After scoped acceptance, choose one bounded remaining #343 inspection using actual
+owner/lifetime/native-overlap costs before proposing another migration. Existing
+byte-owner and parent key contracts remain in force. #324, mixed-revision adoption,
+broader resource/admission policy and GPU qualification stay separate.
+Main `646df179` remains current; #390 and #391 are accepted and hosted-qualified
+but unmerged. This branch follows
+that explicitly reviewed head; parent-first integration remains maintainer-only.
+The [accepted inspection](../engine/docs/PROJECTION-STUDY-IDENTITY.md) preserves its
+original `6a208a14` measurements and zero runtime saving at that source.
 
 **Repeated membership target pins — 2026-11-19 (inspection accepted in #387):**
 [Actual backing, source lifetime and proposal](../engine/docs/MEMBERSHIP-TARGET-PINS.md)
