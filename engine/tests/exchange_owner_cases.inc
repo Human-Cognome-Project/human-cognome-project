@@ -220,24 +220,31 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
     for (int id : next_ids) if (id != 8) additions.push_back({keys[id],1,50+id});
     if(round==0) for(const bool spare:{false,true}) {
       auto &view=Access::mutable_projection(*owner,spare);
-      auto &row=assembly::testing::ProjectionIndicesAccess::rows(view).front();
+      auto &rows=assembly::testing::ProjectionIndicesAccess::rows(view);
+      auto &row=*std::find_if(rows.begin(),rows.end(),[](const auto &v){return !v.source.path.empty();});
       const auto definition=row.definition_index,source=row.source_index;
+      const auto node=row.node;
       std::uint32_t other=0;
       while(other<view.recipe().tools.size() &&
             view.recipe().tools[other].ref.object==view.recipe().tools[definition].ref.object)++other;
       require(other<view.recipe().tools.size(),"native wrong in-range definition control is distinct");
-      for(int fault=0;fault<4;++fault) {
+      for(int fault=0;fault<7;++fault) {
         if(fault==0)row.definition_index=UINT32_MAX;
         if(fault==1)row.definition_index=other;
         if(fault==2)row.source_index=UINT32_MAX;
         if(fault==3)row.source_index=source==0?1:0;
+        if(fault==4)row.node+=1;
+        if(fault==5)row.source.entry^=1;
+        if(fault==6)row.source.path.back()^=1;
         const TickSnapshot before_fault(f);
         const auto bytes=Access::reservations(*owner).live_bytes;
         bool refused=false;
         try {Access::prepare(*owner,key,target,incoming,additions);}
         catch(const warm::Error &error) {refused=std::string_view(error.what())==
             "exposure buffers differ in recipe-bound occurrence meaning";}
-        row.definition_index=definition;row.source_index=source;
+        row.definition_index=definition;row.source_index=source;row.node=node;
+        if(fault==5)row.source.entry^=1;
+        if(fault==6)row.source.path.back()^=1;
         require(refused && !Access::pending(*owner) && unchanged() && before_fault==TickSnapshot(f) &&
                     bytes==Access::reservations(*owner).live_bytes,
                 "malformed committed/spare definition index changed native state or escaped staging refusal");
@@ -246,6 +253,31 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
         require(retry.status==assembly::detail::CaptureStatus::Ok && unchanged(),
                 "healthy native owner retries without allocation after malformed projection index");
       }
+    }
+    if(round==0) {
+      const auto foreign_projection=assembly::project_letters(previous->recipe());
+      auto foreign_rows=Access::mappings(*owner);
+      require(foreign_rows.size() && foreign_projection.study()!=previous->study() &&
+              assembly::detail::ProjectionAccess::rows(foreign_projection).front().source==
+                  assembly::detail::ProjectionAccess::rows(*previous).front().source,
+              "foreign projection control must retain identical numeric occurrence keys");
+      foreign_rows[0].occurrence.study=foreign_projection.study();
+      const TickSnapshot before_foreign(f);
+      bool refused=false;
+      try{Plan::capture(Access::plan(*owner),*previous,foreign_rows,Access::fields(*owner));}
+      catch(const warm::Error &error){refused=std::string_view(error.what())=="exchange occurrence is inactive, foreign or stale";}
+      require(refused && unchanged() && before_foreign==TickSnapshot(f) &&
+              Access::binding_status(*owner)==UpdateStatus::InvalidInput,
+              "actual capture consumer grafted a foreign study key onto a numeric projection row");
+      for(const bool spare:{false,true}) {
+        const auto &view=Access::mutable_projection(*owner,spare);
+        assembly::detail::PreparationWork meter(UINT64_MAX);
+        require(assembly::detail::ProjectionAccess::find(view,foreign_rows[0].occurrence,meter)==view.occurrence_count(),
+                "committed or spare contextual reader accepted foreign study identity");
+      }
+      no_new([&]{Plan::capture(Access::plan(*owner),*previous,Access::mappings(*owner),Access::fields(*owner));});
+      require(Access::binding_status(*owner)==UpdateStatus::Ok && unchanged(),
+              "healthy frozen capture retry failed after foreign study refusal");
     }
     bool rejected = false;
     try { Access::prepare(*owner,key,previous->exposure(0),incoming,additions); }
@@ -618,10 +650,10 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
     std::size_t active = 0;
     for (std::size_t i = 0; i < assembly::detail::ProjectionAccess::rows(current).size(); ++i) {
       const auto &o = assembly::detail::ProjectionAccess::rows(current)[i];
-      require(o.key == assembly::detail::ProjectionAccess::rows(initial)[i].key && assembly::detail::ProjectionAccess::definition(current,o) == assembly::detail::ProjectionAccess::definition(initial,assembly::detail::ProjectionAccess::rows(initial)[i]),
+      require(current.study() == initial.study() && o.source == assembly::detail::ProjectionAccess::rows(initial)[i].source && assembly::detail::ProjectionAccess::definition(current,i) == assembly::detail::ProjectionAccess::definition(initial,i),
               "owner changed stable occurrence identity");
       const auto count = std::count_if(Access::mappings(*owner).begin(),Access::mappings(*owner).end(),
-          [&](const auto &v) { return v.occurrence == o.key; });
+          [&](const auto &v) { return v.occurrence.study == current.study() && v.occurrence.source == o.source; });
       require(count == int(o.active), "active projection and native mapping disagree");
       active += o.active;
     }

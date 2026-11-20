@@ -2253,9 +2253,11 @@ LetterData letter_data(engine::Runtime &r) {
   out.mapping = prepared;
   for (auto &scale : out.mapping.scales)
     scale.node.layout = nullptr;
-  for (const auto &o : assembly::detail::ProjectionAccess::rows(projection))
+  for (std::size_t index=0;index<projection.occurrence_count();++index) {
+    const auto &o=assembly::detail::ProjectionAccess::row(projection,index);
     if (o.active)
-      out.origins.push_back({o.key, assembly::detail::ProjectionAccess::definition(projection,o), {}});
+      out.origins.push_back({{projection.study(),o.source}, assembly::detail::ProjectionAccess::definition(projection,index), {}});
+  }
 #endif
   for (const auto &p : prepared.particles) {
     require(p.exact_mass > 0 && p.mass > 0 && p.radius > 0,

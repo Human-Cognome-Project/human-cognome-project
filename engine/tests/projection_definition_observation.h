@@ -45,12 +45,12 @@ template<class Visit> Cost inspect(const assembly::LetterProjection &p,
   out.outer_bytes=rows.capacity()*sizeof(rows[0]);
   for(std::size_t i=0;i<rows.size();++i) {
     const auto &row=rows[i];
-    const auto &definition=assembly::detail::ProjectionAccess::definition(p,row,&work);
+    const auto &definition=assembly::detail::ProjectionAccess::definition(p,i,&work);
     need(&definition==&p.recipe().tools[row.definition_index].ref);
     ++out.rows;out.active+=row.active;
     bool first=true;
     for(std::size_t j=0;j<i;++j)
-      if(work.equal(assembly::detail::ProjectionAccess::definition(p,rows[j],&work),definition)){first=false;break;}
+      if(work.equal(assembly::detail::ProjectionAccess::definition(p,j,&work),definition)){first=false;break;}
     out.unique_definitions+=first;
   }
   out.lookup_work=work.result().charged;
@@ -60,9 +60,9 @@ inline void independent(const assembly::LetterProjection &a,const assembly::Lett
   const auto &left=assembly::detail::ProjectionAccess::rows(a),&right=assembly::detail::ProjectionAccess::rows(b);
   need(&a.recipe()==&b.recipe() && left.data()!=right.data() && left.size()==right.size());
   for(std::size_t i=0;i<left.size();++i)
-    need(left[i].key==right[i].key && left[i].source_index==right[i].source_index &&
+    need(a.study()==b.study() && left[i].source==right[i].source && left[i].source_index==right[i].source_index &&
          left[i].definition_index==right[i].definition_index &&
-         &assembly::detail::ProjectionAccess::definition(a,left[i])==
-             &assembly::detail::ProjectionAccess::definition(b,right[i]));
+         &assembly::detail::ProjectionAccess::definition(a,i)==
+             &assembly::detail::ProjectionAccess::definition(b,i));
 }
 } // namespace projection_definition_observation

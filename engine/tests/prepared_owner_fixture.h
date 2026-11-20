@@ -36,9 +36,11 @@ struct Input {
     bindings.source = {source->owner(),source->study(),source->generation(),recipe.ref};
     const auto projected = project_letters(recipe);
     int address = 40;
-    for (const auto &o : assembly::detail::ProjectionAccess::rows(projected)) if (o.active) {
-      auto key = o.key; key.study = source->study();
-      bindings.bodies.push_back({std::move(key),assembly::detail::ProjectionAccess::definition(projected,o),o.node,3,address++,1.5,{1,7,true}});
+    for (std::size_t o_index=0;o_index<projected.occurrence_count();++o_index) {
+      const auto &o=assembly::detail::ProjectionAccess::row(projected,o_index);
+      if (!o.active) continue;
+      assembly::OccurrenceKey key{source->study(),o.source};
+      bindings.bodies.push_back({std::move(key),assembly::detail::ProjectionAccess::definition(projected,o_index),o.node,3,address++,1.5,{1,7,true}});
     }
     const auto add = [&](GroupKind kind, const warm::ObjectKey &key, std::vector<int> children) {
       const int i = int(bindings.fields.size()); const FieldKey field{kind,key};

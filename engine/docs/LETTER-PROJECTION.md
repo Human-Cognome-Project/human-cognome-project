@@ -1,5 +1,12 @@
 # Native letter/byte projection — Stage B
 
+The [projection-owned study implementation](PROJECTION-HEADER-IDENTITY.md), tested
+source `68062bde`, implements #391 review 7045231362. Private rows keep numeric
+entry/full path under their existing owned header; contextual reads take the
+owning projection and checked index. Public exports, byte-owner and parent keys
+remain complete. Source/revision/node/mass and native claim/generation validation
+retain their separate authorities. Runtime review and hosted CI remain pending.
+
 The [recipe-index implementation](PROJECTION-DEFINITION-INDICES.md), source
 `223e874a`, implements #389's accepted ownership/output contract. Private rows
 retain checked definition/source indices in their projection's existing exact

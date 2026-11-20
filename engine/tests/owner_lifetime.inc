@@ -893,7 +893,7 @@ void projection_reservation_controls(const assembly::LetterProjection &projectio
     if (reserve) Access::reserve_projection(*snapshot);
     require(Access::projection_equivalent(*snapshot,prepared),"snapshot references depended on destroyed projection");
     require(snapshot->study() == projection.study() &&
-                assembly::detail::ProjectionAccess::rows(*snapshot).front().key == assembly::detail::ProjectionAccess::rows(projection).front().key,
+                snapshot->study() == projection.study() && assembly::detail::ProjectionAccess::rows(*snapshot).front().source == assembly::detail::ProjectionAccess::rows(projection).front().source,
             "detached projection snapshot depended on destroyed source storage");
     snapshot.reset();
   } catch (...) { A::end(); throw; }

@@ -183,14 +183,13 @@ CaptureResult ExchangeBindings::capture(const LetterProjection &projection,
   for (std::size_t i = 0; i < current_occurrences.size(); ++i) {
     meter.charge(1);
     const auto &binding = current_occurrences[i];
-    const auto o = std::find_if(ProjectionAccess::rows(projection).begin(), ProjectionAccess::rows(projection).end(),
-        [&](const auto &v) { return meter.equal(v.key,binding.occurrence); });
-    need(o != ProjectionAccess::rows(projection).end() && o->active && current(binding.handle, s.particle_headers),
+    const auto index = ProjectionAccess::find(projection,binding.occurrence,meter);
+    need(index < projection.occurrence_count() && ProjectionAccess::row(projection,index).active && current(binding.handle, s.particle_headers),
          "exchange occurrence is inactive, foreign or stale");
     for (std::size_t j = 0; j < i; ++j)
       need(!meter.equal(current_occurrences[j].occurrence,binding.occurrence) &&
            !same(current_occurrences[j].handle, binding.handle), "duplicate exchange occurrence binding");
-    const auto *tool = &ProjectionAccess::tool(projection,*o,&meter);
+    const auto *tool = &ProjectionAccess::tool(projection,index,&meter);
     need(tool->mass &&
          *tool->mass == s.source_masses[binding.handle.record], "bound exact source mass differs");
     meter.charge(1); masses_.push_back(*tool->mass);

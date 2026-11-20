@@ -45,7 +45,7 @@ void exchange_fields(engine::Runtime &r, HostPath path) {
               "cannot prepare focal retirement witness");
     std::vector<assembly::detail::OccurrenceBinding> rows;
     for (const auto &o : assembly::detail::ProjectionAccess::rows(projection)) if (o.active)
-      rows.push_back({o.key, f.in.particle_rows[compression ? o.key.source.path[1] : 0]});
+      rows.push_back({{projection.study(),o.source}, f.in.particle_rows[compression ? o.source.path[1] : 0]});
     std::vector<assembly::detail::ExchangeFieldBinding> fields;
     for (std::size_t i = 0; i < old_ids.size(); ++i) fields.push_back({keys[old_ids[i]], f.in.field_rows[i]});
     const auto declaration = assembly::declare_letter_exchange(projection,

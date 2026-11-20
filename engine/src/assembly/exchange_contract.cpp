@@ -206,21 +206,27 @@ LetterExchangeContract LetterExchangeContract::collect(const LetterProjection &p
   result.to_ = target;
   const auto source = [&](const warm::OccurrenceId &id) {
     work.charge(sizeof(ExchangeSource));
-    const auto occurrence = std::find_if(detail::ProjectionAccess::rows(projection).begin(), detail::ProjectionAccess::rows(projection).end(),
-        [&](const auto &o) { return work.equal(o.key.source,id); });
-    need(occurrence != detail::ProjectionAccess::rows(projection).end(), "missing exchange alternative occurrence");
-    need(work.equal(occurrence->key.study,owner.study) && occurrence->key.source.entry==owner.source.entry,
+    std::size_t index=0;
+    for (;index<projection.occurrence_count();++index)
+      if (work.equal(detail::ProjectionAccess::row(projection,index).source,id)) break;
+    need(index < projection.occurrence_count(), "missing exchange alternative occurrence");
+    const auto &occurrence=detail::ProjectionAccess::row(projection,index);
+    need(occurrence.source.entry==owner.source.entry,
          "foreign exchange alternative occurrence");
-    const auto *tool = &detail::ProjectionAccess::tool(projection,*occurrence,&work);
+    const auto *tool = &detail::ProjectionAccess::tool(projection,index,&work);
     need(tool->mass && *tool->mass,
          "missing exact exchange definition mass");
-    auto key = copy_occurrence(occurrence->key,domain,&work);
+    work.copy_key(projection.study()); work.copy_key(occurrence.source);
+    auto study=warm::Uuid(projection.study(),domain);
+    warm::OccurrencePath path(occurrence.source.path.begin(),occurrence.source.path.end(),
+        detail::SharedReservationAllocator<std::uint32_t>(domain));
+    OccurrenceKey key{std::move(study),{occurrence.source.entry,std::move(path)}};
     auto definition = copy_reference(tool->ref,domain,&work);
     auto parents = result.recipe_pin_
         ? detail::SharedReservedVector<warm::Parent>{detail::SharedReservationAllocator<warm::Parent>(domain)}
         : copy_parents(tool->parents,domain,&work);
     ExchangeSource value{std::move(key),std::move(definition),*tool->mass,
-                         occurrence->node,std::move(parents)};
+                         occurrence.node,std::move(parents)};
     if (result.recipe_pin_) { work.charge(1); value.recipe_tool_=std::size_t(tool-recipe.tools.data()); }
     return value;
   };

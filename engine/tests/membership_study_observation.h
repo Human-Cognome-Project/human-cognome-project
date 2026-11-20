@@ -33,8 +33,9 @@ template<class Rows,class Visit> Cost inspect(const assembly::MembershipFields &
   for (const auto &row:rows) {
     ++out.rows;
     const auto occurrence=std::find_if(assembly::detail::ProjectionAccess::rows(projection).begin(),assembly::detail::ProjectionAccess::rows(projection).end(),
-        [&](const auto &o){return o.key.source==row.occurrence;});
-    need(occurrence!=assembly::detail::ProjectionAccess::rows(projection).end() && matches(fields,row,occurrence->key,work));
+        [&](const auto &o){return o.source==row.occurrence;});
+    need(occurrence!=assembly::detail::ProjectionAccess::rows(projection).end() &&
+         work.equal(fields.study(),projection.study()) && work.equal(row.occurrence,occurrence->source));
   }
   out.comparison_work=work.result().charged;
   return out;

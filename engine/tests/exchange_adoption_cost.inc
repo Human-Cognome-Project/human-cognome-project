@@ -495,7 +495,7 @@ void exchange_adoption_binding_cost(Fixture &f,const assembly::LetterProjection 
               << ",outer_requested=" << cost.outer_bytes << ",byte_owner_uuid_requests=" << cost.byte_owner_requests
               << ",byte_owner_uuid_requested=" << cost.byte_owner_bytes << ",header_comparison_work=" << cost.comparison_work
               << ",source_validation_work=" << cost.source_work
-              << ",comparison_allocations=0,independent_views=1,after_destroy_requested=0,runtime_saving=0 PASS\n";
+              << ",comparison_allocations=0,independent_views=1,after_destroy_requested=0,duplicate_row_study_backing=0 PASS\n";
   }
   std::cout << "membership_study_owner,selections=" << selection_count << ",rows=" << membership_study_cost.rows
             << ",capacity=" << membership_study_cost.capacity << ",row_uuid_requests=" << membership_study_cost.requests

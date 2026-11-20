@@ -1,16 +1,24 @@
 # Private exchange-owner resource inventory
 
-[Projected row study identity](PROJECTION-STUDY-IDENTITY.md) at `6a208a14`
-attributes 111 / 444 / 222 repeated UUID bytes per real owner view beside each
-existing 37-byte header. Byte-owner UUIDs and inline row capacity are labeled
-separately. Production/census is unchanged and runtime saving is zero; review
-header/numeric-key ownership before implementation. Detached outputs keep full
-study/revision/provenance and their existing independent costs.
+[Projection-owned study identity](PROJECTION-HEADER-IDENTITY.md) at `68062bde`
+implements #391's reviewed direction. Both views retain one owned study header
+each and numeric occurrence rows with checked definition/source indices. Census
+counts actual 464-byte row capacity and paths, preserves full byte/complete and
+parent keys, and retains full recipe accounting. Net both-view retained/requested
+peak reductions are 510 / 2,040 / 1,020 bytes after actual reader/index overhead;
+public exports remain complete with unchanged independent costs. Full consumer
+context/refusal/lifetime and frozen native publication/tick controls pass locally.
+Review and authoritative GitHub CI remain separate.
+
+The [accepted study inspection](PROJECTION-STUDY-IDENTITY.md) at `6a208a14`
+attributes 111 / 444 / 222 repeated UUID bytes per view beside each original
+37-byte header. Its byte-owner/inline attribution and zero runtime saving apply
+to that original source, before the implementation above.
 
 [Recipe-backed projected definitions](PROJECTION-DEFINITION-INDICES.md) at
 `223e874a`, provisionally accepted in #390, remove per-row definition buffers from both
-views while reusing their existing exact immutable recipe. Census counts the
-512-byte row/index capacity, keys and complete byte/character provenance, with
+views while reusing their existing exact immutable recipe. At that source the
+census counts 512-byte row/index capacity, keys and complete byte/character provenance, with
 recipe pins counted once. Actual net retained/peak reductions are 651 / 2,604 /
 1,302 bytes per view, twice those totals per owner. Public owning exports keep
 their 640-byte shape and separate costs. Guard work and temporary factory overhead
@@ -189,7 +197,7 @@ not an operational memory-budget policy or a second state authority.
 | Family | Owned surfaces counted |
 |---|---|
 | `owner` | `sizeof(ExchangeOwner)` plus its separately allocated reservation-domain object, including embedded references, smart pointers, vector/map headers, generation/gates and fixed reports |
-| `projections` | Both mutable projection objects and independent inputs, numeric definition/source-index row capacity, exposures, active/spare parents and nested keys/byte/complete-character pins/text; one shared immutable Bundle header/body owns the definition pins once |
+| `projections` | Both mutable projection objects and independent inputs, numeric occurrence/definition/source-index row capacity, exposures, active/spare parents and nested keys/byte/complete-character pins/text; one shared immutable Bundle header/body owns the definition pins once |
 | `maps` | Outer capacity of four backed stores: current/candidate occurrence and field maps; nested UUID/path/address storage of **every constructed slot**, including inactive slots. The census also visits the empty persistent binding maps; their headers are already in its object |
 | `binding` | Binding object; mass, outgoing handle, captured source-edge buffers; outgoing-record and edge masks |
 | `coordinator` | Coordinator object; command, intrinsic, field-command-index, hierarchy-node, child and contribution buffers |

@@ -50,9 +50,11 @@ struct Input {
     bindings.layout = {{{root.get(),-1,ScaleRole::Root},1}};
     bindings.source = {source->owner(),source->study(),source->generation(),recipe.ref};
     const auto projection = project_letters(recipe);
-    for (const auto &o : assembly::detail::ProjectionAccess::rows(projection)) if (o.active) {
-      auto occurrence = o.key; occurrence.study = source->study();
-      bindings.bodies.push_back({std::move(occurrence),assembly::detail::ProjectionAccess::definition(projection,o),0,3,40+int(bindings.bodies.size()),1.5,{1,1,true}});
+    for (std::size_t o_index=0;o_index<projection.occurrence_count();++o_index) {
+      const auto &o=assembly::detail::ProjectionAccess::row(projection,o_index);
+      if (!o.active) continue;
+      assembly::OccurrenceKey occurrence{source->study(),o.source};
+      bindings.bodies.push_back({std::move(occurrence),assembly::detail::ProjectionAccess::definition(projection,o_index),0,3,40+int(bindings.bodies.size()),1.5,{1,1,true}});
     }
     const auto add = [&](FieldKey field) {
       const int i = int(bindings.fields.size());

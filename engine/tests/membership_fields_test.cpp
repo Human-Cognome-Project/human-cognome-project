@@ -12,6 +12,7 @@
 #include "membership_study_observation.h"
 #include "membership_target_observation.h"
 #include "membership_fields_access.h"
+#include "projection_indices_access.h"
 
 namespace {
 using namespace membership_fixture;
@@ -82,10 +83,11 @@ void paths_and_contexts() {
       contextual.contribution_count() == 8,
       "mixed exposure emits memberships only for the three active occurrences");
   const auto active_byte =
-      [&](std::uint64_t entry) -> const detail::ProjectionOccurrence & {
-    return *std::find_if(
+      [&](std::uint64_t entry) -> std::size_t {
+    const auto found=std::find_if(
         assembly::detail::ProjectionAccess::rows(mixed).begin(), assembly::detail::ProjectionAccess::rows(mixed).end(),
-        [&](const auto &o) { return o.active && o.key.source.entry == entry; });
+        [&](const auto &o) { return o.active && o.source.entry == entry; });
+    return std::size_t(found-detail::ProjectionAccess::rows(mixed).begin());
   };
   check(detail::ProjectionAccess::definition(mixed,active_byte(1)) == detail::ProjectionAccess::definition(mixed,active_byte(2)),
         "English/French byte occurrences use exactly the same pinned byte "
@@ -98,7 +100,7 @@ void paths_and_contexts() {
     isolated &= french == french_group && !(edge.target.object == f.core_class);
     if (!edge.occurrence.source.path.empty())
       owners &=
-          active_byte(edge.occurrence.source.entry).byte->owner ==
+          detail::ProjectionAccess::row(mixed,active_byte(edge.occurrence.source.entry)).byte->owner ==
           OccurrenceKey{mixed.study(), {edge.occurrence.source.entry, {}}};
   }
   check(isolated && owners,
@@ -115,8 +117,33 @@ void paths_and_contexts() {
         std::none_of(
             contextual_values.begin(),
             contextual_values.end(),
-            [&](const auto &edge) { return edge.occurrence == o.key; }),
+            [&](const auto &edge) { return edge.occurrence.study == mixed.study() && edge.occurrence.source == o.source; }),
         "inactive aggregate/byte alternative has no membership participation");
+  }
+}
+void foreign_projected_byte_owner() {
+  for(const bool structural:{false,true}) {
+    membership_fixture::Fixture fixture;
+    if(structural)fixture.base.focal_fields={{warm::FieldKind::SiblingDefinition,fixture.byte('A').object}};
+    const auto bundle=structural?normalize_structural_letters(fixture.base,
+        {{4,fixture.ref(fixture.english),warm::Exposure::Parts}}):normalize_letters(fixture.base,
+        {fixture.request(fixture.english,4,warm::Exposure::Parts)});
+    auto projection=project_letters(bundle);
+    const auto foreign=project_letters(bundle);
+    auto &rows=assembly::testing::ProjectionIndicesAccess::rows(projection);
+    auto &byte=*std::find_if(rows.begin(),rows.end(),[](const auto &row){return row.byte.has_value();});
+    const auto study=byte.byte->owner.study;
+    byte.byte->owner.study=foreign.study();
+    allocation_lifetime::begin();bool refused=false;
+    try{auto fields=membership_fields(projection);}catch(const warm::Error &error){
+      refused=std::string_view(error.what())=="membership: inconsistent byte ownership";
+    }
+    const auto released=allocation_lifetime::end();
+    byte.byte->owner.study=study;
+    check(refused && !released.live && !released.blocks && released.acquired==released.released,
+          "membership consumer refuses a foreign byte-owner study with identical numeric occurrence identity and unwinds");
+    check(membership_fields(projection).contribution_count()==3,
+          "healthy membership retry preserves byte ownership after foreign study refusal");
   }
 }
 void mass_and_repetition() {
@@ -346,7 +373,7 @@ void retained_alternatives() {
     std::size_t active = 0;
     for (const auto &m : values)
       active += std::any_of(assembly::detail::ProjectionAccess::rows(current).begin(),assembly::detail::ProjectionAccess::rows(current).end(),
-          [&](const auto &o) { return o.active && o.key.source == m.occurrence.source; });
+          [&](const auto &o) { return o.active && o.source == m.occurrence.source; });
     check(exact && active == live.contribution_count(),
           "catalogue matches fresh memberships across exposure, repeated copies, diamonds and language contexts");
   }
@@ -389,11 +416,11 @@ std::size_t membership_key_cost(int mode) {
   std::vector<Expected> expected;
   for (const auto &o : assembly::detail::ProjectionAccess::rows(*projection)) {
     if (mode < 2 && !o.active) continue;
-    std::vector<ObjectKey> groups = o.key.source.entry == 20
+    std::vector<ObjectKey> groups = o.source.entry == 20
         ? std::vector<ObjectKey>{fixture->fr,fixture->fr_alphabet}
         : std::vector<ObjectKey>{fixture->en,fixture->en_alphabet,fixture->family};
     std::sort(groups.begin(),groups.end());
-    for (const auto &group : groups) expected.push_back({o.key,fixture->ref(group),2});
+    for (const auto &group : groups) expected.push_back({{projection->study(),o.source},fixture->ref(group),2});
   }
   const auto study = projection->study();
   std::vector<MembershipContribution> exported;
@@ -663,6 +690,7 @@ void membership_allocation_failures(int mode, std::size_t requests) {
 int main() {
   try {
     paths_and_contexts();
+    foreign_projected_byte_owner();
     mass_and_repetition();
     graph_failures();
     retained_alternatives();

@@ -77,9 +77,11 @@ struct ParentContribution {
 
 namespace detail {
 // Indices are meaningful only in this projection's retained immutable recipe.
-// Actor exposure and provenance stay in the view; public values own full pins.
+// The projection owns the study namespace; entry/full path independently check
+// the indexed source. Contextual readers accept that projection and an index.
+// Actor exposure and provenance stay in the view; public values own full keys/pins.
 struct ProjectionOccurrence {
-  OccurrenceKey key;
+  warm::OccurrenceId source;
   std::uint32_t definition_index{}, source_index{};
   int slot{-1}, node{};
   bool active{};
@@ -142,7 +144,7 @@ class LetterProjection {
                         detail::PreparationWork &) const;
   ProjectionStorage storage() const;
   ProjectionStorage storage(detail::PreparationWork *, bool logical, bool include_recipe = true) const;
-  const warm::Tool *resolve_definition(const detail::ProjectionOccurrence &, detail::PreparationWork *) const;
+  const warm::Tool *resolve_definition(std::size_t, detail::PreparationWork *) const;
   warm::Uuid study_;
   std::shared_ptr<const warm::Bundle> recipe_;
   detail::SharedReservedVector<warm::Exposure> exposures_;

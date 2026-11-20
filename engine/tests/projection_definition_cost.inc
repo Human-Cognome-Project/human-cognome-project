@@ -80,8 +80,8 @@ void projection_definition_cost(int mode) {
   const auto lookup_calls=allocation_observation::calls.load();allocation_observation::enabled=false;
   check(attributed && !lookup_calls && cost.rows==expected.size() && !cost.requests && !cost.bytes && !cost.pin_capacity_bytes,
         "projected definition indices borrow only the projection's already owned exact recipe");
-  check(study.requests==expected.size() && study.bytes==study.requests*study.header_bytes,
-        "every row owns an independent observed study buffer equal to the projection's existing header");
+  check(!study.requests && !study.bytes && !study.uuid_capacity_bytes && study.header_bytes,
+        "numeric rows use the existing owned study header with no repeated row-study storage");
   {
     auto &stored=assembly::testing::ProjectionIndicesAccess::rows(*projection).front();
     const auto definition_index=stored.definition_index,source_index=stored.source_index;
@@ -96,7 +96,7 @@ void projection_definition_cost(int mode) {
       if(fault==3)stored.source_index=source_index==0?1:0;
       const auto before=A::counts;
       PreparationWork work(UINT64_MAX);
-      check(!assembly::detail::ProjectionAccess::resolve(*projection,stored,&work),
+      check(!assembly::detail::ProjectionAccess::resolve(*projection,0,&work),
             "malformed definition/source index including a wrong in-range tool refuses contextual read");
       bool refused=false;
       try{auto value=projection->occurrence(0);}catch(const warm::Error &){refused=true;}
@@ -106,22 +106,24 @@ void projection_definition_cost(int mode) {
             "malformed index export refuses before copying and healthy retry preserves the source");
     }
     PreparationWork full(UINT64_MAX);
-    const auto *tool=assembly::detail::ProjectionAccess::resolve(*projection,stored,&full);
+    const auto *tool=assembly::detail::ProjectionAccess::resolve(*projection,0,&full);
     check(tool && tool->ref==expected.front().definition,"production contextual read resolves the exact full pin");
     for(const auto limit:{UINT64_C(0),full.result().charged-1}) {
       PreparationWork denied(limit);bool refused=false;
-      try{assembly::detail::ProjectionAccess::resolve(*projection,stored,&denied);}catch(const PreparationStop &){refused=true;}
+      try{assembly::detail::ProjectionAccess::resolve(*projection,0,&denied);}catch(const PreparationStop &){refused=true;}
       check(refused,"production definition read refuses zero/one-short work");
     }
     PreparationWork exact(full.result().charged);
-    check(assembly::detail::ProjectionAccess::resolve(*projection,stored,&exact)==tool,
+    check(assembly::detail::ProjectionAccess::resolve(*projection,0,&exact)==tool,
           "production definition read retries with exact work");
-    auto foreign=stored;foreign.key.study=warm::new_uuid();
-    check(!assembly::detail::ProjectionAccess::resolve(*projection,foreign),"production read rejects a foreign study");
-    foreign=stored;foreign.node+=1;
-    check(!assembly::detail::ProjectionAccess::resolve(*projection,foreign),"production read rejects the wrong source node");
-    foreign=stored;foreign.key.source.path.push_back(UINT32_MAX);
-    check(!assembly::detail::ProjectionAccess::resolve(*projection,foreign),"production read compares the complete source path");
+    const auto node=stored.node;stored.node+=1;
+    check(!assembly::detail::ProjectionAccess::resolve(*projection,0),"production read rejects the wrong source node");
+    stored.node=node;
+    auto path=stored.source.path;stored.source.path.push_back(UINT32_MAX);
+    check(!assembly::detail::ProjectionAccess::resolve(*projection,0),"production read compares the complete source path");
+    stored.source.path=std::move(path);
+    check(!assembly::detail::ProjectionAccess::resolve(*projection,projection->occurrence_count()) &&
+          !assembly::detail::ProjectionAccess::resolve(*projection,SIZE_MAX),"contextual lookup rejects malformed row indices");
     bool refused=false;try{auto value=projection->occurrence(projection->occurrence_count());}catch(const warm::Error &){refused=true;}
     check(refused,"public occurrence export checks its row index");
   }
@@ -209,5 +211,5 @@ void projection_definition_cost(int mode) {
             << ",outer_requested=" << study.outer_bytes << ",byte_owner_uuid_requests=" << study.byte_owner_requests
             << ",byte_owner_uuid_requested=" << study.byte_owner_bytes << ",header_comparison_work=" << study.comparison_work
             << ",source_validation_work=" << study.source_work << ",comparison_allocations=" << lookup_calls
-            << ",source_projection_domain_dead=1,after_destroy_requested=0,runtime_saving=0 PASS\n";
+            << ",source_projection_domain_dead=1,after_destroy_requested=0,duplicate_row_study_backing=0 PASS\n";
 }
