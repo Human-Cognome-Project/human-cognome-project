@@ -81,6 +81,10 @@ void projection_definition_cost(int mode) {
     const auto *found=std::find_if(std::begin(A::table),std::end(A::table),[&](const auto &e){return e.pointer==pointer;});
     attributed &= found!=std::end(A::table) && found->bytes==bytes;
   });
+  const auto parent_study=projection_parent_study_observation::inspect<Access>(*projection,domain.get(),[&](const void *pointer,std::size_t bytes) {
+    const auto *found=std::find_if(std::begin(A::table),std::end(A::table),[&](const auto &e){return e.pointer==pointer;});
+    attributed &= found!=std::end(A::table) && found->bytes==bytes;
+  });
   const auto lookup_calls=allocation_observation::calls.load();allocation_observation::enabled=false;
   check(attributed && !lookup_calls && cost.rows==expected.size() && !cost.requests && !cost.bytes && !cost.pin_capacity_bytes,
         "projected definition indices borrow only the projection's already owned exact recipe");
@@ -89,6 +93,8 @@ void projection_definition_cost(int mode) {
   check(!byte_owner.requests && !byte_owner.requested && !byte_owner.path_requested &&
         !byte_owner.engaged_key_bytes && !byte_owner.key_capacity_bytes && byte_owner.index_capacity_bytes==byte_owner.capacity*sizeof(std::uint32_t),
         "private byte owners retain only independent checked indices with no complete-key backing");
+  check(parent_study.pools[0].study_requests==projection->parents().size() && parent_study.pools[0].study_bytes &&
+        !parent_study.pools[1].rows,"each actual public/copy parent row retains its own study UUID request");
   {
     auto &stored=assembly::testing::ProjectionIndicesAccess::rows(*projection).front();
     const auto definition_index=stored.definition_index,source_index=stored.source_index;
@@ -213,6 +219,7 @@ void projection_definition_cost(int mode) {
   std::cout << "projection_row_copy_cost,mode=" << mode << ",rows=" << cost.rows << ",requests=" << export_calls
             << ",requested=" << export_bytes << ",output_capacity_bytes=" << exported.capacity()*sizeof(ProjectedOccurrence)
             << ",allocation_refusals=" << refusals << ",source_projection_domain_dead=1,after_destroy_requested=0 PASS\n";
+  projection_parent_study_observation::print("projection_parent_study_cost",mode,0,parent_study);
   std::cout << "projection_study_cost,mode=" << mode << ",recipe=" << version << ",rows=" << study.rows
             << ",capacity=" << study.capacity << ",row_uuid_requests=" << study.requests << ",row_uuid_requested=" << study.bytes
             << ",header_uuid_requested=" << study.header_bytes << ",uuid_member_capacity_bytes=" << study.uuid_capacity_bytes

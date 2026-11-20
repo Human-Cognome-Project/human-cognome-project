@@ -4,6 +4,9 @@
 #include "exchange_coordinator_access.h"
 namespace assembly::testing {
 struct ExchangeOwnerAccess {
+  static const auto &parent_rows(const LetterProjection &p,bool spare) {
+    return spare?p.spare_parents_:p.parents_;
+  }
   static auto resources(const detail::ExchangeOwner &o) { return o.storage(); }
   static auto reservations(const detail::ExchangeOwner &o) { return o.reservations_->result(); }
   static auto reservation_domain(const detail::ExchangeOwner &o) { return o.reservations_; }
