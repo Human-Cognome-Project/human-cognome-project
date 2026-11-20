@@ -83,6 +83,18 @@ void native_contract() {
       {{0,f.ref(f.english),warm::Exposure::Parts}}));
   auto structural_fields = membership_fields(structural);
   const auto structural_input = structural_fields.bind_structure(structural,layout.nodes);
+  for (const bool legacy:{false,true}) {
+    auto invalid=legacy?fields:structural_fields;
+    assembly::testing::MembershipFieldsAccess::index(invalid,UINT32_MAX);
+    bool refused=false;
+    try {
+      if (legacy) invalid.bind(p,layout.nodes);
+      else invalid.bind_structure(structural,layout.nodes);
+    } catch (const warm::Error &error) {
+      refused=std::string_view(error.what())=="membership: target index out of range";
+    }
+    check(refused,"valid legacy/structural source binding refuses the corrupted target index");
+  }
   auto foreign_structural=structural_fields;
   assembly::testing::MembershipFieldsAccess::study(foreign_structural,foreign_study);
   rejects([&]{foreign_structural.bind_structure(structural,layout.nodes);},

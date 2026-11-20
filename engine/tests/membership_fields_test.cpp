@@ -443,12 +443,12 @@ std::size_t membership_key_cost(int mode) {
   const auto target_lookup_calls=allocation_observation::calls.load();
   allocation_observation::enabled=false;
   check(targets_attributed && !target_lookup_calls && target_cost.rows==expected.size() &&
-            target_cost.unique_targets==5 && target_cost.requests==3*target_cost.rows &&
-            target_cost.unique_requests==15 && target_cost.bytes>target_cost.unique_bytes,
-        "actual catalogue pins independently duplicate five exact recipe targets without lookup allocation");
+            target_cost.unique_targets==5 && target_cost.requests==15 &&
+            target_cost.unique_requests==15 && target_cost.bytes==target_cost.unique_bytes,
+        "actual catalogue owns five unique full pins shared by checked row indices without lookup allocation");
   {
     namespace T=membership_target_observation;
-    const auto &target=internal.front().target;
+    const auto &target=Access::target(*fields,internal.front());
     PreparationWork full(UINT64_MAX);
     check(T::lookup(fields->study(),Access::recipe(*fields),*projection,target,full),
           "checked recipe lookup preserves the complete target pin");
@@ -510,20 +510,22 @@ std::size_t membership_key_cost(int mode) {
   bool exact = count == expected.size(), attributed = outer;
   for (std::size_t i=0; i<count && i<expected.size(); ++i) {
     const auto &row = internal[i];
-    const auto &pin = row.target.object;
+    const auto &target=Access::target(*fields,row);
+    const auto &pin = target.object;
     exact &= row.kind == GroupKind::Membership &&
-             row.target == expected[i].target && row.occurrence == expected[i].occurrence.source && row.count == expected[i].count;
+             target == expected[i].target && row.occurrence == expected[i].occurrence.source && row.count == expected[i].count;
     const auto *pin_scope = tracked(pin.scope.str().data());
     const auto *pin_address = tracked(pin.address.data());
     attributed &= pin_scope && pin_address &&
-        row.target.object.scope.str().get_allocator().domain == domain &&
-        row.target.object.address.get_allocator().domain == domain && row.target.revision.str().get_allocator().domain == domain;
-    if (pin_scope && pin_address) pin_object_bytes += pin_scope->bytes + pin_address->bytes;
+        target.object.scope.str().get_allocator().domain == domain &&
+        target.object.address.get_allocator().domain == domain && target.revision.str().get_allocator().domain == domain;
   }
+  for (const auto &pin:Access::targets(*fields))
+    pin_object_bytes+=tracked(pin.object.scope.str().data())->bytes+tracked(pin.object.address.data())->bytes;
   allocation_observation::calls = allocation_observation::bytes = 0;
   allocation_observation::enabled = true;
   for (std::size_t i=0; i<count && i<expected.size(); ++i) {
-    const auto &object = internal[i].target.object;
+    const auto &object = Access::target(*fields,internal[i]).object;
     exact &= object == expected[i].target.object;
   }
   allocation_observation::enabled = false;
@@ -605,7 +607,8 @@ std::size_t membership_key_cost(int mode) {
             << ",requested=" << target_cost.bytes << ",unique_requests=" << target_cost.unique_requests
             << ",unique_requested=" << target_cost.unique_bytes
             << ",pin_capacity_bytes=" << target_cost.pin_capacity_bytes << ",lookup_work=" << target_cost.lookup_work
-            << ",lookup_allocations=" << target_lookup_calls << ",source_dead=1,after_destroy_requested=0,runtime_saving=0 PASS\n";
+            << ",table_capacity=" << target_cost.table_capacity << ",index_capacity_bytes=" << target_cost.index_capacity_bytes
+            << ",lookup_allocations=" << target_lookup_calls << ",source_dead=1,after_destroy_requested=0,target_table_owned=1 PASS\n";
   std::cout << "membership_export_cost,mode=" << mode << ",rows=" << count << ",requests=" << export_calls
             << ",requested=" << export_bytes << ",retained=" << export_live
             << ",output_capacity_bytes=" << exported.capacity()*sizeof(MembershipContribution)
@@ -652,6 +655,8 @@ void membership_allocation_failures(int mode, std::size_t requests) {
           "every actual collector C++ allocation refusal releases scratch and output");
   }
 }
+#include "membership_table_controls.inc"
+#include "membership_table_tests.inc"
 }  // namespace
 
 int main() {
@@ -661,6 +666,8 @@ int main() {
     graph_failures();
     retained_alternatives();
     bounded_traversal();
+    membership_table_cost_controls();
+    membership_table_values();
     for (int mode=0; mode<4; ++mode)
       membership_allocation_failures(mode,membership_key_cost(mode));
   } catch (const std::exception &e) {

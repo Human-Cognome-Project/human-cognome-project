@@ -314,25 +314,26 @@ struct ExchangeOwnerAccess {
   }
   static const auto &memberships(const detail::ExchangeOwner &o) { return o.memberships_; }
   static const auto &catalogue_rows(const MembershipFields &c) { return c.contributions_; }
+  static const auto &catalogue_targets(const MembershipFields &c) { return c.targets_; }
   template<class Visit> static void catalogue_uuids(const MembershipFields &c, Visit visit) {
     visit(c.study_); visit(c.recipe_.selection); visit(c.recipe_.revision);
-    for (const auto &row : c.contributions_) {
-      visit(row.target.object.scope); visit(row.target.revision);
+    for (const auto &target : c.targets_) {
+      visit(target.object.scope); visit(target.revision);
     }
   }
   template<class Visit> static void catalogue_addresses(const MembershipFields &c, Visit visit) {
-    for (const auto &row : c.contributions_) {
-      visit(row.target.object.address);
+    for (const auto &target : c.targets_) {
+      visit(target.object.address);
     }
   }
   static bool catalogue_equivalent(const MembershipFields &a, const MembershipFields &b) {
     if (a.study() != b.study() || a.recipe_.selection != b.recipe_.selection ||
         a.recipe_.revision != b.recipe_.revision || a.alternatives_ != b.alternatives_ ||
-        a.contributions_.size() != b.contributions_.size()) return false;
+        a.contributions_.size() != b.contributions_.size() || a.targets_!=b.targets_) return false;
     for (std::size_t i=0; i<a.contributions_.size(); ++i) {
       const auto &x=a.contributions_[i], &y=b.contributions_[i];
       if (!(x.occurrence == y.occurrence) || x.kind != y.kind ||
-          !(x.target == y.target) || x.count != y.count) return false;
+          x.target_index!=y.target_index || !(a.target(x)==b.target(y)) || x.count != y.count) return false;
     }
     return true;
   }

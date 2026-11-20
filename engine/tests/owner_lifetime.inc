@@ -1072,7 +1072,9 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
         require(uuid.str().get_allocator().domain==domain,"catalogue UUID detached");
         uuid_bytes += warm::recipe_text_backing(uuid.str());
       });
-      require(full.live_bytes == rows.capacity()*sizeof(rows[0])+path_bytes+address_bytes+uuid_bytes,
+      const auto &targets=Access::catalogue_targets(catalogue);
+      require(targets.get_allocator().domain==domain &&
+                  full.live_bytes == rows.capacity()*sizeof(rows[0])+targets.capacity()*sizeof(targets[0])+path_bytes+address_bytes+uuid_bytes,
               "catalogue omitted address backing or charged temporary payload");
       snapshot.emplace(catalogue);
       Access::catalogue_uuids(*snapshot,[&](const auto &uuid) {
@@ -1083,7 +1085,8 @@ void catalogue_reservation_controls(const assembly::LetterProjection &projection
       });
       for (const auto &row : Access::catalogue_rows(*snapshot))
         require(!row.occurrence.path.get_allocator().domain,"catalogue snapshot retained path domain");
-      require(!Access::catalogue_rows(*snapshot).get_allocator().domain &&
+      require(!Access::catalogue_targets(*snapshot).get_allocator().domain &&
+                  !Access::catalogue_rows(*snapshot).get_allocator().domain &&
                   domain->result().live_bytes == full.live_bytes,
               "catalogue value snapshot retained or charged its source domain");
     }
@@ -1203,11 +1206,10 @@ void catalogue_graph_address_controls() {
   // Four visited graph vertices have state/reached keys. Their ancestor sets
   // contain 3+1+1+0 unique targets despite the diamond and direct top edge.
   const auto temporary=(projection.recipe().tools.size()+2*4+5)*address_size;
-  // Each row owns one target address and three UUIDs (occurrence study,
-  // target scope and revision); field kind is inline beside that pin.
-  const auto retained=reference.contribution_count()*address_size;
+  // The table owns each complete target once; rows retain numeric indices.
+  const auto retained=assembly::testing::MembershipFieldsAccess::targets(reference).size()*address_size;
   const auto temporary_uuid=(projection.recipe().tools.size()+2*4+5)*37;
-  const auto retained_uuid=(3+reference.contribution_count()*2)*37;
+  const auto retained_uuid=(3+assembly::testing::MembershipFieldsAccess::targets(reference).size()*2)*37;
   require(reference.contribution_count()==projection.occurrences().size()*3,
           "diamond catalogue failed per-occurrence deduplication");
   auto domain=std::make_shared<ReservationDomain>(ReservationBudget{UINT64_MAX,UINT64_MAX});
@@ -1828,6 +1830,12 @@ void owner_lifetime(Fixture &f, const assembly::LetterProjection &projection,
     auto membership_bytes = membership_rows.capacity()*sizeof(membership_rows[0]);
     require(!membership_bytes || containing_request(membership_rows.data()) == membership_bytes,
             "catalogue table differs from observed allocation request");
+    const auto &membership_targets=Access::catalogue_targets(*Access::memberships(*owner));
+    const auto target_bytes=membership_targets.capacity()*sizeof(membership_targets[0]);
+    require(membership_targets.get_allocator().domain==Access::reservation_domain(*owner) &&
+                (!target_bytes || containing_request(membership_targets.data())==target_bytes),
+            "catalogue target table differs from observed allocation request");
+    membership_bytes+=target_bytes;
     for (const auto &row : membership_rows) {
       const auto &path=row.occurrence.path;
       const auto bytes=path.capacity()*sizeof(std::uint32_t);

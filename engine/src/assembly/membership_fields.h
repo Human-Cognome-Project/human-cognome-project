@@ -16,6 +16,12 @@ struct MembershipContribution {
 
 class MembershipFields {
  public:
+  // Copies own independent tables. Copy assignment stages in the destination
+  // domain; moves transfer both tables and their domain together.
+  MembershipFields(const MembershipFields &) = default;
+  MembershipFields(MembershipFields &&) noexcept = default;
+  MembershipFields &operator=(const MembershipFields &);
+  MembershipFields &operator=(MembershipFields &&) noexcept;
   const warm::Uuid &study() const { return study_; }
   std::size_t contribution_count() const { return contributions_.size(); }
   // Explicit detached value, including its complete owning study identity.
@@ -34,7 +40,7 @@ class MembershipFields {
   struct Row {
     warm::OccurrenceId occurrence;
     GroupKind kind{GroupKind::Membership};
-    warm::ToolRef target;
+    std::uint32_t target_index{};
     std::uint64_t count{};
   };
   MembershipFields(const warm::Uuid &study, const warm::BundleRef &recipe,
@@ -45,7 +51,11 @@ class MembershipFields {
           auto revision = warm::Uuid(recipe.revision,domain);
           return warm::BundleRef{std::move(selection),std::move(revision)};
         }()),
-        contributions_(detail::SharedReservationAllocator<Row>(domain)) {}
+        contributions_(detail::SharedReservationAllocator<Row>(domain)),
+        targets_(detail::SharedReservationAllocator<warm::ToolRef>(domain)) {}
+  MembershipFields(const MembershipFields &,const std::shared_ptr<detail::ReservationDomain> &);
+  const warm::ToolRef &target(const Row &,detail::PreparationWork * = nullptr) const;
+  std::uint32_t retain_target(const warm::ToolRef &,detail::PreparationWork &);
   friend MembershipFields membership_fields(const LetterProjection &);
   friend class detail::ExchangeOwner;
   friend class detail::ExchangeBindings;
@@ -60,6 +70,7 @@ class MembershipFields {
   warm::BundleRef recipe_;
   bool alternatives_{};
   detail::SharedReservedVector<Row> contributions_;
+  detail::SharedReservedVector<warm::ToolRef> targets_;
 };
 
 // Follow only actual pinned upward memberships of each owning letter. Dedup

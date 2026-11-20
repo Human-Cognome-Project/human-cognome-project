@@ -94,9 +94,11 @@ OwnerStorage ExchangeOwner::storage() const {
   memberships.uuid(memberships_->recipe_.selection);
   memberships.uuid(memberships_->recipe_.revision);
   memberships.buffer(memberships_->contributions_);
+  memberships.buffer(memberships_->targets_);
+  for (const auto &pin:memberships_->targets_) memberships.ref(pin);
   for (const auto &row : memberships_->contributions_) {
     memberships.buffer(row.occurrence.path);
-    memberships.ref(row.target);
+    (void)memberships_->target(row);
   }
   out.memberships = memberships.result;
   // Binding references alias the retained declarations/catalogue. Their pointer

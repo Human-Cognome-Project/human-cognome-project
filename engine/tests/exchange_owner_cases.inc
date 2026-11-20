@@ -254,6 +254,22 @@ void exchange_owner(engine::Runtime &r, HostPath path, bool recipe_only = false,
       Coordinator::catalogue(plan,healthy);
       no_new([&]{captured=Access::prepare(*owner,key,target,incoming,additions,UINT64_MAX);});
       require(captured.status==assembly::detail::CaptureStatus::Ok,"healthy owner retry failed after foreign header refusals");
+      assembly::testing::MembershipFieldsAccess::study(*foreign,healthy->study());
+      assembly::testing::MembershipFieldsAccess::index(*foreign,UINT32_MAX);
+      Coordinator::catalogue(plan,foreign);
+      refused=false;
+      try {Coordinator::prepare_commands(plan,incoming,additions,Access::mappings(*owner),Access::fields(*owner));}
+      catch (const warm::Error &error) {refused=std::string_view(error.what())=="membership: target index out of range";}
+      require(refused && Coordinator::consumed(plan) && !Coordinator::sealed(plan) && before_foreign==TickSnapshot(f),
+              "invalid catalogue target index escaped command preparation");
+      Coordinator::stage_binding(plan,Access::declaration(*owner,key,target),foreign,target);
+      refused=false;
+      try {Coordinator::capture(plan,Access::projection(*owner),Access::mappings(*owner),Access::fields(*owner));}
+      catch (const warm::Error &error) {refused=std::string_view(error.what())=="membership: target index out of range";}
+      require(refused && before_foreign==TickSnapshot(f),"invalid catalogue target index escaped binding capture");
+      Coordinator::catalogue(plan,healthy);
+      no_new([&]{captured=Access::prepare(*owner,key,target,incoming,additions,UINT64_MAX);});
+      require(captured.status==assembly::detail::CaptureStatus::Ok,"healthy owner retry failed after invalid index refusals");
     }
     const auto capture_snapshot = TickSnapshot(f);
     // Normalize the spare pool before each boundary witness. Work depends on

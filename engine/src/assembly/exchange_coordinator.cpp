@@ -211,10 +211,12 @@ PreparationResult ExchangeCoordinator::prepare(const std::vector<ExchangeIncomin
     for (const auto &field : current_fields) {
       meter.charge(1);
       if (field.field.kind == GroupKind::Membership)
-      for (const auto &membership : b.memberships_->contributions_)
+      for (const auto &membership : b.memberships_->contributions_) {
+        const auto &target=b.memberships_->target(membership,&meter);
         if (meter.equal(membership.occurrence,source.occurrence.source) &&
-            membership.kind == field.field.kind && meter.equal(membership.target.object,field.field.object))
-          add(membership.kind, membership.target.object, membership.count, 0);
+            membership.kind == field.field.kind && meter.equal(target.object,field.field.object))
+          add(membership.kind, target.object, membership.count, 0);
+      }
     }
   }
   // Only touched outgoing fields may disappear. Retained source participation,
