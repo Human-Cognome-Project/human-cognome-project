@@ -1,25 +1,25 @@
 # Current implementation and work
 
-**Projected definition pins — 2026-11-19 (inspection awaiting review):**
-[Actual recipe ownership, row values and bounded proposal](../../engine/docs/PROJECTION-DEFINITION-PINS.md)
-at `3de88e61` follows accepted #388 `fa83360e`. Committed/spare projections
-already share their exact immutable recipe, yet separately own all definition
-pins. Four selections attribute 1,068 pin bytes per view; the record separates
-inline capacity, public construction/copy and detached row output. Production
-is unchanged and achieved runtime saving is zero. Quick CI, both projection
-CTests with Clang/GCC, five Clang/three GCC hierarchy cases and both standalone
-suites pass: 4,965 projection checks, 186 unchanged cost records, forty owner
-views and 1,808 row-copy allocation refusals. Full identity/provenance, domain/
-source death, work retry, native publication and ticks remain checked. Review
-recipe-local definition indices and an explicit detached public output contract
-before implementation; see the owning continuation plan. GitHub CI is authoritative.
+**Recipe-backed projected definitions — 2026-11-20 (implementation awaiting review):**
+[Checked indices, owning public rows and actual net costs](../../engine/docs/PROJECTION-DEFINITION-INDICES.md)
+at `223e874a` implements [#389 review 7023633130](https://github.com/Human-Cognome-Project/human-cognome-project/pull/389#issuecomment-7023633130)
+from fully integrated main `646df179`. Private definition/source indices reuse
+the existing exact immutable recipe; public count/index exports still own every
+key, revision and byte/complete-character fact. All callers, including viewport,
+are migrated. Net retained/peak savings are 651 / 2,604 / 1,302 bytes per view,
+or 1,302 / 5,208 / 2,604 across both owner views. Public output costs are unchanged;
+factory temporary overhead and increased bounded membership work are explicit.
+Quick CI, sixteen Clang/thirteen GCC CTests, thirteen Clang/eight GCC hierarchy
+cases and both standalone suites pass: 5,132 projection checks, twenty-seven
+whole owners/fifty-four views and 1,808 export allocation refusals. Malformed
+indices, full context/provenance, work/quota/lifetime retry, frozen no-new native
+publication and following ticks pass. New implementation review and authoritative
+GitHub CI remain; all merges stay with the maintainer.
 
-Main `f228581d` integrates hosted-qualified #387. Catalogue-owned unique targets
-are provisionally accepted in [#388 review 7022583392](https://github.com/Human-Cognome-Project/human-cognome-project/pull/388#issuecomment-7022583392),
-including the [net costs and tradeoffs](../../engine/docs/MEMBERSHIP-TARGET-TABLE.md).
-Its smoke jobs passed; native build, database and projection-values passed while
-remaining native jobs run. This inspection is stacked on #388. All merges remain
-maintainer work; reconcile hosted findings before final acceptance/integration.
+Main `646df179` integrates hosted-qualified #388/#389. The [original inspection](../../engine/docs/PROJECTION-DEFINITION-PINS.md)
+at `3de88e61` remains the source-pinned before record. Its accepted recipe/index
+and explicit public-output direction is implemented above; #324 and broader
+resource/revision policy remain separate.
 
 **Membership target-pin inspection — 2026-11-19 (provisionally accepted in #387):**
 [Actual repeated pins, lifetime and bounded proposal](../../engine/docs/MEMBERSHIP-TARGET-PINS.md)

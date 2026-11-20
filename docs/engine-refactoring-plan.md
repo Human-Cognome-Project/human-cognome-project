@@ -1,11 +1,10 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-19). Main `f228581d` integrates hosted-qualified
-#387. #388 at `fa83360e` is provisionally accepted in review 7022583392, including
-its target-table tradeoffs. Smoke, native build/database and projection-values
-passed; remaining native jobs run. The projected-definition inspection below is
-stacked on #388 and awaits review. Earlier entries preserve their source-specific
-handoffs; all merges remain with the maintainer.
+Current disposition (2026-11-20). Main `646df179` integrates hosted-qualified
+#388/#389. Review 7023633130 approves the recipe-backed projection/index and
+explicit owning output direction. The implementation below starts from current
+main, passes scoped local CI and awaits new review/authoritative GitHub CI.
+Earlier entries preserve source-specific handoffs; all merges remain maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -217,14 +216,25 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-19 contributor (projected definition-pin inspection awaiting review):
+2026-11-20 contributor (projected definition-index runtime awaiting review):
+[Checked recipe indices, explicit owning output and net costs](../engine/docs/PROJECTION-DEFINITION-INDICES.md)
+at `223e874a` implements #389 review 7023633130 from main `646df179`. Contextual
+reads preserve source/node/full-pin meaning while owning exports detach complete
+provenance; private rows shrink 640→512 bytes. Both real views save 1,302 / 5,208 /
+2,604 retained/peak bytes after index overhead. Quick CI, sixteen Clang/thirteen
+GCC CTests, thirteen/eight hierarchy cases and both standalone suites pass,
+including malformed in-range indices, source/domain/work/quota retry and frozen
+native publication/ticks. Export costs stay separate; increased membership guard
+work and temporary factory overhead are explicit. New runtime review/CI remain.
+
+2026-11-19 contributor (projected definition-pin inspection integrated in #389):
 [Existing recipe lifetime, actual pins and public row values](../engine/docs/PROJECTION-DEFINITION-PINS.md)
 at `3de88e61` follows accepted #388 `fa83360e`. Real committed/spare rows repeat
 definition buffers despite an already shared exact recipe; production saving is
-zero. Focused local CI passes with 186 unchanged cost records, forty owner-view
-observations and 1,808 detached row-copy allocation refusals. Review checked
-recipe-local indices and explicit owning public output before implementation;
-measure replacement overhead and preserve provenance/native publication.
+zero at that source. Focused local CI passes with 186 unchanged cost records,
+forty owner-view observations and 1,808 detached row-copy allocation refusals.
+#389 accepted the checked recipe-index/public-output direction; the runtime above
+measures actual replacement overhead and preserves provenance/native publication.
 
 2026-11-19 contributor (unique membership target table accepted in #388):
 [Owned table, checked indices and actual costs](../engine/docs/MEMBERSHIP-TARGET-TABLE.md)

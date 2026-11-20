@@ -56,6 +56,10 @@ The [projected definition-pin inspection](docs/PROJECTION-DEFINITION-PINS.md)
 measures repeated full definitions against each projection's already owned
 immutable recipe. It records detached public row costs/lifetime and proposes a
 bounded representation/output review; production and runtime saving are unchanged.
+Its [approved recipe-index implementation](docs/PROJECTION-DEFINITION-INDICES.md)
+uses the projection's existing immutable payload and explicit count/index owning
+exports. Contextual internal readers, complete provenance, actual replacement
+costs and the CPU qualification scope are recorded there.
 
 ## Python boundary
 

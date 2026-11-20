@@ -1,5 +1,14 @@
 # Native letter/byte projection — Stage B
 
+The [recipe-index implementation](PROJECTION-DEFINITION-INDICES.md), source
+`223e874a`, implements #389's accepted ownership/output contract. Private rows
+retain checked definition/source indices in their projection's existing exact
+immutable recipe. Public `occurrence_count()` / `occurrence(index)` export complete
+owning `ProjectedOccurrence` values; the old `occurrences()` vector-reference API
+is removed. Internal/frozen readers use checked contextual reads, and the viewport
+producer uses explicit owning exports. Byte/complete-character provenance, ordinary
+and selected copy independence, private-spare sharing and native authority remain.
+
 The supplied-state path below is retained as the **legacy v1 fixture**. The
 [#170 structural segment](../../kernels/database/warm/STRUCTURAL-RECIPES.md) adds
 `normalize_structural_letters` and `bind_structure` for v2: all alternatives have
