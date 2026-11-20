@@ -35,6 +35,7 @@
 #include "membership_fields_access.h"
 #include "membership_target_observation.h"
 #include "projection_definition_observation.h"
+#include "projection_study_observation.h"
 #include "taichi/program/kernel.h"
 #include "taichi/codegen/llvm/compiled_kernel_data.h"
 #include "llvm/Analysis/ValueTracking.h"

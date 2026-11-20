@@ -1,19 +1,22 @@
 # Core continuation after local CUDA corrections
 
-**Projected definition indices — 2026-11-20 (runtime awaiting review):**
-[Implementation, net costs and qualification](../engine/docs/PROJECTION-DEFINITION-INDICES.md)
-at `223e874a` implements [#389's approved direction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/389#issuecomment-7023633130)
-from main `646df179`. Definition/source indices remain coupled to the existing
-owned immutable recipe; explicit owning exports and contextual internal readers
-preserve complete provenance and native authority. Both-view retained/peak savings
-and separate export/guard-work tradeoffs are measured. Local CI passes.
+**Projected row study identity — 2026-11-20 (inspection awaiting review):**
+[Actual backing, full-key controls and bounded proposal](../engine/docs/PROJECTION-STUDY-IDENTITY.md)
+at `6a208a14` follows [#390's approved continuation](https://github.com/Human-Cognome-Project/human-cognome-project/pull/390#issuecomment-7044020673)
+from `db6a4bda`. Local qualification passes with production unchanged. Next review
+numeric occurrence entry/path under the projection's existing owned study header,
+keeping the independent source-index check and all definition/node/provenance
+facts. Settle reads tied to the owning projection and checked row index before
+removing a study stamp; a foreign raw row must not acquire a different header.
+Preserve full owning public keys, opaque text, native claims and frozen no-new
+publication. Measure actual replacement overhead separately from exports.
 
-Next review this runtime and reconcile its authoritative GitHub checks before
-maintainer integration. #388/#389 are fully qualified and integrated on current
-main; the [inspection](../engine/docs/PROJECTION-DEFINITION-PINS.md) preserves its
-before evidence. Continue #343's next bounded candidate after this representation
-review; #324, mixed-revision adoption and full resource/admission policy remain
-separate. All merge events remain maintainer work.
+Main `646df179` remains current. #390 is provisionally accepted, with smoke,
+offline viewport, projection-values and native build/database passed; remaining
+native compiler/regression jobs run. This inspection stays stacked on the
+reviewed head. Reconcile authoritative CI before maintainer integration. #324,
+mixed-revision adoption and complete resource/admission policy remain separate;
+all merge events remain maintainer work.
 
 **Repeated membership target pins — 2026-11-19 (inspection accepted in #387):**
 [Actual backing, source lifetime and proposal](../engine/docs/MEMBERSHIP-TARGET-PINS.md)

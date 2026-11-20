@@ -60,6 +60,9 @@ Its [approved recipe-index implementation](docs/PROJECTION-DEFINITION-INDICES.md
 uses the projection's existing immutable payload and explicit count/index owning
 exports. Contextual internal readers, complete provenance, actual replacement
 costs and the CPU qualification scope are recorded there.
+The [row-study identity inspection](docs/PROJECTION-STUDY-IDENTITY.md) measures
+repeated UUID backing against the existing projection header and preserves full
+key/provenance and public export costs. Its header/reader proposal awaits review.
 
 ## Python boundary
 
