@@ -68,7 +68,9 @@ records actual retained/peak/work changes while public exports remain complete.
 The [byte-owner key inspection](docs/PROJECTION-BYTE-OWNER-KEYS.md) now measures
 remaining complete owner keys against that projection and its aggregate rows,
 with actual consumer refusals and a checked association proposal. Production
-remains unchanged by the inspection.
+remains unchanged by the inspection. Its [approved owner-index implementation](docs/PROJECTION-BYTE-OWNER-INDICES.md)
+records actual narrower rows, complete detached output, consumer guards and
+retained/peak/work changes while preserving native execution authority.
 
 ## Python boundary
 

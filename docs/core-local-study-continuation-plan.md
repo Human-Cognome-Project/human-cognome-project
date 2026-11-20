@@ -1,29 +1,25 @@
 # Core continuation after local CUDA corrections
 
-**Projected byte-owner keys — 2026-11-20 (inspection awaiting review):**
-[Actual complete-key costs and checked association](../engine/docs/PROJECTION-BYTE-OWNER-KEYS.md)
-at `502f555d` follows [#392's approved inspection continuation](https://github.com/Human-Cognome-Project/human-cognome-project/pull/392#issuecomment-7047017029)
-from accepted `51912690`. Byte-owner study strings retain 333 bytes in the public
-fourteen-row fixture and 74 / 296 / 111 per real owner view. Inline full-key
-capacity and empty owner paths are separate attribution. Actual consumers reject
-foreign studies, another valid language owner and nonempty owner paths; a test-only
-checked index replay preserves source/character/byte/selection association and
-exact no-allocation retry. Production and achieved runtime saving remain unchanged.
+**Checked projected byte-owner indices — 2026-11-20 (implementation awaiting review):**
+[Owned context, complete output and replacement costs](../engine/docs/PROJECTION-BYTE-OWNER-INDICES.md)
+at `ec5ca687` implements [#393's approved runtime direction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/393#issuecomment-7047998750)
+from `521afbda`. The retained aggregate-owner index is independent of byte entry.
+Source/role/full-character/ordinal checks stay contextual to the owning projection;
+immutable construction invariants avoid replaying recipe scans on frozen paths.
+Public keys/pins remain complete and detach. Both-view retained/peak reductions
+are 676 / 2,704 / 1,278 bytes, with stronger guard work and unchanged export costs.
+Local qualification and raw comparisons are source-pinned in the component record.
 
-Next: review this inspection before any runtime change. The bounded proposal is
-an independent aggregate-owner row index within the already owned projection,
-with checked byte/owner indices and complete external study/path boundaries.
-Preserve inactive logical owners, full public provenance, character/revision/
-ordinal facts, parent keys, source checks and native authority. Measure actual
-replacement row/reader/work/export and whole-owner costs after explicit approval;
-do not infer savings from heap or inline attribution. #324 and broader policy
-remain separate.
-
-Main `9d24287a` integrates qualified #390/#391; [#392's header runtime](../engine/docs/PROJECTION-HEADER-IDENTITY.md)
-is provisionally accepted with its final native regression gate pending. This
-inspection is stacked on that explicitly reviewed head and preserves the accepted
-before evidence. New authoritative CI remains required; all integration stays
-maintainer-only.
+Next: review this bounded runtime and reconcile its authoritative GitHub CI.
+After scoped acceptance, choose one remaining #343 inspection from actual owning
+lifetime/native-overlap evidence before proposing another change. Character and
+complete-character pins, parent keys, broader resource/revision/admission policy,
+#324 and integrated GPU qualification stay separate.
+Main `8627c262` integrates qualified #392; #393 is provisionally accepted on its
+reviewed head while remaining compiler/regression checks finish. This contribution
+is explicitly stacked on that head. All integration remains maintainer-only. The
+[accepted inspection](../engine/docs/PROJECTION-BYTE-OWNER-KEYS.md) keeps its original
+`502f555d` measurements and zero runtime saving at that source.
 
 **Repeated membership target pins — 2026-11-19 (inspection accepted in #387):**
 [Actual backing, source lifetime and proposal](../engine/docs/MEMBERSHIP-TARGET-PINS.md)
