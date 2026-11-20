@@ -21,8 +21,8 @@ template<class Access> assembly::ParentContribution value(const assembly::Letter
   auto study=warm::Uuid(p.study(),{});
   auto source=warm::OccurrenceId(row.source);
   assembly::OccurrenceKey occurrence{std::move(study),std::move(source)};
-  auto object=warm::ObjectKey(row.field.object);
-  return {std::move(occurrence),{row.field.kind,std::move(object)},row.ordinal,row.count};
+  auto object=warm::ObjectKey(ProjectionAccess::parent_target(p,spare,index).object);
+  return {std::move(occurrence),{row.kind,std::move(object)},row.ordinal,row.count};
 }
 // Stronger independent witness, not a replacement production reader or a
 // proposal to rescan occurrence/recipe tables on every frozen parent lookup.
@@ -32,7 +32,9 @@ template<class Access> bool provenance(const assembly::LetterProjection &p,bool 
   work.charge(1);
   if(index>=parents.size())return false;
   const auto &parent=parents[index];
-  if(parent.field.kind!=assembly::GroupKind::ParentValue)return false;
+  if(parent.kind!=assembly::GroupKind::ParentValue)return false;
+  const auto *actual=ProjectionAccess::resolve_parent(p,spare,index,&work);
+  if(!actual)return false;
   for(std::size_t i=0;i<p.occurrence_count();++i) {
     const auto &row=ProjectionAccess::row(p,i);
     if(!work.equal(row.source,parent.source))continue;
@@ -41,7 +43,7 @@ template<class Access> bool provenance(const assembly::LetterProjection &p,bool 
     for(const auto &edge:tool->parents) {
       work.charge(1);
       if(edge.ordinal==parent.ordinal)
-        return edge.contribution==parent.count && work.equal(edge.target.object,parent.field.object);
+        return edge.contribution==parent.count && work.equal(edge.target,actual->target);
     }
     return false;
   }
@@ -76,9 +78,7 @@ template<class Access,class Visit> Cost inspect(const assembly::LetterProjection
     cost.outer=rows.capacity()*sizeof(rows[0]);
     for(std::size_t i=0;i<rows.size();++i) {
       const auto &row=rows[i];
-      need(row.source.path.get_allocator().domain.get()==domain &&
-           row.field.object.scope.str().get_allocator().domain.get()==domain &&
-           row.field.object.address.get_allocator().domain.get()==domain);
+      need(row.source.path.get_allocator().domain.get()==domain);
       need(&ProjectionAccess::parent(p,spare,i)==&row &&
            ProjectionAccess::parent_matches(p,spare,i,p.study(),row.source,numeric) && provenance<Access>(p,spare,i,proof));
       for(std::size_t j=0;j<i;++j)
@@ -98,9 +98,7 @@ template<class Access> void independent(const assembly::LetterProjection &a,cons
     need(left.empty() || left.data()!=right.data());
     for(const auto &l:left) {
       for(const bool other:{false,true})for(const auto &r:Access::parent_rows(b,other))
-        need((l.source.path.empty() || l.source.path.data()!=r.source.path.data()) &&
-             l.field.object.scope.str().data()!=r.field.object.scope.str().data() &&
-             (l.field.object.address.empty() || l.field.object.address.data()!=r.field.object.address.data()));
+        need(l.source.path.empty() || l.source.path.data()!=r.source.path.data());
     }
   }
 }

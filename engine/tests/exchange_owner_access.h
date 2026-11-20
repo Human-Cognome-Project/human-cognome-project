@@ -64,10 +64,6 @@ struct ExchangeOwnerAccess {
       if (o.byte) reference(o.byte->character);
       if (o.complete_character) reference(*o.complete_character);
     }
-    for (const auto *rows : {&p.parents_,&p.spare_parents_})
-      for (const auto &row : *rows) {
-        visit(row.field.object.scope.str());
-      }
     if (recipe) for (const auto &tool : p.recipe().tools) {
       visit(tool.recipe);
       if (tool.notation) visit(*tool.notation);
@@ -99,8 +95,6 @@ struct ExchangeOwnerAccess {
       if (o.byte) visit(o.byte->character.object.address);
       if (o.complete_character) visit(o.complete_character->object.address);
     }
-    for (const auto *rows : {&p.parents_,&p.spare_parents_})
-      for (const auto &row : *rows) visit(row.field.object.address);
   }
   template<class Visit> static void recipe_addresses(const warm::Bundle &b, Visit visit) {
     for (const auto &t : b.tools) {
@@ -243,8 +237,8 @@ struct ExchangeOwnerAccess {
     const auto same_parents=[](const auto &x, const auto &y) {
       if (x.size() != y.size()) return false;
       for (std::size_t i=0; i<x.size(); ++i)
-        if (!(x[i].source == y[i].source) || x[i].field.kind != y[i].field.kind ||
-            !(x[i].field.object == y[i].field.object) ||
+        if (!(x[i].source == y[i].source) || x[i].kind != y[i].kind ||
+            x[i].occurrence_index!=y[i].occurrence_index || x[i].parent_index!=y[i].parent_index ||
             x[i].ordinal != y[i].ordinal || x[i].count != y[i].count) return false;
       return true;
     };

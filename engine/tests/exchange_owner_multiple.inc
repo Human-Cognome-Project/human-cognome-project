@@ -112,6 +112,47 @@ void exchange_owner_multiple(engine::Runtime &r, HostPath path, bool recipe_only
         no_new([&]{Access::prepare(*owner,key,target,incoming,{});});
       }
       std::cout << "projection_byte_owner_native_faults,views=2,wrong_in_range_owner=1,allocation_free_retry=1,native_unchanged=1 PASS\n";
+      std::size_t parent_faults=0;
+      for(const bool spare_view:{false,true})for(const bool spare_pool:{false,true})for(int fault=0;fault<3;++fault) {
+        auto &view=Access::mutable_projection(*owner,spare_view);
+        auto &parents=assembly::testing::ProjectionIndicesAccess::parents(view,spare_pool);
+        require(!parents.empty(),"parent selector control requires both reserved roles");
+        auto &parent=parents.front();
+        const auto occurrence_index=parent.occurrence_index,parent_index=parent.parent_index;
+        const auto &expected=assembly::detail::ProjectionAccess::parent_target(view,spare_pool,0);
+        const auto &tool=assembly::detail::ProjectionAccess::tool(view,occurrence_index);
+        if(fault==0) {
+          std::size_t other=0;
+          for(;other<view.occurrence_count();++other) {
+            if(other==occurrence_index)continue;
+            const auto &row=assembly::detail::ProjectionAccess::row(view,other);
+            const auto *candidate=assembly::detail::ProjectionAccess::resolve(view,other);
+            if(!candidate || row.active==spare_pool || parent_index>=candidate->parents.size())continue;
+            const auto &edge=candidate->parents[parent_index];
+            if(edge.ordinal==parent.ordinal && edge.contribution==parent.count && edge.target==expected)break;
+          }
+          require(other<view.occurrence_count(),"native wrong-source control needs identical full target/ordinal/count/role");
+          parent.occurrence_index=std::uint32_t(other);
+        } else if(fault==1) parent.parent_index=UINT32_MAX;
+        else {
+          if(tool.parents.size()<2)continue;
+          parent.parent_index=parent_index?0:1;
+        }
+        const TickSnapshot snapshot(f);const auto live=Access::reservations(*owner).live_bytes;
+        bool refused=false;
+        try{Access::prepare(*owner,key,target,incoming,{});}catch(const warm::Error &error){
+          refused=std::string_view(error.what())==(spare_view?
+              "candidate projection parent index/source mismatch":"committed projection parent index/source mismatch");
+        }
+        parent.occurrence_index=occurrence_index;parent.parent_index=parent_index;
+        require(refused && !Access::pending(*owner) && snapshot==TickSnapshot(f) &&
+                &Access::projection(*owner)==before_view && live==Access::reservations(*owner).live_bytes,
+                "parent selector refusal changed native/committed state or reserved backing");
+        no_new([&]{Access::prepare(*owner,key,target,incoming,{});});++parent_faults;
+      }
+      require(parent_faults>=8,"native selector controls omitted one of the committed/spare pools");
+      std::cout<<"projection_parent_native_faults,views=2,pools=2,controls="<<parent_faults
+               <<",wrong_valid_source=1,allocation_free_retry=1,native_unchanged=1 PASS\n";
     }
     no_new([&] { Access::stage_projection(*owner,key,target); });
     require(&Access::projection(*owner) == before_view &&

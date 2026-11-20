@@ -80,7 +80,8 @@ namespace detail {
 // Public extraction restores a complete independently owning contribution.
 struct ProjectionParentContribution {
   warm::OccurrenceId source;
-  FieldKey field;
+  std::uint32_t occurrence_index{}, parent_index{};
+  GroupKind kind{GroupKind::ParentValue};
   std::uint32_t ordinal{};
   std::uint64_t count{};
 };
@@ -164,12 +165,16 @@ class LetterProjection {
   ProjectionStorage storage(detail::PreparationWork *, bool logical, bool include_recipe = true) const;
   const warm::Tool *resolve_definition(std::size_t, detail::PreparationWork *) const;
   const warm::Tool *resolve_source(std::size_t, detail::PreparationWork *) const;
+  const warm::Parent *resolve_parent(bool, std::size_t, detail::PreparationWork *) const;
+  // Immutable association only: candidate pools may be partially repartitioned
+  // after a work refusal. Steady-state readers separately require pool role.
+  const warm::Parent *resolve_parent_source(bool, std::size_t, detail::PreparationWork *) const;
   warm::Uuid study_;
   std::shared_ptr<const warm::Bundle> recipe_;
   detail::SharedReservedVector<warm::Exposure> exposures_;
   detail::SharedReservedVector<detail::ProjectionOccurrence> occurrences_;
   detail::SharedReservedVector<detail::ProjectionParentContribution> parents_;
-  // Every inactive contribution keeps its nested strings/path alive here.
+  // Inactive rows retain independent source paths and correlated selectors.
   detail::SharedReservedVector<detail::ProjectionParentContribution> spare_parents_;
   bool exposure_reserved_{};
   StudyInput input_;

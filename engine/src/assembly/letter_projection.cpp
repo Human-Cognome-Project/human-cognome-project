@@ -375,11 +375,12 @@ LetterProjection project_letters(const warm::Bundle &b) {
     }
     out.structural_input_.occurrences.push_back({std::move(id_text),std::move(definition_text),o.node});
     if (record.active)
-      for (const auto &p : t.parents) {
+      for (std::size_t j=0;j<t.parents.size();++j) {
+        need(out.occurrences_.size()<=UINT32_MAX && j<=UINT32_MAX,"projection parent selector overflow");
+        const auto &p=t.parents[j];
         auto parent_source = record.source;
-        auto object = p.target.object;
-        out.parents_.push_back({std::move(parent_source),
-                                {GroupKind::ParentValue,std::move(object)},p.ordinal,p.contribution});
+        out.parents_.push_back({std::move(parent_source),std::uint32_t(out.occurrences_.size()),std::uint32_t(j),
+                                GroupKind::ParentValue,p.ordinal,p.contribution});
       }
     // All record/key consumers are finished; no reference into the vector survives.
     out.occurrences_.push_back(std::move(record));
@@ -525,8 +526,7 @@ detail::ProjectionOccurrence projection_row(const detail::ProjectionOccurrence &
 detail::ProjectionParentContribution projection_row(const detail::ProjectionParentContribution &p,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   auto source = projection_id(p.source,domain);
-  auto object = projection_object(p.field.object,domain);
-  return {std::move(source),{p.field.kind,std::move(object)},p.ordinal,p.count};
+  return {std::move(source),p.occurrence_index,p.parent_index,p.kind,p.ordinal,p.count};
 }
 template<class T> auto projection_rows(const detail::SharedReservedVector<T> &rows,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
@@ -720,9 +720,36 @@ warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
 
 ParentContribution LetterProjection::parent(std::size_t index) const {
   const auto &row=detail::ProjectionAccess::parent(*this,false,index);
+  const auto &target=detail::ProjectionAccess::parent_target(*this,false,index);
   auto occurrence=projection_key(study_,row.source,{});
-  auto object=projection_object(row.field.object,{});
-  return {std::move(occurrence),{row.field.kind,std::move(object)},row.ordinal,row.count};
+  auto object=projection_object(target.object,{});
+  return {std::move(occurrence),{row.kind,std::move(object)},row.ordinal,row.count};
+}
+
+const warm::Parent *LetterProjection::resolve_parent_source(bool spare,std::size_t index,
+    detail::PreparationWork *work) const {
+  if(work)work->charge(1);
+  const auto &rows=spare?spare_parents_:parents_;
+  if(index>=rows.size())return nullptr;
+  const auto &parent=rows[index];
+  if(parent.kind!=GroupKind::ParentValue || parent.occurrence_index>=occurrences_.size())return nullptr;
+  const auto &source=occurrences_[parent.occurrence_index];
+  if(!(work?work->equal(parent.source,source.source):parent.source==source.source))return nullptr;
+  const auto *tool=resolve_definition(parent.occurrence_index,work);
+  if(!tool || parent.parent_index>=tool->parents.size())return nullptr;
+  const auto &edge=tool->parents[parent.parent_index];
+  if(work)work->charge(1);
+  if(edge.ordinal!=parent.ordinal || edge.contribution!=parent.count)return nullptr;
+  return &edge;
+}
+
+const warm::Parent *LetterProjection::resolve_parent(bool spare,std::size_t index,
+    detail::PreparationWork *work) const {
+  const auto *edge=resolve_parent_source(spare,index,work);
+  if(!edge)return nullptr;
+  const auto &parent=(spare?spare_parents_:parents_)[index];
+  if(work)work->charge(1);
+  return occurrences_[parent.occurrence_index].active==spare?nullptr:edge;
 }
 
 void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
@@ -749,14 +776,15 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
     if (exposure_reserved_ || o.active) continue;
     const auto *t = resolve_definition(i,&meter);
     need(t,"projection definition index/source mismatch");
-    for (const auto &p : t->parents) {
+    for (std::size_t j=0;j<t->parents.size();++j) {
+      meter.charge(1);
+      need(i<=UINT32_MAX && j<=UINT32_MAX,"projection parent selector overflow");
+      const auto &p=t->parents[j];
       meter.charge(sizeof(detail::ProjectionParentContribution));
-      meter.copy_key(o.source); meter.copy_key(p.target.object);
+      meter.copy_key(o.source);
       auto source = projection_id(o.source,spare_parents_.get_allocator().domain);
-      auto object = projection_object(p.target.object,spare_parents_.get_allocator().domain);
-      spare_parents_.push_back({std::move(source),
-          {GroupKind::ParentValue,std::move(object)},
-          p.ordinal,p.contribution});
+      spare_parents_.push_back({std::move(source),std::uint32_t(i),std::uint32_t(j),
+          GroupKind::ParentValue,p.ordinal,p.contribution});
     }
   }
   exposure_reserved_ = true;
@@ -783,6 +811,16 @@ void LetterProjection::prepare_exposure(LetterProjection &next, const Occurrence
     need(current && candidate && meter.equal(current->ref,candidate->ref) &&
          meter.equal(occurrences_[i].source,next.occurrences_[i].source),
          "exposure buffers differ in recipe-bound occurrence meaning");
+  }
+  // The committed pools are steady. Candidate rows retain immutable meaning
+  // even after a refused attempt leaves both roles temporarily in one pool.
+  for(const bool spare:{false,true}) {
+    const auto &current=spare?spare_parents_:parents_;
+    for(std::size_t i=0;i<current.size();++i)
+      need(resolve_parent(spare,i,&meter),"committed projection parent index/source mismatch");
+    const auto &candidate=spare?next.spare_parents_:next.parents_;
+    for(std::size_t i=0;i<candidate.size();++i)
+      need(next.resolve_parent_source(spare,i,&meter),"candidate projection parent index/source mismatch");
   }
   for (std::size_t i = 0; i < recipe().selections.size(); ++i)
     {
@@ -817,8 +855,13 @@ void LetterProjection::prepare_exposure(LetterProjection &next, const Occurrence
       auto found=active;
       for(;found<next.parents_.size();++found) {
         const auto &v=detail::ProjectionAccess::parent(next,false,found);
-        if(meter.equal(v.source,o.source) && v.ordinal==p.ordinal &&
-            meter.equal(v.field.object,p.target.object))break;
+        if(meter.equal(v.source,o.source) && v.ordinal==p.ordinal) {
+          // Only a row matching this active occurrence is read as active here;
+          // unrelated inactive rows still share this intermediate vector.
+          const auto *edge=next.resolve_parent(false,found,&meter);
+          need(edge,"candidate projection parent index/source mismatch");
+          if(meter.equal(edge->target,p.target))break;
+        }
       }
       need(found != next.parents_.size(), "reserved projection contribution missing");
       meter.elements(3,sizeof(detail::ProjectionParentContribution));
