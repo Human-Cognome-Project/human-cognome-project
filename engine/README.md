@@ -65,6 +65,10 @@ repeated UUID backing against the existing projection header and preserves full
 key/provenance and public export costs. #391 accepted the bounded header/reader
 proposal; its [checked contextual implementation](docs/PROJECTION-HEADER-IDENTITY.md)
 records actual retained/peak/work changes while public exports remain complete.
+The [byte-owner key inspection](docs/PROJECTION-BYTE-OWNER-KEYS.md) now measures
+remaining complete owner keys against that projection and its aggregate rows,
+with actual consumer refusals and a checked association proposal. Production
+remains unchanged by the inspection.
 
 ## Python boundary
 

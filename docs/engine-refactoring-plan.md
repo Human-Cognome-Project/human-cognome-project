@@ -1,12 +1,12 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-20). Main `646df179` integrates hosted-qualified
-#388/#389. #390 `db6a4bda` passed native, smoke and offline viewport and awaits
-maintainer integration. #391 `26dec2a0` is provisionally accepted in review
-7045231362 and passed native and smoke. The checked projection/header
-runtime at `68062bde` follows that explicitly approved head, passes scoped local
-CI and awaits review/new authoritative qualification. Earlier entries preserve
-source-specific handoffs; all merge events remain maintainer work.
+Current disposition (2026-11-20). Main `9d24287a` integrates qualified #390/#391.
+#392 `51912690` is provisionally accepted in review 7047017029; smoke, build,
+database, values and all compiler jobs passed, with final regression qualification
+pending. The byte-owner inspection at `502f555d` follows that explicit reviewed-head
+continuation with unchanged production and scoped local CI. Its proposal awaits
+review and new authoritative CI. Earlier entries preserve source-specific handoffs;
+all integration remains maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -218,7 +218,18 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-20 contributor (projection-owned study runtime awaiting review):
+2026-11-20 contributor (projected byte-owner inspection awaiting review):
+[Actual complete-key ownership and checked association](../engine/docs/PROJECTION-BYTE-OWNER-KEYS.md)
+at `502f555d` follows accepted #392 `51912690`. Fourteen-row output retains nine
+independent owner UUID requests / 333 bytes; real mixed owners retain 296 per view.
+Inline 96-byte owner keys and empty path headers are separate attribution within
+the existing rows. Production is unchanged and runtime saving is zero. Scoped
+local CI passes, including actual language/foreign-context consumer refusals,
+independent byte/owner index replay, full pin/path/role, exact work/no-new retry,
+detached outputs and frozen native publication/ticks. Review before runtime
+migration; preserve independent association and measure actual replacement costs.
+
+2026-11-20 contributor (projection-owned study runtime accepted in #392):
 [Checked contextual indices, complete output and replacement costs](../engine/docs/PROJECTION-HEADER-IDENTITY.md)
 at `68062bde` implements #391 review 7045231362 from `26dec2a0`. Private rows shrink
 512→464 bytes under the existing owned header, with independent numeric source
@@ -226,8 +237,9 @@ validation and complete public/provenance keys. Readers no longer accept detache
 numeric rows. Both owner views save 510 / 2,040 / 1,020 retained/peak bytes after
 actual overhead; exports retain their costs. Scoped local CI passes through
 foreign-context actual consumers, malformed source/index/node/path, full value/
-domain/work refusal/retry and frozen native publication/following ticks. Review,
-new authoritative GitHub CI and parent-first maintainer integration remain.
+domain/work refusal/retry and frozen native publication/following ticks. Review
+7047017029 accepts continuation from final `51912690`; the remaining native
+regression gate and maintainer integration remain separate.
 
 2026-11-20 contributor (projected row-study inspection accepted in #391):
 [Actual strings, complete keys and header ownership](../engine/docs/PROJECTION-STUDY-IDENTITY.md)

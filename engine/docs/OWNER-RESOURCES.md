@@ -1,14 +1,24 @@
 # Private exchange-owner resource inventory
 
+[Projected byte-owner keys](PROJECTION-BYTE-OWNER-KEYS.md) at `502f555d`
+attribute actual independent full-owner backing: 333 UUID bytes in the fourteen-row
+factory/copy and 74 / 296 / 111 per real view. Empty owner paths allocate nothing;
+96-byte inline owner keys already occupy the retained row vector. Production and
+runtime saving are unchanged. The proposal reviews an independently retained
+aggregate-owner index with complete contextual/source/provenance and public-output
+boundaries; replacement overhead and whole-owner savings require separate review.
+
 [Projection-owned study identity](PROJECTION-HEADER-IDENTITY.md) at `68062bde`
-implements #391's reviewed direction. Both views retain one owned study header
-each and numeric occurrence rows with checked definition/source indices. Census
+implements #391's reviewed direction and is provisionally accepted in #392. Both
+views retain one owned study header each and numeric occurrence rows with checked
+definition/source indices. Census
 counts actual 464-byte row capacity and paths, preserves full byte/complete and
 parent keys, and retains full recipe accounting. Net both-view retained/requested
 peak reductions are 510 / 2,040 / 1,020 bytes after actual reader/index overhead;
 public exports remain complete with unchanged independent costs. Full consumer
 context/refusal/lifetime and frozen native publication/tick controls pass locally.
-Review and authoritative GitHub CI remain separate.
+Review 7047017029 accepts final `51912690`; the remaining authoritative native
+regression gate and maintainer integration remain separate.
 
 The [accepted study inspection](PROJECTION-STUDY-IDENTITY.md) at `6a208a14`
 attributes 111 / 444 / 222 repeated UUID bytes per view beside each original
@@ -16,7 +26,7 @@ attributes 111 / 444 / 222 repeated UUID bytes per view beside each original
 to that original source, before the implementation above.
 
 [Recipe-backed projected definitions](PROJECTION-DEFINITION-INDICES.md) at
-`223e874a`, provisionally accepted in #390, remove per-row definition buffers from both
+`223e874a`, integrated in #390, remove per-row definition buffers from both
 views while reusing their existing exact immutable recipe. At that source the
 census counts 512-byte row/index capacity, keys and complete byte/character provenance, with
 recipe pins counted once. Actual net retained/peak reductions are 651 / 2,604 /

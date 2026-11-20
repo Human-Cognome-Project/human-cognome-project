@@ -1,25 +1,25 @@
 # Current implementation and work
 
-**Projection-owned study identity — 2026-11-20 (implementation awaiting review):**
-[Checked row context, detached output and actual costs](../../engine/docs/PROJECTION-HEADER-IDENTITY.md)
-at `68062bde` implements [#391 review 7045231362](https://github.com/Human-Cognome-Project/human-cognome-project/pull/391#issuecomment-7045231362)
-from accepted `26dec2a0`. Private rows use numeric entry/full path beneath their
-existing owned study header; contextual readers select checked indices and accept
-no detached raw row. Full source/definition/provenance and native claims remain.
-Both owner views save 510 / 2,040 / 1,020 retained/peak bytes for one/four/three
-selections, including actual row/index/reader costs. Public exports remain complete
-independent values with unchanged costs. Scoped local quick, native Clang/GCC
-and standalone GCC 11/13 checks pass, including actual foreign-context consumers,
-malformed indices, quotas/work/lifetime and frozen publication/following ticks.
-Review and new authoritative GitHub CI remain; all merges remain maintainer work.
+**Projected byte-owner keys — 2026-11-20 (inspection awaiting review):**
+[Actual key ownership, checked association and bounded proposal](../../engine/docs/PROJECTION-BYTE-OWNER-KEYS.md)
+at `502f555d` follows [#392 review 7047017029](https://github.com/Human-Cognome-Project/human-cognome-project/pull/392#issuecomment-7047017029)
+from accepted `51912690`. Nine byte-owner UUID requests retain 333 bytes in the
+fourteen-row factory; mixed owners retain 296 per view / 592 across both views.
+Their 96-byte inline keys and empty path headers are separate attribution within
+existing row vectors. Production is unchanged and runtime saving is zero.
+Scoped local CI passes through actual ownership/domain census, full-key/index
+replay, foreign/wrong-owner consumer refusals, detached output and frozen native
+publication/ticks. Review the independently retained owner-index proposal and
+actual replacement costs before any runtime migration.
 
-The [original row-study inspection](../../engine/docs/PROJECTION-STUDY-IDENTITY.md)
-at `6a208a14` is provisionally accepted in #391, with its original measured
-attribution and zero runtime saving preserved. Main `646df179` remains current.
-#390 passed native, smoke and offline viewport; #391 passed native and smoke.
-Both remain unmerged. This runtime is stacked on its explicitly reviewed head.
-Reconcile parent-first qualification before maintainer integration. #324, broader
-revision/admission policy and full GPU qualification remain separate.
+Main `9d24287a` integrates qualified #390/#391. The [projection-owned study runtime](../../engine/docs/PROJECTION-HEADER-IDENTITY.md)
+at `68062bde`, reviewed as #392 `51912690`, is provisionally accepted: full study
+context, independent source checks and complete outputs remain, with 510 / 2,040 /
+1,020 fewer both-view retained/peak requested bytes. Smoke, build, database,
+projection-values and all compiler jobs passed; remaining native regression
+qualification runs. This inspection uses that explicitly reviewed head. New
+authoritative GitHub CI and parent-first maintainer integration remain separate.
+#324, broader revision/admission policy and full GPU qualification stay separate.
 
 **Membership target-pin inspection — 2026-11-19 (provisionally accepted in #387):**
 [Actual repeated pins, lifetime and bounded proposal](../../engine/docs/MEMBERSHIP-TARGET-PINS.md)
