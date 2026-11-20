@@ -1,11 +1,14 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-20). Main `8627c262` integrates qualified #392.
-#393 `521afbda` is provisionally accepted in review 7047998750; its remaining
-compiler/regression gate is pending. The byte-owner index runtime at `ec5ca687`
-follows that explicit reviewed-head authorization, passes scoped local CI and
-awaits review/new authoritative qualification. Earlier entries preserve their
-source-specific handoffs; all integration remains maintainer work.
+Current disposition (2026-11-20). Main `dffbed2f` integrates qualified #393.
+#394 `1f71eb76` is provisionally accepted in review 7049930164; native run
+44803914461 and smoke 44803914617 passed, with maintainer integration separate.
+The next [parent-contribution study inspection](../engine/docs/PROJECTION-PARENT-STUDY-IDENTITY.md)
+at `a9011a88` follows that explicitly authorized head. It attributes both private
+parent pools and proposes header-owned study identity with complete public values.
+Local qualification passes; inspection review and its authoritative CI remain.
+Production is unchanged and achieved runtime saving is zero. Earlier entries
+preserve source-specific handoffs; every integration remains maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 

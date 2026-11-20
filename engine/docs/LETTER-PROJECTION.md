@@ -1,11 +1,18 @@
 # Native letter/byte projection — Stage B
 
+The [parent study ownership inspection](PROJECTION-PARENT-STUDY-IDENTITY.md),
+tested source `a9011a88`, follows #394's accepted next-inspection direction.
+Active/spare parent rows each retain a complete study UUID despite the existing
+owned header. Actual backing, separate row ABI, complete copy costs, contextual
+refusal/lifetime and both-view publication are observed without a runtime change.
+
 The [checked byte-owner implementation](PROJECTION-BYTE-OWNER-INDICES.md), tested
 source `ec5ca687`, implements #393 review 7047998750. Private byte provenance
 retains an independent aggregate-owner index; reads validate byte/owner recipe
 sources and full character/ordinal association in the owning projection.
 Construction-time invariants avoid frozen recipe rescans. Full public provenance,
-parent keys and native execution authority remain. Review and hosted CI are pending.
+parent keys and native execution authority remain. #394 accepts final `1f71eb76`;
+its native and smoke workflows passed, with maintainer integration separate.
 
 The [projection-owned study implementation](PROJECTION-HEADER-IDENTITY.md), tested
 source `68062bde`, implements #391 review 7045231362. Private rows keep numeric

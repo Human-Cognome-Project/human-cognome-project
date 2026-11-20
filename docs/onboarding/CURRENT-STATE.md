@@ -1,24 +1,30 @@
 # Current implementation and work
 
-**Checked projected byte-owner indices — 2026-11-20 (implementation awaiting review):**
-[Independent owner, detached provenance and actual costs](../../engine/docs/PROJECTION-BYTE-OWNER-INDICES.md)
-at `ec5ca687` implements [#393 review 7047998750](https://github.com/Human-Cognome-Project/human-cognome-project/pull/393#issuecomment-7047998750)
-from accepted `521afbda`. Private rows retain independent aggregate-owner indices
-and shrink 464→376 bytes. Contextual reads validate both recipe sources, aggregate
-role/entry, character full pin and ordinals while reusing sealed construction.
-Public provenance remains complete after source/domain teardown. Both owner views
-save 676 / 2,704 / 1,278 retained/peak requested bytes. Stronger guard work rises;
-exports and native capture storage keep their costs. Scoped local CI passes
-through full value/domain/work refusals and frozen native publication/ticks.
-Review and new authoritative GitHub CI remain; every merge stays maintainer-only.
+**Parent-contribution study inspection — 2026-11-20 (awaiting review):**
+[Actual active/spare backing, lifetime and bounded proposal](../../engine/docs/PROJECTION-PARENT-STUDY-IDENTITY.md)
+at `a9011a88` follows [#394 review 7049930164](https://github.com/Human-Cognome-Project/human-cognome-project/pull/394#issuecomment-7049930164)
+from accepted `1f71eb76`. Each private active/spare parent contribution still
+owns the projection's study UUID. Actual one/four/three owners repeat 370 /
+1,480 / 666 study-string bytes across both views, separately from inline row
+capacity. Complete 208-byte values and a proposed 160-byte numeric shape are
+measured separately; production and runtime saving remain unchanged. Scoped
+local CI passes, including full source/field/ordinal/count replay, foreign-study,
+full-path and work controls, detached copies/domain release and native publication.
+The record preserves actual copy costs and unchanged accepted-baseline evidence.
 
-The [accepted byte-owner inspection](../../engine/docs/PROJECTION-BYTE-OWNER-KEYS.md)
-at `502f555d` retains its original UUID/inline attribution and zero saving at that
-source. Main `8627c262` integrates qualified #392. #393 is provisionally accepted
-with its remaining compiler/regression gate pending; this runtime follows that
-explicitly reviewed head. Reconcile authoritative gates before parent-first
-maintainer integration. #324, broader revision/admission policy and GPU qualification
-remain separate.
+Next: review the proposal to use the projection header for private parent rows and reconcile
+its authoritative GitHub CI before a runtime follow-up. Any replacement must
+measure actual width, requests, retained/whole-operation peak, work and public
+output costs in both views; preserve frozen pool reuse and complete public values.
+
+[Checked byte-owner indices](../../engine/docs/PROJECTION-BYTE-OWNER-INDICES.md) at `ec5ca687`
+are provisionally accepted in #394 at `1f71eb76`; native run 44803914461 and
+smoke run 44803914617 passed. Main `dffbed2f` integrates qualified #393 and
+has its reviewed `521afbda` tree. #394 integration remains maintainer-only;
+this inspection follows the explicitly authorized head. Original byte-owner
+storage/work measurements remain pinned. #324, character/complete-character
+and field-target ownership, broader revision/admission policy and GPU qualification
+remain separate. Every merge stays with the maintainer.
 
 **Membership target-pin inspection — 2026-11-19 (provisionally accepted in #387):**
 [Actual repeated pins, lifetime and bounded proposal](../../engine/docs/MEMBERSHIP-TARGET-PINS.md)
