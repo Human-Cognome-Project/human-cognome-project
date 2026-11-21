@@ -1,4 +1,5 @@
 #include "assembly/letter_projection.h"
+#include "assembly/projection_access.h"
 #include "assembly/preparation_work.h"
 
 #include <algorithm>
@@ -375,11 +376,9 @@ LetterProjection project_letters(const warm::Bundle &b) {
     out.structural_input_.occurrences.push_back({std::move(id_text),std::move(definition_text),o.node});
     if (record.active)
       for (const auto &p : t.parents) {
-        auto study = out.study_;
         auto parent_source = record.source;
-        OccurrenceKey parent_key{std::move(study),std::move(parent_source)};
         auto object = p.target.object;
-        out.parents_.push_back({std::move(parent_key),
+        out.parents_.push_back({std::move(parent_source),
                                 {GroupKind::ParentValue,std::move(object)},p.ordinal,p.contribution});
       }
     // All record/key consumers are finished; no reference into the vector survives.
@@ -418,12 +417,6 @@ warm::OccurrenceId projection_id(const warm::OccurrenceId &id,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
   return {id.entry,{id.path.begin(),id.path.end(),
       detail::SharedReservationAllocator<std::uint32_t>(domain)}};
-}
-OccurrenceKey projection_key(const OccurrenceKey &key,
-    const std::shared_ptr<detail::ReservationDomain> &domain) {
-  auto study = warm::Uuid(key.study,domain);
-  auto id = projection_id(key.source,domain);
-  return {std::move(study),std::move(id)};
 }
 OccurrenceKey projection_key(const warm::Uuid &header, const warm::OccurrenceId &source,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
@@ -529,11 +522,11 @@ detail::ProjectionOccurrence projection_row(const detail::ProjectionOccurrence &
   return {std::move(source),o.definition_index,o.source_index,o.slot,o.node,o.active,
       std::move(byte),std::move(complete)};
 }
-ParentContribution projection_row(const ParentContribution &p,
+detail::ProjectionParentContribution projection_row(const detail::ProjectionParentContribution &p,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
-  auto occurrence = projection_key(p.occurrence,domain);
+  auto source = projection_id(p.source,domain);
   auto object = projection_object(p.field.object,domain);
-  return {std::move(occurrence),{p.field.kind,std::move(object)},p.ordinal,p.count};
+  return {std::move(source),{p.field.kind,std::move(object)},p.ordinal,p.count};
 }
 template<class T> auto projection_rows(const detail::SharedReservedVector<T> &rows,
     const std::shared_ptr<detail::ReservationDomain> &domain) {
@@ -725,6 +718,13 @@ warm::Exposure LetterProjection::exposure(std::uint64_t entry) const {
   throw warm::Error("unknown projected selection");
 }
 
+ParentContribution LetterProjection::parent(std::size_t index) const {
+  const auto &row=detail::ProjectionAccess::parent(*this,false,index);
+  auto occurrence=projection_key(study_,row.source,{});
+  auto object=projection_object(row.field.object,{});
+  return {std::move(occurrence),{row.field.kind,std::move(object)},row.ordinal,row.count};
+}
+
 void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
   meter.charge(1);
   need(recipe().recipe_version == 2, "projection is not structural");
@@ -738,7 +738,7 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
   }
   const auto reserve = [&](auto &rows) {
     meter.charge(1);
-    if (count > rows.capacity()) meter.elements(rows.size(),sizeof(ParentContribution));
+    if (count > rows.capacity()) meter.elements(rows.size(),sizeof(detail::ProjectionParentContribution));
     rows.reserve(count);
   };
   reserve(parents_);
@@ -750,11 +750,11 @@ void LetterProjection::reserve_exposure(detail::PreparationWork &meter) {
     const auto *t = resolve_definition(i,&meter);
     need(t,"projection definition index/source mismatch");
     for (const auto &p : t->parents) {
-      meter.charge(sizeof(ParentContribution));
-      meter.copy_key(study_); meter.copy_key(o.source); meter.copy_key(p.target.object);
-      auto occurrence = projection_key(study_,o.source,spare_parents_.get_allocator().domain);
+      meter.charge(sizeof(detail::ProjectionParentContribution));
+      meter.copy_key(o.source); meter.copy_key(p.target.object);
+      auto source = projection_id(o.source,spare_parents_.get_allocator().domain);
       auto object = projection_object(p.target.object,spare_parents_.get_allocator().domain);
-      spare_parents_.push_back({std::move(occurrence),
+      spare_parents_.push_back({std::move(source),
           {GroupKind::ParentValue,std::move(object)},
           p.ordinal,p.contribution});
     }
@@ -802,7 +802,7 @@ void LetterProjection::prepare_exposure(LetterProjection &next, const Occurrence
   // Never destroy/recreate path or UUID storage when changing active cardinality.
   // Prepay the whole transfer: stopping between move and clear would leave
   // moved-from contribution objects in the pool and break the next retry.
-  meter.elements(next.spare_parents_.size(),2*sizeof(ParentContribution));
+  meter.elements(next.spare_parents_.size(),2*sizeof(detail::ProjectionParentContribution));
   for (auto &p : next.spare_parents_) next.parents_.push_back(std::move(p));
   next.spare_parents_.clear();
   std::size_t active = 0;
@@ -814,17 +814,19 @@ void LetterProjection::prepare_exposure(LetterProjection &next, const Occurrence
     need(tool, "missing immutable projected definition");
     for (const auto &p : tool->parents) {
       meter.charge(1);
-      const auto found = std::find_if(next.parents_.begin()+active,next.parents_.end(),[&](const auto &v) {
-        return meter.equal(v.occurrence.study,next.study_) && meter.equal(v.occurrence.source,o.source) &&
-            v.ordinal == p.ordinal && meter.equal(v.field.object,p.target.object);
-      });
-      need(found != next.parents_.end(), "reserved projection contribution missing");
-      meter.elements(3,sizeof(ParentContribution));
-      std::iter_swap(next.parents_.begin()+active,found);
+      auto found=active;
+      for(;found<next.parents_.size();++found) {
+        const auto &v=detail::ProjectionAccess::parent(next,false,found);
+        if(meter.equal(v.source,o.source) && v.ordinal==p.ordinal &&
+            meter.equal(v.field.object,p.target.object))break;
+      }
+      need(found != next.parents_.size(), "reserved projection contribution missing");
+      meter.elements(3,sizeof(detail::ProjectionParentContribution));
+      std::iter_swap(next.parents_.begin()+active,next.parents_.begin()+found);
       ++active;
     }
   }
-  meter.elements(next.parents_.size()-active,2*sizeof(ParentContribution));
+  meter.elements(next.parents_.size()-active,2*sizeof(detail::ProjectionParentContribution));
   for (std::size_t i = active; i < next.parents_.size(); ++i)
     next.spare_parents_.push_back(std::move(next.parents_[i]));
   next.parents_.resize(active);

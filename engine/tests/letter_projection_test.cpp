@@ -195,8 +195,8 @@ int main() {
       if (!published.active) continue;
       const auto &definition = b.tools.at(f.tools.at(assembly::detail::ProjectionAccess::definition(p,published_index).object));
       for (const auto &expected : definition.parents) {
-        check(parent_index < p.parents().size(), "all active parent rows are published");
-        const auto &parent = p.parents()[parent_index++];
+        check(parent_index < p.parent_count(), "all active parent rows are published");
+        const auto &parent = p.parent(parent_index++);
         check(parent.occurrence.study == p.study() && parent.occurrence.source == published.source &&
                   parent.field.kind == GroupKind::ParentValue &&
                   parent.field.object == expected.target.object &&
@@ -204,7 +204,7 @@ int main() {
               "parent publication retains full occurrence/field/ordinal/count after source death");
       }
     }
-    check(parent_index == p.parents().size(), "no inactive or duplicate parent rows published");
+    check(parent_index == p.parent_count(), "no inactive or duplicate parent rows published");
     std::vector<warm::OccurrenceId> expected_ids;
     for (const auto &row : b.occurrences) expected_ids.push_back(row.id);
     std::sort(expected_ids.begin(), expected_ids.end());
@@ -267,7 +267,8 @@ int main() {
           "all source rows, revisions and unknown stored masses preserved");
     std::vector<std::uint64_t> dutch_counts;
     std::vector<std::uint32_t> repeated_ordinals;
-    for (const auto &edge : p.parents()) {
+    for (std::size_t i=0;i<p.parent_count();++i) {
+      const auto edge=p.parent(i);
       if (edge.occurrence.source.entry == 4) dutch_counts.push_back(edge.count);
       if (edge.occurrence.source.entry == 6 &&
           edge.field.object == f.ref(object(floor_address('a' + 17))).object)
@@ -347,7 +348,7 @@ int main() {
                 (!complete || *published.complete_character == definition.parents.front().target),
             "complete character retains pinned reference even for inactive aggregates");
     }
-    check(assembly::detail::ProjectionAccess::rows(p).size() == 4 && p.parents().size() == 3 &&
+    check(assembly::detail::ProjectionAccess::rows(p).size() == 4 && p.parent_count() == 3 &&
               std::count_if(assembly::detail::ProjectionAccess::rows(p).begin(), assembly::detail::ProjectionAccess::rows(p).end(),
                             [](const auto &o) { return o.active; }) == 2,
           "two uses of A have distinct alternatives, one active aggregate and "
@@ -378,9 +379,9 @@ int main() {
     auto dutch_parts = normalize_letters(
         f.base, {f.request(f.dutch, 1, warm::Exposure::Parts)});
     const auto dp = project_letters(dutch_parts);
-    check(dp.parents().size() == 10 &&
-              std::all_of(dp.parents().begin(), dp.parents().end(),
-                          [](const auto &e) { return e.count == 1; }),
+    bool nibble_counts=true;
+    for(std::size_t i=0;i<dp.parent_count();++i)nibble_counts &= dp.parent(i).count==1;
+    check(dp.parent_count() == 10 && nibble_counts,
           "exposed bytes retain ten ordered nibble contributions; no active "
           "letter contribution");
     for (const auto &form : {std::string(u8"€"), std::string(u8"𐐀")}) {
@@ -397,7 +398,7 @@ int main() {
       const auto w = project_letters(normalize_letters(
           wide.base, {wide.request(id, 0, warm::Exposure::Parts)}));
       check(assembly::detail::ProjectionAccess::rows(w).size() == form.size() + 1 &&
-                w.parents().size() == form.size() * 2,
+                w.parent_count() == form.size() * 2,
             "valid three/four-byte source scalar projects exact byte and "
             "nibble occurrences");
     }

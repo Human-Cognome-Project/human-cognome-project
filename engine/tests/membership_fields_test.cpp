@@ -59,7 +59,7 @@ void paths_and_contexts() {
   check(unique.size() == 6 && identities,
         "field kinds, full occurrence identities, pinned groups and exact "
         "counts retained");
-  check(naming && assembly::detail::ProjectionAccess::rows(p).size() == 4 && p.parents().size() == 2,
+  check(naming && assembly::detail::ProjectionAccess::rows(p).size() == 4 && p.parent_count() == 2,
         "NULL naming anchors add metadata/fields without particles or parent "
         "changes");
   bool unchanged = true;
@@ -180,10 +180,12 @@ void mass_and_repetition() {
     if (exposure == warm::Exposure::Aggregate) {
       aggregate_mass = mass;
       int repeated = 0;
-      for (const auto &edge : p.parents())
+      for (std::size_t i=0;i<p.parent_count();++i) {
+        const auto edge=p.parent(i);
         if (edge.occurrence.source.entry == 0 && edge.count == 2 &&
             edge.ordinal < 2)
           ++repeated;
+      }
       check(
           repeated == 2,
           "membership preparation leaves repeated source a ordinals separate");
@@ -199,7 +201,7 @@ void mass_and_repetition() {
                         }),
             "each exposed byte uses its mass and its distinct character/byte "
             "path");
-      check(p.parents().size() == 22,
+      check(p.parent_count() == 22,
             "twenty-two ordered nibble contributions survive contextual "
             "membership preparation");
     }

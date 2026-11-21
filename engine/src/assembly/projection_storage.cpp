@@ -43,7 +43,6 @@ struct Census {
   void object(const warm::ObjectKey &o) { uuid(o.scope); buffer(o.address); }
   void tool_ref(const warm::ToolRef &t) { object(t.object); uuid(t.revision); }
   void id(const warm::OccurrenceId &i) { buffer(i.path); }
-  void key(const OccurrenceKey &k) { uuid(k.study); id(k.source); }
   void bundle(const warm::Bundle &b) {
     uuid(b.ref.selection); uuid(b.ref.revision); uuid(b.owner); uuid(b.creator);
     buffer(b.tools);
@@ -79,9 +78,9 @@ struct Census {
     buffer(in.memberships); for (const auto &m : in.memberships) { text(m.occurrence); text(m.group); }
     buffer(in.focal_fields); for (const auto &f : in.focal_fields) text(f.value);
   }
-  template<class A> void parents(const std::vector<ParentContribution,A> &v) {
+  template<class A> void parents(const std::vector<detail::ProjectionParentContribution,A> &v) {
     buffer(v); count(result.parent_slots,v.size());
-    for (const auto &p : v) { key(p.occurrence); object(p.field.object); }
+    for (const auto &p : v) { id(p.source); object(p.field.object); }
   }
 };
 }
