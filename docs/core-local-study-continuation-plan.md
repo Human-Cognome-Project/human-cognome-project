@@ -1,27 +1,27 @@
 # Core continuation after local CUDA corrections
 
-**Legacy source-layout lifetime — 2026-11-21 (inspection awaiting review):**
-[Real legacy failures, native tokens and ordered-retirement proposal](../engine/docs/LEGACY-SUBMISSION-LIFETIMES.md)
-at `a0ec440b` follows [#400 acceptance 7064023495](https://github.com/Human-Cognome-Project/human-cognome-project/pull/400#issuecomment-7064023495)
-from reviewed `32bf8764`. Each real negative/nonfinite parameter failure leaves
-one 4,096-byte source root live while its Activity root retires. After two
-failures and healthy retry, four source roots / 16,384 requested bytes remain
-live after all Executions are gone, before Runtime finalization. Six local
-Clang/GCC cases preserve early refusal, owner/generation checks, sibling
-reports/counts, retry and following ticks. Production and achieved saving are
-unchanged; pool and compiled-object counts stay separate.
+**Session source-tree ownership — 2026-11-21 (runtime awaiting review):**
+[Ordered Execution teardown and actual costs](../engine/docs/SESSION-SOURCE-TREE-OWNERSHIP.md) at `e226b76a`
+implements [#401 review 7064542786](https://github.com/Human-Cognome-Project/human-cognome-project/pull/401#issuecomment-7064542786)
+from accepted `bed13aa7`. Both public submit paths capture their native source
+tree in the existing owner/drain. Reverse member destruction drains first,
+releases prepared owner before Harness and legacy FixedStudy before source
+retirement. Each late legacy refusal now retires one 4,096-byte source root;
+two refusals leave 8,192 fewer live requested root bytes during healthy retry.
+Execution grows 8 host bytes, without a separate guard allocation. Pool and
+compiler quantities remain separate. Scoped local CI covers real and partial
+constructor failures, both successful layouts through following ticks, old
+tokens/native ID reuse, sibling reports/counts and both public submit paths.
 
-Next: review this inspection, then retain the source-tree handle in the existing
-Execution with ordered drain/dependency destruction/native retirement, including
-legacy FixedStudy. Reuse the accepted tree guard; merely populating the current
-layout pointer would retire before the legacy study member dies. Qualify normal
-and constructor failure paths and both legacy/prepared entries. Compiler/JIT
-eviction, complete B, GPU and #324 remain separate.
+Next: review this correction and reconcile authoritative hosted CI. After scoped
+acceptance, inspect remaining compiler/JIT ownership and native cache lifetime
+on refused/destroyed contexts before proposing eviction or byte accounting.
+Complete B, adoption/revision policy, GPU and #324 remain separate.
 
-**Dependency reconciliation:** main `d13e6e3c` integrates qualified #399 and has
-the exact reviewed `c0b8a216` tree. #400 `32bf8764` is provisionally accepted;
-smoke passed and native 44912836134 remains pending at this handoff. Work follows
-its explicit continuation authorization. Every merge remains maintainer-only.
+Main `d13e6e3c` integrates qualified #399. #400/#401 are provisionally accepted,
+explicit dependencies. #400 passed native 44912836134 and smoke; #401 passed
+smoke, compiler and database checks while native regression remains pending.
+Continue under the scoped review authorization and integrate parent-first through the maintainer. No agent merge is authorized.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

@@ -54,6 +54,12 @@ roots remain live while Activity roots retire. Its minimal proposal retains the
 source handle in the existing Execution with FixedStudy-before-source teardown;
 production lifetime and runtime saving remain unchanged by the inspection.
 
+Its [authorized source-tree ownership correction](docs/SESSION-SOURCE-TREE-OWNERSHIP.md)
+captures native handles on both submit paths and orders drain, dependent study/
+owner/Harness destruction and source retirement in the existing Execution. Actual
+root retirement, 8-byte host-object overhead and scoped local evidence are
+recorded separately from retained compiler data and broader resource accounting.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The

@@ -1,14 +1,17 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-21). Main `d13e6e3c` integrates qualified #399.
-#400 `32bf8764` is provisionally accepted in review 7064023495 while native
-44912836134 finishes; smoke passed. The [legacy source-layout inspection](../engine/docs/LEGACY-SUBMISSION-LIFETIMES.md)
-at `a0ec440b` follows its explicit continuation authorization. Real late failures
-and successful legacy Execution teardown retain source roots through the
-pre-finalization boundary; Activity roots retire. Local quick and six compiler/
-path cases pass. Production and saving are unchanged. Next review the proposal
-for existing Execution ownership and ordered dependency teardown. Compiler/JIT,
-complete B, GPU and #324 stay separate. Every merge is maintainer work.
+Current disposition (2026-11-21). Main `d13e6e3c` integrates qualified #399;
+#400/#401 are provisionally accepted. #400 passed native/smoke; #401 awaits
+regression after compiler/database checks passed. Parent-first integration is separate. The
+[source-tree ownership correction](../engine/docs/SESSION-SOURCE-TREE-OWNERSHIP.md)
+at `e226b76a` follows #401 review 7064542786 from `bed13aa7`. Both submit paths
+capture their native tree handles; Execution drains before dependent destruction
+and retires after prepared owner/Harness or legacy FixedStudy. Each failed legacy
+candidate now retires 4,096 requested source-root bytes, with 8 extra host bytes
+per Execution. Scoped CPU CI preserves refusal, partial construction, retry,
+sibling reports/ticks and prepared semantics. Review this runtime, then inspect
+compiler/JIT ownership before further cache/accounting changes. Complete B, GPU
+and #324 remain separate. Every merge remains maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -219,6 +222,20 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-21 contributor (Execution source-tree correction awaiting review):
+[Owned source layouts, dependency order and measured costs](../engine/docs/SESSION-SOURCE-TREE-OWNERSHIP.md)
+at `e226b76a` implements #401 review 7064542786 from `bed13aa7`. The existing
+owner/drain replaces the raw pointer pair/manual teardown in Execution. Both
+submit paths capture their registered source handles; prepared owner dies before
+Harness and legacy FixedStudy before source retirement. Late legacy refusal
+retires 4,096 requested source-root bytes; Execution increases 8 host bytes.
+The native witness preserves both layout forms, real parameter failures,
+partial Activity construction, old tokens/ID reuse, sibling values/counts,
+healthy retry and following ticks. Scoped local quick and Clang/GCC session/
+viewport checks pass. Review/hosted qualification and parent-first maintainer
+integration remain separate. Next inspect compiler/JIT ownership and native
+cache lifetime; do not infer eviction or full B from root retirement.
 
 2026-11-21 contributor (legacy submission source-layout inspection awaiting review):
 [Actual token lifetimes and minimal ownership proposal](../engine/docs/LEGACY-SUBMISSION-LIFETIMES.md)
