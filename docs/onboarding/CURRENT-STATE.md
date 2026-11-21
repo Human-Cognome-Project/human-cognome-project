@@ -1,28 +1,27 @@
 # Current implementation and work
 
-**Native traversal-tree ownership — 2026-11-21 (runtime awaiting review):**
-[Ordered retirement, constructor unwind and actual native costs](../../engine/docs/NATIVE-TRAVERSAL-TREE-OWNERSHIP.md)
-at `8c32cba4` implements [#399 review 7063069841](https://github.com/Human-Cognome-Project/human-cognome-project/pull/399#issuecomment-7063069841)
-from accepted `c0b8a216`. The existing record-map guard is extracted separately;
-Activity and candidate selection retain their own registered tree handles.
-A final member drains before dependent destruction and the first owner member
-retires after it, including constructor unwind. NativeSet remains borrowed.
-Late refusal now retires both set roots / 8,192 requested root bytes; guards
-add 24 host-object bytes per component. Pool/list high-water, retained compiler
-data and complete B stay separate. Scoped local CI covers three constructor
-faults, repeated refusals, actual old-token/tree-ID reuse, healthy retry and
-preserved sibling claims/completed values and subsequent ticks.
+**Legacy source-layout lifetime — 2026-11-21 (inspection awaiting review):**
+[Real legacy failures, native tokens and ordered-retirement proposal](../../engine/docs/LEGACY-SUBMISSION-LIFETIMES.md)
+at `a0ec440b` follows [#400 acceptance 7064023495](https://github.com/Human-Cognome-Project/human-cognome-project/pull/400#issuecomment-7064023495)
+from reviewed `32bf8764`. Each real negative/nonfinite parameter failure leaves
+one 4,096-byte source root live while its Activity root retires. After two
+failures and healthy retry, four source roots / 16,384 requested bytes remain
+live after all Executions are gone, before Runtime finalization. Six local
+Clang/GCC cases preserve early refusal, owner/generation checks, sibling
+reports/counts, retry and following ticks. Production and achieved saving are
+unchanged; pool and compiled-object counts stay separate.
 
-Next: review this runtime and reconcile authoritative GitHub CI. After scoped
-acceptance, inspect legacy submission's source-layout lifetime, where the native
-registration return is still discarded, before changing that boundary. Compiler/
-JIT eviction, full borrowed accounting, GPU and #324 remain separate.
+Next: review this inspection, then retain the source-tree handle in the existing
+Execution with ordered drain/dependency destruction/native retirement, including
+legacy FixedStudy. Reuse the accepted tree guard; merely populating the current
+layout pointer would retire before the legacy study member dies. Qualify normal
+and constructor failure paths and both legacy/prepared entries. Compiler/JIT
+eviction, complete B, GPU and #324 remain separate.
 
-The [accepted lifetime inspection](../../engine/docs/PREPARED-SUBMISSION-LIFETIMES.md)
-preserves its original `cf030244` before measurements and zero saving. #399 at
-`c0b8a216` is provisionally accepted while its remaining hosted qualification
-finishes. This branch follows that explicitly authorized head; initial main is
-qualified `c2b2d4d2`. Every merge and integration remains with the maintainer.
+**Dependency reconciliation:** main `d13e6e3c` integrates qualified #399 and has
+the exact reviewed `c0b8a216` tree. #400 `32bf8764` is provisionally accepted;
+smoke passed and native 44912836134 remains pending at this handoff. Work follows
+its explicit continuation authorization. Every merge remains maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
