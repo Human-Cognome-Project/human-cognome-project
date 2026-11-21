@@ -1,17 +1,16 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-21). Main `d13e6e3c` integrates qualified #399;
-#400/#401 are provisionally accepted. #400 passed native/smoke; #401 awaits
-regression after compiler/database checks passed. Parent-first integration is separate. The
-[source-tree ownership correction](../engine/docs/SESSION-SOURCE-TREE-OWNERSHIP.md)
-at `e226b76a` follows #401 review 7064542786 from `bed13aa7`. Both submit paths
-capture their native tree handles; Execution drains before dependent destruction
-and retires after prepared owner/Harness or legacy FixedStudy. Each failed legacy
-candidate now retires 4,096 requested source-root bytes, with 8 extra host bytes
-per Execution. Scoped CPU CI preserves refusal, partial construction, retry,
-sibling reports/ticks and prepared semantics. Review this runtime, then inspect
-compiler/JIT ownership before further cache/accounting changes. Complete B, GPU
-and #324 remain separate. Every merge remains maintainer work.
+Current disposition (2026-11-21). Main `456cb681` integrates qualified #400–#402
+with the exact reviewed `2062f00e` tree. The [compiler/JIT lifetime inspection](../engine/docs/COMPILER-JIT-LIFETIMES.md)
+at `fb614350` follows #402 decision 7066447453 from integrated main. Definitions,
+compiled data, launcher rows and JIT/ORC resources have distinct owners and
+release boundaries. Legacy parameter refusal adds data without registration;
+prepared refusal retains both data and registered kernel wrappers. Eight scoped
+Clang/GCC cases and local quick pass; production and runtime saving are unchanged.
+Review the proposed non-lazy native counts/ownership observations before eviction
+or byte-accounting changes. Complete B, GPU and #324 stay separate. Earlier
+pending/provisional progress below retains its source handoff state; the above
+integration supersedes those pending statuses. Every merge is maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -222,6 +221,21 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-21 contributor (compiler/JIT ownership inspection awaiting review):
+[Separate native owners and release boundaries](../engine/docs/COMPILER-JIT-LIFETIMES.md)
+at `fb614350` follows #402 decision 7066447453 from integrated `456cb681`.
+Existing refusal witnesses now observe definition/data/kernel-JIT-wrapper
+release through test-only linker wrapping and existing non-lazy provenance/
+launcher queries. Legacy refusal retains thirteen data objects without a new
+JIT wrapper; prepared late refusal retains eighty data objects and seventy-eight
+wrappers. Cached HCP data dies during explicit finalization, with launcher rows/
+JIT wrappers surviving until Runtime member destruction. All prior native phase
+counters match accepted evidence. Five Clang/three GCC cases and quick CI pass.
+Production, eviction, byte accounting and saving remain unchanged. Review the
+native read-only count/ownership proposal; do not infer full B, complete ORC
+memory or safe per-candidate eviction from these counts. #400–#402 are qualified
+and integrated parent-first; hosted qualification for this inspection is separate.
 
 2026-11-21 contributor (Execution source-tree correction awaiting review):
 [Owned source layouts, dependency order and measured costs](../engine/docs/SESSION-SOURCE-TREE-OWNERSHIP.md)

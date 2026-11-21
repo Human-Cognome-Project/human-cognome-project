@@ -7,6 +7,7 @@
 #include "field/activity.h"
 #include "field/native_selection.h"
 #include "taichi/codegen/compiled_kernel_data.h"
+#include "compiler_lifetime_trace.h"
 #include <cstring>
 #include <fstream>
 #include <set>
@@ -135,6 +136,7 @@ const CompiledKernelData &wrap_compile(Program *, const CompileConfig &,
     __asm__("__wrap__ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
 const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
     const DeviceCapabilityConfig &caps, const Kernel &k) {
+  compiler_trace::capture(&k, compiler_trace::Kind::Definition);
   if (auto *t=submission_trace::active) {
     const auto name=k.get_name();
     if ((t->fault==submission_trace::Fault::ActivityCompile && name.find("activity_mark_centroids_")==0) ||
@@ -144,6 +146,7 @@ const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
     }
   }
   const auto &data=real_compile(p,c,caps,k);
+  compiler_trace::compiled(*p, k, data);
   if (auto *t=submission_trace::active) {
     submission_trace::check(t->runtime && &t->runtime->program()==p,"foreign compiled object");
     t->compilations.push_back({k.get_name(),&data});
@@ -204,6 +207,7 @@ struct Sample {
 Sample sample(submission_trace::Trace &t, const char *phase) {
   check(t.runtime,"Runtime capture missing");
   auto &p=t.runtime->program();
+  compiler_trace::sample(p, phase);
   prepared_test::Metrics metrics(*t.runtime,{});
   Sample s; s.native=metrics.sample();
   const auto host=p.lifecycle_storage();
@@ -260,6 +264,8 @@ void run(int workers, field::HostPath path, bool emit) {
   auto live_request=request(live,path), pending=request(candidate,path);
   std::weak_ptr<const ActiveAssembly> live_pin=live.source, candidate_pin=candidate.source;
   submission_trace::Trace trace; trace.emit=emit;
+  compiler_trace::Trace compiler;
+  compiler_trace::Scope compiler_scope(compiler);
   struct Scope {
     explicit Scope(submission_trace::Trace &t) { check(!submission_trace::active,"nested trace"); submission_trace::active=&t; }
     ~Scope() { submission_trace::active=nullptr; }
@@ -373,6 +379,7 @@ void run(int workers, field::HostPath path, bool emit) {
   }
   check(!trace.runtime && trace.runtime_destroys==1 && trace.destroys==trace.roots.size() &&
             live_pin.expired() && candidate_pin.expired(),"session teardown lost native/source release ordering");
+  compiler_trace::finish(compiler);
   std::cout << "submission_refusal_inspection,workers=" << workers
             << ",path=" << (path==field::HostPath::BulkCopy?"bulk":"direct")
             << ",refusals=3,combined_commits=" << calls.combined

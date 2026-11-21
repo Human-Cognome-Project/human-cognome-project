@@ -1,27 +1,31 @@
 # Current implementation and work
 
-**Session source-tree ownership — 2026-11-21 (runtime awaiting review):**
-[Ordered Execution teardown and actual costs](../../engine/docs/SESSION-SOURCE-TREE-OWNERSHIP.md) at `e226b76a`
-implements [#401 review 7064542786](https://github.com/Human-Cognome-Project/human-cognome-project/pull/401#issuecomment-7064542786)
-from accepted `bed13aa7`. Both public submit paths capture their native source
-tree in the existing owner/drain. Reverse member destruction drains first,
-releases prepared owner before Harness and legacy FixedStudy before source
-retirement. Each late legacy refusal now retires one 4,096-byte source root;
-two refusals leave 8,192 fewer live requested root bytes during healthy retry.
-Execution grows 8 host bytes, without a separate guard allocation. Pool and
-compiler quantities remain separate. Scoped local CI covers real and partial
-constructor failures, both successful layouts through following ticks, old
-tokens/native ID reuse, sibling reports/counts and both public submit paths.
+**Compiler/JIT lifetimes — 2026-11-21 (inspection awaiting review):**
+[Actual owners, refusal footprints and native observation proposal](../../engine/docs/COMPILER-JIT-LIFETIMES.md)
+at `fb614350` follows [#402 decision 7066447453](https://github.com/Human-Cognome-Project/human-cognome-project/pull/402#issuecomment-7066447453)
+from integrated main `456cb681`. Existing HCP definitions die on refusal or
+teardown while compiled data, launcher rows and kernel JIT wrappers remain.
+Legacy parameter refusal retains thirteen data objects and adds no JIT wrapper;
+prepared late refusal adds eighty data objects and seventy-eight wrappers.
+Explicit Program finalization releases observed HCP cached data; wrappers
+release later with Runtime destruction. Source, IR-module, launcher and ORC
+ownership are separate; object counts and serialized sizes are not complete B.
+Production, eviction, byte accounting and achieved saving are unchanged.
 
-Next: review this correction and reconcile authoritative hosted CI. After scoped
-acceptance, inspect remaining compiler/JIT ownership and native cache lifetime
-on refused/destroyed contexts before proposing eviction or byte accounting.
-Complete B, adoption/revision policy, GPU and #324 remain separate.
+Next: review the findings and proposed non-lazy read-only counts/ownership
+observations in the existing compilation manager and JIT session. Preserve
+native owners, absent/present/incomplete status and initial-runtime versus
+kernel-module distinctions. Define borrowing, handle invalidation, row reuse,
+ORC retirement and backend support before any later eviction. No new registry,
+byte charge or resource gate is approved by this inspection. GPU and #324 remain
+separate. Local quick plus five Clang/three GCC CTests pass; authoritative hosted
+qualification for this contribution remains pending.
 
-Main `d13e6e3c` integrates qualified #399. #400/#401 are provisionally accepted,
-explicit dependencies. #400 passed native 44912836134 and smoke; #401 passed
-smoke, compiler and database checks while native regression remains pending.
-Continue under the scoped review authorization and integrate parent-first through the maintainer. No agent merge is authorized.
+**Integrated prerequisites:** #400/#401/#402 passed hosted native/smoke and were
+merged parent-first at `d92f59bd` / `35f8b386` / `456cb681`. Main's tree equals
+reviewed #402 `2062f00e`. Source-tree cleanup and its original cost evidence remain
+accepted; earlier provisional/pending handoffs below are source-pinned history.
+All subsequent integration and merge events remain maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

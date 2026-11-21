@@ -27,6 +27,13 @@ A private staging map allocates the execution map node **before native publicati
 
 `Execution` teardown drains, destroys prepared owner, then Harness, then the owned source layout. The [source-tree ownership correction](SESSION-SOURCE-TREE-OWNERSHIP.md) at `e226b76a` expresses this through the existing owner/drain and reverse member destruction, also ensuring legacy FixedStudy dies before its source tree. Session destruction clears executions before finalizing Runtime. The source layout uses the existing Taichi tree destruction path; no retained store, Git history or resource pool is reset. Native IDs may remain monotonic and Program compiler/cache storage may persist until Runtime teardown. This is not unlimited streaming, full setup rollback or process-fatal backend recovery.
 
+The [compiler/JIT ownership inspection](COMPILER-JIT-LIFETIMES.md) qualifies
+that cache boundary separately: definitions and bound contexts die on refusal,
+but most prepared kernels already have registered native rows/JIT wrappers.
+Observed cached data clears at explicit Program finalization; launcher rows and
+kernel wrappers remain until later Runtime member destruction. This inspection
+adds no production eviction contract, new byte charge or full-B guarantee.
+
 The [native lifetime inspection](PREPARED-SUBMISSION-LIFETIMES.md) at `cf030244`
 qualifies that teardown boundary more precisely on integrated `c2b2d4d2`: source
 and record-map roots retire, while Activity and candidate-selection trees remain
