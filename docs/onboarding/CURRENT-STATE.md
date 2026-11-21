@@ -1,31 +1,32 @@
 # Current implementation and work
 
-**Compiler/JIT lifetimes — 2026-11-21 (inspection awaiting review):**
-[Actual owners, refusal footprints and native observation proposal](../../engine/docs/COMPILER-JIT-LIFETIMES.md)
-at `fb614350` follows [#402 decision 7066447453](https://github.com/Human-Cognome-Project/human-cognome-project/pull/402#issuecomment-7066447453)
-from integrated main `456cb681`. Existing HCP definitions die on refusal or
-teardown while compiled data, launcher rows and kernel JIT wrappers remain.
-Legacy parameter refusal retains thirteen data objects and adds no JIT wrapper;
-prepared late refusal adds eighty data objects and seventy-eight wrappers.
-Explicit Program finalization releases observed HCP cached data; wrappers
-release later with Runtime destruction. Source, IR-module, launcher and ORC
-ownership are separate; object counts and serialized sizes are not complete B.
-Production, eviction, byte accounting and achieved saving are unchanged.
+**Native compiler/JIT counts — 2026-11-21 (implementation awaiting review):**
+[Read-only native owners, bounded counts and executable evidence](../../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
+at tested `b36dcd28` implements [#403 decision 7067047506](https://github.com/Human-Cognome-Project/human-cognome-project/pull/403#issuecomment-7067047506)
+from provisionally accepted `a326ca77`. Existing compiler/session owners expose
+non-lazy value snapshots, absent/present/incomplete status, pending/loaded-object
+counts and distinct runtime/kernel modules. Budgets limit inspection only;
+`complete` stays false. Fresh/partial owners create no cache/module, isolated
+metadata and explicit disk-load fixtures distinguish two entries from one loaded
+object, and real refusal/finalization counts match independent lifetime witnesses.
+Legacy/prepared final totals are 37 / 726 modules, including one runtime module;
+kernel wrappers survive finalization while observed pending data releases.
 
-Next: review the findings and proposed non-lazy read-only counts/ownership
-observations in the existing compilation manager and JIT session. Preserve
-native owners, absent/present/incomplete status and initial-runtime versus
-kernel-module distinctions. Define borrowing, handle invalidation, row reuse,
-ORC retirement and backend support before any later eviction. No new registry,
-byte charge or resource gate is approved by this inspection. GPU and #324 remain
-separate. Local quick plus five Clang/three GCC CTests pass; authoritative hosted
-qualification for this contribution remains pending.
+Local quick, eleven Clang/seven GCC CTests and the warm/viewport-OFF standalone
+CTest pass. Twelve native histories and eight existing lifetime histories match
+source-pinned before evidence; GPU and complete B are unqualified. Review this
+API and new authoritative GitHub CI. Next bounded design/inspection should
+establish shared borrowers, handle/row reuse and ORC retirement before any
+eviction; byte accounting/admission policy remain separate. No runtime saving
+or new resource gate is claimed. #324 remains separate.
 
-**Integrated prerequisites:** #400/#401/#402 passed hosted native/smoke and were
-merged parent-first at `d92f59bd` / `35f8b386` / `456cb681`. Main's tree equals
-reviewed #402 `2062f00e`. Source-tree cleanup and its original cost evidence remain
-accepted; earlier provisional/pending handoffs below are source-pinned history.
-All subsequent integration and merge events remain maintainer-only.
+**Dependency and integration:** #403 is provisionally accepted for continuation;
+its smoke passed and native hosted gate was still running at this handoff.
+#400/#401/#402 passed hosted native/smoke and were merged parent-first at
+`d92f59bd` / `35f8b386` / `456cb681`; main's tree equals reviewed #402 `2062f00e`.
+The [original compiler/JIT inspection](../../engine/docs/COMPILER-JIT-LIFETIMES.md)
+retains its own tested source and limits. Earlier pending entries below are
+source-specific history. All integration and merge events remain maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
