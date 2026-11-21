@@ -27,6 +27,14 @@ A private staging map allocates the execution map node **before native publicati
 
 `Execution` teardown explicitly destroys prepared owner, then Harness, then the owned source layout. Session destruction clears executions before finalizing Runtime. The source layout uses the existing Taichi tree destruction path; no retained store, Git history or resource pool is reset. Native IDs may remain monotonic and Program compiler/cache storage may persist until Runtime teardown. This is not unlimited streaming, full setup rollback or process-fatal backend recovery.
 
+The [native lifetime inspection](PREPARED-SUBMISSION-LIFETIMES.md) at `cf030244`
+qualifies that teardown boundary more precisely on integrated `c2b2d4d2`: source
+and record-map roots retire, while Activity and candidate-selection trees remain
+Program-owned after their C++ components die. Repeated late refusals each leave
+two live roots in the fixture; compiled data has its separate cache lifetime.
+Its proposed component-local tree guards change no runtime here and do not
+claim complete setup rollback, pooled-memory release or streaming qualification.
+
 ## Control and observation
 
 Prepared handles use the existing logical `ExecutionHandle` and owner authorization. `ready` dispatches to the actual owner; `completed_ticks` reads the prepared Harness's native completed-tick counter. `tick_prepared(handle, owner, Parameters64, ...)` delegates to the existing contact-safe owner tick, including native-generation following. Legacy `tick(Parameters)` and `refresh` refuse a prepared handle before mutation; v1 submit/refresh/tick behavior is retained. One execution per study is published: prepared resubmission/revision is not an implicit replacement operation.

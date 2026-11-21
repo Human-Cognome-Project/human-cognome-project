@@ -1,13 +1,13 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-20). Initial main `5d8c08ce` integrates qualified
-#395. #396 passed native/smoke; integration remains maintainer work. #397
-`f27db64d` is provisionally accepted in review 7052622147 while its remaining
-native gate finishes. The [parent-target implementation](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
-at `c63bf01d` follows that explicit direction, passes scoped local CI and
-measures actual selector, phase-correct preparation, output and whole-owner
-costs. Runtime review and authoritative CI remain separate. Earlier entries
-preserve source-specific handoffs; all integration remains with the maintainer.
+Current disposition (2026-11-21). Main `c2b2d4d2` integrates qualified #396–#398
+parent-first and has #398's qualified `0ddb8b35` tree. Maintainer review
+7062570528 accepts the parent-target runtime and authorizes the next bounded
+#343 responsibility/native-reuse inspection. The [submission lifetime witness](../engine/docs/PREPARED-SUBMISSION-LIFETIMES.md)
+at `cf030244` measures refused native contexts, Program-retained set roots and
+compiled-data reuse/retention. Production is unchanged and saving is zero.
+Scoped local CI passes; inspection review and authoritative CI remain separate.
+Every merge and integration remains with the maintainer.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -218,6 +218,19 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-21 contributor (prepared-submission lifetime inspection awaiting review):
+[Native release boundaries and bounded tree ownership](../engine/docs/PREPARED-SUBMISSION-LIFETIMES.md)
+at `cf030244` follows #398 review 7062570528 from integrated `c2b2d4d2`.
+Real session plan/placement refusals retire three roots but retain two native
+set roots under Program ownership, alongside separately retained compiled data.
+The proposal keeps NativeSet borrowed and stores owning tree handles in the
+existing Activity/selection components using native destruction. Constructor
+unwind, dependency ordering, retirement/reuse and actual pool/list effects must
+be qualified in a reviewed runtime follow-up. Production and achieved saving
+remain unchanged. Local CPU evidence covers both host paths/workers and
+preserved sibling claims/numerics, repeated refusal, retry and following ticks.
+Compiler/JIT eviction, broader accounting/adoption, GPU and #324 stay separate.
 
 2026-11-20 contributor (checked byte-owner runtime awaiting review):
 [Independent index, complete provenance and actual costs](../engine/docs/PROJECTION-BYTE-OWNER-INDICES.md)

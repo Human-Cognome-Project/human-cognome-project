@@ -1,29 +1,28 @@
 # Core continuation after local CUDA corrections
 
-**Recipe-backed parent targets — 2026-11-20 (implementation awaiting review):**
-[Independent selectors, correct pool phases and complete output](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
-at `c63bf01d` implements [#397 review 7052622147](https://github.com/Human-Cognome-Project/human-cognome-project/pull/397#issuecomment-7052622147)
-from accepted `f27db64d`. Private rows retain independent occurrence/parent
-selectors and full source, kind, ordinal/count; actual width falls 160→72 bytes.
-Targets remain in the existing exact recipe; public 208-byte active exports
-still own complete keys/fields and the inactive pool stays private. Candidate
-repartitioning validates immutable meaning separately from final pool role.
-Actual factory/copy and both-view retained/peak, work and output costs are in
-the component record. Scoped local CI passes through wrong valid selectors,
-copy/domain/allocation/work refusal/retry and frozen publication/following ticks.
+**Refused prepared-submission native lifetimes — 2026-11-21 (inspection awaiting review):**
+[Actual roots, compiled bindings and bounded ownership proposal](../engine/docs/PREPARED-SUBMISSION-LIFETIMES.md)
+at `cf030244` starts from integrated main `c2b2d4d2` under #343. The real
+session path retires source/record-map roots after plan/placement refusal,
+while Activity and candidate-selection trees remain Program-owned. Each late
+refusal leaves two additional live roots / 8,192 requested root bytes in this
+CPU fixture, plus eighty retained compiled-data objects. These are separate
+from native pool/list storage and full B. Production is unchanged; saving is zero.
+Scoped local CI covers repeated refusal, actual token/tree reuse, unchanged
+warmed sibling claims/numerics, healthy retry, following ticks and source release.
 
-Next: review this bounded runtime and reconcile authoritative GitHub CI. After
-scoped acceptance, choose one further #343 inspection from measured ownership
-or native-overlap evidence. Character/complete-character pins, broader revision/
-admission policy, #324 and GPU qualification remain separate.
+Next: review the component-local tree-handle proposal and reconcile authoritative
+GitHub CI. A runtime follow-up must preserve constructor unwind, dependent
+kernel/context ordering and native retirement/reuse. Compiler/JIT eviction,
+complete borrowed accounting, mixed revisions, GPU and #324 remain separate.
 
-The [accepted target inspection](../engine/docs/PROJECTION-PARENT-TARGETS.md) preserves
-its original `f551d14f` measurements and zero saving at that source. Initial
-main `5d8c08ce` integrates qualified #395 and has reviewed `c68d3751`'s tree.
-#396 passed native/smoke qualification; integration remains maintainer work.
-#397 at `f27db64d` is provisionally accepted with smoke/values passed and
-remaining native qualification separate. This runtime follows the explicitly
-authorized head; every merge stays with the maintainer.
+**Recipe-backed parent targets — integrated in #398:**
+[Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
+at tested `c63bf01d` is accepted in [review 7062570528](https://github.com/Human-Cognome-Project/human-cognome-project/pull/398#issuecomment-7062570528).
+#396–#398 passed hosted native/smoke and were merged parent-first at
+`f706f056` / `a1ac5250` / `c2b2d4d2`. Main's tree equals qualified `0ddb8b35`;
+the nine post-test files are Markdown. Mixed-owner retained/peak reduction is
+9,120 bytes with guard/output costs separate. Every merge remains maintainer work.
 
 **Repeated membership target pins — 2026-11-19 (inspection accepted in #387):**
 [Actual backing, source lifetime and proposal](../engine/docs/MEMBERSHIP-TARGET-PINS.md)
