@@ -1,13 +1,13 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-21). Main `c2b2d4d2` integrates qualified #396–#398
-parent-first and has #398's qualified `0ddb8b35` tree. Maintainer review
-7062570528 accepts the parent-target runtime and authorizes the next bounded
-#343 responsibility/native-reuse inspection. The [submission lifetime witness](../engine/docs/PREPARED-SUBMISSION-LIFETIMES.md)
-at `cf030244` measures refused native contexts, Program-retained set roots and
-compiled-data reuse/retention. Production is unchanged and saving is zero.
-Scoped local CI passes; inspection review and authoritative CI remain separate.
-Every merge and integration remains with the maintainer.
+Current disposition (2026-11-21). Initial main `c2b2d4d2` integrates qualified
+#396–#398. #399 at `c0b8a216` is provisionally accepted in review 7063069841
+while its remaining native gate finishes. The [tree lifetime correction](../engine/docs/NATIVE-TRAVERSAL-TREE-OWNERSHIP.md)
+at `8c32cba4` follows that explicit direction: component-local native ownership,
+ordered drain/retirement, constructor unwind and native-token reuse. Scoped
+local CI passes; runtime review and authoritative CI remain separate. Compiler/
+JIT ownership, broader accounting, GPU and #324 stay separate. All merges and
+integration remain with the maintainer.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -219,7 +219,22 @@ At each stopping point leave: current branch/SHA and dirty-work disposition; acc
 
 ## Progress
 
-2026-11-21 contributor (prepared-submission lifetime inspection awaiting review):
+2026-11-21 contributor (native traversal-tree lifetime correction awaiting review):
+[Component-owned retirement and actual costs](../engine/docs/NATIVE-TRAVERSAL-TREE-OWNERSHIP.md)
+at `8c32cba4` implements #399 review 7063069841 from `c0b8a216`. Separate
+mechanical `1077e89e` extracts the existing record-map guard. Activity and
+candidate selection now drain before dependencies die and retire their native
+trees afterwards, including constructor unwind. NativeSet remains borrowed.
+Both roots / 8,192 requested bytes retire after each late refusal; the guard
+cost is 24 bytes per host component. Pool/list and compiler quantities remain
+separate. Scoped CPU CI covers partial construction, post-launch failure,
+repeated refusal/retry, old tokens across ID reuse, sibling state and ticks,
+plus native activity/selection/contact and surrounding owner/launch behavior.
+Runtime review, hosted CI and maintainer integration remain separate. After
+acceptance, inspect legacy source-layout lifetime before another ownership
+change; compiler/JIT eviction and #324 mathematics are not part of this fix.
+
+2026-11-21 contributor (prepared-submission lifetime inspection provisionally accepted in #399):
 [Native release boundaries and bounded tree ownership](../engine/docs/PREPARED-SUBMISSION-LIFETIMES.md)
 at `cf030244` follows #398 review 7062570528 from integrated `c2b2d4d2`.
 Real session plan/placement refusals retire three roots but retain two native

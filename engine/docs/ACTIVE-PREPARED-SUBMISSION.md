@@ -35,6 +35,14 @@ two live roots in the fixture; compiled data has its separate cache lifetime.
 Its proposed component-local tree guards change no runtime here and do not
 claim complete setup rollback, pooled-memory release or streaming qualification.
 
+The [authorized ownership correction](NATIVE-TRAVERSAL-TREE-OWNERSHIP.md) at
+`8c32cba4` subsequently implements #399 review 7063069841. Activity and selection
+now retain their own registered trees, drain before dependent members die and
+retire afterwards during normal teardown or constructor unwind. Repeated
+plan/placement and injected partial-constructor refusals leave their roots
+retired while the sibling and native authority remain intact. Compiler/JIT and
+pool/list high-water keep their separate lifetimes and accounting limits.
+
 ## Control and observation
 
 Prepared handles use the existing logical `ExecutionHandle` and owner authorization. `ready` dispatches to the actual owner; `completed_ticks` reads the prepared Harness's native completed-tick counter. `tick_prepared(handle, owner, Parameters64, ...)` delegates to the existing contact-safe owner tick, including native-generation following. Legacy `tick(Parameters)` and `refresh` refuse a prepared handle before mutation; v1 submit/refresh/tick behavior is retained. One execution per study is published: prepared resubmission/revision is not an implicit replacement operation.
