@@ -190,6 +190,13 @@ class ProgramImpl {
 
   KernelCompilationManager &get_kernel_compilation_manager();
 
+  CompilerOwnershipCounts compiler_ownership_counts(std::size_t entry_budget) const {
+    if (kernel_com_mgr_) return kernel_com_mgr_->ownership_counts(entry_budget);
+    CompilerOwnershipCounts result;
+    result.status = OwnershipCountStatus::Absent;
+    return result;
+  }
+
   bool owns_compiled_kernel(const Kernel &kernel,
                             const CompiledKernelData &data) const {
     return kernel_com_mgr_ &&

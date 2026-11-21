@@ -619,6 +619,7 @@ if(HCP_WITH_VIEWPORT)
     endforeach()
     foreach(inspection_target prepared_submission_inspection legacy_submission_inspection)
       target_link_options(${inspection_target} PRIVATE
+          "-Wl,--wrap=_ZN6taichi4lang10JITSession6createEPNS0_17TaichiLLVMContextERKNS0_13CompileConfigENS_4ArchE"
           "-Wl,--wrap=_ZdlPv"
           "-Wl,--wrap=_ZdlPvm"
           "-Wl,--wrap=_ZN6taichi4lang7Program8finalizeEv"

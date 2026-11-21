@@ -237,6 +237,13 @@ class LlvmProgramImpl : public ProgramImpl {
     return runtime_exec_.get();
   }
 
+  JitOwnershipCounts jit_ownership_counts(std::size_t module_budget) const {
+    if (runtime_exec_) return runtime_exec_->jit_ownership_counts(module_budget);
+    JitOwnershipCounts result;
+    result.status = OwnershipCountStatus::Absent;
+    return result;
+  }
+
   std::string get_kernel_return_data_layout() override {
     return get_llvm_context()->get_data_layout_string();
   };

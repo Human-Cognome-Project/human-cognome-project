@@ -27,6 +27,28 @@ JITSession::JITSession(TaichiLLVMContext *tlctx, const CompileConfig &config)
     : tlctx_(tlctx), config_(config) {
 }
 
+JitOwnershipCounts JITSession::ownership_counts(
+    const JITModule *runtime_module, std::size_t module_budget) const {
+  JitOwnershipCounts result;
+  result.owner = this;
+  result.modules = modules.size();
+  if (result.modules > module_budget || (!runtime_module && !modules.empty())) {
+    result.status = OwnershipCountStatus::Incomplete;
+    return result;
+  }
+  for (const auto &module : modules) {
+    ++result.visited_modules;
+    result.runtime_modules += module.get() == runtime_module;
+  }
+  if (runtime_module && result.runtime_modules != 1) {
+    result.status = OwnershipCountStatus::Incomplete;
+    return result;
+  }
+  result.kernel_modules = result.modules - result.runtime_modules;
+  result.status = OwnershipCountStatus::Present;
+  return result;
+}
+
 std::unique_ptr<JITSession> JITSession::create(TaichiLLVMContext *tlctx,
                                                const CompileConfig &config,
                                                Arch arch) {

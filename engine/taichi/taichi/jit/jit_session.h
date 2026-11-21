@@ -6,6 +6,7 @@
 #include "taichi/runtime/llvm/llvm_fwd.h"
 #include "taichi/util/lang_util.h"
 #include "taichi/jit/jit_module.h"
+#include "taichi/program/compiler_jit_counts.h"
 
 namespace taichi::lang {
 
@@ -23,6 +24,11 @@ class JITSession {
 
  public:
   JITSession(TaichiLLVMContext *tlctx, const CompileConfig &config);
+
+  // The executor supplies its existing runtime-module identity. A missing or
+  // unmatched identity with nonempty storage leaves role counts incomplete.
+  JitOwnershipCounts ownership_counts(const JITModule *runtime_module,
+                                     std::size_t module_budget) const;
 
   virtual JITModule *add_module(std::unique_ptr<llvm::Module> M,
                                 int max_reg = 0) = 0;
