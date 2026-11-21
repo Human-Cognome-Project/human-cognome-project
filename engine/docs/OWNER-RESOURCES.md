@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+[Native compiled-data borrows](NATIVE-COMPILED-BORROWS.md) at `2708b8b1`
+implement #405's x64 borrower prerequisite. Existing native records count
+move-only guards and permanently mark raw clients; HCP dependencies die before
+guard release. Actual wrapper extent grows by sixteen bytes and each cached
+LLVM record adds sixteen inline bytes plus one 48-byte metadata request.
+Those quantities remain separate from full owner peaks, executable bytes and
+complete B. No reclamation, byte charge, admission change or saving is enabled.
+
 [Native reclamation design](NATIVE-RECLAMATION-DESIGN.md) at `3534439e` follows
 #404's accepted inspection direction. Actual definitions share compiled records
 and handles; dead definitions do not free CPU rows/task pointers or ORC resources.

@@ -1,32 +1,30 @@
 # Core continuation after local CUDA corrections
 
-**Native reclamation design — 2026-11-21 (inspection awaiting review):**
-[Shared borrowers, native rows/task pointers and ORC retirement boundaries](../engine/docs/NATIVE-RECLAMATION-DESIGN.md)
-at tested `3534439e` follows [#404 decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542)
-from provisionally accepted `fbc9bc50`. A test-only witness resolves seven HCP
-definitions to four actual records: a refused candidate shares a survivor's
-data/handle, unregistered retry retains its record, same-record registration
-reuses its handle and distinct records append rows. Surviving task symbols,
-outputs and prepared/dynamic dispatch remain valid. Four pending objects release
-at finalization; four kernel wrappers release later, with one runtime module
-kept distinct. There is no implemented per-record retirement operation.
+**Native compiled-data borrows — 2026-11-21 (implementation awaiting review):**
+[Native ownership, raw-client boundary and actual overhead](../engine/docs/NATIVE-COMPILED-BORROWS.md)
+at tested `2708b8b1` implements [#405 decision 7068182353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/405#issuecomment-7068182353)
+from provisionally accepted `06e71404`. Existing x64 memory-cache records supply
+move-only HCP guards; known raw clients remain permanently marked untracked.
+Normal teardown and move assignment destroy bound contexts/definitions before
+releasing guards. Shared acquisition, moves, constructor unwind, raw/expired
+access, retries and actual sibling dispatch are checked. Metadata guards do not
+extend Program/LLVM-context lifetime or enable any reclamation operation.
 
-The design separates unregistered data from a registered record/row/module
-group and preserves whole-Runtime shutdown as the current release boundary.
-Review the native borrower-protection prerequisite before implementation;
-raw-reference escape, stale rows, in-flight work and ORC errors must be handled
-before eviction. Byte charges, admission changes, GPU and complete B remain
-separate. Production/fork/numerical code and real refusal witnesses are unchanged.
-Local quick, seven Clang/five GCC CTests and the warm/viewport-OFF standalone
-case pass, with 98 new count snapshots. Real refusal histories retain #404's
-verified before evidence. New authoritative hosted CI is separate.
+Actual wrapper extent grows 32→48 bytes; each cached LLVM record adds sixteen
+inline bytes and one observed 48-byte metadata request. Guard-only moves,
+observation and release allocate nothing. Native class-layout changes require
+the matching SDK/wrapper rebuild; bitcode/AOT layouts are unchanged. Quick,
+fourteen Clang/ten GCC CTests and two warm/viewport-OFF cases pass. Before
+lifetime/count histories and new borrow probes agree. Complete B, byte charges,
+admission, row reuse and ORC removal remain separate. Review this prerequisite
+before separately authorizing selective reclamation; GPU/#324 are unchanged.
 
-**Dependency and integration:** #403 passed hosted native/smoke and is integrated
-at main `ca098539`, with no differences from reviewed `a326ca77`. #404 at
-`fbc9bc50` is provisionally accepted and targets main; smoke passed and native
-qualification was pending at this handoff. Its [read-only count APIs](../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
-retain their source-pinned qualification. All integration and merge events remain
-maintainer-only; earlier status entries preserve their source handoffs.
+**Dependency and integration:** main `ca098539` integrates qualified #403.
+Reviewed #404 `fbc9bc50` passed hosted native/smoke and awaits integration.
+#405 `06e71404` is provisionally accepted; smoke passed and native qualification
+was pending at this handoff. This implementation continues from that reviewed
+head. All integration/merges remain maintainer-only; earlier entries retain
+their source-specific handoffs.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
