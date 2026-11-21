@@ -617,6 +617,13 @@ if(HCP_WITH_VIEWPORT)
             ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
       endforeach()
     endforeach()
+    foreach(inspection_target prepared_submission_inspection legacy_submission_inspection)
+      target_link_options(${inspection_target} PRIVATE
+          "-Wl,--wrap=_ZdlPv"
+          "-Wl,--wrap=_ZdlPvm"
+          "-Wl,--wrap=_ZN6taichi4lang7Program8finalizeEv"
+          "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE")
+    endforeach()
     add_executable(retained_membership_decision_test tests/retained_membership_decision_test.cpp)
     target_link_libraries(retained_membership_decision_test PRIVATE viewport_snapshot)
     target_compile_options(retained_membership_decision_test PRIVATE -Wall -Wextra -Werror)

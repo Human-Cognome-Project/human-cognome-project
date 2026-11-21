@@ -2,6 +2,7 @@
 #include "letter_projection_fixture.h"
 #include "prepared_metrics.h"
 #include "taichi/codegen/compiled_kernel_data.h"
+#include "compiler_lifetime_trace.h"
 
 #include <cstring>
 #include <limits>
@@ -57,6 +58,7 @@ Sample sample(Trace &t, const char *phase) {
   auto &p = t.runtime->program();
   check(p.compile_config().arch == taichi::Arch::x64, "actual LLVM/x64 required");
   Sample s;
+  compiler_trace::sample(p, phase);
   s.native = prepared_test::Metrics(*t.runtime, {}).sample();
   const auto host = p.lifecycle_storage();
   check(host.available && host.trees.available && host.kernels.available &&
@@ -232,6 +234,7 @@ const CompiledKernelData &wrap_compile(Program *, const CompileConfig &,
     __asm__("__wrap__ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
 const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
     const DeviceCapabilityConfig &caps, const Kernel &k) {
+  compiler_trace::capture(&k, compiler_trace::Kind::Definition);
   if (auto *t = legacy_trace::active;
       t && t->fail_activity_compile && k.get_name().find("activity_mark_centroids_") == 0) {
     t->fail_activity_compile = false; t->fault_fired = true;
@@ -239,6 +242,7 @@ const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
     throw std::bad_alloc{};
   }
   const auto &data = real_compile(p, c, caps, k);
+  compiler_trace::compiled(*p, k, data);
   if (auto *t = legacy_trace::active) t->compilations.push_back(&data);
   return data;
 }
@@ -263,6 +267,8 @@ void run(int workers, field::HostPath path) {
   const auto candidate = source(warm::Exposure::Parts);
   const auto unavailable = source(warm::Exposure::Aggregate, true);
   legacy_trace::Trace trace;
+  compiler_trace::Trace compiler;
+  compiler_trace::Scope compiler_scope(compiler);
   struct Scope {
     explicit Scope(legacy_trace::Trace &t) {
       check(!legacy_trace::active, "nested trace"); legacy_trace::active = &t;
@@ -374,6 +380,7 @@ void run(int workers, field::HostPath path) {
   }
   check(!trace.runtime && trace.runtime_destroys == 1 && !retained.particles.empty(),
         "session teardown or independently owning report failed");
+  compiler_trace::finish(compiler);
   std::cout << "legacy_submission_inspection,workers=" << workers
             << ",path=" << (path == field::HostPath::BulkCopy ? "bulk" : "direct")
             << ",real_parameter_refusals=2,partial_constructor_refusals=1"
