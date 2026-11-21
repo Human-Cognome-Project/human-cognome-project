@@ -74,6 +74,13 @@ reclamation claims. Fresh, partially initialized, loaded and finalization cases
 have source-pinned native CPU evidence, including a standalone test without
 warm integration or viewport.
 
+The [reclamation design/inspection](docs/NATIVE-RECLAMATION-DESIGN.md) then
+checks actual shared compiled pointers/handles, retained rows and surviving
+native task symbols/dispatch. It proposes borrower protection before any cache
+removal and distinguishes CPU ORC resources from module wrappers. Production
+reclamation and byte/admission policy are unchanged; backend and teardown limits
+are explicit.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The
