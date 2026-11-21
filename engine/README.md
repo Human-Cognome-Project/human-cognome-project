@@ -60,6 +60,12 @@ owner/Harness destruction and source retirement in the existing Execution. Actua
 root retirement, 8-byte host-object overhead and scoped local evidence are
 recorded separately from retained compiler data and broader resource accounting.
 
+The [compiler/JIT ownership inspection](docs/COMPILER-JIT-LIFETIMES.md) then
+separates HCP definitions, cached IR/data, launcher rows and JIT/ORC ownership.
+Real legacy/prepared refusals retain different registered footprints; cached
+data clears during finalization while kernel wrappers survive until Runtime
+member destruction. Production eviction and byte accounting are unchanged.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The

@@ -1,5 +1,14 @@
 # Private exchange-owner resource inventory
 
+[Compiler/JIT ownership](COMPILER-JIT-LIFETIMES.md) at `fb614350` inspects the
+native resources beyond source-tree retirement. Refused legacy contexts retain
+compiled data without registration; prepared late refusal also retains launcher
+rows and kernel JIT wrappers. Definition destruction, compiled-cache clearing at
+finalization and later JIT-session destruction are separate boundaries. Counts,
+serialized bytes and Program's empty Kernel vector do not establish complete B.
+The proposed next native observations are read-only counts/relationships; no
+eviction, byte charge, combined gate or saving is implemented by this inspection.
+
 [Session source-tree ownership](SESSION-SOURCE-TREE-OWNERSHIP.md) at `e226b76a`
 implements #401's reviewed direction in the existing Execution. Both submit
 paths retain native handles with the accepted owner/drain; dependent prepared
