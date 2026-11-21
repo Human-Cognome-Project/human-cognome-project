@@ -643,6 +643,15 @@ if(HCP_WITH_VIEWPORT)
 endif()
 
 # Every run needs TI_LIB_DIR pointing at the engine's LLVM runtime bitcode.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_executable(compiler_jit_counts_test tests/compiler_jit_counts_test.cpp)
+  target_link_libraries(compiler_jit_counts_test PRIVATE engine_support)
+  target_compile_options(compiler_jit_counts_test PRIVATE -Wall -Wextra -Werror)
+  add_test(NAME compiler_jit_counts_test COMMAND compiler_jit_counts_test)
+  set_tests_properties(compiler_jit_counts_test PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+endif()
+
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/engine-env.sh.in"
                "${CMAKE_CURRENT_BINARY_DIR}/engine-env.sh" @ONLY)
 
