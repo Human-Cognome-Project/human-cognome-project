@@ -2,6 +2,7 @@
 #include "assembly/prepared_submission.h"
 #include "assembly/prepared_study_owner.h"
 #include "field/prepared_storage.h"
+#include "engine/snode_tree_owner.h"
 
 #include <chrono>
 
@@ -13,22 +14,21 @@ void require(bool ok) {
 }  // namespace
 
 struct ActiveSession::Execution {
-  explicit Execution(ActiveAssembly a) : assembly(std::move(a)) {}
-  explicit Execution(engine::Runtime &r) : runtime(&r) {}
-  ~Execution() {
-    prepared.reset();
-    harness.reset();
-    if (layout) runtime->program().destroy_snode_tree(layout);
+  explicit Execution(engine::Runtime &r) { layout.program = &r.program(); }
+  Execution(engine::Runtime &r, ActiveAssembly a) : Execution(r) {
+    assembly.emplace(std::move(a));
   }
+  // Reverse member destruction drains first, then releases prepared before
+  // Harness and legacy FixedStudy before the source tree, while Program lives.
+  engine::SNodeTreeOwner layout;
   std::optional<ActiveAssembly> assembly; // Legacy value ownership is unchanged.
   std::vector<StudyNode> nodes;
   std::unique_ptr<FixedStudy> study;
-  engine::Runtime *runtime{};
-  taichi::lang::SNodeTree *layout{};
   warm::Uuid authorization;
   std::unique_ptr<field::Harness> harness;
   detail::ReservedUnique<detail::PreparedStudyOwner> prepared;
   std::uint64_t completed_ticks{0};
+  engine::SNodeTreeOwner::Drain drain{layout};
 };
 ActiveSession::ActiveSession(const engine::InstanceSettings &settings)
     : runtime_(std::make_unique<engine::Runtime>(settings)) {}
@@ -51,7 +51,7 @@ ExecutionHandle ActiveSession::submit(const ActiveAssembly &a,
                                       field::HostPath path) {
   require(a.inputs_available() && !executions_.count(a.study()));
   const auto start = std::chrono::steady_clock::now();
-  auto e = std::make_unique<Execution>(a);
+  auto e = std::make_unique<Execution>(*runtime_, a);
   using namespace taichi::lang;
   auto root = std::make_unique<SNode>(0, SNodeType::root);
   auto *parent = root.get();
@@ -69,7 +69,7 @@ ExecutionHandle ActiveSession::submit(const ActiveAssembly &a,
   const auto input = a.bind(e->nodes);
   prepare(
       input);  // Completeness/geometry/conversion before allocation/compile.
-  runtime_->program().add_snode_tree(std::move(root), false);
+  e->layout.node = runtime_->program().add_snode_tree(std::move(root), false);
   assembly_ms_ += std::chrono::duration<double, std::milli>(
                       std::chrono::steady_clock::now() - start)
                       .count();
@@ -141,7 +141,7 @@ PreparedSubmissionResult ActiveSession::submit_prepared(PreparedStudySubmission 
     b.layout[1].node.layout = parent;
   }
   parent->insert_children(SNodeType::place).dt = PrimitiveType::i32;
-  e.layout = runtime_->program().add_snode_tree(std::move(root),false);
+  e.layout.node = runtime_->program().add_snode_tree(std::move(root),false);
   e.harness = std::make_unique<field::Harness>(*runtime_,request.capacity,request.path);
   auto prepared = detail::PreparedStudyOwner::prepare(*e.harness,source,session_,b,
       request.resources,request.plan_work,request.metadata_work);
