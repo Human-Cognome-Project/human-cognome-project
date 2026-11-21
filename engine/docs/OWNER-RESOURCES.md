@@ -1,5 +1,14 @@
 # Private exchange-owner resource inventory
 
+[Legacy source-layout lifetime](LEGACY-SUBMISSION-LIFETIMES.md) at `a0ec440b`
+inspects the separate v1 session path. Each late parameter exception retains
+one source root / 4,096 requested bytes after the failed Harness dies; Activity
+retires. Successful legacy source roots also remain live after Execution teardown.
+The proposed correction belongs in the existing Execution and must destroy
+FixedStudy/native dependencies before source retirement. Production and saving
+are unchanged. These legacy root observations are not added to prepared-owner
+B, pool requests or compiled-object counts.
+
 [Native traversal-tree ownership](NATIVE-TRAVERSAL-TREE-OWNERSHIP.md) at `8c32cba4`
 implements #399's reviewed direction. Existing Activity/selection owners retain
 their registered trees, drain before dependencies die and retire afterwards.

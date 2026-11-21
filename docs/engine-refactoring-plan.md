@@ -1,13 +1,14 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-21). Initial main `c2b2d4d2` integrates qualified
-#396–#398. #399 at `c0b8a216` is provisionally accepted in review 7063069841
-while its remaining native gate finishes. The [tree lifetime correction](../engine/docs/NATIVE-TRAVERSAL-TREE-OWNERSHIP.md)
-at `8c32cba4` follows that explicit direction: component-local native ownership,
-ordered drain/retirement, constructor unwind and native-token reuse. Scoped
-local CI passes; runtime review and authoritative CI remain separate. Compiler/
-JIT ownership, broader accounting, GPU and #324 stay separate. All merges and
-integration remain with the maintainer.
+Current disposition (2026-11-21). Main `d13e6e3c` integrates qualified #399.
+#400 `32bf8764` is provisionally accepted in review 7064023495 while native
+44912836134 finishes; smoke passed. The [legacy source-layout inspection](../engine/docs/LEGACY-SUBMISSION-LIFETIMES.md)
+at `a0ec440b` follows its explicit continuation authorization. Real late failures
+and successful legacy Execution teardown retain source roots through the
+pre-finalization boundary; Activity roots retire. Local quick and six compiler/
+path cases pass. Production and saving are unchanged. Next review the proposal
+for existing Execution ownership and ordered dependency teardown. Compiler/JIT,
+complete B, GPU and #324 stay separate. Every merge is maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -218,6 +219,18 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-21 contributor (legacy submission source-layout inspection awaiting review):
+[Actual token lifetimes and minimal ownership proposal](../engine/docs/LEGACY-SUBMISSION-LIFETIMES.md)
+at `a0ec440b` follows #400 acceptance 7064023495 from `32bf8764`. A real
+negative/nonfinite parameter refusal retains one source root / 4,096 requested
+bytes while Activity retires; four source roots remain live before Runtime
+finalization after all Executions are destroyed. The test covers root-only and
+primary-step layouts, early/owner/generation refusal, sibling reports/counts,
+corrected retry and following ticks. Production is unchanged and saving is zero.
+Review ordered Execution ownership before runtime implementation; preserve
+FixedStudy-before-source retirement and existing prepared ordering. Local quick,
+four Clang and two GCC cases pass. Hosted CI and integration remain separate.
 
 2026-11-21 contributor (native traversal-tree lifetime correction awaiting review):
 [Component-owned retirement and actual costs](../engine/docs/NATIVE-TRAVERSAL-TREE-OWNERSHIP.md)

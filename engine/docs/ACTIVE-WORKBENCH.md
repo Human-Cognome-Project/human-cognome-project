@@ -18,6 +18,14 @@ tick and refresh semantics below remain v1; prepared tick is explicit and legacy
 refresh cannot replace a prepared execution. This does not migrate the retained
 capture executable or qualify actual retained source acquisition.
 
+The [legacy source-layout lifetime inspection](LEGACY-SUBMISSION-LIFETIMES.md)
+at `a0ec440b` observes the real `submit` path: registration discards its returned
+tree handle, so late parameter failures and successful Execution teardown leave
+source roots live until the pre-Runtime-finalization boundary. Activity roots
+retire independently. The proposed existing-Execution ownership correction must
+drain and destroy FixedStudy before source retirement. This inspection changes
+no production lifetime, legacy semantics or numerical behavior.
+
 The [retained-to-C3 source trace](RETAINED-C3-HANDOFF.md) (inspection awaiting
 review) distinguishes this legacy session from the built bounded prepared-owner
 route. `submit` uses v1 binding/FixedStudy and refuses v2; it does not provision a

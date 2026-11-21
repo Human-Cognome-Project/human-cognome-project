@@ -597,6 +597,23 @@ if(HCP_WITH_VIEWPORT)
             ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
       endforeach()
     endforeach()
+    add_executable(legacy_submission_inspection tests/legacy_submission_inspection.cpp)
+    target_link_libraries(legacy_submission_inspection PRIVATE viewport_snapshot)
+    target_compile_options(legacy_submission_inspection PRIVATE -Wall -Wextra -Werror)
+    target_link_options(legacy_submission_inspection PRIVATE
+        "-Wl,--wrap=_ZN6engine7RuntimeC1ERKNS_16InstanceSettingsE"
+        "-Wl,--wrap=_ZN6engine7RuntimeD1Ev"
+        "-Wl,--wrap=_ZN6taichi4lang7Program14add_snode_treeESt10unique_ptrINS0_5SNodeESt14default_deleteIS3_EEb"
+        "-Wl,--wrap=_ZN6taichi4lang7Program18destroy_snode_treeEPNS0_9SNodeTreeE"
+        "-Wl,--wrap=_ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE")
+    foreach(workers 1 2)
+      foreach(path bulk direct)
+        add_test(NAME legacy_submission_inspection_${workers}_${path}
+            COMMAND legacy_submission_inspection ${workers} ${path})
+        set_tests_properties(legacy_submission_inspection_${workers}_${path} PROPERTIES
+            ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
+      endforeach()
+    endforeach()
     add_executable(retained_membership_decision_test tests/retained_membership_decision_test.cpp)
     target_link_libraries(retained_membership_decision_test PRIVATE viewport_snapshot)
     target_compile_options(retained_membership_decision_test PRIVATE -Wall -Wextra -Werror)
