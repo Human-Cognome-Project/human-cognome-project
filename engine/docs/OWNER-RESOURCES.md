@@ -1,5 +1,14 @@
 # Private exchange-owner resource inventory
 
+[Refused prepared submissions](PREPARED-SUBMISSION-LIFETIMES.md) at `cf030244`
+inspect native ownership outside the selected metadata domains. Three candidate
+roots retire while two Activity/selection roots remain live under Program; each
+late refusal retains 8,192 requested root bytes in the CPU fixture. Eighty more
+compiled-data objects remain cached separately. No pool/list/compiled-byte total
+or complete B is inferred. A component-local tree-handle proposal preserves
+NativeSet borrowing and existing native destruction; no runtime change or saving
+is implemented. Repeated refusal/retry and sibling publication/ticks are checked.
+
 [Recipe-backed parent targets](PROJECTION-PARENT-TARGET-INDICES.md) at `c63bf01d`
 implement #397's explicit direction. Census counts actual 72-byte parent rows
 with independent selectors, kind, ordinal/count and full source paths, plus
@@ -23,7 +32,7 @@ existing projection header supplies study context once. Public active exports
 remain complete 208-byte values. Actual both-view retained/peak savings, setup
 work and unchanged output costs are recorded separately. Full refusal/lifetime
 and frozen publication/tick checks pass locally. #396 provisionally accepts
-final `2fc9d157`; remaining hosted native qualification and integration are separate.
+final `2fc9d157`; hosted native/smoke passed and the maintainer integrated it at `f706f056`, confirmed in #398 acceptance 7062570528.
 
 [Parent-contribution study ownership](PROJECTION-PARENT-STUDY-IDENTITY.md) at
 `a9011a88` observes actual active/spare pools in both adopted views. Repeated

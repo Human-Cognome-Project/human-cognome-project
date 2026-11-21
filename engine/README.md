@@ -39,6 +39,11 @@ The [native nested-instance inspection](docs/NATIVE-INSTANCE-INSPECTION.md)
 compares compiled layouts, indexed runtime cells and HCP occurrences, including
 catalogue revision boundaries, native recycling and accounting limits. Its
 focused witness is an inspection fixture, not a production object-model migration.
+The [prepared-submission lifetime inspection](docs/PREPARED-SUBMISSION-LIFETIMES.md)
+traces the real session refusal/retry path. It distinguishes retired source/record
+roots from Program-retained activity/selection trees and compiled data, preserves
+a warmed sibling and proposes component-local native tree ownership. Production
+and achieved saving remain unchanged by that inspection.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
