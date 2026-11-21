@@ -80,7 +80,10 @@ actual narrower pools, complete indexed active exports, refusal/lifetime control
 and measured whole-owner storage/work costs. The inactive pool stays private.
 The [parent field-target inspection](docs/PROJECTION-PARENT-TARGETS.md) measures
 remaining scoped-object copies against the existing recipe, with checked source/
-parent selectors and explicit guard-work overhead. Runtime remains unchanged.
+parent selectors and explicit guard-work overhead. Runtime remains unchanged
+at that inspection source. Its [authorized selector implementation](docs/PROJECTION-PARENT-TARGET-INDICES.md)
+records actual 72-byte rows, complete owning output, pool-role handling during
+repartitioning, refusal/retry and whole-owner storage/work costs.
 
 ## Python boundary
 

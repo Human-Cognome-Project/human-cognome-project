@@ -1,6 +1,6 @@
 # Recipe targets in projected parent contributions
 
-Status: **contributor inspection awaiting review**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Tested source `f551d14f4dae90f130731a3ab74b5cdccecb89d3`, tree `488fb8bfcef517e51cda3360ec93e2555026c69f`, follows [#396 review 7051718353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/396#issuecomment-7051718353) from accepted `2fc9d157`. Main `5d8c08ce` integrates qualified #395 and has its reviewed `c68d3751` tree. #396 is an accepted, unmerged dependency while its remaining native gate finishes. This contribution changes tests and documentation only. Production representation, behavior and achieved runtime saving are unchanged: **zero saving**.
+Status: **inspection provisionally accepted in #397**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Tested source `f551d14f4dae90f130731a3ab74b5cdccecb89d3`, tree `488fb8bfcef517e51cda3360ec93e2555026c69f`, follows [#396 review 7051718353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/396#issuecomment-7051718353) from accepted `2fc9d157`. Main `5d8c08ce` integrates qualified #395 and has its reviewed `c68d3751` tree. At the original handoff, #396 was an accepted, unmerged dependency. It subsequently passed native/smoke qualification; integration remains maintainer work. [#397 review 7052622147](https://github.com/Human-Cognome-Project/human-cognome-project/pull/397#issuecomment-7052622147) accepts final `f27db64d`, verifies all nine post-test files are Markdown and authorizes the [selector implementation](PROJECTION-PARENT-TARGET-INDICES.md). #397's remaining native qualification stays separate. This contribution changes tests and documentation only. Production representation, behavior and achieved runtime saving are unchanged: **zero saving**.
 
 ## Ownership issue and actual buffers
 
@@ -43,7 +43,7 @@ Controls substitute another valid source having the same full target, ordinal/co
 
 Selectors established in an original projection still resolve exact targets after copying/moving to a new owner and destroying the original recipe/projection. Actual public values and independently copied recipe target objects remain complete after all projection/domain owners die. The temporary integer selectors retain no domain, recipe pin or reader object. Existing export allocation-refusal/retry and selected-domain/weak lifetime controls remain active.
 
-## Bounded proposal requiring review
+## Bounded proposal accepted in #397
 
 Keep logical source, kind, ordinal/count and public owning output separate from definition-owned target payload. A reviewed implementation could retain checked independent occurrence/parent selectors in each private row and use the projection's existing exact recipe for target reads. Preserve full study/entry/path association, source/revision validation, repeated-target ordinals, selector-width admission, both pool roles and move/reorder/copy correlation. Public `parent(index)` must still return a complete independently owning field object; the inactive pool remains private. Native claims/incarnation/generation retain execution authority.
 
@@ -66,4 +66,4 @@ Verified archive: `/tmp/hcp-projection-parent-target-f551d14f-evidence.tar.gz`, 
 
 The standalone development suite passed before committing; it is retained separately from source-pinned qualification. Existing post-PASS Taichi cache-lock warnings remain. No caches, retained stores or Git history were cleared.
 
-Next: review this inspection and its bounded proposal, reconcile authoritative GitHub CI, and let the maintainer handle integration. Character/complete-character pins, other field ownership, broader resource/revision/admission policy, #324 and GPU qualification remain separate.
+The authorized [runtime follow-up](PROJECTION-PARENT-TARGET-INDICES.md) records actual replacement, guard, output and phase-correct preparation costs. Reconcile authoritative qualification before maintainer integration. Original inspection attribution and zero saving remain pinned to `f551d14f`. Character/complete-character pins, other field ownership, broader resource/revision/admission policy, #324 and GPU qualification remain separate.

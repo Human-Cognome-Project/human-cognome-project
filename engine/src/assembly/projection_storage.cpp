@@ -80,7 +80,7 @@ struct Census {
   }
   template<class A> void parents(const std::vector<detail::ProjectionParentContribution,A> &v) {
     buffer(v); count(result.parent_slots,v.size());
-    for (const auto &p : v) { id(p.source); object(p.field.object); }
+    for (const auto &p : v) id(p.source);
   }
 };
 }

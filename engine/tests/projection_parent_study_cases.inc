@@ -75,7 +75,8 @@ void projection_parent_study_cases() {
         multi_digit|=row.source.path.size()==2 && row.source.path[0]==10;
         multi_byte|=row.source.path.size()==2 && row.source.path[1]>0;
         for(std::size_t j=0;j<i;++j)repeated_target|=rows[j].source==row.source &&
-            rows[j].field.object==row.field.object && rows[j].ordinal!=row.ordinal;
+            ProjectionAccess::parent_target(*projection,spare,j)==ProjectionAccess::parent_target(*projection,spare,i) &&
+            rows[j].ordinal!=row.ordinal;
         PreparationWork full(UINT64_MAX),numeric(UINT64_MAX);
         check(P::matches<Access>(*projection,spare,i,key,full) &&
               ProjectionAccess::parent_matches(*projection,spare,i,key.study,key.source,numeric) &&

@@ -1,10 +1,19 @@
 # Native letter/byte projection — Stage B
 
+The [parent-target selector implementation](PROJECTION-PARENT-TARGET-INDICES.md),
+tested source `c63bf01d`, implements #397 review 7052622147. Private parent rows
+retain full numeric source and independent occurrence/parent selectors, with
+kind and ordinal/count preserved. Steady readers validate role; preparation
+handles the legitimate intermediate combined pool separately. Active owning
+exports remain complete. Actual width/storage/work/output costs and source-pinned
+CPU qualification are recorded separately; runtime review and hosted CI remain.
+
 The [parent field-target inspection](PROJECTION-PARENT-TARGETS.md), tested source
 `f551d14f`, follows #396's next-inspection direction. It attributes full field
 scope/address backing in active/spare pools, checks the relation to the existing
 recipe and measures independent source/parent selectors. Candidate ABI and guard
-work are separate from actual storage; production and runtime saving are unchanged.
+work are separate from actual storage; production and saving are unchanged
+at that source. #397 accepts the bounded implementation direction above.
 
 The [parent study implementation](PROJECTION-PARENT-HEADER.md), tested source
 `22482caa`, implements #395 review 7050686178. Active/spare private parent rows
