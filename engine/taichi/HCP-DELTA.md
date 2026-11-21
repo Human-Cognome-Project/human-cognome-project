@@ -76,6 +76,17 @@ change, while LLVM RuntimeContext/NodeManager struct layouts remain unchanged.
 
 Runtime/AOT compatibility and cache work:
 
+- `taichi/program/compiled_kernel_borrow.h`, `taichi/codegen/compiled_kernel_data.h`,
+  `taichi/compilation_manager/kernel_compilation_manager.{h,cpp}` and
+  `taichi/program/program.{h,cpp}` — move-only native borrows for LLVM/x64
+  non-AST memory-cache records. Native metadata counts guards and permanently
+  marks raw clients; checked access rejects expired records before dereference.
+  Guards retain metadata only, not Program/LLVM contexts or executable memory.
+  CompiledKernelData gains a shared metadata pointer: rebuild all matching
+  native archives and HCP wrappers for this C++ class-layout change. Serialized
+  compiled data, LLVM runtime bitcode/AOT layouts, launch handles and ORC
+  release behavior are unchanged; no selective reclamation or byte gate.
+
 - `taichi/program/compiler_jit_counts.h`,
   `taichi/compilation_manager/kernel_compilation_manager.{h,cpp}`,
   `taichi/program/program_impl.h`, `taichi/jit/jit_session.{h,cpp}`,

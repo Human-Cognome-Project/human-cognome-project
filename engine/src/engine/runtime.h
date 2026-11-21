@@ -115,6 +115,8 @@ class CompiledKernel {
     taichi::lang::LaunchContextBuilder *borrowed_{};
   };
   CompiledKernel() = default;
+  CompiledKernel(CompiledKernel &&other) noexcept;
+  CompiledKernel &operator=(CompiledKernel &&other) noexcept;
   CompiledKernel(Runtime &runtime,
                  const std::string &name,
                  std::unique_ptr<taichi::lang::Block> body,
@@ -133,9 +135,12 @@ class CompiledKernel {
  private:
   friend struct testing::CompiledKernelAccess;
   Runtime *runtime_{nullptr};
+  // Declared before Kernel/context: release the native borrow after both die.
+  taichi::lang::CompiledKernelBorrow borrow_;
   std::unique_ptr<taichi::lang::Kernel> kernel_;
   const taichi::lang::CompiledKernelData *compiled_{nullptr};
   std::unique_ptr<taichi::lang::LaunchContextBuilder> bound_context_;
+  const taichi::lang::CompiledKernelData &compiled_data() const;
 };
 
 inline void argument_int(taichi::lang::LaunchContextBuilder &ctx,

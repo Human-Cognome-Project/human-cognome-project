@@ -97,6 +97,26 @@ const CompiledKernelData &KernelCompilationManager::load_or_compile(
     const CompileConfig &compile_config,
     const DeviceCapabilityConfig &caps,
     const Kernel &kernel_def) {
+  const auto &data = load_or_compile_impl(compile_config, caps, kernel_def);
+  if (compile_config.arch == Arch::x64)
+    data.borrow_state(this)->untracked = true;
+  return data;
+}
+
+CompiledKernelBorrow KernelCompilationManager::borrow_or_compile(
+    const CompileConfig &compile_config,
+    const DeviceCapabilityConfig &caps,
+    const Kernel &kernel_def) {
+  if (compile_config.arch != Arch::x64 || kernel_def.ir_is_ast())
+    throw std::invalid_argument("compiled-data borrows require LLVM/x64 Block kernels");
+  const auto &data = load_or_compile_impl(compile_config, caps, kernel_def);
+  return CompiledKernelBorrow(data.borrow_state(this));
+}
+
+const CompiledKernelData &KernelCompilationManager::load_or_compile_impl(
+    const CompileConfig &compile_config,
+    const DeviceCapabilityConfig &caps,
+    const Kernel &kernel_def) {
   auto cache_mode = get_cache_mode(compile_config, kernel_def);
   const auto kernel_key = make_kernel_key(compile_config, caps, kernel_def);
   auto cached_kernel = try_load_cached_kernel(kernel_def, kernel_key,

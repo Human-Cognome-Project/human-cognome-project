@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "taichi/rhi/arch.h"
+#include "taichi/program/compiled_kernel_borrow.h"
 
 namespace taichi::lang {
 
@@ -99,7 +100,15 @@ class CompiledKernelData {
   CompiledKernelData() = default;
   CompiledKernelData(const CompiledKernelData &) = delete;
   CompiledKernelData &operator=(const CompiledKernelData &) = delete;
-  virtual ~CompiledKernelData() = default;
+  virtual ~CompiledKernelData() {
+    if (borrow_state_) { borrow_state_->data = nullptr; borrow_state_->owner = nullptr; }
+  }
+
+  // Non-lazy metadata only. Unmanaged/cloned objects remain unavailable and
+  // untracked; raw native clients remain permanently marked on owned records.
+  CompiledBorrowObservation borrow_observation() const noexcept {
+    return CompiledKernelBorrow::observe(borrow_state_);
+  }
 
   virtual Arch arch() const = 0;
 
@@ -133,6 +142,15 @@ class CompiledKernelData {
   virtual Err dump_impl(CompiledKernelDataFile &file) const = 0;
 
  private:
+  friend class KernelCompilationManager;
+  const std::shared_ptr<CompiledKernelBorrow::State> &borrow_state(const void *owner) const {
+    if (!borrow_state_)
+      borrow_state_ = std::make_shared<CompiledKernelBorrow::State>(this, owner);
+    if (borrow_state_->owner != owner || borrow_state_->data != this)
+      throw std::logic_error("compiled-data borrow owner mismatch");
+    return borrow_state_;
+  }
+  mutable std::shared_ptr<CompiledKernelBorrow::State> borrow_state_;
   using Creator = std::unique_ptr<CompiledKernelData>();
   static Creator *const llvm_creator;
   static Creator *const spriv_creator;

@@ -128,13 +128,13 @@ void wrap_sync(Program *p) {
   real_sync(p);
   if (auto *t=submission_trace::active) t->last_sync=++t->serial;
 }
-const CompiledKernelData &real_compile(Program *, const CompileConfig &,
+CompiledKernelBorrow real_compile(Program *, const CompileConfig &,
     const DeviceCapabilityConfig &, const Kernel &)
-    __asm__("__real__ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
-const CompiledKernelData &wrap_compile(Program *, const CompileConfig &,
+    __asm__("__real__ZN6taichi4lang7Program21compile_kernel_borrowERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
+CompiledKernelBorrow wrap_compile(Program *, const CompileConfig &,
     const DeviceCapabilityConfig &, const Kernel &)
-    __asm__("__wrap__ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
-const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
+    __asm__("__wrap__ZN6taichi4lang7Program21compile_kernel_borrowERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
+CompiledKernelBorrow wrap_compile(Program *p, const CompileConfig &c,
     const DeviceCapabilityConfig &caps, const Kernel &k) {
   compiler_trace::capture(&k, compiler_trace::Kind::Definition);
   if (auto *t=submission_trace::active) {
@@ -145,7 +145,8 @@ const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
       throw submission_trace::ConstructorFault{};
     }
   }
-  const auto &data=real_compile(p,c,caps,k);
+  auto borrow=real_compile(p,c,caps,k);
+  const auto &data=borrow.get();
   compiler_trace::compiled(*p, k, data);
   if (auto *t=submission_trace::active) {
     submission_trace::check(t->runtime && &t->runtime->program()==p,"foreign compiled object");
@@ -163,7 +164,7 @@ const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
                 << ",prefix=" << prefix << " PASS\n";
     }
   }
-  return data;
+  return borrow;
 }
 void real_launch(Program *, const CompiledKernelData &, LaunchContextBuilder &)
     __asm__("__real__ZN6taichi4lang7Program13launch_kernelERKNS0_18CompiledKernelDataERNS0_20LaunchContextBuilderE");
