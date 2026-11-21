@@ -1,20 +1,28 @@
 # Core continuation after local CUDA corrections
 
-**Refused prepared-submission native lifetimes — 2026-11-21 (inspection awaiting review):**
-[Actual roots, compiled bindings and bounded ownership proposal](../engine/docs/PREPARED-SUBMISSION-LIFETIMES.md)
-at `cf030244` starts from integrated main `c2b2d4d2` under #343. The real
-session path retires source/record-map roots after plan/placement refusal,
-while Activity and candidate-selection trees remain Program-owned. Each late
-refusal leaves two additional live roots / 8,192 requested root bytes in this
-CPU fixture, plus eighty retained compiled-data objects. These are separate
-from native pool/list storage and full B. Production is unchanged; saving is zero.
-Scoped local CI covers repeated refusal, actual token/tree reuse, unchanged
-warmed sibling claims/numerics, healthy retry, following ticks and source release.
+**Native traversal-tree ownership — 2026-11-21 (runtime awaiting review):**
+[Ordered retirement, constructor unwind and actual native costs](../engine/docs/NATIVE-TRAVERSAL-TREE-OWNERSHIP.md)
+at `8c32cba4` implements [#399 review 7063069841](https://github.com/Human-Cognome-Project/human-cognome-project/pull/399#issuecomment-7063069841)
+from accepted `c0b8a216`. The existing record-map guard is extracted separately;
+Activity and candidate selection retain their own registered tree handles.
+A final member drains before dependent destruction and the first owner member
+retires after it, including constructor unwind. NativeSet remains borrowed.
+Late refusal now retires both set roots / 8,192 requested root bytes; guards
+add 24 host-object bytes per component. Pool/list high-water, retained compiler
+data and complete B stay separate. Scoped local CI covers three constructor
+faults, repeated refusals, actual old-token/tree-ID reuse, healthy retry and
+preserved sibling claims/completed values and subsequent ticks.
 
-Next: review the component-local tree-handle proposal and reconcile authoritative
-GitHub CI. A runtime follow-up must preserve constructor unwind, dependent
-kernel/context ordering and native retirement/reuse. Compiler/JIT eviction,
-complete borrowed accounting, mixed revisions, GPU and #324 remain separate.
+Next: review this runtime and reconcile authoritative GitHub CI. After scoped
+acceptance, inspect legacy submission's source-layout lifetime, where the native
+registration return is still discarded, before changing that boundary. Compiler/
+JIT eviction, full borrowed accounting, GPU and #324 remain separate.
+
+The [accepted lifetime inspection](../engine/docs/PREPARED-SUBMISSION-LIFETIMES.md)
+preserves its original `cf030244` before measurements and zero saving. #399 at
+`c0b8a216` is provisionally accepted while its remaining hosted qualification
+finishes. This branch follows that explicitly authorized head; initial main is
+qualified `c2b2d4d2`. Every merge and integration remains with the maintainer.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

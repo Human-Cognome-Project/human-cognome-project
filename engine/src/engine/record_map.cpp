@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include "engine/transfer.h"
+#include "engine/snode_tree_owner.h"
 #include "taichi/util/bit.h"
 
 namespace engine {
@@ -62,16 +63,7 @@ RecordResult failed(RecordStatus status) {
 }  // namespace
 
 struct PreparedRecordMap::Impl {
-  struct Tree {
-    Program *program{};
-    SNodeTree *node{};
-    ~Tree() {
-      if (node) {
-        program->synchronize();
-        program->destroy_snode_tree(node);
-      }
-    }
-  } tree;
+  SNodeTreeOwner tree;
   Runtime &runtime;
   const std::uint64_t context{next_context()};
   RecordBindings binding;

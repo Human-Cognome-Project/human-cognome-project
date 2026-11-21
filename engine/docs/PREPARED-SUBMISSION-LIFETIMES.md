@@ -1,6 +1,13 @@
 # Native lifetime after refused prepared submission
 
-Status: **contributor inspection awaiting review**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Starts from integrated main `c2b2d4d276803cdacca6cef353c505ede9be6755`, whose tree equals qualified #398 head `0ddb8b35`. [Maintainer acceptance 7062570528](https://github.com/Human-Cognome-Project/human-cognome-project/pull/398#issuecomment-7062570528) confirms #396–#398 passed hosted native/smoke and authorizes the next responsibility/native-reuse inspection. Tested source `cf0302448e2954da7eed089f1109f325b5335dfb`, tree `eddfcf5032898ea0ce2dcc44ec096e5394b405c6`, adds only a native inspection executable and four CTests. Production, native ownership and achieved saving are unchanged: **zero runtime saving**.
+Status: **inspection provisionally accepted in #399**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Starts from integrated main `c2b2d4d276803cdacca6cef353c505ede9be6755`, whose tree equals qualified #398 head `0ddb8b35`. [Maintainer acceptance 7062570528](https://github.com/Human-Cognome-Project/human-cognome-project/pull/398#issuecomment-7062570528) confirms #396–#398 passed hosted native/smoke and authorizes the next responsibility/native-reuse inspection. Tested source `cf0302448e2954da7eed089f1109f325b5335dfb`, tree `eddfcf5032898ea0ce2dcc44ec096e5394b405c6`, adds only a native inspection executable and four CTests. Production, native ownership and achieved saving are unchanged: **zero runtime saving**.
+
+[#399 review 7063069841](https://github.com/Human-Cognome-Project/human-cognome-project/pull/399#issuecomment-7063069841)
+accepts final `c0b8a216`, verifies all ten post-test changes are Markdown and
+authorizes the [component-local runtime correction](NATIVE-TRAVERSAL-TREE-OWNERSHIP.md).
+Original ownership and zero-saving measurements below remain pinned to this
+inspection source; later root retirement is measured separately. Its remaining
+hosted qualification and all maintainer integration remain separate.
 
 ## Request, control and current owners
 
@@ -87,4 +94,4 @@ Verified machine-local bundle: `/tmp/hcp-submission-inspection-cf030244-evidence
 
 The initial unpinned test assumed all five roots retired and failed after observing five additions but only three destroys. Its raw log is preserved; that failure exposed the ownership distinction above. The revised witness observes current source behavior rather than claiming it has been fixed. An earlier test-only compile attempt used a nonexistent completed-state member and lacked the existing handle-comparison header; the interfaces were corrected before source pinning. The first local artifact audit assumed one task per module; native deactivation also emits GC. Its partial output/script are retained, and the corrected audit checks both tasks. These development/audit assumptions did not change production or weaken an accepted runtime assertion.
 
-Next: review this source-pinned inspection and bounded native-tree ownership proposal, reconcile authoritative GitHub CI, then let the maintainer handle integration. Implement the accepted ownership change separately from compiler-cache work or mathematics.
+The authorized [runtime follow-up](NATIVE-TRAVERSAL-TREE-OWNERSHIP.md) measures actual retirement, constructor unwind and preserved operation. Reconcile its review/authoritative CI before maintainer integration. Original inspection results remain source-pinned, with no saving at that source; compiler-cache work and mathematics stay separate.

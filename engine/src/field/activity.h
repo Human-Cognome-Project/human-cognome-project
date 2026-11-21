@@ -2,6 +2,7 @@
 
 #include "field/field.h"
 #include "field/native_set.h"
+#include "engine/snode_tree_owner.h"
 
 namespace field::detail {
 enum ParticleState { Moving, PriorMoving, ParticleStateCount };
@@ -34,6 +35,7 @@ inline constexpr int TrialAttempts = CounterCount,
 // Numerical control state belongs to the execution session. It carries no
 // source identities, private codes, or compiler specialization values.
 class Activity {
+  engine::SNodeTreeOwner tree_; // Retire after every dependent member.
  public:
   Activity(engine::Runtime &runtime,
            int particles,
@@ -96,5 +98,6 @@ class Activity {
   std::array<double, 3> fixed_origin64_{};
   std::unique_ptr<taichi::lang::Ndarray> selected_slots_array_;
   engine::CompiledKernel begin_, touch_, contact_touch_, mark_, reset_, clear_;
+  engine::SNodeTreeOwner::Drain tree_drain_{tree_};
 };
 }  // namespace field::detail
