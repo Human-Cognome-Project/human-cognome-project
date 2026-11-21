@@ -1,13 +1,20 @@
 # Private exchange-owner resource inventory
 
+[Native compiler/JIT counts](NATIVE-COMPILER-JIT-COUNTS.md) at `b36dcd28` implement
+#403's accepted read-only observation direction in the existing native owners.
+Pending compiled objects, metadata/loaded objects and runtime/kernel modules
+are distinct, with non-lazy absence and bounded-work incompleteness. Counts
+reconcile with CPU refusal/finalization witnesses; `complete` remains false.
+They provide no byte charge, resource gate, reclamation policy or achieved saving.
+
 [Compiler/JIT ownership](COMPILER-JIT-LIFETIMES.md) at `fb614350` inspects the
 native resources beyond source-tree retirement. Refused legacy contexts retain
 compiled data without registration; prepared late refusal also retains launcher
 rows and kernel JIT wrappers. Definition destruction, compiled-cache clearing at
 finalization and later JIT-session destruction are separate boundaries. Counts,
 serialized bytes and Program's empty Kernel vector do not establish complete B.
-The proposed next native observations are read-only counts/relationships; no
-eviction, byte charge, combined gate or saving is implemented by this inspection.
+That inspection's accepted observation proposal is implemented separately above;
+eviction, byte charge, combined gate and saving remain outside its scope.
 
 [Session source-tree ownership](SESSION-SOURCE-TREE-OWNERSHIP.md) at `e226b76a`
 implements #401's reviewed direction in the existing Execution. Both submit

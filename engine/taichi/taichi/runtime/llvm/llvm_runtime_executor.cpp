@@ -190,6 +190,15 @@ JITModule *LlvmRuntimeExecutor::get_runtime_jit_module() {
   return runtime_jit_module_;
 }
 
+JitOwnershipCounts LlvmRuntimeExecutor::jit_ownership_counts(
+    std::size_t module_budget) const {
+  if (jit_session_)
+    return jit_session_->ownership_counts(runtime_jit_module_, module_budget);
+  JitOwnershipCounts result;
+  result.status = OwnershipCountStatus::Absent;
+  return result;
+}
+
 void LlvmRuntimeExecutor::print_list_manager_info(void *list_manager,
                                                   uint64 *result_buffer) {
   auto list_manager_len = runtime_query<int32>("ListManager_get_num_elements",

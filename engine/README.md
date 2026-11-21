@@ -66,6 +66,14 @@ Real legacy/prepared refusals retain different registered footprints; cached
 data clears during finalization while kernel wrappers survive until Runtime
 member destruction. Production eviction and byte accounting are unchanged.
 
+Its [authorized native count APIs](docs/NATIVE-COMPILER-JIT-COUNTS.md) observe
+existing compiler/session owners without lazy creation, disk loading or module
+registration. Pending/loaded objects and runtime/kernel modules remain distinct;
+inspection budgets and explicit incompleteness prevent unsupported byte or
+reclamation claims. Fresh, partially initialized, loaded and finalization cases
+have source-pinned native CPU evidence, including a standalone test without
+warm integration or viewport.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The

@@ -76,6 +76,18 @@ change, while LLVM RuntimeContext/NodeManager struct layouts remain unchanged.
 
 Runtime/AOT compatibility and cache work:
 
+- `taichi/program/compiler_jit_counts.h`,
+  `taichi/compilation_manager/kernel_compilation_manager.{h,cpp}`,
+  `taichi/program/program_impl.h`, `taichi/jit/jit_session.{h,cpp}`,
+  `taichi/runtime/llvm/llvm_runtime_executor.{h,cpp}` and
+  `taichi/runtime/program_impls/llvm/llvm_program.h` — non-lazy read-only
+  ownership/count queries through existing native owners. Caller work limits
+  bound scans; absent/present/incomplete results keep runtime modules separate
+  from registered kernel modules and pending compiled objects separate from
+  disk metadata/loaded objects. No eviction, byte charge, new registry, owner
+  fields, virtual methods or LLVM runtime/AOT layout change is introduced.
+  Rebuild matching component archives and the wrapper for the new C++ methods.
+
 - `taichi/inc/constants.h`
 - `taichi/analysis/offline_cache_util.cpp`
 - `taichi/runtime/llvm/llvm_aot_module_loader.h`

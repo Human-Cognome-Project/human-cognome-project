@@ -13,6 +13,7 @@
 #include "taichi/struct/snode_tree.h"
 #include "taichi/program/compile_config.h"
 #include "taichi/program/reservation_request.h"
+#include "taichi/program/compiler_jit_counts.h"
 
 #include "taichi/system/threading.h"
 
@@ -109,6 +110,7 @@ class LlvmRuntimeExecutor {
   TaichiLLVMContext *get_llvm_context();
 
   JITModule *create_jit_module(std::unique_ptr<llvm::Module> module);
+  JitOwnershipCounts jit_ownership_counts(std::size_t module_budget) const;
 
   JITModule *get_runtime_jit_module();
 

@@ -1,16 +1,18 @@
 # Engine and Analyst-facing refactoring plan
 
 Current disposition (2026-11-21). Main `456cb681` integrates qualified #400–#402
-with the exact reviewed `2062f00e` tree. The [compiler/JIT lifetime inspection](../engine/docs/COMPILER-JIT-LIFETIMES.md)
-at `fb614350` follows #402 decision 7066447453 from integrated main. Definitions,
-compiled data, launcher rows and JIT/ORC resources have distinct owners and
-release boundaries. Legacy parameter refusal adds data without registration;
-prepared refusal retains both data and registered kernel wrappers. Eight scoped
-Clang/GCC cases and local quick pass; production and runtime saving are unchanged.
-Review the proposed non-lazy native counts/ownership observations before eviction
-or byte-accounting changes. Complete B, GPU and #324 stay separate. Earlier
-pending/provisional progress below retains its source handoff state; the above
-integration supersedes those pending statuses. Every merge is maintainer work.
+with reviewed `2062f00e`'s tree. #403 at `a326ca77` is provisionally accepted in
+decision 7067047506; its smoke passed and native qualification is still running.
+The [native compiler/JIT count implementation](../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
+at tested `b36dcd28` implements that decision using existing native owners. It
+adds non-lazy count/identity snapshots with bounded inspection and explicit
+incompleteness. Fresh/partial observations, positive disk loading, refusal and
+finalization reconcile with independent CPU witnesses. Quick, eleven Clang/seven
+GCC CTests and the optional-components-OFF standalone case pass; new authoritative
+hosted CI and implementation review remain. Next inspect shared borrowers,
+handle/row invalidation and ORC retirement before proposing eviction. Byte
+accounting, complete B, GPU and #324 stay separate. Earlier entries preserve
+their source-specific handoffs. Every merge remains maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -221,6 +223,20 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-21 contributor (native compiler/JIT counts awaiting review):
+[Existing owners, partial state and counted runtime/kernel roles](../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
+at `b36dcd28` implements #403 review 7067047506 from `a326ca77`. Compiler counts
+separate pending objects, disk metadata and loaded objects; JIT counts distinguish
+the existing initial-runtime identity from kernel wrappers. Queries create no
+owner, load, compilation or registration and keep `complete=false`. Twelve
+native histories and eight overlapping lifetime histories match retained before
+evidence; all new counts reconcile, including finalized data release with live
+JIT wrappers. Quick, eleven Clang/seven GCC CTests and a warm/viewport-OFF
+standalone test pass. Review and authoritative hosted CI remain separate. No
+eviction, byte charge or achieved saving; inspect borrowing/handle/ORC lifetime
+before any reclamation proposal. #403 is a provisional dependency; all merges
+remain maintainer work.
 
 2026-11-21 contributor (compiler/JIT ownership inspection awaiting review):
 [Separate native owners and release boundaries](../engine/docs/COMPILER-JIT-LIFETIMES.md)

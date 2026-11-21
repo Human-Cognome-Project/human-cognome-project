@@ -619,6 +619,7 @@ if(HCP_WITH_VIEWPORT)
     endforeach()
     foreach(inspection_target prepared_submission_inspection legacy_submission_inspection)
       target_link_options(${inspection_target} PRIVATE
+          "-Wl,--wrap=_ZN6taichi4lang10JITSession6createEPNS0_17TaichiLLVMContextERKNS0_13CompileConfigENS_4ArchE"
           "-Wl,--wrap=_ZdlPv"
           "-Wl,--wrap=_ZdlPvm"
           "-Wl,--wrap=_ZN6taichi4lang7Program8finalizeEv"
@@ -642,6 +643,15 @@ if(HCP_WITH_VIEWPORT)
 endif()
 
 # Every run needs TI_LIB_DIR pointing at the engine's LLVM runtime bitcode.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_executable(compiler_jit_counts_test tests/compiler_jit_counts_test.cpp)
+  target_link_libraries(compiler_jit_counts_test PRIVATE engine_support)
+  target_compile_options(compiler_jit_counts_test PRIVATE -Wall -Wextra -Werror)
+  add_test(NAME compiler_jit_counts_test COMMAND compiler_jit_counts_test)
+  set_tests_properties(compiler_jit_counts_test PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+endif()
+
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scripts/engine-env.sh.in"
                "${CMAKE_CURRENT_BINARY_DIR}/engine-env.sh" @ONLY)
 

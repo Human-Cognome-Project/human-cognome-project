@@ -8,6 +8,7 @@
 #include "taichi/util/offline_cache.h"
 #include "taichi/codegen/kernel_compiler.h"
 #include "taichi/codegen/compiled_kernel_data.h"
+#include "taichi/program/compiler_jit_counts.h"
 
 namespace taichi::lang {
 
@@ -57,6 +58,8 @@ class KernelCompilationManager final {
   };
 
   explicit KernelCompilationManager(Config init_params);
+
+  CompilerOwnershipCounts ownership_counts(std::size_t entry_budget) const;
 
   // Load from memory || Load from disk || (Compile && Cache in memory)
   const CompiledKernelData &load_or_compile(const CompileConfig &compile_config,

@@ -68,6 +68,31 @@ KernelCompilationManager::KernelCompilationManager(Config config)
   }
 }
 
+CompilerOwnershipCounts KernelCompilationManager::ownership_counts(
+    std::size_t entry_budget) const {
+  CompilerOwnershipCounts result;
+  result.owner = this;
+  result.pending_entries = caching_kernels_.size();
+  result.disk_metadata_entries = cached_data_.kernels.size();
+  // Subtraction avoids overflowing a combined work count. A short budget
+  // returns the known map sizes without scanning or reporting partial objects.
+  if (result.pending_entries > entry_budget ||
+      result.disk_metadata_entries > entry_budget - result.pending_entries) {
+    result.status = OwnershipCountStatus::Incomplete;
+    return result;
+  }
+  for (const auto &entry : caching_kernels_) {
+    ++result.visited_entries;
+    result.pending_objects += bool(entry.second.compiled_kernel_data);
+  }
+  for (const auto &entry : cached_data_.kernels) {
+    ++result.visited_entries;
+    result.loaded_objects += bool(entry.second.compiled_kernel_data);
+  }
+  result.status = OwnershipCountStatus::Present;
+  return result;
+}
+
 const CompiledKernelData &KernelCompilationManager::load_or_compile(
     const CompileConfig &compile_config,
     const DeviceCapabilityConfig &caps,
