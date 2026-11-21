@@ -59,7 +59,8 @@ NativeSelectionWorkspace::NativeSelectionWorkspace(engine::Runtime &r,
   auto root = std::make_unique<SNode>(0, SNodeType::root);
   candidate_[0] = NativeSet::attach(*root, p);
   candidate_[1] = NativeSet::attach(*root, g);
-  r.program().add_snode_tree(std::move(root), false);
+  tree_.program = &r.program();
+  tree_.node = r.program().add_snode_tree(std::move(root), false);
   const auto suffix = std::to_string(candidate_[0].cells->id);
   const int threads = r.cpu_threads();
   const auto build = [&](const std::string &name, bool publication,

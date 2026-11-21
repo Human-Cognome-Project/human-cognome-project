@@ -72,7 +72,8 @@ Activity::Activity(engine::Runtime &r,
   auto root = std::make_unique<SNode>(0, SNodeType::root);
   particle_activity = NativeSet::attach(*root, p);
   centroids = NativeSet::attach(*root, g);
-  r.program().add_snode_tree(std::move(root), false);
+  tree_.program = &r.program();
+  tree_.node = r.program().add_snode_tree(std::move(root), false);
   particle_flags = allocate(r, PrimitiveType::i32, ParticleStateCount, p);
   particle_delta = allocate(r, real_type(wide()), 3, p);
   group_flags = allocate(r, PrimitiveType::i32, GroupStateCount, g);

@@ -4,6 +4,8 @@
 #include "hierarchy_entry_trace.h"
 #include "prepared_metrics.h"
 #include "field/cascade_source.h"
+#include "field/activity.h"
+#include "field/native_selection.h"
 #include "taichi/codegen/compiled_kernel_data.h"
 #include <cstring>
 #include <fstream>
@@ -16,6 +18,8 @@ namespace submission_trace {
 using namespace taichi::lang;
 struct Root { int id; AllocationRecord record; bool native_sets; };
 struct Compilation { std::string name; const CompiledKernelData *data; };
+enum class Fault { None, ActivityCompile, SelectionCompile, SelectionLaunch };
+struct ConstructorFault : std::bad_alloc {};
 struct Trace {
   engine::Runtime *runtime{};
   std::vector<Root> roots;
@@ -26,6 +30,10 @@ struct Trace {
   bool emit{};
   std::string phase{"live"};
   unsigned emitted{};
+  Fault fault{Fault::None};
+  bool fault_fired{};
+  std::size_t constructor_faults{}, list_samples{};
+  std::uint64_t serial{}, last_launch{}, last_sync{}, selected_list_peak{}, selected_elements_peak{};
   void next(const char *name) { phase=name; emitted=0; }
 };
 thread_local Trace *active{};
@@ -37,8 +45,7 @@ LlvmProgramImpl &impl(Program &p) {
 void candidate_roots(const Trace &t, std::size_t begin) {
   auto *device = t.runtime->program().get_compute_device();
   for (std::size_t i=begin; i<t.roots.size(); ++i)
-    check(device->allocation_record(t.roots[i].record.token).status ==
-              (t.roots[i].native_sets?AllocationRecordStatus::Live:AllocationRecordStatus::Retired),
+    check(device->allocation_record(t.roots[i].record.token).status == AllocationRecordStatus::Retired,
           "observed native root lifetime mismatch");
 }
 }
@@ -60,10 +67,9 @@ extern "C" void wrap_runtime_destroy(engine::Runtime *r) {
   if (auto *t=submission_trace::active) {
     submission_trace::check(t->runtime==r,"foreign Runtime destruction");
     submission_trace::candidate_roots(*t,0);
-    for (const auto &root:t->roots) if (root.native_sets) {
-      ++t->live_sets_before_finalize;
-      t->root_requested_before_finalize+=r->program().get_compute_device()->allocation_record(root.record.token).requested_bytes;
-    }
+    for (const auto &root:t->roots)
+      submission_trace::check(r->program().get_compute_device()->allocation_record(root.record.token).status==taichi::lang::AllocationRecordStatus::Retired,
+                              "execution teardown left registered backing live");
     ++t->runtime_destroys; t->runtime=nullptr;
   }
   real_runtime_destroy(r);
@@ -97,8 +103,29 @@ void real_destroy_tree(Program *, SNodeTree *)
 void wrap_destroy_tree(Program *, SNodeTree *)
     __asm__("__wrap__ZN6taichi4lang7Program18destroy_snode_treeEPNS0_9SNodeTreeE");
 void wrap_destroy_tree(Program *p, SNodeTree *tree) {
+  if (auto *t=submission_trace::active) {
+    submission_trace::check(t->last_sync>t->last_launch,"native tree retired before draining launches");
+    const auto &children=tree->root()->ch;
+    if (children.size()==2 && children[0]->type==SNodeType::pointer && children[1]->type==SNodeType::pointer) {
+      prepared_test::Metrics metrics(*t->runtime,{children[0].get(),children[0]->ch[0].get(),
+                                                 children[1].get(),children[1]->ch[0].get()});
+      const auto lists=metrics.sample();
+      t->selected_list_peak=std::max(t->selected_list_peak,lists.chunks);
+      t->selected_elements_peak=std::max(t->selected_elements_peak,lists.elements);
+      ++t->list_samples;
+      std::cout << "submission_set_tree_retirement,phase=" << t->phase << ",tree_id=" << tree->id()
+                << ",selected_list_capacity_bytes=" << lists.chunks
+                << ",data_list_elements=" << lists.elements << ",drained=1 PASS\n";
+    }
+  }
   real_destroy_tree(p,tree);
   if (auto *t=submission_trace::active) ++t->destroys;
+}
+void real_sync(Program *) __asm__("__real__ZN6taichi4lang7Program11synchronizeEv");
+void wrap_sync(Program *) __asm__("__wrap__ZN6taichi4lang7Program11synchronizeEv");
+void wrap_sync(Program *p) {
+  real_sync(p);
+  if (auto *t=submission_trace::active) t->last_sync=++t->serial;
 }
 const CompiledKernelData &real_compile(Program *, const CompileConfig &,
     const DeviceCapabilityConfig &, const Kernel &)
@@ -108,6 +135,14 @@ const CompiledKernelData &wrap_compile(Program *, const CompileConfig &,
     __asm__("__wrap__ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
 const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
     const DeviceCapabilityConfig &caps, const Kernel &k) {
+  if (auto *t=submission_trace::active) {
+    const auto name=k.get_name();
+    if ((t->fault==submission_trace::Fault::ActivityCompile && name.find("activity_mark_centroids_")==0) ||
+        (t->fault==submission_trace::Fault::SelectionCompile && name.find("selection_publish_")==0)) {
+      t->fault=submission_trace::Fault::None; t->fault_fired=true;
+      throw submission_trace::ConstructorFault{};
+    }
+  }
   const auto &data=real_compile(p,c,caps,k);
   if (auto *t=submission_trace::active) {
     submission_trace::check(t->runtime && &t->runtime->program()==p,"foreign compiled object");
@@ -126,6 +161,26 @@ const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
     }
   }
   return data;
+}
+void real_launch(Program *, const CompiledKernelData &, LaunchContextBuilder &)
+    __asm__("__real__ZN6taichi4lang7Program13launch_kernelERKNS0_18CompiledKernelDataERNS0_20LaunchContextBuilderE");
+void wrap_launch(Program *, const CompiledKernelData &, LaunchContextBuilder &)
+    __asm__("__wrap__ZN6taichi4lang7Program13launch_kernelERKNS0_18CompiledKernelDataERNS0_20LaunchContextBuilderE");
+void wrap_launch(Program *p, const CompiledKernelData &data, LaunchContextBuilder &context) {
+  real_launch(p,data,context);
+  if (auto *t=submission_trace::active) {
+    t->last_launch=++t->serial;
+    if (t->fault==submission_trace::Fault::SelectionLaunch) {
+      for (auto i=t->compilations.rbegin();i!=t->compilations.rend();++i)
+        if (i->data==&data) {
+          if (i->name.find("selection_provision_")==0) {
+            t->fault=submission_trace::Fault::None; t->fault_fired=true;
+            throw submission_trace::ConstructorFault{};
+          }
+          break;
+        }
+    }
+  }
 }
 namespace {
 using namespace prepared_owner_fixture;
@@ -266,15 +321,41 @@ void run(int workers, field::HostPath path, bool emit) {
                  result.failure.budget==field::Budget::PlacementWork),"candidate refusal published or retained metadata");
       const auto after=sample(trace,phase);
       check(after.adds>start.adds && after.destroys>start.destroys &&
-                after.live_roots>start.live_roots && after.live_set_roots>start.live_set_roots &&
+                after.adds-start.adds==after.destroys-start.destroys &&
+                after.live_roots==warm.live_roots && after.live_set_roots==warm.live_set_roots &&
                 after.compile_calls>start.compile_calls && after.unique_data>start.unique_data,
-            "inspection did not reach measured native provisioning/retention boundary");
+            "refused candidate retained native roots or changed its warmed sibling");
       submission_trace::candidate_roots(trace,baseline_roots);
       auto *device=trace.runtime->program().get_compute_device();
       for (std::size_t i=0;i<baseline_roots;++i)
         check(device->allocation_record(trace.roots[i].record.token).status==AllocationRecordStatus::Live,
               "candidate teardown retired sibling backing");
       healthy();
+    }
+    for (auto fault:{submission_trace::Fault::ActivityCompile,submission_trace::Fault::SelectionCompile,
+                     submission_trace::Fault::SelectionLaunch}) {
+      const auto start=trace.roots.size();
+      trace.next(fault==submission_trace::Fault::ActivityCompile?"activity_constructor_failure":
+                 fault==submission_trace::Fault::SelectionCompile?"selection_constructor_failure":"selection_launch_failure");
+      trace.fault=fault; trace.fault_fired=false;
+      bool refused=false;
+      try { (void)session.submit_prepared(pending,candidate.source->owner()); }
+      catch (const submission_trace::ConstructorFault &) { refused=true; }
+      check(refused && trace.fault_fired && trace.fault==submission_trace::Fault::None &&
+                trace.roots.size()>start && pending.resources->result().live_bytes==0,
+            "constructor failure was not exercised or retained metadata");
+      ++trace.constructor_faults;
+      submission_trace::candidate_roots(trace,baseline_roots); healthy();
+      const auto failed=sample(trace,"constructor_failure");
+      check(failed.live_roots==warm.live_roots && failed.live_set_roots==warm.live_set_roots,
+            "partial constructor retained roots");
+      // Successful construction after each injected failure must still reach
+      // ordinary plan refusal, releasing the complete new context again.
+      auto corrected=pending; corrected.plan_work=0;
+      const auto retry=session.submit_prepared(std::move(corrected),candidate.source->owner());
+      check(!retry.handle && retry.preparation_status==AdmissionPlanStatus::WorkExhausted &&
+                pending.resources->result().live_bytes==0,"constructor failure poisoned corrected retry");
+      submission_trace::candidate_roots(trace,baseline_roots); healthy();
     }
     trace.next("retry");
     { handoff_trace::Scope count(calls); result=session.submit_prepared(pending,candidate.source->owner()); }
@@ -290,7 +371,7 @@ void run(int workers, field::HostPath path, bool emit) {
     live.source.reset(); candidate.source.reset(); live_request.source.reset(); pending.source.reset();
     check(!live_pin.expired() && !candidate_pin.expired(),"published source pin lost");
   }
-  check(!trace.runtime && trace.runtime_destroys==1 && trace.destroys<trace.roots.size() &&
+  check(!trace.runtime && trace.runtime_destroys==1 && trace.destroys==trace.roots.size() &&
             live_pin.expired() && candidate_pin.expired(),"session teardown lost native/source release ordering");
   std::cout << "submission_refusal_inspection,workers=" << workers
             << ",path=" << (path==field::HostPath::BulkCopy?"bulk":"direct")
@@ -298,7 +379,14 @@ void run(int workers, field::HostPath path, bool emit) {
             << ",standalone_installs=" << calls.standalone
             << ",live_set_roots_before_finalize=" << trace.live_sets_before_finalize
             << ",live_root_requested_before_finalize=" << trace.root_requested_before_finalize
-            << ",source_record_roots_retired=1,program_owned_set_roots_retained=1,compiled_objects_retained=1,sibling_unchanged=1"
+            << ",constructor_faults=" << trace.constructor_faults << ",set_tree_retirements=" << trace.list_samples
+            << ",selected_list_peak_bytes=" << trace.selected_list_peak
+            << ",selected_data_elements_peak=" << trace.selected_elements_peak
+            << ",activity_object_bytes=" << sizeof(field::detail::Activity)
+            << ",selection_object_bytes=" << sizeof(field::detail::NativeSelectionWorkspace)
+            << ",tree_owner_bytes=" << sizeof(engine::SNodeTreeOwner)
+            << ",drain_guard_bytes=" << sizeof(engine::SNodeTreeOwner::Drain)
+            << ",source_record_roots_retired=1,owned_set_roots_retired=1,compiled_objects_retained=1,sibling_unchanged=1"
                ",healthy_retry=1,following_ticks=2,source_pins_released=1 PASS\n";
 }
 }

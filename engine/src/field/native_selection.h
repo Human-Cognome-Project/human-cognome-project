@@ -2,6 +2,7 @@
 
 #include <array>
 #include "field/native_set.h"
+#include "engine/snode_tree_owner.h"
 
 namespace field::detail {
 namespace testing {
@@ -42,8 +43,10 @@ class NativeSelectionWorkspace {
 
  private:
   friend struct testing::NativeSelectionAccess;
+  engine::SNodeTreeOwner tree_; // Own only candidate sets; committed sets borrow.
   std::array<NativeSet, 2> committed_, candidate_;
   engine::CompiledKernel stage_, abandon_, publish_;
+  engine::SNodeTreeOwner::Drain tree_drain_{tree_};
   static void launch(engine::CompiledKernel &, int enabled = 1);
 };
 }  // namespace field::detail

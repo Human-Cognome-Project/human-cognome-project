@@ -1,5 +1,14 @@
 # Private exchange-owner resource inventory
 
+[Native traversal-tree ownership](NATIVE-TRAVERSAL-TREE-OWNERSHIP.md) at `8c32cba4`
+implements #399's reviewed direction. Existing Activity/selection owners retain
+their registered trees, drain before dependencies die and retire afterwards.
+Each late refusal retires two roots / 8,192 requested bytes in the CPU fixture;
+the guard adds 24 host-object bytes per component. Those quantities and sampled
+list capacities/global pool counters are separate from compiler/JIT storage
+and complete B. Constructor failure, ID/token reuse, retry and sibling state/ticks
+are checked. No new allocator, ledger, NativeSet ownership or numerical law is added.
+
 [Refused prepared submissions](PREPARED-SUBMISSION-LIFETIMES.md) at `cf030244`
 inspect native ownership outside the selected metadata domains. Three candidate
 roots retire while two Activity/selection roots remain live under Program; each

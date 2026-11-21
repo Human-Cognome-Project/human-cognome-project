@@ -43,7 +43,10 @@ The [prepared-submission lifetime inspection](docs/PREPARED-SUBMISSION-LIFETIMES
 traces the real session refusal/retry path. It distinguishes retired source/record
 roots from Program-retained activity/selection trees and compiled data, preserves
 a warmed sibling and proposes component-local native tree ownership. Production
-and achieved saving remain unchanged by that inspection.
+and achieved saving remain unchanged by that inspection. Its [authorized tree
+ownership correction](docs/NATIVE-TRAVERSAL-TREE-OWNERSHIP.md) retains native handles
+in Activity/selection, drains before dependent teardown and retires after it,
+including constructor unwind. Actual host/root and pool/list costs stay separate.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
