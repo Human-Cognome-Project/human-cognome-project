@@ -48,6 +48,12 @@ ownership correction](docs/NATIVE-TRAVERSAL-TREE-OWNERSHIP.md) retains native ha
 in Activity/selection, drains before dependent teardown and retires after it,
 including constructor unwind. Actual host/root and pool/list costs stay separate.
 
+The [legacy submission lifetime inspection](docs/LEGACY-SUBMISSION-LIFETIMES.md)
+then traces real v1 parameter failures and successful Execution teardown. Source
+roots remain live while Activity roots retire. Its minimal proposal retains the
+source handle in the existing Execution with FixedStudy-before-source teardown;
+production lifetime and runtime saving remain unchanged by the inspection.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The
