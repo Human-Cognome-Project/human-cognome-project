@@ -26,6 +26,14 @@ retire independently. The proposed existing-Execution ownership correction must
 drain and destroy FixedStudy before source retirement. This inspection changes
 no production lifetime, legacy semantics or numerical behavior.
 
+The authorized [Execution ownership correction](SESSION-SOURCE-TREE-OWNERSHIP.md)
+at `e226b76a` captures the source handle on both submit paths and uses the existing
+owner/drain with ordered member destruction. Prepared owner dies before Harness;
+legacy FixedStudy dies before native source retirement. Failed candidates retire
+before returning, successful bindings survive through following ticks, and
+Runtime remains alive throughout teardown. Numerical/public operation semantics
+and source-pin boundaries are unchanged.
+
 The [retained-to-C3 source trace](RETAINED-C3-HANDOFF.md) (inspection awaiting
 review) distinguishes this legacy session from the built bounded prepared-owner
 route. `submit` uses v1 binding/FixedStudy and refuses v2; it does not provision a

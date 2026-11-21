@@ -1,5 +1,14 @@
 # Private exchange-owner resource inventory
 
+[Session source-tree ownership](SESSION-SOURCE-TREE-OWNERSHIP.md) at `e226b76a`
+implements #401's reviewed direction in the existing Execution. Both submit
+paths retain native handles with the accepted owner/drain; dependent prepared
+owner/Harness and legacy FixedStudy die before source retirement. Each late
+legacy refusal retires 4,096 requested source-root bytes. Execution increases
+8 host bytes without a separate guard allocation. Selected metadata B, native
+root records, global pool requests and retained compiler data stay separate;
+this correction neither closes complete B nor evicts compiler/JIT storage.
+
 [Legacy source-layout lifetime](LEGACY-SUBMISSION-LIFETIMES.md) at `a0ec440b`
 inspects the separate v1 session path. Each late parameter exception retains
 one source root / 4,096 requested bytes after the failed Harness dies; Activity
