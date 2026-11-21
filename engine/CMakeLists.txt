@@ -582,6 +582,8 @@ if(HCP_WITH_VIEWPORT)
     target_link_options(prepared_submission_inspection PRIVATE
         "-Wl,--wrap=_ZN6engine7RuntimeC1ERKNS_16InstanceSettingsE"
         "-Wl,--wrap=_ZN6engine7RuntimeD1Ev"
+        "-Wl,--wrap=_ZN6taichi4lang7Program11synchronizeEv"
+        "-Wl,--wrap=_ZN6taichi4lang7Program13launch_kernelERKNS0_18CompiledKernelDataERNS0_20LaunchContextBuilderE"
         "-Wl,--wrap=_ZN6taichi4lang7Program14add_snode_treeESt10unique_ptrINS0_5SNodeESt14default_deleteIS3_EEb"
         "-Wl,--wrap=_ZN6taichi4lang7Program18destroy_snode_treeEPNS0_9SNodeTreeE"
         "-Wl,--wrap=_ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE"

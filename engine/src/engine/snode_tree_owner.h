@@ -11,9 +11,22 @@ struct SNodeTreeOwner {
   SNodeTreeOwner() = default;
   SNodeTreeOwner(const SNodeTreeOwner &) = delete;
   SNodeTreeOwner &operator=(const SNodeTreeOwner &) = delete;
+  void synchronize() const {
+    if (node) program->synchronize();
+  }
+  // Declare after dependent members. It drains before their destruction while
+  // this owner remains alive to retire the tree afterwards. No allocation or
+  // additional native ownership is introduced by this borrowed phase guard.
+  struct Drain {
+    explicit Drain(const SNodeTreeOwner &tree) : tree(tree) {}
+    Drain(const Drain &) = delete;
+    Drain &operator=(const Drain &) = delete;
+    ~Drain() { tree.synchronize(); }
+    const SNodeTreeOwner &tree;
+  };
   ~SNodeTreeOwner() {
     if (node) {
-      program->synchronize();
+      synchronize();
       program->destroy_snode_tree(node);
     }
   }
