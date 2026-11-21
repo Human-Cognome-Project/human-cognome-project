@@ -1,12 +1,21 @@
 # Private exchange-owner resource inventory
 
+[Parent field targets](PROJECTION-PARENT-TARGETS.md) at `f551d14f` attribute
+actual scope/address requests in both views: 520 / 2,080 / 936 nested bytes per
+one/four/three owner, separate from inline field capacity inside 160-byte rows.
+The existing exact recipe already owns full target pins. A test-only 72-byte
+shape retains independent source/parent selectors with higher measured guard
+work. No representation, census or runtime saving changes. Full source/ordinal/
+count/lifetime and frozen publication/tick controls remain active.
+
 [Projection-owned parent study](PROJECTION-PARENT-HEADER.md) at `22482caa`
 implements #395's explicit direction. Census counts actual 160-byte numeric
 parent rows, full source paths and field objects in both reserved pools; the
 existing projection header supplies study context once. Public active exports
 remain complete 208-byte values. Actual both-view retained/peak savings, setup
 work and unchanged output costs are recorded separately. Full refusal/lifetime
-and frozen publication/tick checks pass locally; runtime review and hosted CI remain.
+and frozen publication/tick checks pass locally. #396 provisionally accepts
+final `2fc9d157`; remaining hosted native qualification and integration are separate.
 
 [Parent-contribution study ownership](PROJECTION-PARENT-STUDY-IDENTITY.md) at
 `a9011a88` observes actual active/spare pools in both adopted views. Repeated

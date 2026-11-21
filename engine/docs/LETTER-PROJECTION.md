@@ -1,12 +1,19 @@
 # Native letter/byte projection — Stage B
 
+The [parent field-target inspection](PROJECTION-PARENT-TARGETS.md), tested source
+`f551d14f`, follows #396's next-inspection direction. It attributes full field
+scope/address backing in active/spare pools, checks the relation to the existing
+recipe and measures independent source/parent selectors. Candidate ABI and guard
+work are separate from actual storage; production and runtime saving are unchanged.
+
 The [parent study implementation](PROJECTION-PARENT-HEADER.md), tested source
 `22482caa`, implements #395 review 7050686178. Active/spare private parent rows
 retain numeric sources under the existing projection header. Public `parent_count()`
 and `parent(index)` replace the vector reference with complete independently
 owning active values. Field kind/object, ordinal/count, row order and reserved
 pool reuse remain. Actual storage/work/output costs and CPU qualification are
-recorded separately; review and authoritative GitHub CI remain pending.
+recorded separately. #396 provisionally accepts final `2fc9d157`; smoke and
+values passed, with remaining native qualification and maintainer integration separate.
 
 The [parent study ownership inspection](PROJECTION-PARENT-STUDY-IDENTITY.md),
 tested source `a9011a88`, follows #394's accepted next-inspection direction.
