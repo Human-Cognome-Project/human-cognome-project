@@ -47,6 +47,7 @@
 #include "taichi/util/lang_util.h"
 #include "taichi/program/program.h"
 #include "taichi/jit/jit_session.h"
+#include "taichi/runtime/cpu/jit_module_id.h"
 #include "taichi/util/file_sequence_writer.h"
 #include "taichi/runtime/llvm/llvm_context.h"
 
@@ -103,6 +104,7 @@ class JITSessionCPU : public JITSession {
   MangleAndInterner mangle_;
   std::mutex mut_;
   std::vector<llvm::orc::JITDylib *> all_libs_;
+  // Next unique dylib ID, including IDs consumed by failed creation.
   int module_counter_;
   SectionMemoryManager *memory_manager_;
 
@@ -153,7 +155,8 @@ class JITSessionCPU : public JITSession {
     TI_ASSERT(max_reg == 0);  // No need to specify max_reg on CPUs
     TI_ASSERT(M);
     std::lock_guard<std::mutex> _(mut_);
-    auto dylib_expect = es_.createJITDylib(fmt::format("{}", module_counter_));
+    const auto module_id = cpu::detail::issue_jit_module_id(module_counter_);
+    auto dylib_expect = es_.createJITDylib(fmt::format("{}", module_id));
     TI_ASSERT(dylib_expect);
     auto &dylib = dylib_expect.get();
     dylib.addGenerator(
@@ -168,7 +171,6 @@ class JITSessionCPU : public JITSession {
     auto new_module = std::make_unique<JITModuleCPU>(this, &dylib);
     auto new_module_raw_ptr = new_module.get();
     modules.push_back(std::move(new_module));
-    module_counter_++;
     return new_module_raw_ptr;
   }
 

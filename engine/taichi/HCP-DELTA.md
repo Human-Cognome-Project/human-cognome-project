@@ -12,6 +12,18 @@ HCP modernization records and tests.
 
 ## Modified upstream files
 
+CPU JIT naming under #343:
+
+- `taichi/runtime/cpu/jit_cpu.cpp` and `jit_module_id.h` — issue a checked
+  session-local naming ID before formatting/creating a dylib. Failure consumes
+  that ID, so retry cannot reuse a retained partial dylib's name. The existing
+  counter is reused; wrapper counts still come from wrapper storage. No new
+  persistent field, registry, cleanup, retirement or admission behavior is added.
+  Successful naming order, native layouts/virtual interfaces, runtime bitcode and
+  serialized/AOT formats are unchanged. Rebuild the matching native CPU archive
+  and relink clients. Boundary and real retry/dispatch/shutdown evidence lives in
+  the surrounding HCP fixture/report; inner LLVM errors remain separately scoped.
+
 CPU registration-attempt observation under #343:
 
 - `taichi/program/registration_attempts.h`, `kernel_launcher.h` and
