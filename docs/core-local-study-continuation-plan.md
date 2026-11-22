@@ -1,32 +1,32 @@
 # Core continuation after local CUDA corrections
 
-**Native compiler/JIT counts — 2026-11-21 (implementation awaiting review):**
-[Read-only native owners, bounded counts and executable evidence](../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
-at tested `b36dcd28` implements [#403 decision 7067047506](https://github.com/Human-Cognome-Project/human-cognome-project/pull/403#issuecomment-7067047506)
-from provisionally accepted `a326ca77`. Existing compiler/session owners expose
-non-lazy value snapshots, absent/present/incomplete status, pending/loaded-object
-counts and distinct runtime/kernel modules. Budgets limit inspection only;
-`complete` stays false. Fresh/partial owners create no cache/module, isolated
-metadata and explicit disk-load fixtures distinguish two entries from one loaded
-object, and real refusal/finalization counts match independent lifetime witnesses.
-Legacy/prepared final totals are 37 / 726 modules, including one runtime module;
-kernel wrappers survive finalization while observed pending data releases.
+**Native reclamation design — 2026-11-21 (inspection awaiting review):**
+[Shared borrowers, native rows/task pointers and ORC retirement boundaries](../engine/docs/NATIVE-RECLAMATION-DESIGN.md)
+at tested `3534439e` follows [#404 decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542)
+from provisionally accepted `fbc9bc50`. A test-only witness resolves seven HCP
+definitions to four actual records: a refused candidate shares a survivor's
+data/handle, unregistered retry retains its record, same-record registration
+reuses its handle and distinct records append rows. Surviving task symbols,
+outputs and prepared/dynamic dispatch remain valid. Four pending objects release
+at finalization; four kernel wrappers release later, with one runtime module
+kept distinct. There is no implemented per-record retirement operation.
 
-Local quick, eleven Clang/seven GCC CTests and the warm/viewport-OFF standalone
-CTest pass. Twelve native histories and eight existing lifetime histories match
-source-pinned before evidence; GPU and complete B are unqualified. Review this
-API and new authoritative GitHub CI. Next bounded design/inspection should
-establish shared borrowers, handle/row reuse and ORC retirement before any
-eviction; byte accounting/admission policy remain separate. No runtime saving
-or new resource gate is claimed. #324 remains separate.
+The design separates unregistered data from a registered record/row/module
+group and preserves whole-Runtime shutdown as the current release boundary.
+Review the native borrower-protection prerequisite before implementation;
+raw-reference escape, stale rows, in-flight work and ORC errors must be handled
+before eviction. Byte charges, admission changes, GPU and complete B remain
+separate. Production/fork/numerical code and real refusal witnesses are unchanged.
+Local quick, seven Clang/five GCC CTests and the warm/viewport-OFF standalone
+case pass, with 98 new count snapshots. Real refusal histories retain #404's
+verified before evidence. New authoritative hosted CI is separate.
 
-**Dependency and integration:** #403 is provisionally accepted for continuation;
-its smoke passed and native hosted gate was still running at this handoff.
-#400/#401/#402 passed hosted native/smoke and were merged parent-first at
-`d92f59bd` / `35f8b386` / `456cb681`; main's tree equals reviewed #402 `2062f00e`.
-The [original compiler/JIT inspection](../engine/docs/COMPILER-JIT-LIFETIMES.md)
-retains its own tested source and limits. Earlier pending entries below are
-source-specific history. All integration and merge events remain maintainer-only.
+**Dependency and integration:** #403 passed hosted native/smoke and is integrated
+at main `ca098539`, with no differences from reviewed `a326ca77`. #404 at
+`fbc9bc50` is provisionally accepted and targets main; smoke passed and native
+qualification was pending at this handoff. Its [read-only count APIs](../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
+retain their source-pinned qualification. All integration and merge events remain
+maintainer-only; earlier status entries preserve their source handoffs.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

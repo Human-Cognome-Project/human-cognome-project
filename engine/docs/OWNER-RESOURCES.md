@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+[Native reclamation design](NATIVE-RECLAMATION-DESIGN.md) at `3534439e` follows
+#404's accepted inspection direction. Actual definitions share compiled records
+and handles; dead definitions do not free CPU rows/task pointers or ORC resources.
+The proposed unit is unregistered data or a coordinated registered record/row/
+module group, with initial-runtime modules excluded. Native borrow protection
+is a prerequisite before any selective reclamation. Production ownership,
+eviction, byte accounting, admission and achieved saving remain unchanged.
+
 [Native compiler/JIT counts](NATIVE-COMPILER-JIT-COUNTS.md) at `b36dcd28` implement
 #403's accepted read-only observation direction in the existing native owners.
 Pending compiled objects, metadata/loaded objects and runtime/kernel modules

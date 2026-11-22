@@ -1,18 +1,19 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-21). Main `456cb681` integrates qualified #400–#402
-with reviewed `2062f00e`'s tree. #403 at `a326ca77` is provisionally accepted in
-decision 7067047506; its smoke passed and native qualification is still running.
-The [native compiler/JIT count implementation](../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
-at tested `b36dcd28` implements that decision using existing native owners. It
-adds non-lazy count/identity snapshots with bounded inspection and explicit
-incompleteness. Fresh/partial observations, positive disk loading, refusal and
-finalization reconcile with independent CPU witnesses. Quick, eleven Clang/seven
-GCC CTests and the optional-components-OFF standalone case pass; new authoritative
-hosted CI and implementation review remain. Next inspect shared borrowers,
-handle/row invalidation and ORC retirement before proposing eviction. Byte
-accounting, complete B, GPU and #324 stay separate. Earlier entries preserve
-their source-specific handoffs. Every merge remains maintainer work.
+Current disposition (2026-11-21). Main `ca098539` integrates qualified #403
+with reviewed `a326ca77`'s tree. #404 at `fbc9bc50` is provisionally accepted in
+decision 7067817542; smoke passed and native qualification remains pending.
+The [bounded reclamation design/inspection](../engine/docs/NATIVE-RECLAMATION-DESIGN.md)
+at tested `3534439e` traces actual shared records, row/task-pointer reuse and
+native ORC ownership. Seven definitions share four records. A refused candidate
+shares a survivor's data/handle, which remain valid for surviving dispatch.
+Whole-Runtime shutdown remains the implemented release boundary. Review native
+borrow protection before implementing eviction; row invalidation, in-flight
+use and executable cleanup remain separate prerequisites. Quick, seven Clang/
+five GCC CTests and an optional-components-OFF standalone case pass. Production
+and real refusal witnesses are unchanged; retained #404 evidence is reused.
+New hosted CI, GPU, complete B, byte/admission changes and #324 remain separate.
+All merges stay with the maintainer; older entries retain their source handoffs.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -223,6 +224,21 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-21 contributor (native reclamation design awaiting review):
+[Shared native records, safe units and backend limits](../engine/docs/NATIVE-RECLAMATION-DESIGN.md)
+at `3534439e` follows #404 decision 7067817542 from `fbc9bc50`. A test-only
+HCP witness checks identical compiled pointer/handle sharing, unregistered retry,
+same-record handle retention, distinct-record row append and stable surviving
+task symbols/dispatch. Seven definitions resolve to four cached records; initial
+runtime modules remain distinct. Quick, seven Clang/five GCC CTests and the
+warm/viewport-OFF case pass: 98 count snapshots across seven new cases. Actual
+real-refusal histories are reused with unchanged executable-source proof.
+The proposed first prerequisite is native borrower protection without eviction.
+Registered retirement later needs checked row invalidation, drain, exact ORC
+association/dependency/error handling and supported backend proof. No resource
+removal, byte gate or achieved saving is implemented. #403 is qualified/integrated;
+#404 is a provisional dependency. New authoritative CI and design review remain.
 
 2026-11-21 contributor (native compiler/JIT counts awaiting review):
 [Existing owners, partial state and counted runtime/kernel roles](../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
