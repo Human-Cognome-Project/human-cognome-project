@@ -713,6 +713,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
       "-Wl,--wrap=_ZN6taichi4lang10JITSession6createEPNS0_17TaichiLLVMContextERKNS0_13CompileConfigENS_4ArchE"
       "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE"
       "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession14createJITDylibENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE"
+      "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession17getJITDylibByNameENS_9StringRefE"
       "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession6lookupENS_8ArrayRefIPNS0_8JITDylibEEENS0_15SymbolStringPtrENS0_11SymbolStateE"
       "-Wl,--wrap=_ZN6taichi10ThreadPool3runEiiPvPFvS1_iiE"
       "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession10endSessionEv")
