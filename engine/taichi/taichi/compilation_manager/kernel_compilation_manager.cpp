@@ -98,7 +98,7 @@ const CompiledKernelData &KernelCompilationManager::load_or_compile(
     const DeviceCapabilityConfig &caps,
     const Kernel &kernel_def) {
   const auto &data = load_or_compile_impl(compile_config, caps, kernel_def);
-  if (compile_config.arch == Arch::x64)
+  if (data.arch() == Arch::x64)
     data.borrow_state(this)->untracked = true;
   return data;
 }
@@ -110,6 +110,8 @@ CompiledKernelBorrow KernelCompilationManager::borrow_or_compile(
   if (compile_config.arch != Arch::x64 || kernel_def.ir_is_ast())
     throw std::invalid_argument("compiled-data borrows require LLVM/x64 Block kernels");
   const auto &data = load_or_compile_impl(compile_config, caps, kernel_def);
+  if (data.arch() != Arch::x64)
+    throw std::invalid_argument("compiled-data borrow requires an actual x64 record");
   return CompiledKernelBorrow(data.borrow_state(this));
 }
 

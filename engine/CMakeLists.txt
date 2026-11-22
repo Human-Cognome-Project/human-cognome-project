@@ -652,6 +652,12 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
   add_test(NAME compiled_borrow_test COMMAND compiled_borrow_test)
   set_tests_properties(compiled_borrow_test PROPERTIES
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+  add_executable(compiled_borrow_provenance_test tests/compiled_borrow_provenance_test.cpp)
+  target_link_libraries(compiled_borrow_provenance_test PRIVATE engine_support)
+  target_compile_options(compiled_borrow_provenance_test PRIVATE -Wall -Wextra -Werror)
+  add_test(NAME compiled_borrow_provenance_test COMMAND compiled_borrow_provenance_test)
+  set_tests_properties(compiled_borrow_provenance_test PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
   add_executable(compiler_jit_counts_test tests/compiler_jit_counts_test.cpp)
   target_link_libraries(compiler_jit_counts_test PRIVATE engine_support)
   target_compile_options(compiler_jit_counts_test PRIVATE -Wall -Wextra -Werror)

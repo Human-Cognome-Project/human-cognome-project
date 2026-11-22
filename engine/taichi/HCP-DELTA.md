@@ -80,7 +80,9 @@ Runtime/AOT compatibility and cache work:
   `taichi/compilation_manager/kernel_compilation_manager.{h,cpp}` and
   `taichi/program/program.{h,cpp}` — move-only native borrows for LLVM/x64
   non-AST memory-cache records. Native metadata counts guards and permanently
-  marks raw clients; checked access rejects expired records before dereference.
+  marks raw clients according to the returned record's actual architecture;
+  tracked acquisition validates that actual architecture before issuing a guard.
+  Checked access rejects expired records before dereference.
   Guards retain metadata only, not Program/LLVM contexts or executable memory.
   CompiledKernelData gains a shared metadata pointer: rebuild all matching
   native archives and HCP wrappers for this C++ class-layout change. Serialized
