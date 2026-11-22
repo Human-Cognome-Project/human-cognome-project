@@ -1,14 +1,23 @@
 # Private exchange-owner resource inventory
 
-The [combined #408 correction](NATIVE-REGISTRATION-FAILURES.md) at `cf26b62e`
-preserves #407's existing resource/borrow/removal behavior while exercising the
-inspection through `k.compiled_data()`. Both fault windows, retries, surviving
-dispatch, shutdown and removal/guard controls pass on the combined native ABI.
-Original #408 and #407 counts/bytes remain pinned to `816b8edb` and `505ab435`
-respectively; the combined evidence is separate. Four records/six slots/five
-kernel wrappers require future ownership of every registration attempt, including
-partial resources. No attempt-ownership implementation, registered retirement,
-new admission charge or achieved saving is introduced by this correction.
+The [native CPU registration-attempt implementation](NATIVE-REGISTRATION-ATTEMPTS.md)
+at `635ee3ea` follows reviewed #408 `4747d113`. Existing launch rows retain
+metadata-only record identity, stage/failure and confirmed module links; missing
+row metadata, unknown identity and pre-return JIT side effects stay explicit
+incomplete observations. Expired record identity remains safe after finalization
+and Runtime destruction without extending compiled-data/Program lifetime or
+counting as a borrower. No second registry, registered retirement, row reuse,
+ORC cleanup or admission credit is added.
+
+Actual CPU launcher/slot extents grow by 8/32 bytes; six slots at capacity eight
+add 256 capacity bytes. Four existing 48-byte record controls remain longer after
+finalization, ending with row/caller identity release. Native record/HCP/guard
+extents are unchanged. Count inline and shared-control storage once; these are
+scoped costs, not whole-owner peak or complete B. Quick, 23 Clang/17 GCC CTests
+and six minimal cases pass, including new failure/identity histories and original
+registration/removal/borrow/backing/submission controls. Hosted CI and maintainer
+review remain required. The [original failure/correction report](NATIVE-REGISTRATION-FAILURES.md)
+retains its source-specific pins; the new report has separate evidence.
 
 The [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
 at `505ab435` implements #406's approved next slice for review. It requires

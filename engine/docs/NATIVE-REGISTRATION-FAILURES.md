@@ -1,5 +1,14 @@
 # Native CPU registration failures and retry ownership
 
+**Updated disposition — 2026-11-22:** [Review 7082960643](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082960643)
+accepts the combined correction at maintainer-resolved `4747d113` (exact #409
+candidate tree `5a9ad101`). Main `ff82d2cc` integrates qualified #407; #408 remains
+open pending hosted qualification/integration. That review authorizes the
+[bounded native attempt implementation](NATIVE-REGISTRATION-ATTEMPTS.md) at
+`635ee3ea`, now returned with focused evidence and cost for review. Registered
+retirement/ORC cleanup remain separate. The historical combined-correction and
+original inspection reports below keep their original source pins and evidence.
+
 **Combined correction for #408 — qualification candidate awaiting maintainer integration/review.** [Review 7082256953](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082256953) accepts the original #405-based inspection and requests the borrow-aware accessor, both reports, reconciled Markdown and qualification on the combined native ABI. No registration-attempt ownership implementation is authorized by this correction.
 
 Current main `2fdcfcbc381b23eea973ca279bfdc39ac3a1a39b` integrates #406 with reviewed `33da9a0f`'s exact tree. #407 `fccae608` is [provisionally accepted](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407#issuecomment-7082250727), targets main and awaits its authoritative native gate. #408 remains open at its original head until maintainer integration. All refs/dispositions are checked directly; a chat “accepted” remains review notation.
