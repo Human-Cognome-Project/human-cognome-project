@@ -1,28 +1,30 @@
 # Current implementation and work
 
-**Native borrow provenance — 2026-11-22 (corrected head awaiting review):**
-[Actual-record architecture, regression and preserved ownership evidence](../../engine/docs/NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
-at tested `65acfbe4` addresses [#406 correction 7068740186](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7068740186).
-Raw exposure is marked from the actual returned x64 record, including a same-key
-hit requested with another architecture. Tracked acquisition validates the actual
-record before issuing a guard. Both regressions fail on reviewed `9cbce926` and
-pass after correction; they require no GPU execution. Cache/JIT counts, moves,
-unwind, raw-client stickiness and following sibling dispatch remain checked.
+**Serialized native pending-record removal — 2026-11-22 (implementation awaiting review):**
+[Eligibility, exact destruction, retry and measured effects](../../engine/docs/NATIVE-UNREGISTERED-REMOVAL.md)
+at tested `505ab435` implements [#406 decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329)
+from provisionally accepted `33da9a0f`. The native manager removes one current-key,
+unregistered pending MemCache LLVM/x64 record after bounded inspection, positive
+provenance and zero tracked borrowers. Incomplete inspection, unknown/raw/live
+clients, disk-backed data and any registration attempt refuse unchanged.
+A sticky CPU marker precedes row/JIT side effects, covering partial registration.
 
-Quick, fifteen Clang/eleven GCC CTests and three warm/viewport-OFF cases pass.
-Before histories, 260 native-count snapshots, 243 borrow snapshots and the new
-provenance assertions reconcile. Guard overhead/ABI and existing native owners
-are preserved; this fix adds no further layout, byte/admission or reclamation
-change. Return this corrected head for review and new authoritative CI before
-proceeding to selective reclamation. Loaded/registered retirement, row reuse,
-ORC removal, complete B, GPU qualification and #324 remain separate.
+Quick, nineteen Clang/thirteen GCC CTests and four warm/viewport-OFF cases pass.
+Seven removal cases check exact destruction, fresh retry and surviving handles/
+tasks plus actual dispatch. The candidate releases 83 observed C++ requests /
+7,010 requested bytes; rows/JIT remain unchanged. Native base/concrete LLVM
+extent grows by eight overlapping bytes; HCP/guard/control extents are unchanged.
+Seventeen before histories, 260 count snapshots, 243 borrow snapshots and
+provenance/move/unwind controls reconcile. This is not complete B or admission credit.
 
-**Dependency and integration:** main `87ff545c` integrates qualified #404 with
-reviewed `fbc9bc50`'s tree. #405 `06e71404` passed hosted native/smoke and awaits
-maintainer integration. #406's earlier `9cbce926` also passed hosted checks but
-needed the provenance correction before acceptance; those runs do not qualify
-this corrected head. All integration/merges remain maintainer-only. Earlier
-entries retain their source-specific handoffs.
+**Dependency and next review:** main `92e4ceaf` integrates qualified #405 with
+reviewed `06e71404`'s exact tree. #406 `33da9a0f` is provisionally accepted;
+its smoke passed and authoritative native CPU gate remains pending.
+This implementation is stacked on #406. Return it and its measured effects for
+review and new authoritative CI. No automatic removal caller is added.
+Loaded/registered retirement, row reuse, ORC release, concurrency, GPU,
+complete B/admission and #324 remain separate. All merges remain maintainer-only.
+Earlier entries retain their source-specific handoffs.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

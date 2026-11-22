@@ -1,11 +1,21 @@
 # Private exchange-owner resource inventory
 
+The [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
+at `505ab435` implements #406's approved next slice for review. It requires
+positive native coverage, zero borrows, complete bounded map inspection and no
+disk/registration exclusion. Seven CPU cases check exact destruction, unchanged
+refusal, fresh retry and surviving dispatch. One candidate releases 83 observed
+C++ requests / 7,010 requested bytes, with rows/JIT unchanged. The sticky CPU
+registration marker adds eight overlapping inline bytes per native LLVM record
+(base 32→40, concrete 160→168); HCP/guard/control extents are unchanged.
+No automatic caller, complete B, owner peak, RSS or admission credit is claimed.
+
 The [#406 provenance correction](NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
 at `65acfbe4` makes the returned record authoritative: raw x64 exposure is marked
 even when request architecture differs, and tracked acquisition refuses an
 unsupported actual record before guard creation. Expected failures and corrected
 CPU regression evidence are retained. Guard costs, moves/unwind, sibling dispatch
-and existing resource policy are preserved; corrected-head review remains.
+and existing resource policy are preserved; corrected head `33da9a0f` is provisionally accepted.
 
 [Native compiled-data borrows](NATIVE-COMPILED-BORROWS.md) at `2708b8b1`
 implement #405's x64 borrower prerequisite. Existing native records count
@@ -13,7 +23,7 @@ move-only guards and permanently mark raw clients; HCP dependencies die before
 guard release. Actual wrapper extent grows by sixteen bytes and each cached
 LLVM record adds sixteen inline bytes plus one 48-byte metadata request.
 Those quantities remain separate from full owner peaks, executable bytes and
-complete B. No reclamation, byte charge, admission change or saving is enabled.
+complete B. At that prerequisite source, no reclamation, byte charge, admission change or saving was enabled.
 
 [Native reclamation design](NATIVE-RECLAMATION-DESIGN.md) at `3534439e` follows
 #404's accepted inspection direction. Actual definitions share compiled records
