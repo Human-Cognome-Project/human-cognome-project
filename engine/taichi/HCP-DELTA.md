@@ -12,6 +12,30 @@ HCP modernization records and tests.
 
 ## Modified upstream files
 
+CPU registration-attempt observation under #343:
+
+- `taichi/program/registration_attempts.h`, `kernel_launcher.h` and
+  `program_impl.h`; `taichi/runtime/cpu/kernel_launcher.{h,cpp}` — bounded,
+  non-lazy observation of existing CPU registration slots and consumed-ID gaps.
+  Metadata lives beside the existing row, with a launcher issuance count, stage,
+  failure flag and confirmed module identity. The JIT factory boundary is marked
+  incomplete before entry because earlier ORC side effects may precede a returned
+  wrapper. A resize failure keeps an explicit unknown-record gap. There is no
+  second registry, registered retirement, row reuse, ORC removal or admission credit.
+- `taichi/program/compiled_kernel_borrow.h` and
+  `taichi/codegen/compiled_kernel_data.h` — copyable metadata-only record identity
+  shares existing invalidatable borrow state, without allocating state, acquiring
+  a client borrow, exposing data or extending data/Program/context lifetime.
+  Unmanaged identity remains unavailable. Row and caller copies can retain the
+  existing control block after finalization; full backend-resource completeness
+  remains false. Queries require serialized live owner access; only record
+  identity observation may outlive Runtime.
+- Rebuild the matching native SDK, component archives and wrapper: CPU launcher
+  and row layouts and the launcher virtual interface change. Compiled-data and
+  HCP wrapper layouts, runtime bitcode and serialized/AOT formats do not change
+  in this slice. Focused HCP failure/dispatch/shutdown tests and before/after
+  ownership-cost evidence live in the surrounding repository.
+
 Serialized pending-memory removal under #343:
 
 - `taichi/compilation_manager/kernel_compilation_manager.{h,cpp}` — bounded

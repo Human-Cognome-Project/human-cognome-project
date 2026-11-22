@@ -110,6 +110,10 @@ class CompiledKernelData {
     return CompiledKernelBorrow::observe(borrow_state_);
   }
 
+  CompiledKernelIdentity record_identity() const noexcept {
+    return CompiledKernelIdentity(borrow_state_);
+  }
+
   virtual Arch arch() const = 0;
 
   Err load(std::istream &is);
