@@ -706,6 +706,24 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
           ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
     endforeach()
   endforeach()
+  add_executable(cpu_jit_creation_inspection tests/cpu_jit_creation_inspection.cpp)
+  target_link_libraries(cpu_jit_creation_inspection PRIVATE engine_support)
+  target_compile_options(cpu_jit_creation_inspection PRIVATE -Wall -Wextra -Werror)
+  target_link_options(cpu_jit_creation_inspection PRIVATE
+      "-Wl,--wrap=_ZN6taichi4lang10JITSession6createEPNS0_17TaichiLLVMContextERKNS0_13CompileConfigENS_4ArchE"
+      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE"
+      "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession14createJITDylibENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE"
+      "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession6lookupENS_8ArrayRefIPNS0_8JITDylibEEENS0_15SymbolStringPtrENS0_11SymbolStateE"
+      "-Wl,--wrap=_ZN6taichi10ThreadPool3runEiiPvPFvS1_iiE"
+      "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession10endSessionEv")
+  foreach(workers 1 2)
+    foreach(path prepared dynamic)
+      add_test(NAME cpu_jit_creation_${workers}_${path}
+          COMMAND cpu_jit_creation_inspection ${workers} ${path})
+      set_tests_properties(cpu_jit_creation_${workers}_${path} PROPERTIES
+          ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+    endforeach()
+  endforeach()
   add_executable(native_reclamation_inspection tests/native_reclamation_inspection.cpp)
   target_link_libraries(native_reclamation_inspection PRIVATE engine_support)
   target_compile_options(native_reclamation_inspection PRIVATE -Wall -Wextra -Werror)
