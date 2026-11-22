@@ -3,6 +3,9 @@
 #include "taichi/analysis/offline_cache_util.h"
 #include "taichi/codegen/compiled_kernel_data.h"
 #include "taichi/util/offline_cache.h"
+#ifdef TI_WITH_LLVM
+#include "taichi/codegen/llvm/compiled_kernel_data.h"
+#endif
 
 namespace taichi::lang {
 
@@ -91,6 +94,49 @@ CompilerOwnershipCounts KernelCompilationManager::ownership_counts(
   }
   result.status = OwnershipCountStatus::Present;
   return result;
+}
+
+KernelCompilationManager::RemovalResult
+KernelCompilationManager::remove_unregistered_kernel(
+    const std::string &kernel_key, std::size_t entry_budget) {
+  const auto counts = ownership_counts(entry_budget);
+  const auto result = [&](RemovalStatus status) {
+    return RemovalResult{status, counts.visited_entries};
+  };
+  if (counts.status != OwnershipCountStatus::Present)
+    return result(RemovalStatus::Incomplete);
+  // Never erase disk metadata: updated_data_ may retain pointers into that map.
+  // Also pin a pending key that aliases an existing disk metadata row.
+  if (cached_data_.kernels.find(kernel_key) != cached_data_.kernels.end())
+    return result(RemovalStatus::DiskBacked);
+  const auto entry = caching_kernels_.find(kernel_key);
+  if (entry == caching_kernels_.end())
+    return result(RemovalStatus::NotFound);
+  if (entry->second.cache_mode != CacheData::MemCache)
+    return result(RemovalStatus::DiskBacked);
+  const auto *data = entry->second.compiled_kernel_data.get();
+  if (!data)
+    return result(RemovalStatus::UnknownBorrowers);
+#ifdef TI_WITH_LLVM
+  if (data->arch() != Arch::x64 ||
+      !dynamic_cast<const LLVM::CompiledKernelData *>(data))
+    return result(RemovalStatus::Unsupported);
+#else
+  return result(RemovalStatus::Unsupported);
+#endif
+  // Read existing metadata only. Never manufacture positive coverage here.
+  const auto view = data->borrow_observation();
+  if (view.status != OwnershipCountStatus::Present || view.owner != this ||
+      !view.record || view.untracked_clients)
+    return result(RemovalStatus::UnknownBorrowers);
+  if (data->registration_started() || data->get_handle())
+    return result(RemovalStatus::RegistrationStarted);
+  if (view.tracked_borrows)
+    return result(RemovalStatus::LiveBorrows);
+  // All refusals precede this sole mutation. Native destruction invalidates the
+  // record's borrow metadata while the owning Program/context remains alive.
+  caching_kernels_.erase(entry);
+  return result(RemovalStatus::Removed);
 }
 
 const CompiledKernelData &KernelCompilationManager::load_or_compile(

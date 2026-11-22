@@ -1,18 +1,22 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-22). Main `87ff545c` integrates qualified #404
-with reviewed `fbc9bc50`'s tree. #405 `06e71404` passed hosted native/smoke and
-awaits maintainer integration. #406 requires the [provenance correction](../engine/docs/NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
-requested in review 7068740186 before acceptance. Tested `65acfbe4` marks raw
-exposure from the returned record's actual architecture and validates actual
-record support before issuing a guard. Same-key mismatched-config and unsupported
-cached-record regressions fail on reviewed `9cbce926` and pass after the fix.
-Quick, fifteen Clang/eleven GCC CTests and three minimal cases pass; seventeen
-lifetime histories, guard controls, existing overhead and sibling dispatch are
-preserved. Review this corrected head and its new authoritative CI before any
-selective reclamation. No further layout, byte/admission, row-reuse, ORC or
-numerical change is implemented. GPU, complete B and #324 remain separate.
-All integration and merge events remain maintainer work.
+Current disposition (2026-11-22). Main `92e4ceaf` integrates qualified #405 with
+reviewed `06e71404`'s tree. #406 `33da9a0f` is provisionally accepted in
+[decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329);
+its smoke passed and authoritative native CPU qualification remains pending.
+The authorized [serialized unregistered-record removal](../engine/docs/NATIVE-UNREGISTERED-REMOVAL.md)
+at `505ab435` now awaits review. Positive provenance, zero borrows, complete
+bounded inspection and no storage/registration exclusion are required.
+Seven removal cases cover unchanged refusal, exact destruction, fresh retry and
+surviving task/handle identity plus dispatch. One candidate releases 83 observed
+C++ requests / 7,010 requested bytes, with rows/JIT unchanged. The sticky partial-
+registration marker costs eight overlapping native bytes. Quick, nineteen Clang/
+thirteen GCC CTests and four minimal cases pass; seventeen before histories,
+guard/move/unwind and provenance controls reconcile. Review this implementation
+and its new authoritative CI before extending scope. No automatic caller,
+registered/loaded retirement, row reuse, ORC release, complete B/admission,
+GPU or numerical change is implemented. #324 stays separate.
+Every integration and merge remains maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 

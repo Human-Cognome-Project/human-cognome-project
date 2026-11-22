@@ -17,7 +17,8 @@ struct CompiledBorrowObservation {
   const void *owner{nullptr}, *record{nullptr};
   std::size_t tracked_borrows{0};
   bool untracked_clients{true};
-  // Tracking is a prerequisite only; no client is eligible for reclamation.
+  // A borrow observation alone never establishes removal eligibility. The
+  // manager's separate bounded operation checks storage/registration/provenance.
   bool reclamation_supported{false};
 };
 

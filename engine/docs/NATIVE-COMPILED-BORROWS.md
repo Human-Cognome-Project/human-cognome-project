@@ -1,6 +1,17 @@
 # Native HCP compiled-data borrows
 
-Status: **provenance correction addressed, awaiting review**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Implements [#405 decision 7068182353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/405#issuecomment-7068182353) and [#406 correction 7068740186](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7068740186). Reviewed `9cbce926` passed its hosted checks but required the provenance correction before acceptance. Main `87ff545c` integrates qualified #404 with reviewed `fbc9bc50`'s tree. #405 passed hosted native/smoke and awaits maintainer integration. This correction stays on #406; all merges remain maintainer work.
+Status: **provisionally accepted in #406**, under #343; current disposition and original qualification are distinguished below.
+
+Latest disposition (2026-11-22): #405 is integrated at main `92e4ceaf` with
+reviewed `06e71404`'s tree. #406 `33da9a0f` is provisionally accepted in
+[decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329):
+the provenance finding is resolved, smoke passed and native qualification remains pending.
+The authorized [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
+at `505ab435` now awaits review. It requires the manager's full bounded eligibility
+checks; guard observations alone remain insufficient. It adds a sticky CPU
+registration-start marker/eight overlapping native bytes, with existing guards,
+count semantics and JIT/ORC owners preserved. The following original source/evidence
+sections retain their stated revisions; later scope is recorded in the new report.
 
 Canonical tested source `65acfbe473f8d66cacdc6426afe9f8d2ce7ddaed`, tree `74e6f88109e73b7af06380ff56384d4ea07df002`, includes the native/HCP guard implementation, actual-architecture correction, regression and fork delta notes. Matching fork tree: `be80342e40f44bc0955aebb129528e9e7a497c09`. The original guard feature changes native/HCP C++ class layouts; this correction adds no further layout change. Rebuild matching native archives and wrappers together. LLVM runtime bitcode and serialized compiled-data/AOT layouts are unchanged. Later report/handoff edits are Markdown only and preserve this fork tree.
 
@@ -10,7 +21,7 @@ Canonical tested source `65acfbe473f8d66cacdc6426afe9f8d2ce7ddaed`, tree `74e6f8
 
 The actual manager-owned CompiledKernelData retains one shared metadata pointer. Its lazily created metadata records that data/manager identity, the live guard count and a sticky untracked-client flag. Acquiring a guard increments once; moves transfer the guard without incrementing; destruction/replacement decrements once. Cache hits share the existing metadata. Guard observations are non-lazy and allocate nothing.
 
-The original const-reference `Program::compile_kernel` and manager `load_or_compile` APIs remain available. They permanently mark raw exposure of an actual returned x64 record, regardless of the requested architecture, even if that record also has guards. Tracked acquisition validates the returned record's actual architecture before issuing a guard. Unmanaged/cloned data has unavailable metadata and defaults to untracked. Unsupported architectures have no tracked acquisition path; AST/disk loading is explicitly outside this first guard API. All observations report `reclamation_supported=false`: no record is eligible for reclamation in this implementation.
+The original const-reference `Program::compile_kernel` and manager `load_or_compile` APIs remain available. They permanently mark raw exposure of an actual returned x64 record, regardless of the requested architecture, even if that record also has guards. Tracked acquisition validates the returned record's actual architecture before issuing a guard. Unmanaged/cloned data has unavailable metadata and defaults to untracked. Unsupported architectures have no tracked acquisition path; AST/disk loading is explicitly outside this first guard API. All observations report `reclamation_supported=false`: no record was eligible for reclamation at that prerequisite source.
 
 Guards own **metadata only**. The cache continues to own compiled data and its IR; the guard does not extend Program, LLVM context, device or executable lifetime. Before returning a data reference, `get()` checks the live metadata pointer. Data destruction invalidates it and clears the owner identity. A remaining guard can safely observe expired metadata, reject `get()` and later release its metadata without dereferencing the deleted data. Whole-Program shutdown retains its existing behavior; this is not selective eviction or a shutdown lease.
 
@@ -81,4 +92,4 @@ The original before bundle preserves earlier guard-development fixture/allocatio
 
 This prerequisite tracks HCP guard lifetimes and known raw-reference entry points; it does not prove the disappearance of arbitrary external C++ aliases. Valid derived references must stay within guard/owner lifetimes. No independent thread-safety, in-flight/drain, GPU execution, executable-byte recovery, complete B or full local regression claim is made. Hosted GitHub CI remains authoritative for its scope.
 
-Review the guard/ABI change and authoritative CI before considering any reclamation implementation. The [accepted design](NATIVE-RECLAMATION-DESIGN.md) still requires a separate reviewed operation for selective unregistered-record removal, including serialized eligibility and unknown-client refusal. Loaded-record context ownership remains outside the tracked acquisition path. Registered retirement additionally needs exact native row/module association, stale-dispatch handling and ORC dependency/error proof. Byte accounting, admission changes, row reuse and resource removal remain separate; #324 is unchanged.
+The maintainer provisionally accepted this prerequisite and approved the separately reviewed unregistered-record operation linked above. The [accepted design](NATIVE-RECLAMATION-DESIGN.md) still requires a separate reviewed operation for selective unregistered-record removal, including serialized eligibility and unknown-client refusal. Loaded-record context ownership remains outside the tracked acquisition path. Registered retirement additionally needs exact native row/module association, stale-dispatch handling and ORC dependency/error proof. Byte accounting, admission changes, row reuse and resource removal remain separate; #324 is unchanged.

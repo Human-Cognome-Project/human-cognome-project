@@ -1,14 +1,23 @@
 # Native reclamation units, borrowers and launch resources
 
-Status: **provisionally accepted in #405**, [decision 7068182353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/405#issuecomment-7068182353), under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Follows [#404 decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542) from provisionally accepted `fbc9bc503b33f74e800c80bcb68861bf938aaab3`. At the inspection start, main `ca098539` integrated qualified #403 with its reviewed tree. #404 targets main; its smoke passed and authoritative native qualification remained pending at this handoff. All merges remain maintainer work.
+Status: **qualified and integrated in #405**, [decision 7068182353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/405#issuecomment-7068182353), under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Follows [#404 decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542) from provisionally accepted `fbc9bc503b33f74e800c80bcb68861bf938aaab3`. At the inspection start, main `ca098539` integrated qualified #403 with its reviewed tree. #404 targets main; its smoke passed and authoritative native qualification remained pending at this handoff. All merges remain maintainer work.
 
-Maintainer update (2026-11-22): #404 is qualified and integrated at main `87ff545c`; #405 passed hosted native/smoke and awaits integration. #406 requires its actual-record provenance correction before acceptance. Its authorized [native HCP borrower prerequisite](NATIVE-COMPILED-BORROWS.md) is implemented separately, with metadata-only guards and no reclamation. The original design/inspection evidence below retains its source.
+Latest disposition (2026-11-22): #405 is integrated at main `92e4ceaf` with
+reviewed `06e71404`'s tree. #406 `33da9a0f` is provisionally accepted in
+[decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329):
+the provenance finding is resolved, smoke passed and native qualification remains pending.
+The authorized [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
+at `505ab435` now awaits review. It requires the manager's full bounded eligibility
+checks; guard observations alone remain insufficient. It adds a sticky CPU
+registration-start marker/eight overlapping native bytes, with existing guards,
+count semantics and JIT/ORC owners preserved. The following original source/evidence
+sections retain their stated revisions; later scope is recorded in the new report.
 
 Canonical tested source `3534439e7b26c55df78ebd514380cdb8d3c2fa11`, tree `13f4e93a146ca69599e8c51081e76eb0d3424260`, adds only a native inspection fixture and its CMake registrations. HCP production, numerical code, the existing refusal witnesses and fork tree `3c1fd8859bfc04b9d1587f3e907478b8a6bc54c4` are unchanged from #404. Later report/handoff changes are Markdown only. No eviction, borrower API, launch invalidation, ORC removal, byte charge, admission change or achieved saving is implemented.
 
 ## Finding and proposed boundary
 
-**Whole-Program/Runtime shutdown is the currently implemented release boundary for these combined resources. There is no supported per-record retirement operation.** A dead candidate definition is not a sufficient retirement unit. The smallest proposed unit depends on what has happened to its actual native cached record:
+**At this design's inspection source, whole-Program/Runtime shutdown was the implemented release boundary for these combined resources; no per-record retirement operation existed.** A dead candidate definition is not a sufficient retirement unit. The smallest proposed unit depends on what has happened to its actual native cached record:
 
 | Record state | Smallest proposed unit | Required proof before any future retirement |
 | --- | --- | --- |

@@ -89,6 +89,15 @@ precedes guard release; guards validate data access but retain no Program/LLVM c
 Actual metadata overhead and the required matching native rebuild are recorded;
 reclamation, launch-row reuse and byte/admission policy remain separate.
 
+The [serialized unregistered-record removal](docs/NATIVE-UNREGISTERED-REMOVAL.md)
+adds a bounded operation in the existing native manager for positively tracked,
+zero-borrow pending LLVM/x64 records. Unknown/raw/live clients, disk data,
+incomplete inspection and any registration attempt refuse unchanged.
+Exact destruction, fresh retry, partial-registration refusal and surviving
+dispatch have scoped local evidence. Native record overhead and released C++
+requests are separate from complete B, automatic policy, registered/JIT/ORC
+retirement and admission.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The

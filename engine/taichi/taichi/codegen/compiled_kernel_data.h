@@ -133,6 +133,11 @@ class CompiledKernelData {
     return kernel_launch_handle_;
   }
 
+  // Sticky, nonallocating protection for partial CPU registration: a failed
+  // attempt may retain rows/modules even though no launch handle was stamped.
+  void mark_registration_started() const noexcept { registration_started_ = true; }
+  bool registration_started() const noexcept { return registration_started_; }
+
   static std::unique_ptr<CompiledKernelData> load(std::istream &is, Err *p_err);
 
   static std::string get_err_msg(Err err);
@@ -158,6 +163,7 @@ class CompiledKernelData {
   static std::unique_ptr<CompiledKernelData> create(Arch arch, Err &err);
 
   mutable std::optional<KernelLaunchHandle> kernel_launch_handle_;
+  mutable bool registration_started_{false};
 };
 
 }  // namespace taichi::lang

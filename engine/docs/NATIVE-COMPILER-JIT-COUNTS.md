@@ -4,6 +4,17 @@ Status: **qualified and integrated in #404**, [decision 7067817542](https://gith
 
 Maintainer update: #403 passed hosted native/smoke and is integrated at main `ca098539`, with no file differences from reviewed `a326ca77`. #404 passed hosted native/smoke and is integrated at main `87ff545c`, with no differences from reviewed `fbc9bc50`. The authorized [reclamation design/inspection](NATIVE-RECLAMATION-DESIGN.md) follows separately. The original qualification below retains its exact source.
 
+Latest disposition (2026-11-22): #405 is integrated at main `92e4ceaf` with
+reviewed `06e71404`'s tree. #406 `33da9a0f` is provisionally accepted in
+[decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329):
+the provenance finding is resolved, smoke passed and native qualification remains pending.
+The authorized [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
+at `505ab435` now awaits review. It requires the manager's full bounded eligibility
+checks; guard observations alone remain insufficient. It adds a sticky CPU
+registration-start marker/eight overlapping native bytes, with existing guards,
+count semantics and JIT/ORC owners preserved. The following original source/evidence
+sections retain their stated revisions; later scope is recorded in the new report.
+
 Canonical tested source `b36dcd28a8bfc0532f6de8c38ab270d5c6605238`, tree `24bac6730087461fabe568c4534e6ce45d6d7bca`, contains the native APIs and both kinds of executable evidence. API commit `2b7e244c2df0d9306e39dd079a2a32d6615b9c57` precedes the standalone positive disk-load fixture. The exact fork tree is `3c1fd8859bfc04b9d1587f3e907478b8a6bc54c4`; rebuild the matching fork archives and HCP wrapper together. Later report/handoff edits are Markdown only and preserve this fork tree.
 
 ## Existing owners supply the observations
