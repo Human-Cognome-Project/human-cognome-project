@@ -98,6 +98,13 @@ dispatch have scoped local evidence. Native record overhead and released C++
 requests are separate from complete B, automatic policy, registered/JIT/ORC
 retirement and admission.
 
+The [registration-failure inspection and combined correction](docs/NATIVE-REGISTRATION-FAILURES.md)
+keep the accepted original #405-based evidence separate from the new #407 ABI
+qualification. The fixture now reads data through the checked native borrow
+accessor; both outer fault windows, retries, surviving dispatch and shutdown
+remain checked. The current handoff preserves both reports and proposes native
+attempt ownership for later review. Registered/ORC retirement remains separate.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The

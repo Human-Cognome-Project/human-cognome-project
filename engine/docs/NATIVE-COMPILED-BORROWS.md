@@ -1,17 +1,13 @@
 # Native HCP compiled-data borrows
 
-Status: **provisionally accepted in #406**, under #343; current disposition and original qualification are distinguished below.
+Status: **qualified and integrated in #406** at main `2fdcfcbc`, preserving reviewed `33da9a0f`'s tree. The provenance finding is resolved. Original source/evidence below remains pinned to `65acfbe4`; current follow-ups are distinguished below. All merges remain maintainer work.
 
-Latest disposition (2026-11-22): #405 is integrated at main `92e4ceaf` with
-reviewed `06e71404`'s tree. #406 `33da9a0f` is provisionally accepted in
-[decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329):
-the provenance finding is resolved, smoke passed and native qualification remains pending.
-The authorized [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
-at `505ab435` now awaits review. It requires the manager's full bounded eligibility
-checks; guard observations alone remain insufficient. It adds a sticky CPU
-registration-start marker/eight overlapping native bytes, with existing guards,
-count semantics and JIT/ORC owners preserved. The following original source/evidence
-sections retain their stated revisions; later scope is recorded in the new report.
+The [#407 removal report](NATIVE-UNREGISTERED-REMOVAL.md) is provisionally accepted;
+its native gate remains pending. The [combined #408 correction](NATIVE-REGISTRATION-FAILURES.md)
+at `cf26b62e` uses the checked accessor on that ABI and preserves guard/move/
+unwind/expiration/provenance controls. #407's native inline marker cost remains
+separate from this original guard report's measurements. The combined candidate
+awaits maintainer integration/review and adds no attempt-ownership implementation.
 
 Canonical tested source `65acfbe473f8d66cacdc6426afe9f8d2ce7ddaed`, tree `74e6f88109e73b7af06380ff56384d4ea07df002`, includes the native/HCP guard implementation, actual-architecture correction, regression and fork delta notes. Matching fork tree: `be80342e40f44bc0955aebb129528e9e7a497c09`. The original guard feature changes native/HCP C++ class layouts; this correction adds no further layout change. Rebuild matching native archives and wrappers together. LLVM runtime bitcode and serialized compiled-data/AOT layouts are unchanged. Later report/handoff edits are Markdown only and preserve this fork tree.
 

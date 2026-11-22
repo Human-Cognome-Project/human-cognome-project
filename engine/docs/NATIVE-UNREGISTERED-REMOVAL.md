@@ -1,6 +1,14 @@
 # Serialized removal of unregistered native compiled data
 
-Status: **implementation awaiting review**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Implements [#406 decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329) from provisionally accepted `33da9a0f`. Main `92e4ceaf` integrates #405 with reviewed `06e71404`'s exact tree. #406 smoke passed; authoritative native CPU qualification remains pending at this handoff. This contribution is stacked on #406; every merge remains maintainer work.
+Status: **provisionally accepted in #407**, [review 7082250727](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407#issuecomment-7082250727), under #343. Main `2fdcfcbc` integrates #406; this PR targets main and awaits authoritative native qualification. Original measurements and source below remain unchanged; all merges remain maintainer work.
+
+The [combined #408 correction](NATIVE-REGISTRATION-FAILURES.md) at `cf26b62e`
+adds the borrow-aware registration fixture without changing #407 production.
+Seven removal cases preserve the original 83 requests / 7,010 requested bytes
+and refusal/retry/sibling controls. Its separate qualification also covers the
+two registration fault windows, guard lifetime controls and native provenance.
+The original report and its tested `505ab435`/archive pins below remain intact.
+The candidate awaits maintainer integration into #408 and review.
 
 Tested source `505ab435c0bfaf7018517f50b8678512c443927f`, tree `921e8cccf2bfc3090e1d06082583cc025860872c`, fork tree `71e58621eac5373cbfcd71a0db29b469a85093b7`. Later report/handoff files are Markdown only. Matching native/wrapper rebuild is required: native compiled-data C++ layout changes; runtime bitcode, serialized compiled-data/AOT formats and numerical formulas are unchanged.
 
