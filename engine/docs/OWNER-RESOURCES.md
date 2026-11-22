@@ -1,5 +1,12 @@
 # Private exchange-owner resource inventory
 
+The [#406 provenance correction](NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
+at `65acfbe4` makes the returned record authoritative: raw x64 exposure is marked
+even when request architecture differs, and tracked acquisition refuses an
+unsupported actual record before guard creation. Expected failures and corrected
+CPU regression evidence are retained. Guard costs, moves/unwind, sibling dispatch
+and existing resource policy are preserved; corrected-head review remains.
+
 [Native compiled-data borrows](NATIVE-COMPILED-BORROWS.md) at `2708b8b1`
 implement #405's x64 borrower prerequisite. Existing native records count
 move-only guards and permanently mark raw clients; HCP dependencies die before

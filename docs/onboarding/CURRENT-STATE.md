@@ -1,30 +1,28 @@
 # Current implementation and work
 
-**Native compiled-data borrows — 2026-11-21 (implementation awaiting review):**
-[Native ownership, raw-client boundary and actual overhead](../../engine/docs/NATIVE-COMPILED-BORROWS.md)
-at tested `2708b8b1` implements [#405 decision 7068182353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/405#issuecomment-7068182353)
-from provisionally accepted `06e71404`. Existing x64 memory-cache records supply
-move-only HCP guards; known raw clients remain permanently marked untracked.
-Normal teardown and move assignment destroy bound contexts/definitions before
-releasing guards. Shared acquisition, moves, constructor unwind, raw/expired
-access, retries and actual sibling dispatch are checked. Metadata guards do not
-extend Program/LLVM-context lifetime or enable any reclamation operation.
+**Native borrow provenance — 2026-11-22 (corrected head awaiting review):**
+[Actual-record architecture, regression and preserved ownership evidence](../../engine/docs/NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
+at tested `65acfbe4` addresses [#406 correction 7068740186](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7068740186).
+Raw exposure is marked from the actual returned x64 record, including a same-key
+hit requested with another architecture. Tracked acquisition validates the actual
+record before issuing a guard. Both regressions fail on reviewed `9cbce926` and
+pass after correction; they require no GPU execution. Cache/JIT counts, moves,
+unwind, raw-client stickiness and following sibling dispatch remain checked.
 
-Actual wrapper extent grows 32→48 bytes; each cached LLVM record adds sixteen
-inline bytes and one observed 48-byte metadata request. Guard-only moves,
-observation and release allocate nothing. Native class-layout changes require
-the matching SDK/wrapper rebuild; bitcode/AOT layouts are unchanged. Quick,
-fourteen Clang/ten GCC CTests and two warm/viewport-OFF cases pass. Before
-lifetime/count histories and new borrow probes agree. Complete B, byte charges,
-admission, row reuse and ORC removal remain separate. Review this prerequisite
-before separately authorizing selective reclamation; GPU/#324 are unchanged.
+Quick, fifteen Clang/eleven GCC CTests and three warm/viewport-OFF cases pass.
+Before histories, 260 native-count snapshots, 243 borrow snapshots and the new
+provenance assertions reconcile. Guard overhead/ABI and existing native owners
+are preserved; this fix adds no further layout, byte/admission or reclamation
+change. Return this corrected head for review and new authoritative CI before
+proceeding to selective reclamation. Loaded/registered retirement, row reuse,
+ORC removal, complete B, GPU qualification and #324 remain separate.
 
-**Dependency and integration:** main `ca098539` integrates qualified #403.
-Reviewed #404 `fbc9bc50` passed hosted native/smoke and awaits integration.
-#405 `06e71404` is provisionally accepted; smoke passed and native qualification
-was pending at this handoff. This implementation continues from that reviewed
-head. All integration/merges remain maintainer-only; earlier entries retain
-their source-specific handoffs.
+**Dependency and integration:** main `87ff545c` integrates qualified #404 with
+reviewed `fbc9bc50`'s tree. #405 `06e71404` passed hosted native/smoke and awaits
+maintainer integration. #406's earlier `9cbce926` also passed hosted checks but
+needed the provenance correction before acceptance; those runs do not qualify
+this corrected head. All integration/merges remain maintainer-only. Earlier
+entries retain their source-specific handoffs.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

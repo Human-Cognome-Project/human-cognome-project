@@ -83,8 +83,9 @@ are explicit.
 
 The [native borrower prerequisite](docs/NATIVE-COMPILED-BORROWS.md) tracks
 HCP x64 compiled-data guards through shared acquisition, moves and unwind.
-Raw clients remain marked untracked. Context/Kernel destruction precedes guard
-release; guards validate data access but retain no Program/LLVM context.
+Raw marking follows the returned record's actual architecture; tracked acquisition
+checks that actual record before issuing a guard. Context/Kernel destruction
+precedes guard release; guards validate data access but retain no Program/LLVM context.
 Actual metadata overhead and the required matching native rebuild are recorded;
 reclamation, launch-row reuse and byte/admission policy remain separate.
 

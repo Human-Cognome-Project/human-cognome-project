@@ -1,19 +1,18 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-21). Main `ca098539` integrates qualified #403.
-Reviewed #404 `fbc9bc50` passed hosted native/smoke and awaits maintainer
-integration. #405 `06e71404` is provisionally accepted in decision 7068182353;
-smoke passed and native qualification remains pending. The [native borrow
-prerequisite](../engine/docs/NATIVE-COMPILED-BORROWS.md) at tested `2708b8b1`
-tracks HCP x64 compiled-data guards in existing native ownership and permanently
-marks raw clients. Shared acquisition, moves, dependency destruction order,
-constructor unwind, retries and surviving dispatch pass. Actual wrapper/record
-overhead and the matching native C++ ABI rebuild are explicit. Quick, fourteen
-Clang/ten GCC CTests and two optional-components-OFF cases pass; read-only counts
-and before lifetime histories remain preserved. Review the prerequisite and new
-authoritative CI before any selective reclamation. Byte/admission changes,
-loaded/registered retirement, GPU, complete B and #324 remain separate. Every
-merge stays with the maintainer; old entries preserve their source handoffs.
+Current disposition (2026-11-22). Main `87ff545c` integrates qualified #404
+with reviewed `fbc9bc50`'s tree. #405 `06e71404` passed hosted native/smoke and
+awaits maintainer integration. #406 requires the [provenance correction](../engine/docs/NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
+requested in review 7068740186 before acceptance. Tested `65acfbe4` marks raw
+exposure from the returned record's actual architecture and validates actual
+record support before issuing a guard. Same-key mismatched-config and unsupported
+cached-record regressions fail on reviewed `9cbce926` and pass after the fix.
+Quick, fifteen Clang/eleven GCC CTests and three minimal cases pass; seventeen
+lifetime histories, guard controls, existing overhead and sibling dispatch are
+preserved. Review this corrected head and its new authoritative CI before any
+selective reclamation. No further layout, byte/admission, row-reuse, ORC or
+numerical change is implemented. GPU, complete B and #324 remain separate.
+All integration and merge events remain maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -224,6 +223,19 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-22 contributor (native borrow provenance correction awaiting review):
+[Returned-object authority and focused regression](../engine/docs/NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
+at `65acfbe4` addresses #406 review 7068740186. Request architecture can differ
+from an existing memory-cache record. Raw marking now follows the returned x64
+object; tracked acquisition refuses an unsupported actual record before borrow
+metadata exists. Both new assertions fail on reviewed production and pass on
+the correction without GPU execution. Quick, fifteen Clang/eleven GCC CTests
+and three minimal cases pass; before lifetimes/counts, moves/unwind, raw-client
+stickiness, overhead and following sibling dispatch remain preserved. The
+earlier head's hosted pass does not qualify this fix. #404 is integrated at
+`87ff545c`; #405 is hosted-qualified and awaits integration. Return corrected
+#406 for review before selective reclamation; all merges remain maintainer work.
 
 2026-11-21 contributor (native compiled-data borrows awaiting review):
 [Guard lifetimes, raw clients and actual overhead](../engine/docs/NATIVE-COMPILED-BORROWS.md)
