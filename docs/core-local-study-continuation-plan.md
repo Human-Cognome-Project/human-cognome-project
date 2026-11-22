@@ -1,32 +1,33 @@
 # Core continuation after local CUDA corrections
 
-**Native reclamation design — 2026-11-21 (inspection awaiting review):**
-[Shared borrowers, native rows/task pointers and ORC retirement boundaries](../engine/docs/NATIVE-RECLAMATION-DESIGN.md)
-at tested `3534439e` follows [#404 decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542)
-from provisionally accepted `fbc9bc50`. A test-only witness resolves seven HCP
-definitions to four actual records: a refused candidate shares a survivor's
-data/handle, unregistered retry retains its record, same-record registration
-reuses its handle and distinct records append rows. Surviving task symbols,
-outputs and prepared/dynamic dispatch remain valid. Four pending objects release
-at finalization; four kernel wrappers release later, with one runtime module
-kept distinct. There is no implemented per-record retirement operation.
+**Native CPU registration failures — 2026-11-22 (inspection/proposal awaiting review):**
+[Partial attempts, retained rows/modules, retry and shutdown](../engine/docs/NATIVE-REGISTRATION-FAILURES.md)
+at tested `816b8edb` is independently based on main `92e4ceaf`. Two injected
+outer failure windows produce four cached records, six launch slots and five
+kernel module wrappers, plus one runtime module. One record retains two distinct
+modules after an injected post-creation failure and its successful retry. Failed slots
+remain empty; retries append IDs 3/5, and surviving IDs 0/1, task symbols and
+actual prepared/dynamic dispatch remain valid. Data releases at finalization;
+all six module wrappers release later with Runtime/session destruction.
 
-The design separates unregistered data from a registered record/row/module
-group and preserves whole-Runtime shutdown as the current release boundary.
-Review the native borrower-protection prerequisite before implementation;
-raw-reference escape, stale rows, in-flight work and ORC errors must be handled
-before eviction. Byte charges, admission changes, GPU and complete B remain
-separate. Production/fork/numerical code and real refusal witnesses are unchanged.
-Local quick, seven Clang/five GCC CTests and the warm/viewport-OFF standalone
-case pass, with 98 new count snapshots. Real refusal histories retain #404's
-verified before evidence. New authoritative hosted CI is separate.
+Quick, seven Clang/five GCC CTests and two warm/viewport-OFF cases pass.
+Seven new histories reconcile 112 snapshots, fourteen fault windows and seven
+shutdowns; three before sharing histories/42 snapshots remain unchanged.
+Only a fixture/CMake registration changes. Production/fork/ABI, existing
+count semantics, numerical code and resource policy are unchanged; saving is zero.
+Propose native ownership of all registration attempts before registered retirement,
+including resources created before a wrapper/handle exists. Inner JIT failures,
+ORC cleanup, dependencies, concurrency, full B/admission and #324 remain separate.
 
-**Dependency and integration:** #403 passed hosted native/smoke and is integrated
-at main `ca098539`, with no differences from reviewed `a326ca77`. #404 at
-`fbc9bc50` is provisionally accepted and targets main; smoke passed and native
-qualification was pending at this handoff. Its [read-only count APIs](../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
-retain their source-pinned qualification. All integration and merge events remain
-maintainer-only; earlier status entries preserve their source handoffs.
+**Directly confirmed state:** main `92e4ceaf` integrates qualified #405 with
+reviewed `06e71404`'s exact tree. [#406](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406)
+at `33da9a0f` remains open/provisionally accepted; smoke/native CPU passed.
+[#407](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407)
+at `fccae608` remains open on #406, with its handoff awaiting review:
+smoke passed and native CPU is pending. This inspection imports neither branch.
+A chat “accepted” signals review; confirm refs and handoffs for actual changes.
+All merges remain maintainer-only. Return this inspection/proposal for review.
+Earlier entries retain their source-specific handoffs.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

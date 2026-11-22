@@ -1,19 +1,23 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-21). Main `ca098539` integrates qualified #403
-with reviewed `a326ca77`'s tree. #404 at `fbc9bc50` is provisionally accepted in
-decision 7067817542; smoke passed and native qualification remains pending.
-The [bounded reclamation design/inspection](../engine/docs/NATIVE-RECLAMATION-DESIGN.md)
-at tested `3534439e` traces actual shared records, row/task-pointer reuse and
-native ORC ownership. Seven definitions share four records. A refused candidate
-shares a survivor's data/handle, which remain valid for surviving dispatch.
-Whole-Runtime shutdown remains the implemented release boundary. Review native
-borrow protection before implementing eviction; row invalidation, in-flight
-use and executable cleanup remain separate prerequisites. Quick, seven Clang/
-five GCC CTests and an optional-components-OFF standalone case pass. Production
-and real refusal witnesses are unchanged; retained #404 evidence is reused.
-New hosted CI, GPU, complete B, byte/admission changes and #324 remain separate.
-All merges stay with the maintainer; older entries retain their source handoffs.
+Current disposition (2026-11-22). Main `92e4ceaf` integrates qualified #405 with
+reviewed `06e71404`'s tree. #406 `33da9a0f` is open/provisionally accepted and
+has passed hosted native/smoke. #407 `fccae608` is open on #406; its handoff
+remains awaiting review, smoke passed and native CPU remains pending.
+These states are checked directly from Git, PRs and handoffs; a chat “accepted”
+is review notation and does not establish repository changes.
+
+The [registration-failure inspection](../engine/docs/NATIVE-REGISTRATION-FAILURES.md)
+at `816b8edb` independently extends current main's #405 evidence. Four compiled
+records can retain six launch slots/five kernel modules, plus the runtime module:
+failed attempts and retry break a one-record/one-row/one-module assumption.
+Surviving handles/tasks/dispatch and normal shutdown remain checked.
+Quick, seven Clang/five GCC CTests and two minimal cases pass; seven new histories/
+112 snapshots and three before sharing histories/42 snapshots reconcile.
+Production/fork/ABI and resource policy are unchanged; achieved saving is zero.
+Review the proposed native attempt-ownership prerequisite before registered
+retirement. Inner JIT failure, ORC dependencies/cleanup, stale dispatch/drain,
+complete B/admission, GPU and #324 remain separate. Every merge is maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 

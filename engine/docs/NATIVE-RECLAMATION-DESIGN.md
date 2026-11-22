@@ -1,6 +1,17 @@
 # Native reclamation units, borrowers and launch resources
 
-Status: **design/inspection awaiting review**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Follows [#404 decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542) from provisionally accepted `fbc9bc503b33f74e800c80bcb68861bf938aaab3`. Current main `ca098539` integrates qualified #403 with its reviewed tree. #404 targets main; its smoke passed and authoritative native qualification remained pending at this handoff. All merges remain maintainer work.
+Status: **qualified and integrated in #405**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Original inspection/qualification below remains pinned to its source. Current main `92e4ceaf` preserves reviewed `06e71404`'s exact tree.
+
+The [registration-failure follow-up](NATIVE-REGISTRATION-FAILURES.md) at `816b8edb`
+is independently based on that main tree. It observes four records, six launch
+slots and five kernel wrappers, with two empty failed slots and one retained
+failed module. Retry may add another module for the same record. The proposed
+registered unit must include every partial/successful attempt, not only the
+last stamped handle. The first bounded proposal is native attempt ownership;
+registered retirement remains unimplemented and requires separate review.
+#406 is open/provisionally accepted with hosted checks passed; #407 is open
+with its handoff awaiting review and native qualification pending. Neither
+implementation is imported into this inspection's main-based source.
 
 Canonical tested source `3534439e7b26c55df78ebd514380cdb8d3c2fa11`, tree `13f4e93a146ca69599e8c51081e76eb0d3424260`, adds only a native inspection fixture and its CMake registrations. HCP production, numerical code, the existing refusal witnesses and fork tree `3c1fd8859bfc04b9d1587f3e907478b8a6bc54c4` are unchanged from #404. Later report/handoff changes are Markdown only. No eviction, borrower API, launch invalidation, ORC removal, byte charge, admission change or achieved saving is implemented.
 
@@ -11,7 +22,7 @@ Canonical tested source `3534439e7b26c55df78ebd514380cdb8d3c2fa11`, tree `13f4e9
 | Record state | Smallest proposed unit | Required proof before any future retirement |
 | --- | --- | --- |
 | Compiled, never registered | One manager-owned CompiledKernelData and its retained IR/task/ABI metadata. | Complete tracked borrower coverage, no unknown raw-reference escape, no in-flight use, correct LLVM-context lifetime. No launch handle may exist. |
-| Registered CPU kernel | The shared compiled record, its native launch row, all that row's task pointers, and the kernel JIT wrapper/JITDylib resources associated with registration. | All of the above, plus checked launch invalidation, no incoming executable dependency, exact module association, backend cleanup/error handling and stable surviving rows. |
+| Registered CPU kernel | The shared compiled record, all successful/partial registration attempts, their native rows/task pointers and associated module/JITDylib resources. | All of the above, plus checked launch invalidation, no incoming executable dependency, exact module association, backend cleanup/error handling and stable surviving rows. |
 | Initial runtime module / runtime service pointers | Runtime/session boundary. | Excluded from per-kernel reclamation. Existing runtime identity and service dependencies must remain alive. |
 
 These are **proposed eligibility/ownership units**, not newly available APIs or a proof that current callers have no remaining references. A compiled record can serve several definitions. One registered module can contain multiple offloaded tasks, so a task function is not an independently owned native unit here. Erasing a cache entry does not retire a launcher row or unload executable code.

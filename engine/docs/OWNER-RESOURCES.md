@@ -1,5 +1,15 @@
 # Private exchange-owner resource inventory
 
+The [registration-failure inspection](NATIVE-REGISTRATION-FAILURES.md) at `816b8edb`
+traces partial CPU registration and retry on main `92e4ceaf`. Four cached records
+retain six slots and five kernel module wrappers, plus one runtime module.
+Failed slots and an abandoned successful module creation survive until normal
+owner teardown; surviving handles/tasks and dispatch remain valid. A future
+retirement group must account for every registration attempt and resources that
+may precede wrapper publication. The native attempt-ownership proposal needs
+review and overhead/failure qualification. Production, resource charges, admission
+and achieved saving remain unchanged; counts remain incomplete for full B.
+
 [Native reclamation design](NATIVE-RECLAMATION-DESIGN.md) at `3534439e` follows
 #404's accepted inspection direction. Actual definitions share compiled records
 and handles; dead definitions do not free CPU rows/task pointers or ORC resources.

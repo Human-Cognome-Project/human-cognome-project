@@ -81,6 +81,13 @@ removal and distinguishes CPU ORC resources from module wrappers. Production
 reclamation and byte/admission policy are unchanged; backend and teardown limits
 are explicit.
 
+The [native registration-failure inspection](docs/NATIVE-REGISTRATION-FAILURES.md)
+then distinguishes cached records, registration attempts, launch slots and stored
+module wrappers under two injected failure windows. Retrying the same record
+can retain an abandoned module and append a new row/module. It proposes native
+attempt ownership before any registered retirement, preserving surviving dispatch
+and ordinary shutdown. Production and achieved resource saving remain unchanged.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The
