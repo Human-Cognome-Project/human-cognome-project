@@ -66,6 +66,12 @@ class KernelCompilationManager final {
                                             const DeviceCapabilityConfig &caps,
                                             const Kernel &kernel_def);
 
+  // LLVM/x64 non-AST memory-cache path only. Does not expose an untracked
+  // reference; all derived references must remain within the returned guard.
+  CompiledKernelBorrow borrow_or_compile(const CompileConfig &compile_config,
+                                         const DeviceCapabilityConfig &caps,
+                                         const Kernel &kernel_def);
+
   // Read-only provenance check against this Program's existing compilation
   // records. Does not compile, load, register or stamp a launch handle.
   bool owns_compiled_kernel(const Kernel &kernel_def,
@@ -80,6 +86,9 @@ class KernelCompilationManager final {
                            double cleaning_factor) const;
 
  private:
+  const CompiledKernelData &load_or_compile_impl(const CompileConfig &compile_config,
+                                                const DeviceCapabilityConfig &caps,
+                                                const Kernel &kernel_def);
   std::string make_filename(const std::string &kernel_key) const;
 
   std::unique_ptr<CompiledKernelData> compile_kernel(

@@ -1,32 +1,28 @@
 # Current implementation and work
 
-**Native reclamation design — 2026-11-21 (inspection awaiting review):**
-[Shared borrowers, native rows/task pointers and ORC retirement boundaries](../../engine/docs/NATIVE-RECLAMATION-DESIGN.md)
-at tested `3534439e` follows [#404 decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542)
-from provisionally accepted `fbc9bc50`. A test-only witness resolves seven HCP
-definitions to four actual records: a refused candidate shares a survivor's
-data/handle, unregistered retry retains its record, same-record registration
-reuses its handle and distinct records append rows. Surviving task symbols,
-outputs and prepared/dynamic dispatch remain valid. Four pending objects release
-at finalization; four kernel wrappers release later, with one runtime module
-kept distinct. There is no implemented per-record retirement operation.
+**Native borrow provenance — 2026-11-22 (corrected head awaiting review):**
+[Actual-record architecture, regression and preserved ownership evidence](../../engine/docs/NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
+at tested `65acfbe4` addresses [#406 correction 7068740186](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7068740186).
+Raw exposure is marked from the actual returned x64 record, including a same-key
+hit requested with another architecture. Tracked acquisition validates the actual
+record before issuing a guard. Both regressions fail on reviewed `9cbce926` and
+pass after correction; they require no GPU execution. Cache/JIT counts, moves,
+unwind, raw-client stickiness and following sibling dispatch remain checked.
 
-The design separates unregistered data from a registered record/row/module
-group and preserves whole-Runtime shutdown as the current release boundary.
-Review the native borrower-protection prerequisite before implementation;
-raw-reference escape, stale rows, in-flight work and ORC errors must be handled
-before eviction. Byte charges, admission changes, GPU and complete B remain
-separate. Production/fork/numerical code and real refusal witnesses are unchanged.
-Local quick, seven Clang/five GCC CTests and the warm/viewport-OFF standalone
-case pass, with 98 new count snapshots. Real refusal histories retain #404's
-verified before evidence. New authoritative hosted CI is separate.
+Quick, fifteen Clang/eleven GCC CTests and three warm/viewport-OFF cases pass.
+Before histories, 260 native-count snapshots, 243 borrow snapshots and the new
+provenance assertions reconcile. Guard overhead/ABI and existing native owners
+are preserved; this fix adds no further layout, byte/admission or reclamation
+change. Return this corrected head for review and new authoritative CI before
+proceeding to selective reclamation. Loaded/registered retirement, row reuse,
+ORC removal, complete B, GPU qualification and #324 remain separate.
 
-**Dependency and integration:** #403 passed hosted native/smoke and is integrated
-at main `ca098539`, with no differences from reviewed `a326ca77`. #404 at
-`fbc9bc50` is provisionally accepted and targets main; smoke passed and native
-qualification was pending at this handoff. Its [read-only count APIs](../../engine/docs/NATIVE-COMPILER-JIT-COUNTS.md)
-retain their source-pinned qualification. All integration and merge events remain
-maintainer-only; earlier status entries preserve their source handoffs.
+**Dependency and integration:** main `87ff545c` integrates qualified #404 with
+reviewed `fbc9bc50`'s tree. #405 `06e71404` passed hosted native/smoke and awaits
+maintainer integration. #406's earlier `9cbce926` also passed hosted checks but
+needed the provenance correction before acceptance; those runs do not qualify
+this corrected head. All integration/merges remain maintainer-only. Earlier
+entries retain their source-specific handoffs.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

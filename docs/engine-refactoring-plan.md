@@ -1,19 +1,18 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-21). Main `ca098539` integrates qualified #403
-with reviewed `a326ca77`'s tree. #404 at `fbc9bc50` is provisionally accepted in
-decision 7067817542; smoke passed and native qualification remains pending.
-The [bounded reclamation design/inspection](../engine/docs/NATIVE-RECLAMATION-DESIGN.md)
-at tested `3534439e` traces actual shared records, row/task-pointer reuse and
-native ORC ownership. Seven definitions share four records. A refused candidate
-shares a survivor's data/handle, which remain valid for surviving dispatch.
-Whole-Runtime shutdown remains the implemented release boundary. Review native
-borrow protection before implementing eviction; row invalidation, in-flight
-use and executable cleanup remain separate prerequisites. Quick, seven Clang/
-five GCC CTests and an optional-components-OFF standalone case pass. Production
-and real refusal witnesses are unchanged; retained #404 evidence is reused.
-New hosted CI, GPU, complete B, byte/admission changes and #324 remain separate.
-All merges stay with the maintainer; older entries retain their source handoffs.
+Current disposition (2026-11-22). Main `87ff545c` integrates qualified #404
+with reviewed `fbc9bc50`'s tree. #405 `06e71404` passed hosted native/smoke and
+awaits maintainer integration. #406 requires the [provenance correction](../engine/docs/NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
+requested in review 7068740186 before acceptance. Tested `65acfbe4` marks raw
+exposure from the returned record's actual architecture and validates actual
+record support before issuing a guard. Same-key mismatched-config and unsupported
+cached-record regressions fail on reviewed `9cbce926` and pass after the fix.
+Quick, fifteen Clang/eleven GCC CTests and three minimal cases pass; seventeen
+lifetime histories, guard controls, existing overhead and sibling dispatch are
+preserved. Review this corrected head and its new authoritative CI before any
+selective reclamation. No further layout, byte/admission, row-reuse, ORC or
+numerical change is implemented. GPU, complete B and #324 remain separate.
+All integration and merge events remain maintainer work.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -224,6 +223,33 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-22 contributor (native borrow provenance correction awaiting review):
+[Returned-object authority and focused regression](../engine/docs/NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
+at `65acfbe4` addresses #406 review 7068740186. Request architecture can differ
+from an existing memory-cache record. Raw marking now follows the returned x64
+object; tracked acquisition refuses an unsupported actual record before borrow
+metadata exists. Both new assertions fail on reviewed production and pass on
+the correction without GPU execution. Quick, fifteen Clang/eleven GCC CTests
+and three minimal cases pass; before lifetimes/counts, moves/unwind, raw-client
+stickiness, overhead and following sibling dispatch remain preserved. The
+earlier head's hosted pass does not qualify this fix. #404 is integrated at
+`87ff545c`; #405 is hosted-qualified and awaits integration. Return corrected
+#406 for review before selective reclamation; all merges remain maintainer work.
+
+2026-11-21 contributor (native compiled-data borrows awaiting review):
+[Guard lifetimes, raw clients and actual overhead](../engine/docs/NATIVE-COMPILED-BORROWS.md)
+at `2708b8b1` implements #405 decision 7068182353 from `06e71404`.
+The existing native cache owns data; move-only HCP guards retain only metadata.
+Move assignment and normal teardown release contexts/definitions before guards.
+Shared records, constructor unwind, successful/refused retry, sticky raw-client
+marking and checked expiration pass. Wrapper size grows 32→48; native cached
+LLVM records add sixteen inline bytes plus a 48-byte metadata request. No new
+byte charge, resource gate or saving is claimed. Quick, fourteen Clang/ten GCC
+CTests and two minimal cases pass; before histories and new borrow probes agree.
+#404 is hosted-qualified, #405 remains provisional and all integration stays
+with the maintainer. Review this prerequisite before selective reclamation;
+row reuse, ORC removal, GPU and complete B remain separate.
 
 2026-11-21 contributor (native reclamation design awaiting review):
 [Shared native records, safe units and backend limits](../engine/docs/NATIVE-RECLAMATION-DESIGN.md)

@@ -74,6 +74,15 @@ void run() {
     disk_definition.set_kernel_key_for_cache(key);
     auto compile_config = program.compile_config(); compile_config.offline_cache = true;
     const auto &loaded = owner.load_or_compile(compile_config, program.get_device_caps(), disk_definition);
+    const auto raw = loaded.borrow_observation();
+    check(raw.status == OwnershipCountStatus::Present && raw.untracked_clients &&
+              !raw.tracked_borrows && !raw.reclamation_supported,
+          "raw loaded client was eligible for reclamation");
+    bool unsupported_borrow = false;
+    try {
+      (void)owner.borrow_or_compile(compile_config, program.get_device_caps(), disk_definition);
+    } catch (const std::invalid_argument &) { unsupported_borrow = true; }
+    check(unsupported_borrow, "loaded AST borrow path was unexpectedly supported");
     const auto exact = owner.ownership_counts(2);
     const auto short_work = owner.ownership_counts(1);
     const auto repeat = owner.ownership_counts(2);

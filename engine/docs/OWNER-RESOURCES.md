@@ -1,5 +1,20 @@
 # Private exchange-owner resource inventory
 
+The [#406 provenance correction](NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
+at `65acfbe4` makes the returned record authoritative: raw x64 exposure is marked
+even when request architecture differs, and tracked acquisition refuses an
+unsupported actual record before guard creation. Expected failures and corrected
+CPU regression evidence are retained. Guard costs, moves/unwind, sibling dispatch
+and existing resource policy are preserved; corrected-head review remains.
+
+[Native compiled-data borrows](NATIVE-COMPILED-BORROWS.md) at `2708b8b1`
+implement #405's x64 borrower prerequisite. Existing native records count
+move-only guards and permanently mark raw clients; HCP dependencies die before
+guard release. Actual wrapper extent grows by sixteen bytes and each cached
+LLVM record adds sixteen inline bytes plus one 48-byte metadata request.
+Those quantities remain separate from full owner peaks, executable bytes and
+complete B. No reclamation, byte charge, admission change or saving is enabled.
+
 [Native reclamation design](NATIVE-RECLAMATION-DESIGN.md) at `3534439e` follows
 #404's accepted inspection direction. Actual definitions share compiled records
 and handles; dead definitions do not free CPU rows/task pointers or ORC resources.
