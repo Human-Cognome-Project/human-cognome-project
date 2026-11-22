@@ -61,10 +61,34 @@ class KernelCompilationManager final {
 
   CompilerOwnershipCounts ownership_counts(std::size_t entry_budget) const;
 
+  enum class RemovalStatus {
+    Removed, NotFound, Incomplete, DiskBacked, Unsupported,
+    UnknownBorrowers, LiveBorrows, RegistrationStarted
+  };
+  struct RemovalResult {
+    RemovalStatus status{RemovalStatus::Incomplete};
+    std::size_t visited_entries{0};
+  };
+  // Caller holds exclusive, quiescent Program ownership with its LLVM context
+  // alive. Serialize against acquisition/release, registration and cache changes;
+  // this operation does not drain work or provide concurrent lifetime safety.
+  // Selects the CURRENT key, never a saved pointer/incarnation. Inspect both maps
+  // within entry_budget; refuse incomplete coverage, disk-backed/unsupported data,
+  // unknown/raw/live borrowers and any registration attempt without mutation.
+  // Success destroys only one pending MemCache LLVM/x64 object, not JIT resources.
+  RemovalResult remove_unregistered_kernel(const std::string &kernel_key,
+                                            std::size_t entry_budget);
+
   // Load from memory || Load from disk || (Compile && Cache in memory)
   const CompiledKernelData &load_or_compile(const CompileConfig &compile_config,
                                             const DeviceCapabilityConfig &caps,
                                             const Kernel &kernel_def);
+
+  // LLVM/x64 non-AST memory-cache path only. Does not expose an untracked
+  // reference; all derived references must remain within the returned guard.
+  CompiledKernelBorrow borrow_or_compile(const CompileConfig &compile_config,
+                                         const DeviceCapabilityConfig &caps,
+                                         const Kernel &kernel_def);
 
   // Read-only provenance check against this Program's existing compilation
   // records. Does not compile, load, register or stamp a launch handle.
@@ -80,6 +104,9 @@ class KernelCompilationManager final {
                            double cleaning_factor) const;
 
  private:
+  const CompiledKernelData &load_or_compile_impl(const CompileConfig &compile_config,
+                                                const DeviceCapabilityConfig &caps,
+                                                const Kernel &kernel_def);
   std::string make_filename(const std::string &kernel_key) const;
 
   std::unique_ptr<CompiledKernelData> compile_kernel(

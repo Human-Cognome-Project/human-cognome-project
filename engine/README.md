@@ -81,12 +81,29 @@ removal and distinguishes CPU ORC resources from module wrappers. Production
 reclamation and byte/admission policy are unchanged; backend and teardown limits
 are explicit.
 
-The [native registration-failure inspection](docs/NATIVE-REGISTRATION-FAILURES.md)
-then distinguishes cached records, registration attempts, launch slots and stored
-module wrappers under two injected failure windows. Retrying the same record
-can retain an abandoned module and append a new row/module. It proposes native
-attempt ownership before any registered retirement, preserving surviving dispatch
-and ordinary shutdown. Production and achieved resource saving remain unchanged.
+The [native borrower prerequisite](docs/NATIVE-COMPILED-BORROWS.md) tracks
+HCP x64 compiled-data guards through shared acquisition, moves and unwind.
+Raw marking follows the returned record's actual architecture; tracked acquisition
+checks that actual record before issuing a guard. Context/Kernel destruction
+precedes guard release; guards validate data access but retain no Program/LLVM context.
+Actual metadata overhead and the required matching native rebuild are recorded;
+reclamation, launch-row reuse and byte/admission policy remain separate.
+
+The [serialized unregistered-record removal](docs/NATIVE-UNREGISTERED-REMOVAL.md)
+adds a bounded operation in the existing native manager for positively tracked,
+zero-borrow pending LLVM/x64 records. Unknown/raw/live clients, disk data,
+incomplete inspection and any registration attempt refuse unchanged.
+Exact destruction, fresh retry, partial-registration refusal and surviving
+dispatch have scoped local evidence. Native record overhead and released C++
+requests are separate from complete B, automatic policy, registered/JIT/ORC
+retirement and admission.
+
+The [registration-failure inspection and combined correction](docs/NATIVE-REGISTRATION-FAILURES.md)
+keep the accepted original #405-based evidence separate from the new #407 ABI
+qualification. The fixture now reads data through the checked native borrow
+accessor; both outer fault windows, retries, surviving dispatch and shutdown
+remain checked. The current handoff preserves both reports and proposes native
+attempt ownership for later review. Registered/ORC retirement remains separate.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with

@@ -1,23 +1,26 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-22). Main `92e4ceaf` integrates qualified #405 with
-reviewed `06e71404`'s tree. #406 `33da9a0f` is open/provisionally accepted and
-has passed hosted native/smoke. #407 `fccae608` is open on #406; its handoff
-remains awaiting review, smoke passed and native CPU remains pending.
-These states are checked directly from Git, PRs and handoffs; a chat “accepted”
-is review notation and does not establish repository changes.
+Current disposition (2026-11-22). Main `2fdcfcbc` integrates qualified #406 with
+reviewed `33da9a0f`'s tree. #407 `fccae608` is provisionally accepted in
+[review 7082250727](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407#issuecomment-7082250727),
+targets main and awaits authoritative native qualification after smoke success.
+#408's original #405-based inspection is accepted in
+[review 7082256953](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082256953);
+its combined correction remains pending integration/review.
 
-The [registration-failure inspection](../engine/docs/NATIVE-REGISTRATION-FAILURES.md)
-at `816b8edb` independently extends current main's #405 evidence. Four compiled
-records can retain six launch slots/five kernel modules, plus the runtime module:
-failed attempts and retry break a one-record/one-row/one-module assumption.
-Surviving handles/tasks/dispatch and normal shutdown remain checked.
-Quick, seven Clang/five GCC CTests and two minimal cases pass; seven new histories/
-112 snapshots and three before sharing histories/42 snapshots reconcile.
-Production/fork/ABI and resource policy are unchanged; achieved saving is zero.
-Review the proposed native attempt-ownership prerequisite before registered
-retirement. Inner JIT failure, ORC dependencies/cleanup, stale dispatch/drain,
-complete B/admission, GPU and #324 remain separate. Every merge is maintainer work.
+The [combined candidate](../engine/docs/NATIVE-REGISTRATION-FAILURES.md) at `cf26b62e`
+adds the fixture through `k.compiled_data()` on #407's existing native ABI and
+reconciles seven Markdown conflicts while preserving both original reports.
+Quick, thirteen Clang/nine GCC CTests and five minimal cases pass: all seven
+original registration histories/112 snapshots, fault/retry/sibling/shutdown,
+seven removal cases and guard/provenance controls reconcile. Production is
+exactly #407; no registration-attempt ownership/registered retirement is added.
+The original measurements keep their original source pins. Inner JIT/ORC
+cleanup/dependencies, full B/admission, GPU, concurrency and #324 stay separate.
+This candidate is prepared for maintainer integration into #408 under the
+merge-only-by-maintainer rule; a draft qualification PR supplies GitHub CI.
+Return the combined head for review before implementing attempt ownership.
+A chat “accepted” is review notation; Git, PR and handoff state are checked directly.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
@@ -228,6 +231,33 @@ Each PR names the pass, source base, responsibility changed, preserved behavior,
 At each stopping point leave: current branch/SHA and dirty-work disposition; accepted versus pending changes; commands/results and evidence locations; known failures with exact reproduction; decisions and unresolved questions; and the next small task with its required files. A fresh context should resume without repeating broad exploration. Keep historical evidence available through Git and component records.
 
 ## Progress
+
+2026-11-22 contributor (native borrow provenance correction awaiting review):
+[Returned-object authority and focused regression](../engine/docs/NATIVE-COMPILED-BORROWS.md#actual-architecture-correction--2026-11-22)
+at `65acfbe4` addresses #406 review 7068740186. Request architecture can differ
+from an existing memory-cache record. Raw marking now follows the returned x64
+object; tracked acquisition refuses an unsupported actual record before borrow
+metadata exists. Both new assertions fail on reviewed production and pass on
+the correction without GPU execution. Quick, fifteen Clang/eleven GCC CTests
+and three minimal cases pass; before lifetimes/counts, moves/unwind, raw-client
+stickiness, overhead and following sibling dispatch remain preserved. The
+earlier head's hosted pass does not qualify this fix. #404 is integrated at
+`87ff545c`; #405 is hosted-qualified and awaits integration. Return corrected
+#406 for review before selective reclamation; all merges remain maintainer work.
+
+2026-11-21 contributor (native compiled-data borrows awaiting review):
+[Guard lifetimes, raw clients and actual overhead](../engine/docs/NATIVE-COMPILED-BORROWS.md)
+at `2708b8b1` implements #405 decision 7068182353 from `06e71404`.
+The existing native cache owns data; move-only HCP guards retain only metadata.
+Move assignment and normal teardown release contexts/definitions before guards.
+Shared records, constructor unwind, successful/refused retry, sticky raw-client
+marking and checked expiration pass. Wrapper size grows 32→48; native cached
+LLVM records add sixteen inline bytes plus a 48-byte metadata request. No new
+byte charge, resource gate or saving is claimed. Quick, fourteen Clang/ten GCC
+CTests and two minimal cases pass; before histories and new borrow probes agree.
+#404 is hosted-qualified, #405 remains provisional and all integration stays
+with the maintainer. Review this prerequisite before selective reclamation;
+row reuse, ORC removal, GPU and complete B remain separate.
 
 2026-11-21 contributor (native reclamation design awaiting review):
 [Shared native records, safe units and backend limits](../engine/docs/NATIVE-RECLAMATION-DESIGN.md)

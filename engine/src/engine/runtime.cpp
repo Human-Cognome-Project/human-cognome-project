@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace engine {
 
@@ -107,18 +108,48 @@ CompiledKernel::CompiledKernel(Runtime &runtime,
     config.opt_level = 0;
     config.cfg_optimization = false;
   }
-  compiled_ =
-      &program.compile_kernel(config, program.get_device_caps(), *kernel_);
+  if (runtime.arch() == taichi::Arch::x64) {
+    borrow_ = program.compile_kernel_borrow(config, program.get_device_caps(), *kernel_);
+    compiled_ = &borrow_.get();
+  } else {
+    compiled_ = &program.compile_kernel(config, program.get_device_caps(), *kernel_);
+  }
+}
+
+CompiledKernel::CompiledKernel(CompiledKernel &&other) noexcept {
+  *this = std::move(other);
+}
+
+CompiledKernel &CompiledKernel::operator=(CompiledKernel &&other) noexcept {
+  if (this != &other) {
+    bound_context_.reset();
+    kernel_.reset();
+    borrow_ = std::move(other.borrow_);
+    runtime_ = std::exchange(other.runtime_, nullptr);
+    compiled_ = std::exchange(other.compiled_, nullptr);
+    kernel_ = std::move(other.kernel_);
+    bound_context_ = std::move(other.bound_context_);
+  }
+  return *this;
+}
+
+const CompiledKernelData &CompiledKernel::compiled_data() const {
+  if (borrow_.has_record()) return borrow_.get();
+  if (!compiled_) throw std::logic_error("compiled kernel is empty");
+  return *compiled_;
 }
 
 LaunchContextBuilder CompiledKernel::make_context() {
+  (void)compiled_data();
+  if (!kernel_) throw std::logic_error("compiled kernel is empty");
   return kernel_->make_launch_context();
 }
 
 void CompiledKernel::launch(LaunchContextBuilder &ctx) {
   if (&ctx == bound_context_.get() && !ctx.prepared)
     prepare(ctx);
-  runtime_->program().launch_kernel(*compiled_, ctx);
+  const auto &data = compiled_data();
+  runtime_->program().launch_kernel(data, ctx);
 }
 
 CompiledKernel::Invocation CompiledKernel::invocation(bool reusable) {
@@ -142,12 +173,13 @@ std::size_t CompiledKernel::prepared_bytes() const {
 }
 
 void CompiledKernel::prepare(LaunchContextBuilder &ctx) {
+  const auto &data = compiled_data();
   // Native preparation verifies the original Kernel/Program and target ABI;
   // wrappers cannot stamp a foreign context with this kernel's launch ID.
   auto &launcher =
       runtime_->program().get_program_impl()->get_kernel_launcher();
   dynamic_cast<taichi::lang::LLVM::KernelLauncher &>(launcher).prepare_kernel(
-      *compiled_, ctx);
+      data, ctx);
 }
 
 }  // namespace engine

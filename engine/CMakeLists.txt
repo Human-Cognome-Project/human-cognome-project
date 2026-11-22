@@ -586,7 +586,7 @@ if(HCP_WITH_VIEWPORT)
         "-Wl,--wrap=_ZN6taichi4lang7Program13launch_kernelERKNS0_18CompiledKernelDataERNS0_20LaunchContextBuilderE"
         "-Wl,--wrap=_ZN6taichi4lang7Program14add_snode_treeESt10unique_ptrINS0_5SNodeESt14default_deleteIS3_EEb"
         "-Wl,--wrap=_ZN6taichi4lang7Program18destroy_snode_treeEPNS0_9SNodeTreeE"
-        "-Wl,--wrap=_ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE"
+        "-Wl,--wrap=_ZN6taichi4lang7Program21compile_kernel_borrowERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE"
         "-Wl,--wrap=_ZN5field6detail13LiveHierarchy7installEmRKNS_19WeightedCascadeSpecEm"
         "-Wl,--wrap=_ZN5field6detail13LiveHierarchy14commit_refreshERNS_12UpdateResultE")
     foreach(workers 1 2)
@@ -608,7 +608,7 @@ if(HCP_WITH_VIEWPORT)
         "-Wl,--wrap=_ZN6taichi4lang7Program13launch_kernelERKNS0_18CompiledKernelDataERNS0_20LaunchContextBuilderE"
         "-Wl,--wrap=_ZN6taichi4lang7Program14add_snode_treeESt10unique_ptrINS0_5SNodeESt14default_deleteIS3_EEb"
         "-Wl,--wrap=_ZN6taichi4lang7Program18destroy_snode_treeEPNS0_9SNodeTreeE"
-        "-Wl,--wrap=_ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE")
+        "-Wl,--wrap=_ZN6taichi4lang7Program21compile_kernel_borrowERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE")
     foreach(workers 1 2)
       foreach(path bulk direct)
         add_test(NAME legacy_submission_inspection_${workers}_${path}
@@ -644,6 +644,33 @@ endif()
 
 # Every run needs TI_LIB_DIR pointing at the engine's LLVM runtime bitcode.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_executable(compiled_borrow_test tests/compiled_borrow_test.cpp)
+  target_link_libraries(compiled_borrow_test PRIVATE engine_support)
+  target_compile_options(compiled_borrow_test PRIVATE -Wall -Wextra -Werror)
+  target_link_options(compiled_borrow_test PRIVATE
+      "-Wl,--wrap=_ZN6taichi4lang7Program21compile_kernel_borrowERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE")
+  add_test(NAME compiled_borrow_test COMMAND compiled_borrow_test)
+  set_tests_properties(compiled_borrow_test PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+  add_executable(compiled_borrow_provenance_test tests/compiled_borrow_provenance_test.cpp)
+  target_link_libraries(compiled_borrow_provenance_test PRIVATE engine_support)
+  target_compile_options(compiled_borrow_provenance_test PRIVATE -Wall -Wextra -Werror)
+  add_test(NAME compiled_borrow_provenance_test COMMAND compiled_borrow_provenance_test)
+  set_tests_properties(compiled_borrow_provenance_test PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+  add_executable(unregistered_removal_test tests/unregistered_removal_test.cpp)
+  target_link_libraries(unregistered_removal_test PRIVATE engine_support)
+  target_compile_options(unregistered_removal_test PRIVATE -Wall -Wextra -Werror)
+  target_link_options(unregistered_removal_test PRIVATE
+      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE")
+  foreach(workers 1 2)
+    foreach(path prepared dynamic)
+      add_test(NAME unregistered_removal_${workers}_${path}
+          COMMAND unregistered_removal_test ${workers} ${path})
+      set_tests_properties(unregistered_removal_${workers}_${path} PROPERTIES
+          ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+    endforeach()
+  endforeach()
   add_executable(compiler_jit_counts_test tests/compiler_jit_counts_test.cpp)
   target_link_libraries(compiler_jit_counts_test PRIVATE engine_support)
   target_compile_options(compiler_jit_counts_test PRIVATE -Wall -Wextra -Werror)

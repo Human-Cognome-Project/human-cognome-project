@@ -1,5 +1,43 @@
 # Native CPU registration failures and retry ownership
 
+**Combined correction for #408 — qualification candidate awaiting maintainer integration/review.** [Review 7082256953](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082256953) accepts the original #405-based inspection and requests the borrow-aware accessor, both reports, reconciled Markdown and qualification on the combined native ABI. No registration-attempt ownership implementation is authorized by this correction.
+
+Current main `2fdcfcbc381b23eea973ca279bfdc39ac3a1a39b` integrates #406 with reviewed `33da9a0f`'s exact tree. #407 `fccae608` is [provisionally accepted](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407#issuecomment-7082250727), targets main and awaits its authoritative native gate. #408 remains open at its original head until maintainer integration. All refs/dispositions are checked directly; a chat “accepted” remains review notation.
+
+## Combined source and correction
+
+Tested candidate `cf26b62ee9ea5b58215b77c0d6256888da591cab`, tree `d34d54713c07c1c7f490eb77e42982603884739b`, is an ordinary child of #407 `fccae6088d193a946c0cf9452fee631514a50e3c`. Its only additions are #408's fixture/CMake registrations. The fixture differs from reviewed `2964912e` by exactly one line: `CompiledKernelAccess::data` now returns `k.compiled_data()` instead of dereferencing `compiled_`. The checked accessor exercises the integrated HCP borrow contract. Native/HCP production is exactly #407; fork tree `71e58621eac5373cbfcd71a0db29b469a85093b7` is unchanged. Later reconciliation/report edits are Markdown only.
+
+The combined ABI retains #407's HCP wrapper 48 bytes, native base 40/concrete LLVM record 168, guard 16 and control request 48. These are #407's existing costs, with overlapping native base/concrete attribution. This correction adds no runtime field, byte charge, admission rule, registered retirement, ORC cleanup or resource-saving claim.
+
+Both outer fault windows, same-record retries/revisits, surviving handles/tasks/actual dispatch and shutdown are requalified. All seven registration histories and all 112 snapshots match the original #408 source exactly: four cached records, six launch slots, five kernel-module wrappers and one runtime module; two empty failed slots; one retained failed module; retries use IDs 3/5 and survivors 0/1. Four data objects release at finalization; all six wrappers release later. The fixture never dereferences data after finalization or dispatches a failed module.
+
+Existing removal cases retain exact destruction, unknown/raw/live/registered/disk/incomplete refusal, fresh retry and sibling dispatch. All seven cases still release 83 observed C++ requests / 7,010 requested bytes with no new requests during removal. Guard move/unwind/expiration and actual-architecture controls remain preserved. These observations do not establish full B/RSS, inner JIT recovery, complete dependencies or registered cleanup.
+
+## Combined local qualification
+
+Actual backend: LLVM/x64 CPU, Release, matching rebuilt Clang/LLVM 15.0.7 substrate, CUDA OFF. Wrappers use Clang 15 and GCC 11. Runtime bitcode SHA-256 `4a57d249a308b5a4523e788025515e7adbccce7565ecafe2871cc34094ca7ada` and recursive submodules are unchanged.
+
+- `HCP_LOCAL_BUILD_JOBS=4 bash engine/scripts/run_local_ci.sh quick /tmp/hcp-combined-cf26b62e-quick`: matching SDK/wrapper build/backend, three CTests, 632 placement-math samples and capacity check passed.
+- `bash /tmp/hcp-combined-checks.sh clang`: thirteen CTests passed: four registration/four removal modes plus borrow, provenance, loaded-count, prepared-launch and sharing controls.
+- The same command with `gcc`: nine CTests passed: two registration/two removal modes and the same five controls.
+- The same command with `minimal`: warm/viewport OFF, registration, removal, borrow, provenance and sharing CTests passed.
+- `perl /tmp/hcp-combined-audit.pl /tmp/hcp-combined-cf26b62e`: all seven original registration histories/112 snapshots and fault/shutdown summaries match; three sharing histories/42 snapshots, seven removal cases, three guard/ABI profiles and six provenance assertions reconcile. Source/tree/clean checks bracket every profile.
+
+Verified machine-local archive `/tmp/hcp-combined-cf26b62e-evidence.tar.gz`, SHA-256 `25e5ca54dfd0dd51c553e736d5c2b363e845ccc291f31ff9d956fc19244d5dad`, retains raw logs, commands/configurations, exact source/submodules, binaries/runtime hashes, unchanged-#407-production proof, the exact one-line accessor correction, original conflict inputs and both original before bundles. Reused before logs match manifest-verified archived copies. Root and all four profile manifests pass after fresh extraction. This identifies retained evidence without publishing the machine-local bundle.
+
+The before bundles remain independently pinned: original #408 tested `816b8edb` / fork `3c1fd885...` has archive SHA-256 `b8b20252061e2be5e0868adc1cde16d9a67141ef5aa1b02fd8ae33d89d235e7d`; #407 tested `505ab435` / fork `71e58621...` has SHA-256 `addb90e77d65216b862dc60ffb1476cd5ade45112b53ca869e088e4c4e730df6`. The combined result does not relabel either old source or its measurements.
+
+## Reconciled handoff and maintainer step
+
+A three-way file check reproduces exactly seven Markdown conflicts: CURRENT-STATE, the core continuation/refactoring plans, Engine README, compiler/JIT counts, reclamation design and owner resources. Their resolved candidate keeps #407's removal/borrow reports and their original pins, adds the accepted original #408 report below, and states the current integrated/provisional/correction-required boundaries. The review-notation paragraph from #408 is retained in work discipline. Initial conflict inputs/results are retained with the evidence; source remains unchanged by these Markdown resolutions.
+
+[Work discipline](../../docs/onboarding/WORK-DISCIPLINE.md#contribution-flow) reserves all merge events/integration merges to the maintainer. This candidate preserves both PR histories without merging or force-updating #408. A draft qualification PR supplies authoritative GitHub CI on this exact combined tree. The remaining maintainer step is to integrate the candidate as #408's resolved tree, preserve that tree/executable equivalence, and return the resulting #408 head for review. Neither the candidate nor the original #408 inspection implements registration-attempt ownership.
+
+## Original #405-based inspection — accepted source, preserved report
+
+The following report is preserved as published at `2964912e`, including its original source/evidence and historical handoff state. Its inspection is accepted only for that original source in review 7082256953. The combined qualification above has separate source/ABI pins.
+
 Status: **inspection/proposal awaiting review**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343) and the [refactoring plan's inspection sequence](../../docs/engine-refactoring-plan.md#purpose-and-boundaries). This is independent work on main `92e4ceaf8858111b03b36599dfe86e124da4bed4`, which integrates qualified #405 with reviewed `06e71404`'s exact tree. The [accepted reclamation design](NATIVE-RECLAMATION-DESIGN.md#proposed-implementation-sequence-for-review) requires partial-registration association before any registered retirement. This contribution supplies executable observations and a bounded proposal, without changing production behavior.
 
 At the handoff check, #406 remains open at `33da9a0f`, with provisional acceptance in [decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329); its smoke and [native CPU gate](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45035647465) have passed. #407 remains open at `fccae608`, stacked on #406, with its handoff still awaiting review. Its smoke passed and [native CPU gate](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45040186843) remains pending. A chat “accepted” is review notation; actual refs, published disposition and handoffs determine changes/status. This inspection imports neither pending implementation and does not qualify their combined tree. Every merge remains maintainer work.

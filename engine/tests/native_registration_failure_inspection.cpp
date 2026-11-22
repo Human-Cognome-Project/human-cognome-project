@@ -11,7 +11,7 @@
 namespace engine::testing {
 struct CompiledKernelAccess {
   static const taichi::lang::Kernel &definition(const CompiledKernel &k) { return *k.kernel_; }
-  static const taichi::lang::CompiledKernelData &data(const CompiledKernel &k) { return *k.compiled_; }
+  static const taichi::lang::CompiledKernelData &data(const CompiledKernel &k) { return k.compiled_data(); }
 };
 }  // namespace engine::testing
 

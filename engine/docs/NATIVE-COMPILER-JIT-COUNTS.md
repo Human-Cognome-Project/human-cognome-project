@@ -2,15 +2,26 @@
 
 Status: **qualified and integrated in #404**, [decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542), under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Implements [#403 decision 7067047506](https://github.com/Human-Cognome-Project/human-cognome-project/pull/403#issuecomment-7067047506) from provisionally accepted `a326ca774d319c5899b15592beb3c3a7051011c0`. Main `456cb681` integrates qualified #400–#402. #403's smoke passed and its authoritative native qualification was still running when this contribution began. All merges remain maintainer work.
 
-Maintainer update: #403 passed hosted native/smoke and is integrated at main `ca098539`, with no file differences from reviewed `a326ca77`. #404 passed hosted native/smoke and is integrated at main `87ff545c`, with no differences from reviewed `fbc9bc50`. #405 is integrated at main `92e4ceaf` with reviewed `06e71404`'s tree. The authorized [reclamation design/inspection](NATIVE-RECLAMATION-DESIGN.md) follows separately. The original qualification below retains its exact source.
+Maintainer update: #403 passed hosted native/smoke and is integrated at main `ca098539`, with no file differences from reviewed `a326ca77`. #404 passed hosted native/smoke and is integrated at main `87ff545c`, with no differences from reviewed `fbc9bc50`. The authorized [reclamation design/inspection](NATIVE-RECLAMATION-DESIGN.md) follows separately. The original qualification below retains its exact source.
 
-The [registration-failure inspection](NATIVE-REGISTRATION-FAILURES.md) at `816b8edb`
-clarifies existing count semantics without changing these APIs. Launch contexts
-count slots, including failed empty rows; kernel modules count stored wrappers,
-including a module whose registration never stamped a handle. Four registered
-records, six slots and five kernel wrappers can coexist. Neither count provides
-a one-to-one record association or complete backend-resource census. Original
-count qualification remains source-pinned below.
+Latest disposition (2026-11-22): #405 is integrated at main `92e4ceaf` with
+reviewed `06e71404`'s tree. #406 `33da9a0f` is provisionally accepted in
+[decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329):
+the provenance finding is resolved, smoke passed and native qualification remains pending.
+The authorized [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
+at `505ab435` now awaits review. It requires the manager's full bounded eligibility
+checks; guard observations alone remain insufficient. It adds a sticky CPU
+registration-start marker/eight overlapping native bytes, with existing guards,
+count semantics and JIT/ORC owners preserved. The following original source/evidence
+sections retain their stated revisions; later scope is recorded in the new report.
+
+Current follow-up: #406 is integrated at main `2fdcfcbc`; #407 is provisionally
+accepted and targets main, with native qualification pending. The
+[combined #408 candidate](NATIVE-REGISTRATION-FAILURES.md) at `cf26b62e` requalifies
+the inspection on that ABI. Four records, six launch slots and five kernel
+wrappers can coexist after partial registration/retry; these are distinct
+counts with `complete=false`, not one-to-one ownership or full B. Both original
+native reports retain their source pins and measurements.
 
 Canonical tested source `b36dcd28a8bfc0532f6de8c38ab270d5c6605238`, tree `24bac6730087461fabe568c4534e6ce45d6d7bca`, contains the native APIs and both kinds of executable evidence. API commit `2b7e244c2df0d9306e39dd079a2a32d6615b9c57` precedes the standalone positive disk-load fixture. The exact fork tree is `3c1fd8859bfc04b9d1587f3e907478b8a6bc54c4`; rebuild the matching fork archives and HCP wrapper together. Later report/handoff edits are Markdown only and preserve this fork tree.
 

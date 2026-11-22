@@ -1,32 +1,32 @@
 # Core continuation after local CUDA corrections
 
-**Native CPU registration failures — 2026-11-22 (inspection/proposal awaiting review):**
-[Partial attempts, retained rows/modules, retry and shutdown](../engine/docs/NATIVE-REGISTRATION-FAILURES.md)
-at tested `816b8edb` is independently based on main `92e4ceaf`. Two injected
-outer failure windows produce four cached records, six launch slots and five
-kernel module wrappers, plus one runtime module. One record retains two distinct
-modules after an injected post-creation failure and its successful retry. Failed slots
-remain empty; retries append IDs 3/5, and surviving IDs 0/1, task symbols and
-actual prepared/dynamic dispatch remain valid. Data releases at finalization;
-all six module wrappers release later with Runtime/session destruction.
+**#408 combined correction — 2026-11-22 (qualified candidate awaiting maintainer integration/review):**
+[Borrow-aware inspection, preserved reports and combined evidence](../engine/docs/NATIVE-REGISTRATION-FAILURES.md)
+at tested `cf26b62e` applies [review 7082256953](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082256953)
+on #407 `fccae608`. The fixture uses `k.compiled_data()` through the native borrow
+contract. Production is exactly #407; no registration-attempt ownership is
+implemented. Both native reports and their original source/evidence pins remain.
 
-Quick, seven Clang/five GCC CTests and two warm/viewport-OFF cases pass.
-Seven new histories reconcile 112 snapshots, fourteen fault windows and seven
-shutdowns; three before sharing histories/42 snapshots remain unchanged.
-Only a fixture/CMake registration changes. Production/fork/ABI, existing
-count semantics, numerical code and resource policy are unchanged; saving is zero.
-Propose native ownership of all registration attempts before registered retirement,
-including resources created before a wrapper/handle exists. Inner JIT failures,
-ORC cleanup, dependencies, concurrency, full B/admission and #324 remain separate.
+Quick, thirteen Clang/nine GCC CTests and five warm/viewport-OFF cases pass.
+Seven original registration histories/112 snapshots, both fault windows,
+retries, surviving handles/tasks/dispatch and shutdown remain unchanged.
+Seven removal cases preserve 83 observed C++ requests / 7,010 requested bytes
+released, with guard move/unwind/expiration and architecture controls passing.
+These are separately pinned combined results; original #408/#407 measurements
+retain their original sources. No registered/ORC retirement or admission change
+is added. Inner JIT failures, complete B, GPU, concurrency and #324 stay separate.
 
-**Directly confirmed state:** main `92e4ceaf` integrates qualified #405 with
-reviewed `06e71404`'s exact tree. [#406](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406)
-at `33da9a0f` remains open/provisionally accepted; smoke/native CPU passed.
-[#407](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407)
-at `fccae608` remains open on #406, with its handoff awaiting review:
-smoke passed and native CPU is pending. This inspection imports neither branch.
-A chat “accepted” signals review; confirm refs and handoffs for actual changes.
-All merges remain maintainer-only. Return this inspection/proposal for review.
+**Directly confirmed state:** main `2fdcfcbc` integrates qualified #406 with
+reviewed `33da9a0f`'s exact tree. #407 `fccae608` targets main and is provisionally
+accepted in [review 7082250727](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407#issuecomment-7082250727);
+smoke passed and authoritative native qualification remains pending.
+#408 remains open: its original #405-based inspection is accepted, while the
+combined correction requires integration/review. Seven Markdown conflicts are
+reconciled in this candidate; all merge events/integration into #408 remain
+maintainer-only. A draft qualification PR supplies new authoritative GitHub CI
+on the combined tree, without rewriting either PR history.
+A chat “accepted” signals review; confirm refs/handoffs for actual state.
+Return the combined head before implementing registration-attempt ownership.
 Earlier entries retain their source-specific handoffs.
 
 **Recipe-backed parent targets — integrated in #398:**

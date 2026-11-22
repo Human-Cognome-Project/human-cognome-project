@@ -199,6 +199,7 @@ inline void native_counts(Program &p, const Sample &observed, const char *phase)
 inline Sample sample(Program &p, const char *phase, bool inspect_data = true) {
   check(active, "missing compiler trace");
   Sample out;
+  std::size_t borrows{}, shared_records{}, raw_records{};
   for (const auto &object : active->objects) {
     if (object.kind == Kind::Definition) {
       ++out.definitions; out.definitions_live += object.live;
@@ -206,6 +207,12 @@ inline Sample sample(Program &p, const char *phase, bool inspect_data = true) {
       ++out.data; out.data_live += object.live;
       if (!object.live || !inspect_data) continue;
       const auto &data = *static_cast<const CompiledKernelData *>(object.address);
+      const auto tracking = data.borrow_observation();
+      check(tracking.status == OwnershipCountStatus::Present && tracking.owner &&
+                !tracking.reclamation_supported, "native borrow metadata unavailable");
+      borrows += tracking.tracked_borrows;
+      shared_records += tracking.tracked_borrows > 1;
+      raw_records += tracking.untracked_clients;
       check(data.arch() == taichi::Arch::x64, "compiler witness requires LLVM/x64");
       out.registered += bool(data.get_handle());
       const auto &llvm_data = dynamic_cast<const LLVM::CompiledKernelData &>(data);
@@ -220,6 +227,13 @@ inline Sample sample(Program &p, const char *phase, bool inspect_data = true) {
   check(out.launch_contexts == out.modules && out.registered <= out.launch_contexts,
         "CPU registrations / captured kernel JIT modules differ");
   native_counts(p, out, phase);
+  if (inspect_data) {
+    check(borrows == out.definitions_live && !raw_records,
+          "tracked HCP borrows differ from live definitions");
+    std::cout << "native_borrow_sample,phase=" << phase
+              << ",tracked_borrows=" << borrows << ",shared_records=" << shared_records
+              << ",raw_records=" << raw_records << ",reclamation_supported=0 PASS\n";
+  }
   std::cout << "compiler_lifetime_sample,phase=" << phase
             << ",data_inspected=" << inspect_data
             << ",compile_calls=" << active->compile_calls

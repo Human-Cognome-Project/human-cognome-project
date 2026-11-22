@@ -226,13 +226,13 @@ extern "C" void wrap_harness_destroy(field::Harness *h) {
   source.harness_destroyed = true;
   ++t->harness_destroys; t->in_harness = false;
 }
-const CompiledKernelData &real_compile(Program *, const CompileConfig &,
+CompiledKernelBorrow real_compile(Program *, const CompileConfig &,
     const DeviceCapabilityConfig &, const Kernel &)
-    __asm__("__real__ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
-const CompiledKernelData &wrap_compile(Program *, const CompileConfig &,
+    __asm__("__real__ZN6taichi4lang7Program21compile_kernel_borrowERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
+CompiledKernelBorrow wrap_compile(Program *, const CompileConfig &,
     const DeviceCapabilityConfig &, const Kernel &)
-    __asm__("__wrap__ZN6taichi4lang7Program14compile_kernelERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
-const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
+    __asm__("__wrap__ZN6taichi4lang7Program21compile_kernel_borrowERKNS0_13CompileConfigERKNS0_22DeviceCapabilityConfigERKNS0_6KernelE");
+CompiledKernelBorrow wrap_compile(Program *p, const CompileConfig &c,
     const DeviceCapabilityConfig &caps, const Kernel &k) {
   compiler_trace::capture(&k, compiler_trace::Kind::Definition);
   if (auto *t = legacy_trace::active;
@@ -241,10 +241,11 @@ const CompiledKernelData &wrap_compile(Program *p, const CompileConfig &c,
     t->roots[t->current_source].constructor_fault = true;
     throw std::bad_alloc{};
   }
-  const auto &data = real_compile(p, c, caps, k);
+  auto borrow = real_compile(p, c, caps, k);
+  const auto &data = borrow.get();
   compiler_trace::compiled(*p, k, data);
   if (auto *t = legacy_trace::active) t->compilations.push_back(&data);
-  return data;
+  return borrow;
 }
 namespace {
 using namespace assembly;

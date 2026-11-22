@@ -135,6 +135,10 @@ class TI_DLL_EXPORT Program {
                                            const DeviceCapabilityConfig &caps,
                                            const Kernel &kernel_def);
 
+  CompiledKernelBorrow compile_kernel_borrow(const CompileConfig &compile_config,
+                                             const DeviceCapabilityConfig &caps,
+                                             const Kernel &kernel_def);
+
   void launch_kernel(const CompiledKernelData &compiled_kernel_data,
                      LaunchContextBuilder &ctx);
 

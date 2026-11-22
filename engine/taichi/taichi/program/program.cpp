@@ -212,6 +212,18 @@ const CompiledKernelData &Program::compile_kernel(
   return ckd;
 }
 
+CompiledKernelBorrow Program::compile_kernel_borrow(
+    const CompileConfig &compile_config,
+    const DeviceCapabilityConfig &caps,
+    const Kernel &kernel_def) {
+  auto start_t = Time::get_time();
+  TI_PROFILER("compile_kernel");  // Preserve the existing compilation profile.
+  auto result = program_impl_->get_kernel_compilation_manager().borrow_or_compile(
+      compile_config, caps, kernel_def);
+  total_compilation_time_ += Time::get_time() - start_t;
+  return result;
+}
+
 void Program::launch_kernel(const CompiledKernelData &compiled_kernel_data,
                             LaunchContextBuilder &ctx) {
   program_impl_->get_kernel_launcher().launch_kernel(compiled_kernel_data, ctx);

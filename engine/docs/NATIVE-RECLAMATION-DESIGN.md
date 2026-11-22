@@ -1,23 +1,26 @@
 # Native reclamation units, borrowers and launch resources
 
-Status: **qualified and integrated in #405**, under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Original inspection/qualification below remains pinned to its source. Current main `92e4ceaf` preserves reviewed `06e71404`'s exact tree.
+Status: **qualified and integrated in #405**, [decision 7068182353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/405#issuecomment-7068182353), under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Follows [#404 decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542) from provisionally accepted `fbc9bc503b33f74e800c80bcb68861bf938aaab3`. At the inspection start, main `ca098539` integrated qualified #403 with its reviewed tree. #404 targets main; its smoke passed and authoritative native qualification remained pending at this handoff. All merges remain maintainer work.
 
-The [registration-failure follow-up](NATIVE-REGISTRATION-FAILURES.md) at `816b8edb`
-is independently based on that main tree. It observes four records, six launch
-slots and five kernel wrappers, with two empty failed slots and one retained
-failed module. Retry may add another module for the same record. The proposed
-registered unit must include every partial/successful attempt, not only the
-last stamped handle. The first bounded proposal is native attempt ownership;
-registered retirement remains unimplemented and requires separate review.
-#406 is open/provisionally accepted with hosted checks passed; #407 is open
-with its handoff awaiting review and native qualification pending. Neither
-implementation is imported into this inspection's main-based source.
+Maintainer update (2026-11-22): main `2fdcfcbc` integrates qualified #406 with
+reviewed `33da9a0f`'s exact tree. #407 `fccae608` is provisionally accepted for
+serialized unregistered removal, targets main and awaits native qualification.
+#408's original #405-based inspection is accepted; its
+[combined correction](NATIVE-REGISTRATION-FAILURES.md) at `cf26b62e` now requalifies
+the fixture through `k.compiled_data()` on #407's native ABI. The candidate
+reconciles seven Markdown conflicts and preserves both original reports.
+Four records can retain six slots/five kernel wrappers: the proposed registered
+group must include every partial/successful attempt, not only a stamped handle.
+No attempt-ownership implementation or registered/ORC cleanup is added.
+Integration into #408 and every merge remain maintainer work; return that
+combined head for review before implementing attempt ownership.
+The original design/inspection below retains its exact source.
 
 Canonical tested source `3534439e7b26c55df78ebd514380cdb8d3c2fa11`, tree `13f4e93a146ca69599e8c51081e76eb0d3424260`, adds only a native inspection fixture and its CMake registrations. HCP production, numerical code, the existing refusal witnesses and fork tree `3c1fd8859bfc04b9d1587f3e907478b8a6bc54c4` are unchanged from #404. Later report/handoff changes are Markdown only. No eviction, borrower API, launch invalidation, ORC removal, byte charge, admission change or achieved saving is implemented.
 
 ## Finding and proposed boundary
 
-**Whole-Program/Runtime shutdown is the currently implemented release boundary for these combined resources. There is no supported per-record retirement operation.** A dead candidate definition is not a sufficient retirement unit. The smallest proposed unit depends on what has happened to its actual native cached record:
+**At this design's inspection source, whole-Program/Runtime shutdown was the implemented release boundary for these combined resources; no per-record retirement operation existed.** A dead candidate definition is not a sufficient retirement unit. The smallest proposed unit depends on what has happened to its actual native cached record:
 
 | Record state | Smallest proposed unit | Required proof before any future retirement |
 | --- | --- | --- |
