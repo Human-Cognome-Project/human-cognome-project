@@ -22,6 +22,12 @@ All merge events are handled by the maintainer. Agents prepare branches, local
 CI evidence and pull requests; they do not merge PRs or create integration merges.
 Acceptance and requests to pull/proceed authorize continued work, not a merge.
 
+An “accepted” chat notation signals maintainer review. Confirm current Git refs,
+PR disposition and relevant handoff updates to establish what changed and the
+current work scope; the notation alone is not authoritative evidence of those
+changes. Preserve integrated/open/provisional/held distinctions when they differ
+from a conversational shorthand.
+
 Use focused branches and reviewable commits. For structural changes, prefer small commits that do one of:
 
 - history-preserving integration;

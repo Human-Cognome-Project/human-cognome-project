@@ -1,22 +1,26 @@
 # Engine and Analyst-facing refactoring plan
 
-Current disposition (2026-11-22). Main `92e4ceaf` integrates qualified #405 with
-reviewed `06e71404`'s tree. #406 `33da9a0f` is provisionally accepted in
-[decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329);
-its smoke passed and authoritative native CPU qualification remains pending.
-The authorized [serialized unregistered-record removal](../engine/docs/NATIVE-UNREGISTERED-REMOVAL.md)
-at `505ab435` now awaits review. Positive provenance, zero borrows, complete
-bounded inspection and no storage/registration exclusion are required.
-Seven removal cases cover unchanged refusal, exact destruction, fresh retry and
-surviving task/handle identity plus dispatch. One candidate releases 83 observed
-C++ requests / 7,010 requested bytes, with rows/JIT unchanged. The sticky partial-
-registration marker costs eight overlapping native bytes. Quick, nineteen Clang/
-thirteen GCC CTests and four minimal cases pass; seventeen before histories,
-guard/move/unwind and provenance controls reconcile. Review this implementation
-and its new authoritative CI before extending scope. No automatic caller,
-registered/loaded retirement, row reuse, ORC release, complete B/admission,
-GPU or numerical change is implemented. #324 stays separate.
-Every integration and merge remains maintainer work.
+Current disposition (2026-11-22). Main `2fdcfcbc` integrates qualified #406 with
+reviewed `33da9a0f`'s tree. #407 `fccae608` is provisionally accepted in
+[review 7082250727](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407#issuecomment-7082250727),
+targets main and awaits authoritative native qualification after smoke success.
+#408's original #405-based inspection is accepted in
+[review 7082256953](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082256953);
+its combined correction remains pending integration/review.
+
+The [combined candidate](../engine/docs/NATIVE-REGISTRATION-FAILURES.md) at `cf26b62e`
+adds the fixture through `k.compiled_data()` on #407's existing native ABI and
+reconciles seven Markdown conflicts while preserving both original reports.
+Quick, thirteen Clang/nine GCC CTests and five minimal cases pass: all seven
+original registration histories/112 snapshots, fault/retry/sibling/shutdown,
+seven removal cases and guard/provenance controls reconcile. Production is
+exactly #407; no registration-attempt ownership/registered retirement is added.
+The original measurements keep their original source pins. Inner JIT/ORC
+cleanup/dependencies, full B/admission, GPU, concurrency and #324 stay separate.
+This candidate is prepared for maintainer integration into #408 under the
+merge-only-by-maintainer rule; a draft qualification PR supplies GitHub CI.
+Return the combined head for review before implementing attempt ownership.
+A chat “accepted” is review notation; Git, PR and handoff state are checked directly.
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 

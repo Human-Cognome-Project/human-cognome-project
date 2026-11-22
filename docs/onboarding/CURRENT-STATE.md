@@ -1,29 +1,32 @@
 # Current implementation and work
 
-**Serialized native pending-record removal — 2026-11-22 (implementation awaiting review):**
-[Eligibility, exact destruction, retry and measured effects](../../engine/docs/NATIVE-UNREGISTERED-REMOVAL.md)
-at tested `505ab435` implements [#406 decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329)
-from provisionally accepted `33da9a0f`. The native manager removes one current-key,
-unregistered pending MemCache LLVM/x64 record after bounded inspection, positive
-provenance and zero tracked borrowers. Incomplete inspection, unknown/raw/live
-clients, disk-backed data and any registration attempt refuse unchanged.
-A sticky CPU marker precedes row/JIT side effects, covering partial registration.
+**#408 combined correction — 2026-11-22 (qualified candidate awaiting maintainer integration/review):**
+[Borrow-aware inspection, preserved reports and combined evidence](../../engine/docs/NATIVE-REGISTRATION-FAILURES.md)
+at tested `cf26b62e` applies [review 7082256953](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082256953)
+on #407 `fccae608`. The fixture uses `k.compiled_data()` through the native borrow
+contract. Production is exactly #407; no registration-attempt ownership is
+implemented. Both native reports and their original source/evidence pins remain.
 
-Quick, nineteen Clang/thirteen GCC CTests and four warm/viewport-OFF cases pass.
-Seven removal cases check exact destruction, fresh retry and surviving handles/
-tasks plus actual dispatch. The candidate releases 83 observed C++ requests /
-7,010 requested bytes; rows/JIT remain unchanged. Native base/concrete LLVM
-extent grows by eight overlapping bytes; HCP/guard/control extents are unchanged.
-Seventeen before histories, 260 count snapshots, 243 borrow snapshots and
-provenance/move/unwind controls reconcile. This is not complete B or admission credit.
+Quick, thirteen Clang/nine GCC CTests and five warm/viewport-OFF cases pass.
+Seven original registration histories/112 snapshots, both fault windows,
+retries, surviving handles/tasks/dispatch and shutdown remain unchanged.
+Seven removal cases preserve 83 observed C++ requests / 7,010 requested bytes
+released, with guard move/unwind/expiration and architecture controls passing.
+These are separately pinned combined results; original #408/#407 measurements
+retain their original sources. No registered/ORC retirement or admission change
+is added. Inner JIT failures, complete B, GPU, concurrency and #324 stay separate.
 
-**Dependency and next review:** main `92e4ceaf` integrates qualified #405 with
-reviewed `06e71404`'s exact tree. #406 `33da9a0f` is provisionally accepted;
-its smoke passed and authoritative native CPU gate remains pending.
-This implementation is stacked on #406. Return it and its measured effects for
-review and new authoritative CI. No automatic removal caller is added.
-Loaded/registered retirement, row reuse, ORC release, concurrency, GPU,
-complete B/admission and #324 remain separate. All merges remain maintainer-only.
+**Directly confirmed state:** main `2fdcfcbc` integrates qualified #406 with
+reviewed `33da9a0f`'s exact tree. #407 `fccae608` targets main and is provisionally
+accepted in [review 7082250727](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407#issuecomment-7082250727);
+smoke passed and authoritative native qualification remains pending.
+#408 remains open: its original #405-based inspection is accepted, while the
+combined correction requires integration/review. Seven Markdown conflicts are
+reconciled in this candidate; all merge events/integration into #408 remain
+maintainer-only. A draft qualification PR supplies new authoritative GitHub CI
+on the combined tree, without rewriting either PR history.
+A chat “accepted” signals review; confirm refs/handoffs for actual state.
+Return the combined head before implementing registration-attempt ownership.
 Earlier entries retain their source-specific handoffs.
 
 **Recipe-backed parent targets — integrated in #398:**

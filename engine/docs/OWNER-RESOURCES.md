@@ -1,5 +1,15 @@
 # Private exchange-owner resource inventory
 
+The [combined #408 correction](NATIVE-REGISTRATION-FAILURES.md) at `cf26b62e`
+preserves #407's existing resource/borrow/removal behavior while exercising the
+inspection through `k.compiled_data()`. Both fault windows, retries, surviving
+dispatch, shutdown and removal/guard controls pass on the combined native ABI.
+Original #408 and #407 counts/bytes remain pinned to `816b8edb` and `505ab435`
+respectively; the combined evidence is separate. Four records/six slots/five
+kernel wrappers require future ownership of every registration attempt, including
+partial resources. No attempt-ownership implementation, registered retirement,
+new admission charge or achieved saving is introduced by this correction.
+
 The [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
 at `505ab435` implements #406's approved next slice for review. It requires
 positive native coverage, zero borrows, complete bounded map inspection and no
@@ -15,7 +25,7 @@ at `65acfbe4` makes the returned record authoritative: raw x64 exposure is marke
 even when request architecture differs, and tracked acquisition refuses an
 unsupported actual record before guard creation. Expected failures and corrected
 CPU regression evidence are retained. Guard costs, moves/unwind, sibling dispatch
-and existing resource policy are preserved; corrected head `33da9a0f` is provisionally accepted.
+and existing resource policy are preserved; corrected head `33da9a0f` is integrated at main `2fdcfcbc`.
 
 [Native compiled-data borrows](NATIVE-COMPILED-BORROWS.md) at `2708b8b1`
 implement #405's x64 borrower prerequisite. Existing native records count

@@ -2,16 +2,19 @@
 
 Status: **qualified and integrated in #405**, [decision 7068182353](https://github.com/Human-Cognome-Project/human-cognome-project/pull/405#issuecomment-7068182353), under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Follows [#404 decision 7067817542](https://github.com/Human-Cognome-Project/human-cognome-project/pull/404#issuecomment-7067817542) from provisionally accepted `fbc9bc503b33f74e800c80bcb68861bf938aaab3`. At the inspection start, main `ca098539` integrated qualified #403 with its reviewed tree. #404 targets main; its smoke passed and authoritative native qualification remained pending at this handoff. All merges remain maintainer work.
 
-Latest disposition (2026-11-22): #405 is integrated at main `92e4ceaf` with
-reviewed `06e71404`'s tree. #406 `33da9a0f` is provisionally accepted in
-[decision 7081114329](https://github.com/Human-Cognome-Project/human-cognome-project/pull/406#issuecomment-7081114329):
-the provenance finding is resolved, smoke passed and native qualification remains pending.
-The authorized [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
-at `505ab435` now awaits review. It requires the manager's full bounded eligibility
-checks; guard observations alone remain insufficient. It adds a sticky CPU
-registration-start marker/eight overlapping native bytes, with existing guards,
-count semantics and JIT/ORC owners preserved. The following original source/evidence
-sections retain their stated revisions; later scope is recorded in the new report.
+Maintainer update (2026-11-22): main `2fdcfcbc` integrates qualified #406 with
+reviewed `33da9a0f`'s exact tree. #407 `fccae608` is provisionally accepted for
+serialized unregistered removal, targets main and awaits native qualification.
+#408's original #405-based inspection is accepted; its
+[combined correction](NATIVE-REGISTRATION-FAILURES.md) at `cf26b62e` now requalifies
+the fixture through `k.compiled_data()` on #407's native ABI. The candidate
+reconciles seven Markdown conflicts and preserves both original reports.
+Four records can retain six slots/five kernel wrappers: the proposed registered
+group must include every partial/successful attempt, not only a stamped handle.
+No attempt-ownership implementation or registered/ORC cleanup is added.
+Integration into #408 and every merge remain maintainer work; return that
+combined head for review before implementing attempt ownership.
+The original design/inspection below retains its exact source.
 
 Canonical tested source `3534439e7b26c55df78ebd514380cdb8d3c2fa11`, tree `13f4e93a146ca69599e8c51081e76eb0d3424260`, adds only a native inspection fixture and its CMake registrations. HCP production, numerical code, the existing refusal witnesses and fork tree `3c1fd8859bfc04b9d1587f3e907478b8a6bc54c4` are unchanged from #404. Later report/handoff changes are Markdown only. No eviction, borrower API, launch invalidation, ORC removal, byte charge, admission change or achieved saving is implemented.
 
@@ -22,7 +25,7 @@ Canonical tested source `3534439e7b26c55df78ebd514380cdb8d3c2fa11`, tree `13f4e9
 | Record state | Smallest proposed unit | Required proof before any future retirement |
 | --- | --- | --- |
 | Compiled, never registered | One manager-owned CompiledKernelData and its retained IR/task/ABI metadata. | Complete tracked borrower coverage, no unknown raw-reference escape, no in-flight use, correct LLVM-context lifetime. No launch handle may exist. |
-| Registered CPU kernel | The shared compiled record, its native launch row, all that row's task pointers, and the kernel JIT wrapper/JITDylib resources associated with registration. | All of the above, plus checked launch invalidation, no incoming executable dependency, exact module association, backend cleanup/error handling and stable surviving rows. |
+| Registered CPU kernel | The shared compiled record, all successful/partial registration attempts, their native rows/task pointers and associated module/JITDylib resources. | All of the above, plus checked launch invalidation, no incoming executable dependency, exact module association, backend cleanup/error handling and stable surviving rows. |
 | Initial runtime module / runtime service pointers | Runtime/session boundary. | Excluded from per-kernel reclamation. Existing runtime identity and service dependencies must remain alive. |
 
 These are **proposed eligibility/ownership units**, not newly available APIs or a proof that current callers have no remaining references. A compiled record can serve several definitions. One registered module can contain multiple offloaded tasks, so a task function is not an independently owned native unit here. Erasing a cache entry does not retire a launcher row or unload executable code.
