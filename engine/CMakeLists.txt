@@ -658,6 +658,19 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
   add_test(NAME compiled_borrow_provenance_test COMMAND compiled_borrow_provenance_test)
   set_tests_properties(compiled_borrow_provenance_test PROPERTIES
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+  add_executable(unregistered_removal_test tests/unregistered_removal_test.cpp)
+  target_link_libraries(unregistered_removal_test PRIVATE engine_support)
+  target_compile_options(unregistered_removal_test PRIVATE -Wall -Wextra -Werror)
+  target_link_options(unregistered_removal_test PRIVATE
+      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE")
+  foreach(workers 1 2)
+    foreach(path prepared dynamic)
+      add_test(NAME unregistered_removal_${workers}_${path}
+          COMMAND unregistered_removal_test ${workers} ${path})
+      set_tests_properties(unregistered_removal_${workers}_${path} PROPERTIES
+          ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+    endforeach()
+  endforeach()
   add_executable(compiler_jit_counts_test tests/compiler_jit_counts_test.cpp)
   target_link_libraries(compiler_jit_counts_test PRIVATE engine_support)
   target_compile_options(compiler_jit_counts_test PRIVATE -Wall -Wextra -Werror)

@@ -12,6 +12,21 @@ HCP modernization records and tests.
 
 ## Modified upstream files
 
+Serialized pending-memory removal under #343:
+
+- `taichi/compilation_manager/kernel_compilation_manager.{h,cpp}` — bounded
+  removal of one current-key, pending MemCache LLVM/x64 record. Positive native
+  provenance and zero tracked borrowers are required. Disk-backed, unknown/raw,
+  registered/partially registered and incompletely inspected records refuse
+  without mutation. This is an explicit quiescent-owner operation, not automatic
+  eviction or an admission credit; it does not modify rows or JIT/ORC resources.
+- `taichi/codegen/compiled_kernel_data.h` and
+  `taichi/runtime/cpu/kernel_launcher.cpp` — sticky registration-start marker,
+  set before CPU row/JIT side effects so a failed attempt stays pinned even
+  without a handle. Rebuild matching native/wrapper archives; the native C++
+  object layout changes. Runtime bitcode, serialized/AOT formats and numerical
+  kernels remain unchanged. Guard observations alone do not establish eligibility.
+
 Runtime/configuration/capacity work:
 
 - `c_api/src/taichi_llvm_impl.cpp`

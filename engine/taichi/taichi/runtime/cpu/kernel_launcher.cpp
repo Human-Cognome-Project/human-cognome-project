@@ -163,6 +163,7 @@ KernelLauncher::Handle KernelLauncher::register_llvm_kernel(
   TI_ASSERT(arch_is_cpu(compiled.arch()));
 
   if (!compiled.get_handle()) {
+    compiled.mark_registration_started();  // Before any row/JIT side effects.
     auto handle = make_handle();
     auto index = handle.get_launch_id();
     contexts_.resize(index + 1);
