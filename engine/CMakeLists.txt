@@ -650,6 +650,22 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
   add_test(NAME compiler_jit_counts_test COMMAND compiler_jit_counts_test)
   set_tests_properties(compiler_jit_counts_test PROPERTIES
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+  add_executable(native_registration_failure_inspection tests/native_registration_failure_inspection.cpp)
+  target_link_libraries(native_registration_failure_inspection PRIVATE engine_support)
+  target_compile_options(native_registration_failure_inspection PRIVATE -Wall -Wextra -Werror)
+  target_link_options(native_registration_failure_inspection PRIVATE
+      "-Wl,--wrap=_ZdlPv"
+      "-Wl,--wrap=_ZdlPvm"
+      "-Wl,--wrap=_ZN6taichi4lang7Program8finalizeEv"
+      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE")
+  foreach(workers 1 2)
+    foreach(path prepared dynamic)
+      add_test(NAME native_registration_failure_${workers}_${path}
+          COMMAND native_registration_failure_inspection ${workers} ${path})
+      set_tests_properties(native_registration_failure_${workers}_${path} PROPERTIES
+          ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 120)
+    endforeach()
+  endforeach()
   add_executable(native_reclamation_inspection tests/native_reclamation_inspection.cpp)
   target_link_libraries(native_reclamation_inspection PRIVATE engine_support)
   target_compile_options(native_reclamation_inspection PRIVATE -Wall -Wextra -Werror)
