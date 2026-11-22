@@ -92,18 +92,37 @@ std::vector<void *> tasks(JITModule &module, const engine::CompiledKernel &k) {
 }
 class CloneCompiler final : public KernelCompiler {
  public:
-  explicit CloneCompiler(const CompiledKernelData &source, bool *fail_coverage = nullptr)
-      : source_(source), fail_coverage_(fail_coverage) {}
+  explicit CloneCompiler(const CompiledKernelData &source) : source_(source) {}
   IRNodePtr compile(const CompileConfig &, const Kernel &) const override { return std::make_unique<Block>(); }
   CKDPtr compile(const CompileConfig &, const DeviceCapabilityConfig &, const Kernel &, IRNode &) const override {
-    auto result = source_.clone();
-    if (fail_coverage_ && *fail_coverage_)
-      allocation_lifetime::fail_at = allocation_lifetime::counts.attempts + 2;
-    return result;
+    return source_.clone();
   }
  private:
   const CompiledKernelData &source_;
-  bool *fail_coverage_;
+};
+class CoverageFaultData final : public LLVM::CompiledKernelData {
+ public:
+  CoverageFaultData(const LLVM::CompiledKernelData &source, const bool *fail)
+      : LLVM::CompiledKernelData(source.arch(), source.get_internal_data()), fail_(fail) {}
+  Err check() const override {
+    const auto result = LLVM::CompiledKernelData::check();
+    if (*fail_) allocation_lifetime::fail_at = allocation_lifetime::counts.attempts + 2;
+    return result;
+  }
+ private:
+  const bool *fail_;
+};
+class CoverageCompiler final : public KernelCompiler {
+ public:
+  CoverageCompiler(const CompiledKernelData &source, const bool *fail)
+      : source_(dynamic_cast<const LLVM::CompiledKernelData &>(source)), fail_(fail) {}
+  IRNodePtr compile(const CompileConfig &, const Kernel &) const override { return std::make_unique<Block>(); }
+  CKDPtr compile(const CompileConfig &, const DeviceCapabilityConfig &, const Kernel &, IRNode &) const override {
+    return std::make_unique<CoverageFaultData>(source_, fail_);
+  }
+ private:
+  const LLVM::CompiledKernelData &source_;
+  const bool *fail_;
 };
 void unknown_coverage(engine::Runtime &runtime, const CompiledKernelData &source) {
   char directory[] = "/tmp/hcp-removal-unknown-XXXXXX";
@@ -111,14 +130,14 @@ void unknown_coverage(engine::Runtime &runtime, const CompiledKernelData &source
   {
     bool fail = false;
     KernelCompilationManager::Config setup; setup.offline_cache_path = directory;
-    setup.kernel_compiler = std::make_unique<CloneCompiler>(source, &fail);
+    setup.kernel_compiler = std::make_unique<CoverageCompiler>(source, &fail);
     KernelCompilationManager owner(std::move(setup));
     auto &program = runtime.program();
     IRBuilder seed_body; Kernel seed(program, seed_body.extract_ir(), "seed");
     seed.finalize_params(); seed.finalize_rets();
     { auto guard = owner.borrow_or_compile(program.compile_config(), program.get_device_caps(), seed); }
-    // Seed primes the map buckets. Short keys use no string allocation: after
-    // cloning, the node request succeeds and the metadata request throws.
+    // Seed primes the map buckets. Short keys use no string allocation. Arm the
+    // failure after LLVM verification: node succeeds, metadata request throws.
     IRBuilder body; Kernel definition(program, body.extract_ir(), "unknown");
     definition.finalize_params(); definition.finalize_rets();
     fail = true; bool failed = false;
