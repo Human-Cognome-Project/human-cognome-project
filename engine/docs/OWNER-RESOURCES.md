@@ -1,23 +1,22 @@
 # Private exchange-owner resource inventory
 
-The [native CPU registration-attempt implementation](NATIVE-REGISTRATION-ATTEMPTS.md)
-at `635ee3ea` follows reviewed #408 `4747d113`. Existing launch rows retain
-metadata-only record identity, stage/failure and confirmed module links; missing
-row metadata, unknown identity and pre-return JIT side effects stay explicit
-incomplete observations. Expired record identity remains safe after finalization
-and Runtime destruction without extending compiled-data/Program lifetime or
-counting as a borrower. No second registry, registered retirement, row reuse,
-ORC cleanup or admission credit is added.
+The [CPU JIT creation inspection](CPU-JIT-CREATION-OWNERSHIP.md) at `e3667ef7`
+separates session-owned dylibs, accepted IR/default trackers, non-owning global
+lookup exposure and published wrappers. A recoverable C++ failure can retain an
+empty dylib absent from wrapper counts; its guarded retry requests the unchanged
+name. An outer factory-return failure retains a wrapper and permits ordinary
+retry. Actual survivor dispatch shares the existing thread service, and captured
+dylibs remain through finalization until session/Runtime teardown. Interior LLVM
+errors and independent resource cleanup remain unqualified.
 
-Actual CPU launcher/slot extents grow by 8/32 bytes; six slots at capacity eight
-add 256 capacity bytes. Four existing 48-byte record controls remain longer after
-finalization, ending with row/caller identity release. Native record/HCP/guard
-extents are unchanged. Count inline and shared-control storage once; these are
-scoped costs, not whole-owner peak or complete B. Quick, 23 Clang/17 GCC CTests
-and six minimal cases pass, including new failure/identity histories and original
-registration/removal/borrow/backing/submission controls. Hosted CI and maintainer
-review remain required. The [original failure/correction report](NATIVE-REGISTRATION-FAILURES.md)
-retains its source-specific pins; the new report has separate evidence.
+Production is exactly provisionally accepted #410 `b1e29134`, whose
+[native attempt metadata](NATIVE-REGISTRATION-ATTEMPTS.md) adds 8 bytes per launcher,
+32 per slot and longer retention of existing 48-byte record controls. Those
+source-specific costs remain unchanged. Quick, 18 Clang/12 GCC CTests and seven
+minimal cases pass, with seven original registration/attempt histories unchanged.
+The next naming proposal reserves a checked CPU ID before fallible creation;
+no new persistent field, cleanup, registered retirement, row reuse, complete B
+or admission credit is implemented. Return the proposal for review.
 
 The [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
 at `505ab435` implements #406's approved next slice for review. It requires

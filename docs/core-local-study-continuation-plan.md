@@ -1,41 +1,37 @@
 # Core continuation after local CUDA corrections
 
-**Native CPU registration attempts — 2026-11-22 (implementation submitted for review):**
-[Existing-slot metadata, safe identity and measured cost](../engine/docs/NATIVE-REGISTRATION-ATTEMPTS.md)
-at tested `635ee3ea` follows [review 7082960643](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082960643).
-Each existing CPU row retains progress, failure, compiled-record identity and any
-confirmed module link. Consumed IDs without row metadata remain explicit gaps;
-entering the JIT factory marks observation incomplete before earlier side effects
-can escape a returned wrapper. Record identity shares existing invalidatable
-metadata without acquiring a client borrow or extending data/Program lifetime.
-It stays safe through finalization/Runtime destruction; unknown identity stays
-unavailable. No second registry or execution authority is introduced.
+**CPU JIT creation ownership — 2026-11-22 (inspection/proposal for review):**
+[Partial dylibs, lookup exposure, shared services and naming proposal](../engine/docs/CPU-JIT-CREATION-OWNERSHIP.md)
+at tested `e3667ef7` follows [#410 review 7083898212](https://github.com/Human-Cognome-Project/human-cognome-project/pull/410#issuecomment-7083898212).
+A real C++ failure after dylib creation retains an empty session-owned dylib,
+without lookup exposure or a stored wrapper. A guarded retry requests the same
+native name and stops before violating LLVM's unique-name precondition. A real
+factory-return exception instead leaves IR/exposure/wrapper ownership, and its
+ordinary retry succeeds with a new name. Surviving handles/task addresses,
+range dispatch and shared native thread service persist. Captured dylibs survive
+compiled-data finalization and release with native session/Runtime teardown.
+Interior IR/vector/wrapper allocation errors remain source-inspected.
 
-Measured CPU launcher extent grows 48→56 bytes and slot extent 48→80; the
-six-slot fixture's capacity grows 384→640 bytes. Its existing four 48-byte
-controls now remain after finalization until rows/caller identities release.
-Native compiled-data/HCP wrapper/guard extents are unchanged. Those are scoped
-costs, not whole-owner peak, complete B, admission credit or achieved saving.
-Quick CI, 23 Clang/17 GCC CTests and six minimal cases pass. Seven new attempt
-histories cover row-allocation gaps, confirmed-module failure, uncertain JIT
-side effects, retry/dispatch and escaped identity lifetime. All seven original
-registration histories/112 snapshots match; removal/borrow/backing and real
-legacy/prepared submission controls pass. Local evidence is separately pinned;
-GitHub CI is authoritative and acceptance remains maintainer work.
+Quick CI, 18 Clang/12 GCC CTests and seven warm/viewport-OFF cases pass. Seven new
+histories cover 21 creation/shutdown windows; all seven accepted registration
+and attempt histories, including 112 snapshots and storage/lifetime controls,
+match the separately pinned #410 evidence. Production and fork `d412616a` are
+exactly #410. No cleanup, retirement, row reuse or admission change is added.
+The smallest proposal reserves a checked unique naming ID before fallible CPU
+JIT creation, reusing the current session counter without a new persistent field.
+Return that proposal for review before implementation; it does not solve complete
+resource attribution or qualify independent unloading.
 
 **Directly confirmed dependency state:** main `ff82d2cc` integrates qualified
-#407. The maintainer resolved #408 at `4747d113`, exactly #409's `5a9ad101` tree,
-preserving both histories. Review 7082960643 accepts that correction for
-continued work and authorizes this bounded next implementation. #408 remains
-open with smoke passed and native 45050309075 pending at inspection; #409's
-candidate is incorporated, not another merge required from this contributor.
-The new branch is stacked on resolved #408. Reconcile dependent hosted gates
-before maintainer integration; no duplicate dispatch. A chat “accepted” signals
-review; refs/reviews/handoffs determine actual state. Return this source, focused
-evidence and cost for review before selecting further registered-resource work.
-Registered retirement, row reuse, ORC cleanup, full B/admission, GPU/concurrency
-and #324 remain separate. Held #75/#111/#123 are unchanged. All merge events
-belong to the maintainer. Earlier entries retain their source-specific handoffs.
+#407. Resolved #408 `4747d113` remains open; its smoke/native gates have passed.
+#410 `b1e29134` is provisionally accepted for continuation, with smoke passed and
+native 45054560768 still pending. Keep the current work stacked on #410 until
+maintainer integration. No duplicate dispatch or contributor merge is needed.
+A chat “accepted” signals review; refs/reviews/handoffs determine actual state.
+The [accepted attempt implementation](../engine/docs/NATIVE-REGISTRATION-ATTEMPTS.md) retains its own source/cost
+pins; metadata completeness remains false for backend resources. Full B,
+registered/ORC retirement, GPU/concurrency, #324 and held #75/#111/#123 remain
+separate. All merge events belong to the maintainer.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

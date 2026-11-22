@@ -107,6 +107,13 @@ stay explicitly incomplete. Focused failure/retry/dispatch/shutdown evidence and
 actual launcher/slot/longer-control-lifetime costs are recorded separately from
 registered retirement, ORC cleanup and admission.
 
+The [CPU JIT creation ownership inspection](docs/CPU-JIT-CREATION-OWNERSHIP.md)
+then distinguishes session-owned partial dylibs, IR/default trackers, lookup
+exposure, wrapper publication and shared runtime/thread services. Its native
+failure/dispatch/shutdown witness identifies a repeated-name retry boundary.
+Production is unchanged; checked name issuance before fallible creation is the
+smallest proposal returned for review. Cleanup and retirement remain separate.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The

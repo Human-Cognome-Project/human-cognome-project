@@ -1,5 +1,12 @@
 # Native CPU registration attempts
 
+**Maintainer disposition — 2026-11-22:** [Review 7083898212](https://github.com/Human-Cognome-Project/human-cognome-project/pull/410#issuecomment-7083898212)
+provisionally accepts #410 `b1e29134` for continued #343 work while its native gate
+is pending. The authorized [CPU JIT creation inspection](CPU-JIT-CREATION-OWNERSHIP.md)
+at `e3667ef7` returns source/partial-ownership evidence and a naming proposal.
+It preserves this implementation and its source-specific costs; no cleanup or
+retirement behavior is added. The original implementation report follows.
+
 This bounded #343 implementation follows [maintainer review 7082960643](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082960643).
 It records registration progress beside existing native CPU launch slots and
 retains a lifetime-safe compiled-record identity. It adds no execution authority,
