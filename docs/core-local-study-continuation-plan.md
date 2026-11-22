@@ -1,36 +1,39 @@
 # Core continuation after local CUDA corrections
 
-**CPU JIT creation ownership — 2026-11-22 (inspection/proposal for review):**
-[Partial dylibs, lookup exposure, shared services and naming proposal](../engine/docs/CPU-JIT-CREATION-OWNERSHIP.md)
-at tested `e3667ef7` follows [#410 review 7083898212](https://github.com/Human-Cognome-Project/human-cognome-project/pull/410#issuecomment-7083898212).
-A real C++ failure after dylib creation retains an empty session-owned dylib,
-without lookup exposure or a stored wrapper. A guarded retry requests the same
-native name and stops before violating LLVM's unique-name precondition. A real
-factory-return exception instead leaves IR/exposure/wrapper ownership, and its
-ordinary retry succeeds with a new name. Surviving handles/task addresses,
-range dispatch and shared native thread service persist. Captured dylibs survive
-compiled-data finalization and release with native session/Runtime teardown.
-Interior IR/vector/wrapper allocation errors remain source-inspected.
+**Checked CPU JIT name issuance — 2026-11-22 (implementation for review):**
+[Fresh names, real inner retry, bounds and preserved ownership](../engine/docs/CPU-JIT-NAME-ISSUANCE.md)
+at tested `14783678` implements #411's bounded naming proposal after acceptance
+in the working conversation. Direct refs remain authoritative: #411 is open at
+`0945bca6`; no new published review/comment was present at the initial check.
+The native CPU session issues a checked ID under its existing mutex before
+formatting/creating a dylib. Failed creation burns the name; retry reaches LLVM
+with a fresh ID. Successful naming order is preserved. The existing counter is
+reused without a new persistent field, registry or virtual-interface change.
 
-Quick CI, 18 Clang/12 GCC CTests and seven warm/viewport-OFF cases pass. Seven new
-histories cover 21 creation/shutdown windows; all seven accepted registration
-and attempt histories, including 112 snapshots and storage/lifetime controls,
-match the separately pinned #410 evidence. Production and fork `d412616a` are
-exactly #410. No cleanup, retirement, row reuse or admission change is added.
-The smallest proposal reserves a checked unique naming ID before fallible CPU
-JIT creation, reusing the current session counter without a new persistent field.
-Return that proposal for review before implementation; it does not solve complete
-resource attribution or qualify independent unloading.
+Quick CI, 18 Clang/12 GCC CTests and seven warm/viewport-OFF cases pass. Seven
+histories cover 28 creation/shutdown windows, fourteen real inner retries, seven
+outer retries and seven boundary checks. Failure before dylib creation leaves
+name 4 absent; failure after creation retains empty name 4. Both retry with name
+5, CPU slot 4 and the same compiled record. Surviving handles/task addresses,
+prepared/dynamic outputs, thread service and shutdown remain checked. The seven
+original registration/attempt histories, including 112 snapshots and storage/ABI
+outputs, match separately pinned #411 evidence.
+
+The empty failed dylib remains owned by the session and outside global lookup
+exposure. Pre-return attempt observation stays incomplete. No cleanup, registered
+retirement, row reuse, admission credit or saving is added. The helper checks
+exhaustion without mutating the exhausted counter; full-owner exhaustion is
+source-inspected, not exercised through billions of calls. Return this source
+and evidence for review before selecting broader resource work.
 
 **Directly confirmed dependency state:** main `ff82d2cc` integrates qualified
-#407. Resolved #408 `4747d113` remains open; its smoke/native gates have passed.
-#410 `b1e29134` is provisionally accepted for continuation, with smoke passed and
-native 45054560768 still pending. Keep the current work stacked on #410 until
-maintainer integration. No duplicate dispatch or contributor merge is needed.
-A chat “accepted” signals review; refs/reviews/handoffs determine actual state.
-The [accepted attempt implementation](../engine/docs/NATIVE-REGISTRATION-ATTEMPTS.md) retains its own source/cost
-pins; metadata completeness remains false for backend resources. Full B,
-registered/ORC retirement, GPU/concurrency, #324 and held #75/#111/#123 remain
+#407. #408 `4747d113` remains open with both hosted gates passed. #410 `b1e29134`
+and #411 `0945bca6` remain open with smoke passed and native gates pending at
+inspection. This branch remains stacked on #411. The [original JIT inspection](../engine/docs/CPU-JIT-CREATION-OWNERSHIP.md)
+retains its source-specific findings/proposal and evidence. A chat “accepted”
+signals review; refs/reviews/handoffs determine actual changes. No duplicate CI
+dispatch or contributor merge is performed. Full resource attribution/B,
+registered/ORC cleanup, GPU/concurrency, #324 and held #75/#111/#123 remain
 separate. All merge events belong to the maintainer.
 
 **Recipe-backed parent targets — integrated in #398:**

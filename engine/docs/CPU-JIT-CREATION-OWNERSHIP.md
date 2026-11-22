@@ -1,5 +1,14 @@
 # Native CPU JIT creation ownership
 
+**Continuation — 2026-11-22:** the working conversation accepts #411's bounded
+naming proposal and requests continuation. Direct refs still show #411 open at
+`0945bca6`; no new published review/comment was present at the initial check.
+The [checked-name implementation](CPU-JIT-NAME-ISSUANCE.md) at `14783678` now
+returns real inner retry, bounds and preserved dispatch/shutdown evidence for
+review. The original inspection below keeps its `e3667ef7` findings and pins;
+its guarded retry is historical, not a new claim of recovered retry at that source.
+No cleanup or retirement behavior is added by the naming implementation.
+
 Inspection/proposal under #343, following [#410 review 7083898212](https://github.com/Human-Cognome-Project/human-cognome-project/pull/410#issuecomment-7083898212).
 This contribution adds one native C++ witness and CMake registrations. All native
 SDK and HCP production is exactly reviewed #410. No cleanup, retirement, row reuse,
