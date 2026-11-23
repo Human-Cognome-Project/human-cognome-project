@@ -1,5 +1,17 @@
 # Private exchange-owner resource inventory
 
+The [real refused-submission/JIT trace](REFUSED-SUBMISSION-JIT-TRACE.md) at
+`3468a26a` follows #414 review at `e0fa10bb`. Both hosted gates passed;
+#414 integrated at `c5770a2e`, with current handoff main `d78c6d86`. A real
+prepared plan refusal adds 78 retained rows/confirmed wrappers/present dylibs
+and eighty cached objects while candidate roots retire and no study handle is
+published. Zero borrows on those rows do not authorize registered removal.
+Original retry/sibling-dispatch and finalization counts match; quick and four
+Clang/four GCC CTests pass locally. Production storage and policy are unchanged.
+Existing observations suffice for the proposed private request-preflight split;
+complete native bytes/peaks remain required for total admission or credit. New
+review and hosted qualification remain separate; parent #414 is integrated.
+
 The [native CPU ID association](CPU-JIT-ID-ASSOCIATION.md) at tested `2664a3bd`
 implements #413's reviewed direction from main `3c495db7`. An issued ID survives
 creation failure in the existing CPU row; the live session's own count prepays

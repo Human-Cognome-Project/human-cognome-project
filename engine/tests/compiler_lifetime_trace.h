@@ -23,6 +23,8 @@ struct Object {
   Kind kind;
   bool live{true};
   std::size_t released{};
+  const void *record{};
+  int native_id{-1};
 };
 struct Trace {
   std::vector<Object> objects;
@@ -33,6 +35,7 @@ struct Trace {
   bool mutating{}, finalizing{};
   const JITSession *jit_owner{};
   std::size_t fresh_jit_probes{}, native_count_samples{};
+  std::size_t association_samples{};
 };
 thread_local Trace *active{};
 inline void check(bool ok, const char *message) {
@@ -121,7 +124,13 @@ inline void compiled(Program &p, const Kernel &definition, const CompiledKernelD
             p.get_program_impl()->owns_compiled_kernel(definition, data),
         "HCP definition did not resolve to its native name-keyed cache owner");
   capture(&data, Kind::Data);
-  if (active) ++active->compile_calls;
+  if (active) {
+    auto &object = active->objects[active->index.at(&data)];
+    const auto record = data.borrow_observation().record;
+    check(record && (!object.record || object.record == record), "cached record identity changed");
+    object.record = record;
+    ++active->compile_calls;
+  }
 }
 inline void distinct_jit_ir(const llvm::Module *input) {
   if (!active) return;
@@ -138,6 +147,76 @@ struct Sample {
   std::size_t definitions{}, definitions_live{}, data{}, data_live{}, registered{};
   std::size_t modules{}, modules_live{}, launch_contexts{}, tasks{};
 };
+// Reuse the existing object observer to reconcile the production row API with
+// confirmed factory returns. This neither adds an owner nor infers ORC bytes.
+inline void registration_associations(Program &p, const Sample &observed,
+                                      const char *phase, bool inspect_data) {
+  constexpr auto unlimited = std::numeric_limits<std::size_t>::max();
+  const auto *impl = p.get_program_impl();
+  const auto counts = impl->cpu_registration_attempt_counts(unlimited);
+  check(!counts.complete && counts.issued_attempts == observed.modules &&
+            counts.stored_slots == observed.launch_contexts &&
+            counts.known_modules == observed.modules && !counts.failed_attempts &&
+            !counts.missing_metadata && !counts.unknown_records && !counts.uncertain_modules,
+        "real submission did not reconcile CPU attempts with returned wrappers");
+  const auto absent = impl->cpu_registration_jit_presence(unlimited, 0);
+  check(absent.status == OwnershipCountStatus::Absent && !absent.complete,
+        "absent CPU attempt acquired native presence");
+  std::size_t live_records{}, unborrowed_records{}, charged_entries{};
+  for (std::size_t i = 0; i < counts.issued_attempts; ++i) {
+    const auto entry = impl->cpu_registration_attempt(i);
+    const auto metadata = entry.record.observation();
+    const auto found = active->index.find(entry.module);
+    check(entry.status == OwnershipCountStatus::Present && !entry.complete &&
+              entry.id == i && entry.owner == counts.owner && !entry.failed &&
+              entry.stage == CpuRegistrationStage::Published &&
+              entry.module_status == OwnershipCountStatus::Present &&
+              found != active->index.end(), "CPU row lost its confirmed wrapper");
+    const auto &module = active->objects[found->second];
+    check(module.kind == Kind::Module && module.live && module.native_id == entry.native_id &&
+              entry.native_id == int(i + 1), "factory output and session-scoped row ID differ");
+    bool record_found = false;
+    for (const auto &object : active->objects)
+      if (object.kind == Kind::Data && object.record == metadata.record) {
+        check(object.live == inspect_data, "row record lifetime differs from compiled-data release");
+        record_found = true;
+      }
+    check(record_found && metadata.status == (inspect_data ? OwnershipCountStatus::Present
+                                                          : OwnershipCountStatus::Absent) &&
+              !metadata.untracked_clients && !metadata.reclamation_supported,
+          "row identity escaped its observed compiler record");
+    live_records += metadata.status == OwnershipCountStatus::Present;
+    unborrowed_records += !metadata.tracked_borrows;
+    const auto short_work = impl->cpu_registration_jit_presence(i, 0);
+    // The bound comes from the production owner, not an observer's module count.
+    const auto presence = impl->cpu_registration_jit_presence(i, short_work.issued_ids);
+    check(short_work.status == OwnershipCountStatus::Incomplete && !short_work.dylib &&
+              !short_work.charged_entries && !short_work.complete &&
+              presence.status == OwnershipCountStatus::Present && !presence.complete &&
+              presence.owner == active->jit_owner && presence.native_id == entry.native_id &&
+              presence.id_status == OwnershipCountStatus::Present &&
+              presence.dylib_status == OwnershipCountStatus::Present && presence.dylib &&
+              presence.issued_ids == observed.modules + 1 &&
+              presence.charged_entries == short_work.issued_ids,
+          "real submission lost bounded live-session dylib presence");
+    charged_entries += presence.charged_entries;
+    std::cout << "submission_jit_row,sample=" << active->native_count_samples << ",phase=" << phase
+              << ",cpu_attempt=" << entry.id << ",native_id=" << entry.native_id
+              << ",record_live=" << (metadata.status == OwnershipCountStatus::Present)
+              << ",client_borrows=" << metadata.tracked_borrows
+              << ",wrapper_confirmed=1,dylib_present=1,complete=0 PASS\n";
+  }
+  check(live_records == observed.registered, "registered data and live row records differ");
+  ++active->association_samples;
+  std::cout << "submission_jit_sample,sample=" << active->native_count_samples << ",phase=" << phase
+            << ",cpu_attempts=" << counts.issued_attempts << ",retained_rows=" << counts.stored_slots
+            << ",confirmed_wrappers=" << counts.known_modules
+            << ",retained_dylibs=" << counts.known_modules << ",live_row_records=" << live_records
+            << ",unborrowed_row_records=" << unborrowed_records
+            << ",issued_native_ids=" << (observed.modules + 1)
+            << ",charged_lookup_entries=" << charged_entries
+            << ",no_id=0,unknown_wrapper=0,complete=0 PASS\n";
+}
 inline void native_counts(Program &p, const Sample &observed, const char *phase) {
   constexpr auto unlimited = std::numeric_limits<std::size_t>::max();
   const auto *impl = p.get_program_impl();
@@ -227,6 +306,7 @@ inline Sample sample(Program &p, const char *phase, bool inspect_data = true) {
   check(out.launch_contexts == out.modules && out.registered <= out.launch_contexts,
         "CPU registrations / captured kernel JIT modules differ");
   native_counts(p, out, phase);
+  registration_associations(p, out, phase, inspect_data);
   if (inspect_data) {
     check(borrows == out.definitions_live && !raw_records,
           "tracked HCP borrows differ from live definitions");
@@ -257,6 +337,7 @@ inline void finish(const Trace &t) {
         "compiled-data / JIT-module release boundary changed");
   check(t.distinct_jit_ir_inputs == modules, "kernel JIT input observations missing");
   check(t.fresh_jit_probes == 1 && t.native_count_samples > 2, "native count probes missing");
+  check(t.association_samples == t.native_count_samples, "submission JIT association phases missing");
   std::cout << "compiler_lifetime_summary,definitions=" << definitions << ",compiled_data=" << data
             << ",kernel_jit_modules=" << modules
             << ",definitions_released=1,data_released_during_finalize=1"
@@ -309,6 +390,8 @@ taichi::lang::JITModule *compiler_wrap_jit(taichi::lang::LlvmRuntimeExecutor *ex
   compiler_trace::distinct_jit_ir(module.get());
   auto *result = compiler_real_jit(executor, std::move(module), cpu_id);
   compiler_trace::capture(result, compiler_trace::Kind::Module);
+  if (auto *t = compiler_trace::active)
+    t->objects[t->index.at(result)].native_id = cpu_id;
   return result;
 }
 void compiler_real_finalize(taichi::lang::Program *) __asm__("__real__ZN6taichi4lang7Program8finalizeEv");
