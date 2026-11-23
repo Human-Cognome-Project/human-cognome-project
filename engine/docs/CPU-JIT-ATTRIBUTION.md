@@ -1,5 +1,13 @@
 # Fresh-ID attribution at the native CPU JIT boundary
 
+November 23 disposition: qualified #410–#413 are integrated through `daf6f74d`;
+main `3c495db7` records that baseline. [#413 decision 7101856435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/413#issuecomment-7101856435)
+authorizes the separate [native ID association implementation](CPU-JIT-ID-ASSOCIATION.md)
+at tested `2664a3bd`, now awaiting implementation review and authoritative GitHub
+CI. Its actual 88-byte row is separate from this inspection's original 80-byte
+baseline and 88-byte forecast. The original source, observations and historical
+handoff below are preserved.
+
 Inspection/proposal under #343, following [#412 review 7084634921](https://github.com/Human-Cognome-Project/human-cognome-project/pull/412#issuecomment-7084634921).
 The fresh native ID can distinguish a consumed name with no session-retained
 dylib from one with a retained dylib, provided the native owner supplies issuance

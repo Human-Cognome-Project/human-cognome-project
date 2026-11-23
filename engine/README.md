@@ -107,13 +107,16 @@ stay explicitly incomplete. Focused failure/retry/dispatch/shutdown evidence and
 actual launcher/slot/longer-control-lifetime costs are recorded separately from
 registered retirement, ORC cleanup and admission.
 
-The [CPU JIT creation ownership inspection](docs/CPU-JIT-CREATION-OWNERSHIP.md)
-and [checked-name implementation](docs/CPU-JIT-NAME-ISSUANCE.md) preserve their
-original sources and evidence. The next [attribution inspection](docs/CPU-JIT-ATTRIBUTION.md)
-uses fresh IDs and existing native state to distinguish retained dylibs from
-consumed names with no dylib. It measures minimal row-storage candidates and
-prepaid lookup work, while keeping owner lifetime and incomplete resource coverage
-explicit. Production association, cleanup and retirement remain proposals.
+The [CPU JIT creation inspection](docs/CPU-JIT-CREATION-OWNERSHIP.md),
+[checked-name implementation](docs/CPU-JIT-NAME-ISSUANCE.md) and
+[attribution inspection](docs/CPU-JIT-ATTRIBUTION.md) preserve their original
+sources and evidence. The [native ID association](docs/CPU-JIT-ID-ASSOCIATION.md)
+implements #413's reviewed direction: retain the issued ID in the existing CPU
+row and query presence through the live session with its own prepaid bound.
+Actual row extent grows 80→88 bytes / capacity eight 640→704. Seven histories
+preserve no-ID/failure/retry/finalization and survivor dispatch. Local checks pass;
+implementation review and authoritative GitHub CI remain separate. Cleanup,
+registered retirement and admission credit remain outside this scope.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with

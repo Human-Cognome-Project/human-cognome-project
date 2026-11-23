@@ -2,9 +2,19 @@
 
 ## November 23, 2026 — CPU registration and JIT attribution
 
-Main through `daf6f74d` integrates #410–#413 after hosted CPU and smoke qualification. The registration owner records attempts; the CPU JIT session reserves a name before creation. The accepted #413 inspection establishes how a live session can distinguish an issued name with no dylib from a retained dylib. [Source and evidence](../engine/docs/CPU-JIT-ATTRIBUTION.md)
+Main `3c495db7` reconciles qualified #410–#413 integrated through `daf6f74d`.
+The [ID-only implementation](../engine/docs/CPU-JIT-ID-ASSOCIATION.md) at tested
+`2664a3bd` follows #413's accepted direction: publish the native ID in the
+existing CPU row before fallible creation, then query presence through the live
+session with its authoritative prepaid bound. Actual row cost is 80→88 bytes,
+or +64 at capacity eight; no new lifetime owner or association registry is added.
 
-The next #343 slice adds the native ID to the existing CPU registration row and uses the existing session for a bounded presence query. The result describes dylib presence only. Executable ownership, safe retirement and resource recovery require separate evidence. [Implementation handoff](core-local-study-continuation-plan.md) · [Maintainer decision](https://github.com/Human-Cognome-Project/human-cognome-project/pull/413#issuecomment-7101856435)
+Quick CI, 24 Clang/18 GCC CTests and seven minimal cases pass locally, preserving
+failure/retry/finalization and surviving dispatch. This implementation and cost
+await maintainer review and authoritative GitHub CI. Presence alone does not
+establish executable ownership, safe retirement or resource recovery.
+[Current handoff](core-local-study-continuation-plan.md) ·
+[Maintainer decision](https://github.com/Human-Cognome-Project/human-cognome-project/pull/413#issuecomment-7101856435)
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 

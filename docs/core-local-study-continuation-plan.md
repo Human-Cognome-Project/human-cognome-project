@@ -1,14 +1,32 @@
 # Core continuation after local CUDA corrections
 
-## November 23, 2026 — next task under #343
+## November 23, 2026 — CPU JIT ID association awaiting review
 
-Start from current main. The qualified code baseline is `daf6f74d`. #410–#413 have merged, and #413’s attribution fixture and storage forecast are available for reuse. [Attribution report](../engine/docs/CPU-JIT-ATTRIBUTION.md) · [Integration record](onboarding/CURRENT-STATE.md)
+The [implementation and source-qualified evidence](../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
+at `2664a3bd` implements [#413 decision 7101856435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/413#issuecomment-7101856435)
+from main `3c495db7`. Qualified #410–#413 are integrated parent-first through
+`daf6f74d`; their exact reviewed trees and hosted gates remain recorded in
+[CURRENT-STATE](onboarding/CURRENT-STATE.md).
 
-1. Store the issued native JIT ID in the existing CPU registration row before formatting the name or starting creation. Preserve the distinction between an attempt that never received an ID and an issued ID with no dylib.
-2. Query dylib presence through the live owning session. Use its authoritative issuance bound to budget the native lookup. Exercise insufficient budget, a retained dylib, retry and finalization. A saved session address cannot establish lifetime after shutdown.
-3. Verify surviving dispatch and measure the actual slot size and capacity cost against the integrated 80-byte slot. The ID-only forecast is 88 bytes per slot, or 64 additional bytes at capacity eight. Return the implementation and source-pinned evidence for review.
+The existing CPU row now stores its native ID before formatting or creation can
+fail. Its live owning session supplies the authoritative issuance count for a
+prepaid presence query. No-ID, consumed/no-dylib, retained-dylib, insufficient-work,
+retry and finalization controls preserve record identity and survivor dispatch.
+Seven native histories contain 35 windows / 154 production-presence phases;
+actual CPU row/capacity cost is 80→88 / 640→704 bytes, with launcher unchanged.
+Attempt snapshots grow 56→64 bytes; the caller's presence result is 56 bytes.
+Matching SDK/component/client rebuilds are required. Original inspection
+[evidence and forecasts](../engine/docs/CPU-JIT-ATTRIBUTION.md) retain their source.
 
-Registered retirement, ORC cleanup and admission credit remain deferred. [Maintainer decision](https://github.com/Human-Cognome-Project/human-cognome-project/pull/413#issuecomment-7101856435)
+Quick CI, 24 Clang/18 GCC CTests and seven minimal cases pass locally, including
+real legacy/prepared submission and owner/prepared-backing controls. The verified
+archive retains the integrated before evidence and exact comparison. Return this
+implementation and measured cost for maintainer review; authoritative GitHub CI
+is separate. Do not infer a broader next slice from this local pass.
+
+Registered retirement, ORC cleanup, admission credit, complete accounting,
+GPU/concurrency and #324 remain separate. #75/#111/#123 stay held. All merges
+remain maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
