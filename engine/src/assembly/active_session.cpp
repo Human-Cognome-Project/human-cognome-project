@@ -54,6 +54,22 @@ bool preflight_prepared_request(const PreparedStudySubmission &request,
   }
   return true;
 }
+
+// Called only with preflight-validated bindings. The caller registers the
+// returned graph and retains the existing candidate's retirement guard.
+std::unique_ptr<taichi::lang::SNode> make_prepared_source_layout(
+    detail::AdmissionBindings &b) {
+  using namespace taichi::lang;
+  auto root = std::make_unique<SNode>(0,SNodeType::root);
+  auto *parent = root.get();
+  b.layout[0].node.layout = parent;
+  if (b.layout.size() == 2) {
+    parent = &parent->dense(Axis(0),1);
+    b.layout[1].node.layout = parent;
+  }
+  parent->insert_children(SNodeType::place).dt = PrimitiveType::i32;
+  return root;
+}
 }  // namespace
 
 struct ActiveSession::Execution {
@@ -144,14 +160,7 @@ PreparedSubmissionResult ActiveSession::submit_prepared(PreparedStudySubmission 
   auto &e = *candidate->second;
   e.authorization = authorization;
   using namespace taichi::lang;
-  auto root = std::make_unique<SNode>(0,SNodeType::root);
-  auto *parent = root.get();
-  b.layout[0].node.layout = parent;
-  if (b.layout.size() == 2) {
-    parent = &parent->dense(Axis(0),1);
-    b.layout[1].node.layout = parent;
-  }
-  parent->insert_children(SNodeType::place).dt = PrimitiveType::i32;
+  auto root = make_prepared_source_layout(b);
   e.layout.node = runtime_->program().add_snode_tree(std::move(root),false);
   e.harness = std::make_unique<field::Harness>(*runtime_,request.capacity,request.path);
   auto prepared = detail::PreparedStudyOwner::prepare(*e.harness,source,session_,b,
