@@ -1,6 +1,22 @@
 # Current implementation and work
 
-## November 23, 2026 — private prepared-request preflight for review
+## November 23, 2026 — prepared source-layout inspection for review
+
+The [reuse and ownership disposition](../../engine/docs/PREPARED-SOURCE-LAYOUT.md)
+at inspected `adc3ad29` follows [#416 decision 7107054533](https://github.com/Human-Cognome-Project/human-cognome-project/pull/416#issuecomment-7107054533).
+Keep the small topology builder local; reuse native SNode operations and the
+existing retirement guard. Legacy/test builders have different binding or tree
+lifetime contracts. The smallest proposed follow-up extracts only unregistered
+graph preparation/pointer binding into a private helper, leaving Program
+registration, candidate ownership and publication with the session.
+
+Production/executable source is unchanged. Source equivalence and the reused
+#416 local quick/eight Clang/six GCC evidence are verified; boundary/fork checks
+pass. No native baseline was rerun. #415/#416 remain source-accepted and open,
+with smoke passed and native hosted gates running; main is `d78c6d86`. New
+inspection review and authoritative CI remain separate. [Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — private prepared-request preflight source-accepted
 
 The [private extraction and qualification](../../engine/docs/PREPARED-REQUEST-PREFLIGHT.md)
 at tested `9c3f03a8` follows [#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574).

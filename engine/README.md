@@ -127,6 +127,13 @@ check order, status/demand and native ownership. Full native bytes remain an
 admission-accounting limit.
 New review and authoritative CI remain separate from the local evidence.
 
+The [prepared source-layout inspection](docs/PREPARED-SOURCE-LAYOUT.md) compares
+the following native construction with existing assembly builders. It keeps
+topology construction local and reuses the current native primitives/retirement
+guard. The proposed private helper would prepare only an unregistered graph and
+its binding pointers; registration and candidate publication stay with the
+session. Production is unchanged and the disposition awaits review.
+
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
 ordered provenance, detached public values and explicit lifetime controls. The
