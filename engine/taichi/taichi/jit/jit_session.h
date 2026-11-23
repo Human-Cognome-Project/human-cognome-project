@@ -7,6 +7,7 @@
 #include "taichi/util/lang_util.h"
 #include "taichi/jit/jit_module.h"
 #include "taichi/program/compiler_jit_counts.h"
+#include "taichi/program/cpu_jit_presence.h"
 
 namespace taichi::lang {
 
@@ -32,6 +33,15 @@ class JITSession {
 
   virtual JITModule *add_module(std::unique_ptr<llvm::Module> M,
                                 int max_reg = 0) = 0;
+
+#ifdef TI_WITH_LLVM
+  // Synchronous output only; never retained by the session. Non-CPU backends
+  // keep the unavailable sentinel and their existing add_module behavior.
+  virtual JITModule *add_module_with_cpu_id(std::unique_ptr<llvm::Module> M,
+                                           int &issued_id, int max_reg = 0);
+#endif
+  virtual CpuJitPresence cpu_jit_presence(int native_id,
+                                         std::size_t entry_budget) const { return {}; }
 
   // virtual void remove_module(JITModule *module) = 0;
 

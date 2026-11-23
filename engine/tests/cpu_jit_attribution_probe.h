@@ -1,6 +1,5 @@
 #pragma once
 
-#include <charconv>
 #include <cstdint>
 #include <limits>
 #include <utility>
@@ -10,9 +9,8 @@
 #include "taichi/program/registration_attempts.h"
 #include "llvm/ExecutionEngine/Orc/Core.h"
 
-// Test-only proposal models. These are neither native APIs nor an operational
-// association registry. The live owner supplies the authoritative issuance bound
-// in the proposed design; the fixture witnesses it at intercepted native calls.
+// Test-only identity observer and compiled layout models. Production presence
+// queries now use the real native owner API; no test-side query model remains.
 namespace cpu_jit_attribution_inspection {
 using namespace taichi::lang;
 
@@ -24,40 +22,6 @@ struct Token {
   int native_id{-1};
   CompiledKernelIdentity record;
 };
-struct Presence {
-  OwnershipCountStatus status{OwnershipCountStatus::Unavailable};
-  bool complete{false};
-  OwnershipCountStatus dylib_status{OwnershipCountStatus::Unavailable};
-  const void *session{}, *dylib{};
-  std::size_t charged_entries{};
-};
-
-// Native name lookup scans the session's dylib vector. Under the current CPU
-// owner's exclusive unique-name creation, issued IDs bound its length, including
-// holes. This is a conservative preflight model, not a measured scan count.
-inline Presence probe(const Token &token, const void *live_session,
-                      llvm::orc::ExecutionSession &backend,
-                      std::size_t issued_bound, std::size_t entry_budget) {
-  Presence result;
-  result.session = live_session;
-  if (!live_session || token.session != live_session || token.native_id < 0 || backend.getPlatform())
-    return result;
-  if (std::size_t(token.native_id) >= issued_bound) {
-    result.status = OwnershipCountStatus::Absent; // Not an issued ID.
-    return result;
-  }
-  result.status = OwnershipCountStatus::Incomplete;
-  if (entry_budget < issued_bound) return result;
-  char name[std::numeric_limits<int>::digits10 + 3];
-  const auto formatted = std::to_chars(name, name + sizeof(name), token.native_id);
-  if (formatted.ec != std::errc{}) return result;
-  result.charged_entries = issued_bound;
-  result.dylib = backend.getJITDylibByName(llvm::StringRef(name, formatted.ptr - name));
-  result.dylib_status = result.dylib ? OwnershipCountStatus::Present : OwnershipCountStatus::Absent;
-  result.status = OwnershipCountStatus::Present;
-  return result;
-}
-
 // Layout candidates use the source-pinned native member types. The fixture
 // reconciles CurrentSlot with actual one-slot native capacity first. sizeof
 // predicts replacement storage; it does not observe a production association.

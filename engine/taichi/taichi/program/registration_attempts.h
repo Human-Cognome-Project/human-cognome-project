@@ -26,6 +26,7 @@ struct CpuRegistrationAttempt {
   // without a returned wrapper; Present identifies only a confirmed wrapper.
   OwnershipCountStatus module_status{OwnershipCountStatus::Unavailable};
   const void *module{};
+  int native_id{-1}; // Session-scoped; -1 means no ID was issued to this row.
 };
 
 struct CpuRegistrationAttemptCounts {

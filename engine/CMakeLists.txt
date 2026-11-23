@@ -623,7 +623,7 @@ if(HCP_WITH_VIEWPORT)
           "-Wl,--wrap=_ZdlPv"
           "-Wl,--wrap=_ZdlPvm"
           "-Wl,--wrap=_ZN6taichi4lang7Program8finalizeEv"
-          "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE")
+          "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi")
     endforeach()
     add_executable(retained_membership_decision_test tests/retained_membership_decision_test.cpp)
     target_link_libraries(retained_membership_decision_test PRIVATE viewport_snapshot)
@@ -662,7 +662,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
   target_link_libraries(unregistered_removal_test PRIVATE engine_support)
   target_compile_options(unregistered_removal_test PRIVATE -Wall -Wextra -Werror)
   target_link_options(unregistered_removal_test PRIVATE
-      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE")
+      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi")
   foreach(workers 1 2)
     foreach(path prepared dynamic)
       add_test(NAME unregistered_removal_${workers}_${path}
@@ -684,7 +684,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
       "-Wl,--wrap=_ZdlPv"
       "-Wl,--wrap=_ZdlPvm"
       "-Wl,--wrap=_ZN6taichi4lang7Program8finalizeEv"
-      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE")
+      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi")
   foreach(workers 1 2)
     foreach(path prepared dynamic)
       add_test(NAME native_registration_failure_${workers}_${path}
@@ -697,7 +697,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
   target_link_libraries(registration_attempt_test PRIVATE engine_support)
   target_compile_options(registration_attempt_test PRIVATE -Wall -Wextra -Werror)
   target_link_options(registration_attempt_test PRIVATE
-      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE")
+      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi")
   foreach(workers 1 2)
     foreach(path prepared dynamic)
       add_test(NAME registration_attempt_${workers}_${path}
@@ -711,7 +711,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
   target_compile_options(cpu_jit_creation_inspection PRIVATE -Wall -Wextra -Werror)
   target_link_options(cpu_jit_creation_inspection PRIVATE
       "-Wl,--wrap=_ZN6taichi4lang10JITSession6createEPNS0_17TaichiLLVMContextERKNS0_13CompileConfigENS_4ArchE"
-      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE"
+      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi"
       "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession14createJITDylibENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE"
       "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession17getJITDylibByNameENS_9StringRefE"
       "-Wl,--wrap=_ZN4llvm3orc16ExecutionSession6lookupENS_8ArrayRefIPNS0_8JITDylibEEENS0_15SymbolStringPtrENS0_11SymbolStateE"
@@ -733,7 +733,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Cla
       "-Wl,--wrap=_ZdlPv"
       "-Wl,--wrap=_ZdlPvm"
       "-Wl,--wrap=_ZN6taichi4lang7Program8finalizeEv"
-      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE")
+      "-Wl,--wrap=_ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi")
   foreach(workers 1 2)
     foreach(path prepared dynamic)
       add_test(NAME native_reclamation_inspection_${workers}_${path}

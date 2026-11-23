@@ -19,6 +19,7 @@ class KernelLauncher : public LLVM::KernelLauncher {
       OwnershipCountStatus module_status{OwnershipCountStatus::Absent};
       CpuRegistrationStage stage{CpuRegistrationStage::Unobserved};
       bool failed{false};
+      int native_id{-1};
     } registration;
   };
 
@@ -29,6 +30,8 @@ class KernelLauncher : public LLVM::KernelLauncher {
                                        std::size_t parameter_budget) const override;
   CpuRegistrationAttemptCounts cpu_registration_attempt_counts(std::size_t entry_budget) const noexcept override;
   CpuRegistrationAttempt cpu_registration_attempt(std::size_t index) const noexcept override;
+  CpuJitPresence cpu_registration_jit_presence(std::size_t index,
+                                               std::size_t entry_budget) const override;
 
   void launch_llvm_kernel(Handle handle, LaunchContextBuilder &ctx) override;
   std::unique_ptr<LaunchContextBuilder::Prepared> prepare_llvm_kernel(

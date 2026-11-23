@@ -236,6 +236,13 @@ class ProgramImpl {
     return {};
   }
 
+  CpuJitPresence cpu_registration_jit_presence(std::size_t index,
+                                               std::size_t entry_budget) const {
+    if (kernel_launcher_) return kernel_launcher_->cpu_registration_jit_presence(index, entry_budget);
+    CpuJitPresence result; result.status = OwnershipCountStatus::Absent;
+    return result;
+  }
+
  protected:
   virtual std::unique_ptr<KernelCompiler> make_kernel_compiler() = 0;
 

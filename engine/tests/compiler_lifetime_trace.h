@@ -300,14 +300,14 @@ extern "C" void compiler_wrap_sized_delete(void *, std::size_t) noexcept __asm__
 extern "C" void compiler_wrap_sized_delete(void *p, std::size_t n) noexcept {
   compiler_trace::released(p); compiler_real_sized_delete(p, n);
 }
-taichi::lang::JITModule *compiler_real_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>)
-    __asm__("__real__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE");
-taichi::lang::JITModule *compiler_wrap_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>)
-    __asm__("__wrap__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE");
+taichi::lang::JITModule *compiler_real_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>, int &)
+    __asm__("__real__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi");
+taichi::lang::JITModule *compiler_wrap_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>, int &)
+    __asm__("__wrap__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi");
 taichi::lang::JITModule *compiler_wrap_jit(taichi::lang::LlvmRuntimeExecutor *executor,
-                                        std::unique_ptr<llvm::Module> module) {
+                                        std::unique_ptr<llvm::Module> module, int &cpu_id) {
   compiler_trace::distinct_jit_ir(module.get());
-  auto *result = compiler_real_jit(executor, std::move(module));
+  auto *result = compiler_real_jit(executor, std::move(module), cpu_id);
   compiler_trace::capture(result, compiler_trace::Kind::Module);
   return result;
 }

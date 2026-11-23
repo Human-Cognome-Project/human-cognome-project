@@ -190,6 +190,19 @@ JITModule *LlvmRuntimeExecutor::get_runtime_jit_module() {
   return runtime_jit_module_;
 }
 
+JITModule *LlvmRuntimeExecutor::create_jit_module(
+    std::unique_ptr<llvm::Module> module, int &cpu_id) {
+  cpu_id = -1;
+  return jit_session_->add_module_with_cpu_id(std::move(module), cpu_id);
+}
+
+CpuJitPresence LlvmRuntimeExecutor::cpu_jit_presence(
+    int native_id, std::size_t entry_budget) const {
+  if (jit_session_) return jit_session_->cpu_jit_presence(native_id, entry_budget);
+  CpuJitPresence result; result.status = OwnershipCountStatus::Absent;
+  return result;
+}
+
 JitOwnershipCounts LlvmRuntimeExecutor::jit_ownership_counts(
     std::size_t module_budget) const {
   if (jit_session_)

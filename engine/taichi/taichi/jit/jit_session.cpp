@@ -2,6 +2,7 @@
 
 #ifdef TI_WITH_LLVM
 #include "llvm/IR/DataLayout.h"
+#include "llvm/IR/Module.h"
 #endif
 
 namespace taichi::lang {
@@ -26,6 +27,14 @@ std::unique_ptr<JITSession> create_llvm_jit_session_amdgpu(
 JITSession::JITSession(TaichiLLVMContext *tlctx, const CompileConfig &config)
     : tlctx_(tlctx), config_(config) {
 }
+
+#ifdef TI_WITH_LLVM
+JITModule *JITSession::add_module_with_cpu_id(std::unique_ptr<llvm::Module> M,
+                                            int &issued_id, int max_reg) {
+  issued_id = -1;
+  return add_module(std::move(M), max_reg);
+}
+#endif
 
 JitOwnershipCounts JITSession::ownership_counts(
     const JITModule *runtime_module, std::size_t module_budget) const {

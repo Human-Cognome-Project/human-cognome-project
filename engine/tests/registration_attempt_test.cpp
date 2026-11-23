@@ -110,10 +110,14 @@ void run(int workers, bool prepared) {
     const auto absent = impl.cpu_registration_attempt(0);
     const auto unavailable = unsupported.cpu_registration_attempt_counts(0);
     const auto unavailable_entry = unsupported.cpu_registration_attempt(0);
+    const auto fresh_presence = impl.cpu_registration_jit_presence(0, 0);
+    const auto unsupported_presence = unsupported.cpu_registration_jit_presence(0, 0);
     allocation_observation::enabled = false;
     check(fresh.status == OwnershipCountStatus::Absent && absent.status == OwnershipCountStatus::Absent &&
               unavailable.status == OwnershipCountStatus::Unavailable &&
               unavailable_entry.status == OwnershipCountStatus::Unavailable &&
+              fresh_presence.status == OwnershipCountStatus::Absent &&
+              unsupported_presence.status == OwnershipCountStatus::Unavailable &&
               impl.launch_registry_storage().status == LaunchMetadataStatus::Absent &&
               !allocation_observation::calls, "fresh query allocated or created a launcher");
     auto &llvm_impl = dynamic_cast<LlvmProgramImpl &>(impl);
@@ -129,6 +133,11 @@ void run(int workers, bool prepared) {
       try { launcher.register_llvm_kernel(data(*first)); } catch (const std::bad_alloc &) { caught = true; }
       allocation_lifetime::fail_at = 0;
       const auto gap = impl.cpu_registration_attempt_counts(unlimited);
+      const auto gap_presence = impl.cpu_registration_jit_presence(0, 0);
+      check(gap_presence.status == OwnershipCountStatus::Present &&
+                gap_presence.id_status == OwnershipCountStatus::Absent && gap_presence.native_id == -1 &&
+                gap_presence.dylib_status == OwnershipCountStatus::Unavailable && !gap_presence.charged_entries,
+            "failed row storage manufactured a native issued ID");
       check(caught && factory_calls == calls_before && !data(*first).get_handle() &&
                 gap.issued_attempts == 1 && !gap.stored_slots && !gap.recorded_attempts && gap.missing_metadata == 1,
             "row allocation failure did not retain an explicit issued-ID gap");
@@ -228,14 +237,14 @@ void run(int workers, bool prepared) {
 }
 }  // namespace
 
-taichi::lang::JITModule *attempt_real_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>)
-    __asm__("__real__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE");
-taichi::lang::JITModule *attempt_wrap_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>)
-    __asm__("__wrap__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE");
-taichi::lang::JITModule *attempt_wrap_jit(taichi::lang::LlvmRuntimeExecutor *executor, std::unique_ptr<llvm::Module> input) {
+taichi::lang::JITModule *attempt_real_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>, int &)
+    __asm__("__real__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi");
+taichi::lang::JITModule *attempt_wrap_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>, int &)
+    __asm__("__wrap__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi");
+taichi::lang::JITModule *attempt_wrap_jit(taichi::lang::LlvmRuntimeExecutor *executor, std::unique_ptr<llvm::Module> input, int &cpu_id) {
   const auto stage = fault; fault = Fault::None; ++factory_calls;
   if (stage == Fault::BeforeModule) throw Injected{};
-  last_module = attempt_real_jit(executor, std::move(input));
+  last_module = attempt_real_jit(executor, std::move(input), cpu_id);
   if (stage == Fault::AfterModule) throw Injected{};
   if (stage == Fault::AfterReturnAllocation) allocation_lifetime::fail_at = allocation_lifetime::counts.attempts + 1;
   return last_module;

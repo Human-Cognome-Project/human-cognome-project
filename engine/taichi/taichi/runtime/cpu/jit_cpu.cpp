@@ -1,6 +1,8 @@
 // A LLVM JIT compiler for CPU archs wrapper
 
 #include <memory>
+#include <charconv>
+#include <limits>
 
 #ifdef TI_WITH_LLVM
 #include "llvm/Analysis/TargetTransformInfo.h"
@@ -97,12 +99,12 @@ class JITModuleCPU : public JITModule {
 
 class JITSessionCPU : public JITSession {
  private:
-  ExecutionSession es_;
+  mutable ExecutionSession es_; // LLVM's read-only name lookup locks internally.
   ObjLayerT object_layer_;
   IRCompileLayer compile_layer_;
   DataLayout dl_;
   MangleAndInterner mangle_;
-  std::mutex mut_;
+  mutable std::mutex mut_;
   std::vector<llvm::orc::JITDylib *> all_libs_;
   // Next unique dylib ID, including IDs consumed by failed creation.
   int module_counter_;
@@ -152,10 +154,22 @@ class JITSessionCPU : public JITSession {
   }
 
   JITModule *add_module(std::unique_ptr<llvm::Module> M, int max_reg) override {
+    return add_module_impl(std::move(M), max_reg, nullptr);
+  }
+
+  JITModule *add_module_with_cpu_id(std::unique_ptr<llvm::Module> M,
+                                   int &issued_id, int max_reg) override {
+    issued_id = -1;
+    return add_module_impl(std::move(M), max_reg, &issued_id);
+  }
+
+ private:
+  JITModule *add_module_impl(std::unique_ptr<llvm::Module> M, int max_reg,
+                             int *issued_id) {
     TI_ASSERT(max_reg == 0);  // No need to specify max_reg on CPUs
     TI_ASSERT(M);
     std::lock_guard<std::mutex> _(mut_);
-    const auto module_id = cpu::detail::issue_jit_module_id(module_counter_);
+    const auto module_id = cpu::detail::issue_jit_module_id(module_counter_, issued_id);
     auto dylib_expect = es_.createJITDylib(fmt::format("{}", module_id));
     TI_ASSERT(dylib_expect);
     auto &dylib = dylib_expect.get();
@@ -172,6 +186,37 @@ class JITSessionCPU : public JITSession {
     auto new_module_raw_ptr = new_module.get();
     modules.push_back(std::move(new_module));
     return new_module_raw_ptr;
+  }
+
+ public:
+  CpuJitPresence cpu_jit_presence(int native_id, std::size_t entry_budget) const override {
+    std::lock_guard<std::mutex> _(mut_);
+    CpuJitPresence result;
+    result.owner = this; result.native_id = native_id;
+    result.issued_ids = std::size_t(module_counter_);
+    // The private CPU path creates at most one dylib per issued ID. A platform
+    // could add dylibs independently, invalidating that authoritative bound.
+    if (es_.getPlatform()) return result;
+    result.id_status = OwnershipCountStatus::Absent;
+    if (native_id < 0) {
+      result.status = OwnershipCountStatus::Present;
+      return result;
+    }
+    if (std::size_t(native_id) >= result.issued_ids) {
+      result.status = OwnershipCountStatus::Absent;
+      return result;
+    }
+    result.id_status = OwnershipCountStatus::Present;
+    result.status = OwnershipCountStatus::Incomplete;
+    if (entry_budget < result.issued_ids) return result;
+    char name[std::numeric_limits<int>::digits10 + 3];
+    const auto formatted = std::to_chars(name, name + sizeof(name), native_id);
+    if (formatted.ec != std::errc{}) return result;
+    result.charged_entries = result.issued_ids;
+    result.dylib = es_.getJITDylibByName(StringRef(name, formatted.ptr - name));
+    result.dylib_status = result.dylib ? OwnershipCountStatus::Present : OwnershipCountStatus::Absent;
+    result.status = OwnershipCountStatus::Present;
+    return result;
   }
 
   void *lookup(const std::string Name) override {
