@@ -1,5 +1,13 @@
 # Native CPU JIT ID association and presence
 
+November 23 disposition: [review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
+provisionally accepts #414 at `e0fa10bb`. Smoke passed; native hosted qualification
+and maintainer integration remain separate. The maintainer did not independently
+inspect the local raw archive. The authorized [real refused-submission trace](REFUSED-SUBMISSION-JIT-TRACE.md)
+has separate source-pinned evidence and a proposed return to the responsibility
+split. The original implementation source, costs and qualification below remain
+unchanged.
+
 Implementation for review under #343, following [#413 decision 7101856435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/413#issuecomment-7101856435).
 The existing CPU registration row now retains its issued native JIT ID. Presence
 is queried through its live owner with the session's authoritative prepaid bound.

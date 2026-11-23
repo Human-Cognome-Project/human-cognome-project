@@ -1,32 +1,35 @@
 # Core continuation after local CUDA corrections
 
-## November 23, 2026 — CPU JIT ID association awaiting review
+## November 23, 2026 — refused-submission disposition awaiting review
 
-The [implementation and source-qualified evidence](../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
-at `2664a3bd` implements [#413 decision 7101856435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/413#issuecomment-7101856435)
-from main `3c495db7`. Qualified #410–#413 are integrated parent-first through
-`daf6f74d`; their exact reviewed trees and hosted gates remain recorded in
-[CURRENT-STATE](onboarding/CURRENT-STATE.md).
+[#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
+provisionally accepts `e0fa10bb` and authorizes one real refused-submission/retry
+trace. #414 remains open with smoke passed and native hosted qualification pending;
+main is `3c495db7`. This follow-up explicitly uses #414's reviewed API without an
+agent integration merge. The [original implementation report](../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
+preserves its source and measured 80→88-byte row / +64-byte capacity-eight cost.
 
-The existing CPU row now stores its native ID before formatting or creation can
-fail. Its live owning session supplies the authoritative issuance count for a
-prepaid presence query. No-ID, consumed/no-dylib, retained-dylib, insufficient-work,
-retry and finalization controls preserve record identity and survivor dispatch.
-Seven native histories contain 35 windows / 154 production-presence phases;
-actual CPU row/capacity cost is 80→88 / 640→704 bytes, with launcher unchanged.
-Attempt snapshots grow 56→64 bytes; the caller's presence result is 56 bytes.
-Matching SDK/component/client rebuilds are required. Original inspection
-[evidence and forecasts](../engine/docs/CPU-JIT-ATTRIBUTION.md) retain their source.
+The [new trace/disposition](../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md) at
+`3468a26a` changes only the existing test observer. A real prepared plan refusal
+adds 78 CPU rows/confirmed wrappers/present dylibs with no published study handle;
+all new rows have zero client borrows but remain registered. Original cache/root,
+retry/sibling-dispatch and finalization histories remain exact. Quick and four
+Clang/four GCC real submission CTests pass locally against the matching CPU SDK.
+The verified source-pinned bundle includes the reused #414 evidence.
 
-Quick CI, 24 Clang/18 GCC CTests and seven minimal cases pass locally, including
-real legacy/prepared submission and owner/prepared-backing controls. The verified
-archive retains the integrated before evidence and exact comparison. Return this
-implementation and measured cost for maintainer review; authoritative GitHub CI
-is separate. Do not infer a broader next slice from this local pass.
+Disposition for review: existing observations suffice to resume the broader
+behaviour-preserving responsibility split. Complete live/peak compiler/ORC bytes
+remain unknown for total resource admission or recovery credit. The smallest
+proposed next PR extracts only binding/layout/frame/scratch request preflight into
+a private assembly helper, at the same point before candidate/native allocation.
+Preserve owner/capability/duplicate ordering, exact statuses, native construction,
+bootstrap/map transfer, lifetime/drain and following ticks. This is a proposal,
+not an implemented split or a new public Analyst interface.
 
-Registered retirement, ORC cleanup, admission credit, complete accounting,
-GPU/concurrency and #324 remain separate. #75/#111/#123 stay held. All merges
-remain maintainer-only.
+New review and authoritative GitHub CI remain; no retirement, admission credit,
+new registry or numerical change is authorized by this inspection. Keep
+`complete=false`. #75/#111/#123 remain held and #324 separate. All merges remain
+maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

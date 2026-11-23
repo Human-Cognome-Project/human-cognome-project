@@ -1,6 +1,23 @@
 # Current implementation and work
 
-## November 23, 2026 — CPU JIT ID association for review
+## November 23, 2026 — real submission/JIT trace for review
+
+The [source-pinned disposition](../../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md)
+at `3468a26a` follows [#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
+on explicitly dependent `e0fa10bb`. #414 is provisionally accepted and open;
+smoke passed, its native hosted gate/integration remain separate. Main remains
+`3c495db7`. The first real prepared plan refusal adds 78 retained CPU rows,
+confirmed wrappers and present dylibs, despite no study handle being published.
+Existing retry, sibling dispatch and finalization boundaries remain checked.
+
+Quick and four Clang/four GCC CTests pass locally; original histories match the
+verified #414 bundle. Production/fork are unchanged. Existing observations suffice
+to resume a behaviour-preserving responsibility split; complete native peak/byte
+accounting still constrains admission credit. The proposed next change is private
+binding/layout/frame/scratch preflight extraction, pending review and authoritative
+GitHub CI. [Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — CPU JIT ID association provisionally accepted
 
 The [native implementation and measured cost](../../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
 at tested `2664a3bd` follows #413 decision 7101856435 from main `3c495db7`.
@@ -12,8 +29,8 @@ finalization with surviving dispatch. Actual row extent is 80→88 bytes, or
 
 Quick CI, 24 Clang/18 GCC CTests and seven minimal cases pass locally. The
 source-pinned archive verifies unchanged prior histories and measured deltas.
-This implementation awaits maintainer review and authoritative GitHub CI;
-the integrated baseline below remains separate. [Current handoff](../core-local-study-continuation-plan.md)
+#414 is provisionally accepted in review 7103232403; smoke passed and the
+native hosted gate/integration remain separate from the integrated baseline below. [Current handoff](../core-local-study-continuation-plan.md)
 
 ## November 23, 2026 — integrated CPU baseline
 
