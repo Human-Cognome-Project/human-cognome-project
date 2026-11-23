@@ -1,31 +1,35 @@
 # Core continuation after local CUDA corrections
 
-## November 23, 2026 — private request-preflight extraction awaiting review
+## November 23, 2026 — prepared source-layout disposition awaiting review
 
-[#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574)
-accepts reviewed `8101a1ed` for bounded continuation and authorizes the private
-binding/layout/frame/scratch extraction. #415 is provisionally source-accepted at `8101a1ed`, open with smoke passed and native hosted qualification pending; main is `d78c6d86`. This branch explicitly pins that reviewed dependency.
+[#416 decision 7107054533](https://github.com/Human-Cognome-Project/human-cognome-project/pull/416#issuecomment-7107054533)
+source-accepts `adc3ad29` and authorizes the layout inspection. #415/#416 remain
+open with smoke passed and native workflows running. Main is `d78c6d86`;
+this inspection explicitly pins reviewed #416. Maintainer integration order is
+#415, then #416 against main after verifying its integrated tree.
 
-The [implementation and evidence](../engine/docs/PREPARED-REQUEST-PREFLIGHT.md)
-at `9c3f03a8` moves only those checks into a private helper in `active_session.cpp`.
-The caller still performs source/resource, owner, capability and duplicate checks
-first. Helper failure returns the same result with identical statuses/demand;
-success proceeds at the same point before candidate/native construction. No new
-public API, class layout, allocator, registry or numerical behaviour is introduced.
+The [source-pinned reuse/keep-local decision](../engine/docs/PREPARED-SOURCE-LAYOUT.md)
+compares prepared/legacy production construction and test-local layout builders.
+Keep topology construction local to assembly and reuse existing native primitives
+and `SNodeTreeOwner`. No existing builder preserves the prepared pointer-binding,
+registration and candidate-lifetime contract as a drop-in replacement. The
+source distinguishes unregistered graph cleanup from candidate retirement after
+successful registration and records the unqualified materialization-failure edge.
 
-The whole original translation unit reconstructs byte for byte after adapting
-the helper's refusal returns. Quick CI, eight Clang/six GCC CTests pass locally,
-including active prepared submission and real late refusal/retry/sibling dispatch
-on bulk/direct CPU. The verified #415 comparison retains all original histories,
-132 phases and 24,024 individual row/dylib observations exactly. Parent inspection
-[source/evidence](../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md) stays separate.
+Smallest proposed follow-up: one private helper taking validated `AdmissionBindings &`,
+creating the same root/optional primary/i32-place graph, filling existing pointer
+slots and returning `unique_ptr<SNode>`. It takes no Program or new owner. Leave
+the Program registration/handle assignment at its current point in `submit_prepared`,
+after staging and before Harness construction. Preserve the by-value request,
+preflight, guards/drain, bootstrap, publication/map transfer and tick execution.
+This is a proposal for review; no production extraction is implemented here.
 
-Return the extraction for maintainer review and authoritative GitHub CI before
-selecting a further implementation. Keep bootstrap, map transfer, source/JIT
-lifetime, drain and tick execution with their current owners. Complete native
-bytes/peaks, registered retirement, cleanup, admission credit, GPU/concurrency and
-#324 remain separate. Keep `complete=false`; #75/#111/#123 remain held. All merges
-remain maintainer-only.
+All executable files match tested #416 `9c3f03a8`. Source/evidence equivalence,
+reused quick/eight Clang/six GCC results and archive manifests are verified;
+native boundary/fork checks pass. No native baseline was rerun. Return this
+disposition for review and authoritative GitHub CI. New layouts, native rollback
+changes, complete accounting, cleanup, admission credit, GPU/concurrency and #324
+remain separate. #75/#111/#123 remain held; all merges remain maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

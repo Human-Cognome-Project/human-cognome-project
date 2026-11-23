@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+The [prepared source-layout inspection](PREPARED-SOURCE-LAYOUT.md) at `adc3ad29`
+keeps Program's graph ownership distinct from Execution's backing-retirement
+responsibility and borrowed request pointers. Existing native operations and
+`SNodeTreeOwner` suffice; fixture builders do not replace candidate lifetime.
+The proposed unregistered-graph helper keeps ownership with its caller and is
+not implemented. Production/storage are unchanged; verified #416 evidence is
+reused, with no new native qualification or reclamation/accounting claim.
+
 The [private request-preflight extraction](PREPARED-REQUEST-PREFLIGHT.md) at
 tested `9c3f03a8` implements #415's approved mechanical slice. It moves the
 existing binding/layout/frame/scratch checks into a helper before native
