@@ -1,5 +1,149 @@
 # Engine responsibility map and first bounded extraction
 
+## Current prepared-path reconciliation — 2026-11-23
+
+Pass 1 disposition under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
+following [#418 decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534).
+Inspected source: `7831326c67235a5fa7fe36afc397a01fa385dd5d`, tree
+`68d4e38c029d1a683f30a4b46a1900701b26f2d0`, native fork tree
+`a94a9eb350c94dfa2eb586bee49c53e0ee886648`. Recursive submodule pins match.
+Main `3080687a` integrates qualified #416 with the exact reviewed `adc3ad29`
+tree. #417 `0d1fd0a2` and #418 `7831326c` remain open and source-accepted;
+their smoke gates passed and native CPU runs remain in progress at inspection.
+This task explicitly depends on reviewed #418; it changes documentation only.
+
+**Disposition:** the current prepared submission transaction has a sufficient
+owner boundary for its supported subset. Retain staging, status propagation and
+map transfer together. Move the next inspection/implementation proposal to the
+logical caller's header and geometry dependency, which the original map already
+identified. No further prepared orchestration helper is justified by this trace.
+
+### Current responsibilities and control/lifetime trace
+
+The original retained lifecycle below remains a historical trace. Its missing
+prepared bridge and unsplit session describe November 15, not this source.
+The current path is the explicit shared v2/f64, x64 root/optional-primary subset;
+the default retained capture is still legacy v1. Supported native fixture
+submission does not establish full retained C3 or infer membership policy.
+
+| Responsibility | Current owner and caller boundary | State/lifetime and invariants | Disposition |
+| --- | --- | --- | --- |
+| Logical composition, identity and active input | `LetterProjection`, `MembershipFields`, `ActiveAssembly` in `active_workbench.cpp`; called by capture/adapters and structural preparation. | Pinned shared recipe, owner/instance/generation, optional private snapshot and requested focus. Local scope/version checks remain in the active owner; shared managers never load private inputs. `bind_structure` supplies coordinate-free values and explicit roles. | Preserve value/projection authority. The implementation is split from the session, but its header and link boundary still pull in native study preparation; inspect that boundary below. |
+| Request choices and control adapters | `letter_capture.cpp`, `prepared_english_pair_submission` and the retained-specific adapter construct explicit `PreparedStudySubmission`. | Caller chooses source, focus/comparisons, capacity/work limits, host path, parameters and capture pacing. Adapter refusal does not select an alternative model or publish a handle. | Keep choices with callers and supported-subset enforcement with execution. No general Analyst implementation or universal command interface is implied. |
+| Candidate transaction and session publication | `ActiveSession::submit_prepared` in `active_session.cpp`, with private `preflight_prepared_request` and `make_prepared_source_layout`. | Session owns Runtime/execution map. A temporary map owns the candidate before commit; it reserves the eventual map node. Preflight precedes native allocation. Registration and immediate existing guard assignment precede Harness construction. Only a ready, bootstrapped owner transfers into the visible map. | Sufficient boundary: these remaining statements govern one candidate's publication/lifetime, not a separate caller policy. Keep them together. |
+| Structural preparation and prepared ownership | `PreparedStudyOwner` borrows the candidate Harness and owns its preparing `StructuralAdmissionPlan`; Execution owns Harness and owner. | Source pin, reserved metadata, committed mappings, handle/generation and ready state. Owner preparation/bootstrap delegate native validation, claim/placement/commit to the Harness. Typed rows transfer after commit and the replay plan retires. Failure clears staging before collecting the reservation result. | Preserve the existing owner seam and reject/retry contract. Do not create another producer, native installer or state authority. |
+| Native execution and retirement | `field::Harness`, prepared update/placement/tick machinery, `engine::Runtime`, Program and `SNodeTreeOwner`. | Harness/native arrays and activity are execution authority. Drain runs before dependent members; prepared owner precedes Harness destruction, then source retirement while Program lives. Session synchronizes/clears executions before Runtime finalization. | Reuse existing native SNode construction and guard. Source/materialization failure, complete compiler/ORC bytes and admission credit remain separate limits; helper extraction did not repair them. |
+| Completed observation and output | `PreparedStudyOwner::report`, authorized `ActiveSession::report`/private owner access, `viewport::observe`, serializer/browser. | Report/viewport association, owner, generation and completed-tick checks expose copied observations. They do not own a second live numerical state or drive admission. | Preserve the read-only observation seam. Legacy report/refresh contracts remain distinct from prepared publication; there is no general prepared refresh command here. |
+
+The existing [retained entry](../../tools/viewport/native/letter_capture.cpp)
+and [prepared session](../src/assembly/active_session.cpp) now connect as follows:
+
+1. The caller acquires a shared lease and pins `ActiveAssembly`; an explicit
+   prepared profile chooses its adapter. Legacy `focus`/`submit` remains a
+   separate branch. This inspection ran neither a database nor a capture.
+2. The adapter supplies bindings with null native layout pointers and explicit
+   source/model/resource choices. `submit_prepared` checks source/resources,
+   authorization, supported subset and duplicate study before private preflight.
+   Binding/layout/frame/scratch rejection precedes staging/native allocation.
+3. The session stages a map node and Execution, records authorization and asks
+   the private helper for an unregistered root/optional-primary/i32-place graph.
+   Program registration immediately assigns the existing source-tree guard;
+   Harness construction then occurs at the same point as before #418.
+4. `PreparedStudyOwner::prepare` reserves and validates its source-bound plan and
+   metadata. The detached handle is prepared before `bootstrap`; bootstrap owns
+   combined native publication and mapping. Preparation/publication refusal
+   destroys the staged candidate, reports demand/reservations and publishes no
+   handle. Successful readiness transfers the reserved node without allocation.
+5. `tick_prepared` obtains the authorized owner and delegates to its native tick.
+   The owner/Harness retain numerical state; caller dt, budgets and pacing stay
+   caller inputs. The existing completed-tick trace below explains native
+   contribution/publication mechanics; this task changes none of that math.
+6. Reports and viewport observation use the authorized owner and completed
+   boundary. Shared lease release is distinct from native session destruction.
+   Session teardown drains dependents and source trees before Runtime ends.
+
+The [source-layout decision](PREPARED-SOURCE-LAYOUT.md) and
+[qualified helper](PREPARED-SOURCE-LAYOUT-HELPER.md) already establish why the
+small graph builder stays private and why registration/lifetime remain at the
+call site. More helpers for staging, copying result fields or extracting a map
+node would spread this transaction's invariants across calls without separating
+a decision-maker or state owner. Reopen this conclusion if an actual second
+caller or distinct lifetime requires a different boundary.
+
+### Next outstanding boundary: logical caller dependencies
+
+The original map's logical-input row and first-extraction acceptance explicitly
+deferred a runtime-free logical header/target. That issue remains at this pin:
+
+- `active_workbench.h` declares both `ActiveAssembly`/local provenance values
+  and native `ActiveSession`/`ActiveReport`. Its include path is
+  `study.h → field/field.h → engine/runtime.h → Taichi` even for a caller that
+  declares only an `ActiveAssembly *`.
+- `active_workbench.cpp` has no Program/Harness execution. Its one geometry
+  validation call, `enclosing_radius(v.centroid,v.components)`, resolves to
+  `study.cpp`, alongside `prepare` and `FixedStudy`. CMake accordingly links
+  `active_assembly PUBLIC membership_fields study_assembly`, whose public
+  dependencies continue through `field_core → engine_support → engine::taichi`.
+- The wrapper already delegates to the pure
+  `detail::intrinsic_enclosing_radius` in `intrinsic_geometry.h`. That template
+  uses standard math/validation only; `study_input.h` forward-declares SNode for
+  opaque bindings without loading native headers. Geometry arithmetic need not
+  be reinvented to separate this dependency.
+
+This affects a logical caller's build and required context, rather than adding
+another execution owner. **Proposed next bounded slice:** put existing logical
+declarations in a value-only `active_assembly.h`, keep `active_workbench.h` as a
+compatibility umbrella, and let logical validation call the existing intrinsic
+helper directly. Keep the public `assembly::enclosing_radius` wrapper and native
+study/session/report interfaces intact. Make the existing `active_assembly`
+target independently includable alongside the projection/membership CMake
+fragments and remove its `study_assembly` dependency only after standalone link
+proof. A header move alone would leave the unresolved geometry symbol; a link
+edit alone would leave native includes. Treat both as one logical caller boundary.
+
+Required follow-up context is `active_workbench.*`, `study.*`, `study_input.h`,
+`intrinsic_geometry.h`, projection/membership CMake, engine CMake and existing
+active-workbench/structural-input tests. Acceptance must preserve exact private
+scope/owner/version refusal, unavailable input, provenance, study/generation,
+revise/restart/focus and bind/bind_structure behavior, plus geometry results and
+exception types/messages. Prove a standalone caller compiles **and links** with
+no Taichi/libpq, while existing umbrella callers and native prepared ownership,
+publication/retirement and tick cases still pass. Preserve the public wrapper
+symbol and layout/ABI; do not move native preparation into the pure target.
+Review this disposition before that implementation; no code or build move is
+part of the present task. #324 math and held #75/#111/#123 stay separate.
+
+### Source-pinned inspection evidence
+
+New local Clang 15 checks: host-value/intrinsic-header syntax passes without
+native includes; the logical-only caller through the current umbrella fails
+as expected at `taichi/ir/ir_builder.h` when native include paths are withheld,
+and passes under the existing matching native compile flags. This deliberate
+negative probe documents the dependency, not a product-CI failure. A fresh
+compile of the unchanged logical implementation and `nm -C` retain its undefined
+`assembly::enclosing_radius` symbol; CMake/source identify the native definition.
+No standalone ActiveAssembly link success is claimed at this source.
+
+Native boundary/fork checks pass. All executable sources match tested #418
+`68448975`; its quick/eight Clang/six GCC results are **reused**, not rerun.
+The verified original bundle preserves real refusal/retry/sibling histories,
+132 phases and 24,024 row/dylib observations, with independent UUID-keyed final
+Execution retirement order compared as record sets, not an ordered cross-study
+sequence. Existing drain assertions and earlier ordered records are unchanged.
+
+Archive `/tmp/hcp-responsibility-7831326c-evidence.tar.gz`, SHA-256
+`55f32e83632a977953f7dacac39e31c8928b5f2e858e1ee43b581dcc0fc17b8e`,
+retains source excerpts/pins, commands, compiler include traces, expected-negative
+log, fresh object/symbols, review/CI snapshot, empty executable-source diff and
+the manifest-verified reused evidence. Fresh extraction verifies the archive
+manifest and original quick/Clang/GCC manifests; reused raw logs match. This is
+machine-local contributor evidence, not independently reviewed hosted evidence.
+No native baseline, GPU, concurrency, database or performance run was repeated.
+New PR review and authoritative GitHub CI remain pending; merges stay maintainer
+work. Current status belongs in the [handoff](../../docs/core-local-study-continuation-plan.md).
+
+## Historical source-pinned map — 2026-11-15/16
+
 **2026-11-16 extension:** #342/#346 are integrated on inspected main
 `ee31e88a16d9e641311da523f3b9a7c455601e75`; the mechanical session split is
 complete. The [prepared-admission seam inspection](PREPARED-ADMISSION-SEAM.md)

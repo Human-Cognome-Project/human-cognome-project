@@ -1,10 +1,43 @@
 # Core continuation after local CUDA corrections
 
-## November 23, 2026 — private source-layout helper awaiting review
+## November 23, 2026 — responsibility disposition awaiting review
+
+[#418 decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534)
+source-accepts `7831326c` and requests reconciliation before another extraction.
+The [existing map now reconciles the current prepared path](../engine/docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+at that exact source. The prepared transaction has a sufficient owner boundary:
+keep staging, refusal propagation and publication together. Caller choices,
+prepared ownership, native authority and completed observation remain distinct.
+
+The next outstanding boundary is the logical caller's dependency on native
+study/session declarations and geometry linkage. Fresh Clang include probes and
+a newly compiled logical object confirm both dependencies. The proposed next
+slice separates value-only declarations while retaining the umbrella, reuses
+the existing intrinsic validation and proves an independent logical target.
+It must preserve geometry exceptions, private-input/identity/focus behavior and
+native lifecycle. This is a reviewable proposal; no code/build move is made here.
+
+Boundary/fork checks pass; executable sources match tested #418 `68448975`.
+Original quick/eight Clang/six GCC evidence is verified and reused, not rerun.
+The map retains commands, source pins, new versus reused evidence and archive.
+Main `3080687a` integrates qualified #416 with the exact reviewed `adc3ad29`
+tree. #417 `0d1fd0a2` and #418 `7831326c` remain open and source-accepted;
+smoke passed, native CPU CI remains in progress. This branch depends on #418.
+
+Return this disposition for review and authoritative GitHub CI before the
+logical-header/geometry implementation. Read the map's acceptance/files list
+to resume; do not peel more prepared orchestration helpers merely to shrink the
+method. Complete accounting, native rollback/cleanup, admission credit, GPU,
+concurrency and #324 remain separate; #75/#111/#123 stay held. All merges and
+dependency integration remain maintainer-only.
+
+## November 23, 2026 — private source-layout helper source-accepted
 
 [#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435)
 source-accepts `0d1fd0a2` and authorizes the prepared-specific unregistered graph
-helper. Main `fabf803f` integrates qualified #415. #416 passed both hosted gates and remains unmerged; #417 is source-accepted at `0d1fd0a2`, with smoke passed and native CI still running. This branch explicitly pins that reviewed #417 dependency.
+helper. #418 decision 7109138534 source-accepts the resulting `7831326c`.
+Main `3080687a` integrates qualified #416. #417/#418 remain open after smoke
+success, with native CI running; current work is the disposition above.
 
 The [implementation](../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md) at tested
 `68448975` moves only root/optional primary/i32-place construction and pointer
@@ -25,9 +58,9 @@ any runtime assertion. The
 [inspection decision](../engine/docs/PREPARED-SOURCE-LAYOUT.md) retains its source
 and native-materialization-failure limit; no rollback improvement is claimed.
 
-Return the extraction for review and authoritative GitHub CI before selecting
-further implementation. Complete accounting, native rollback, cleanup, admission
-credit, GPU/concurrency and #324 remain separate. Keep `complete=false` for
+The extraction's authoritative GitHub CI remains pending. Complete accounting,
+native rollback, cleanup, admission credit, GPU/concurrency and #324 remain
+separate. Keep `complete=false` for
 unmeasured resources; #75/#111/#123 remain held. All merges remain maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**

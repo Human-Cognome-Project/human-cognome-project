@@ -1,6 +1,24 @@
 # Current implementation and work
 
-## November 23, 2026 — prepared source-layout helper for review
+## November 23, 2026 — responsibility reconciliation for review
+
+The [current responsibility map](../../engine/docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+at inspected `7831326c` follows [#418 decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534).
+The prepared candidate transaction has a sufficient owner boundary; staging,
+refusal results and map transfer remain together. The next proposed slice is
+the logical caller's combined header/geometry dependency: `ActiveAssembly` still
+loads and links native study preparation. Existing pure geometry machinery can
+serve that boundary without a new formula. No code/build extraction is included.
+
+Fresh compiler/header/symbol inspection and boundary/fork checks pass. All
+executable sources match tested #418 `68448975`; quick/eight Clang/six GCC
+evidence is manifest-verified and reused, with no native baseline rerun. Main
+`3080687a` integrates qualified #416 with its exact reviewed tree. #417/#418
+remain open and source-accepted, smoke passed and native CPU CI in progress.
+Return the disposition for review and authoritative CI before implementation.
+[Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — prepared source-layout helper source-accepted
 
 The [implementation and qualification](../../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md)
 at tested `68448975` follows [#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435).
@@ -12,9 +30,12 @@ transfer at their existing points. Inlining reconstructs the parent file exactly
 Quick, eight Clang/six GCC CTests pass locally. Active results, native root/backing
 records, retirement record sets and original real histories match, including
 132 phases and 24,024 row/dylib observations. Independent final Execution order
-is excluded from retirement comparisons; drain assertions are unchanged. Main `fabf803f` integrates qualified #415. #416 passed both hosted gates and remains unmerged; #417 is source-accepted at `0d1fd0a2`, with smoke passed and native CI still running. This branch explicitly pins that reviewed #417 dependency.
+is excluded from retirement comparisons; drain assertions are unchanged.
+#418 decision 7109138534 source-accepts final `7831326c`. Main `3080687a`
+integrates qualified #416; #417/#418 remain open with native CI running after
+smoke success. Current task ownership is recorded above.
 
-Return this implementation for review and authoritative GitHub CI. Broader owner
+The helper's authoritative GitHub CI remains pending. Broader owner
 changes, rollback, complete accounting, cleanup, admission credit and #324 remain
 separate; #75/#111/#123 stay held. [Current handoff](../core-local-study-continuation-plan.md)
 
@@ -73,7 +94,7 @@ separate review and authoritative CI. [Current handoff](../core-local-study-cont
 
 ## November 23, 2026 — integrated CPU baseline
 
-Repository smoke and native CPU reproducibility passed on all six reviewed heads. Each merge reproduced its reviewed source tree.
+Repository smoke and native CPU reproducibility passed on all seven reviewed heads. Each merge reproduced its reviewed source tree.
 
 | PR | Reviewed head | Merge on main | Integrated work |
 | --- | --- | --- | --- |
@@ -83,6 +104,7 @@ Repository smoke and native CPU reproducibility passed on all six reviewed heads
 | #413 | `2e6bade4` | `daf6f74d` | Inspection of issued IDs and session-owned dylibs |
 | #414 | `e0fa10bb` | `c5770a2e` | Native registration-row JIT ID and bounded live-session presence query |
 | #415 | `8101a1ed` | `fabf803f` | Real refusal/retry to native row and JIT ownership trace |
+| #416 | `adc3ad29` | `3080687a` | Private prepared-request binding/layout/frame/scratch preflight |
 
 The session reserves a fresh JIT ID before fallible creation. The CPU registration row now carries that ID, and the live session can distinguish an issued name with no dylib from a retained dylib. The measured slot is 88 bytes, or 704 bytes at capacity eight; the launcher remains 56 bytes. [Implementation and qualification](../../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
 
