@@ -1,6 +1,24 @@
 # Current implementation and work
 
-## November 23, 2026 — prepared source-layout inspection for review
+## November 23, 2026 — prepared source-layout helper for review
+
+The [implementation and qualification](../../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md)
+at tested `68448975` follows [#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435).
+One private helper borrows validated bindings, fills the root/optional-primary
+pointers and returns the unchanged unregistered i32-place graph. The session
+keeps registration, candidate guard, Harness construction, bootstrap and map
+transfer at their existing points. Inlining reconstructs the parent file exactly.
+
+Quick, eight Clang/six GCC CTests pass locally. Active results, native root/backing
+records, retirement record sets and original real histories match, including
+132 phases and 24,024 row/dylib observations. Independent final Execution order
+is excluded from retirement comparisons; drain assertions are unchanged. Main `fabf803f` integrates qualified #415. #416 passed both hosted gates and remains unmerged; #417 is source-accepted at `0d1fd0a2`, with smoke passed and native CI still running. This branch explicitly pins that reviewed #417 dependency.
+
+Return this implementation for review and authoritative GitHub CI. Broader owner
+changes, rollback, complete accounting, cleanup, admission credit and #324 remain
+separate; #75/#111/#123 stay held. [Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — prepared source-layout inspection source-accepted
 
 The [reuse and ownership disposition](../../engine/docs/PREPARED-SOURCE-LAYOUT.md)
 at inspected `adc3ad29` follows [#416 decision 7107054533](https://github.com/Human-Cognome-Project/human-cognome-project/pull/416#issuecomment-7107054533).
@@ -12,9 +30,10 @@ registration, candidate ownership and publication with the session.
 
 Production/executable source is unchanged. Source equivalence and the reused
 #416 local quick/eight Clang/six GCC evidence are verified; boundary/fork checks
-pass. No native baseline was rerun. #415/#416 remain source-accepted and open,
-with smoke passed and native hosted gates running; main is `d78c6d86`. New
-inspection review and authoritative CI remain separate. [Current handoff](../core-local-study-continuation-plan.md)
+pass. No native baseline was rerun for this inspection. #417 decision 7108110435
+source-accepts the disposition and authorizes the helper above. Current parent
+qualification/integration and implementation review are recorded in the latest
+entry and [handoff](../core-local-study-continuation-plan.md).
 
 ## November 23, 2026 — private prepared-request preflight source-accepted
 
@@ -26,18 +45,21 @@ of submission reconstruct exactly; public types, ownership and numerical code
 are unchanged. Quick, eight Clang/six GCC CTests pass locally. Original real
 histories, 132 phases and 24,024 row/dylib observations compare exactly.
 
-#415 is provisionally source-accepted at `8101a1ed`, open with smoke passed and native hosted qualification pending; main is `d78c6d86`. This branch explicitly pins that reviewed dependency.
+#415 passed both hosted gates and is integrated at `fabf803f`. #416 is
+source-accepted and has passed both hosted gates; its integration status is
+recorded above. This entry retains its original qualification pin.
 
-Return this extraction for review and authoritative GitHub CI. Broader ownership,
+#416's source acceptance and hosted qualification support the reviewed follow-up
+above. Broader ownership,
 cleanup, admission credit, complete accounting and #324 remain separate; held
 #75/#111/#123 are unchanged. [Current handoff](../core-local-study-continuation-plan.md)
 
-## November 23, 2026 — real submission/JIT trace source-accepted
+## November 23, 2026 — real submission/JIT trace integrated in #415
 
 The [source-pinned disposition](../../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md)
 at `3468a26a` follows [#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
 on reviewed `e0fa10bb`. Both hosted workflows passed and #414 is integrated
-at `c5770a2e`; current main `d78c6d86` reconciles the handoff. The tested observer
+at `c5770a2e`; then-current main `d78c6d86` reconciles the handoff. The tested observer
 is carried onto that main with only Markdown differences from the tested tree. The first real prepared plan refusal adds 78 retained CPU rows,
 confirmed wrappers and present dylibs, despite no study handle being published.
 Existing retry, sibling dispatch and finalization boundaries remain checked.
@@ -51,7 +73,7 @@ separate review and authoritative CI. [Current handoff](../core-local-study-cont
 
 ## November 23, 2026 — integrated CPU baseline
 
-Repository smoke and native CPU reproducibility passed on all five reviewed heads. Each merge reproduced its reviewed source tree.
+Repository smoke and native CPU reproducibility passed on all six reviewed heads. Each merge reproduced its reviewed source tree.
 
 | PR | Reviewed head | Merge on main | Integrated work |
 | --- | --- | --- | --- |
@@ -60,6 +82,7 @@ Repository smoke and native CPU reproducibility passed on all five reviewed head
 | #412 | `37170176` | `555e65c1` | CPU JIT name reservation before fallible creation |
 | #413 | `2e6bade4` | `daf6f74d` | Inspection of issued IDs and session-owned dylibs |
 | #414 | `e0fa10bb` | `c5770a2e` | Native registration-row JIT ID and bounded live-session presence query |
+| #415 | `8101a1ed` | `fabf803f` | Real refusal/retry to native row and JIT ownership trace |
 
 The session reserves a fresh JIT ID before fallible creation. The CPU registration row now carries that ID, and the live session can distinguish an issued name with no dylib from a retained dylib. The measured slot is 88 bytes, or 704 bytes at capacity eight; the launcher remains 56 bytes. [Implementation and qualification](../../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
 
