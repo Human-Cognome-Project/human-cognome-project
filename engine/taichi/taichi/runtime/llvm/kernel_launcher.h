@@ -34,7 +34,7 @@ class KernelLauncher : public lang::KernelLauncher {
     return handle;
   }
 
-  LlvmRuntimeExecutor *get_runtime_executor() {
+  LlvmRuntimeExecutor *get_runtime_executor() const {
     return config_.executor;
   }
 

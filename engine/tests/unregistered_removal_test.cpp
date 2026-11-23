@@ -397,14 +397,14 @@ void run(int workers, bool prepared) {
 }
 }  // namespace
 
-taichi::lang::JITModule *removal_real_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>)
-    __asm__("__real__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE");
-taichi::lang::JITModule *removal_wrap_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>)
-    __asm__("__wrap__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE");
+taichi::lang::JITModule *removal_real_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>, int &)
+    __asm__("__real__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi");
+taichi::lang::JITModule *removal_wrap_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>, int &)
+    __asm__("__wrap__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi");
 taichi::lang::JITModule *removal_wrap_jit(taichi::lang::LlvmRuntimeExecutor *executor,
-                                        std::unique_ptr<llvm::Module> module) {
+                                        std::unique_ptr<llvm::Module> module, int &cpu_id) {
   if (fail_registration) throw RegistrationFault{};
-  latest_module = removal_real_jit(executor, std::move(module)); return latest_module;
+  latest_module = removal_real_jit(executor, std::move(module), cpu_id); return latest_module;
 }
 int main(int argc, char **argv) {
   try {

@@ -14,6 +14,7 @@
 #include "taichi/program/compile_config.h"
 #include "taichi/program/reservation_request.h"
 #include "taichi/program/compiler_jit_counts.h"
+#include "taichi/program/cpu_jit_presence.h"
 
 #include "taichi/system/threading.h"
 
@@ -110,6 +111,8 @@ class LlvmRuntimeExecutor {
   TaichiLLVMContext *get_llvm_context();
 
   JITModule *create_jit_module(std::unique_ptr<llvm::Module> module);
+  JITModule *create_jit_module(std::unique_ptr<llvm::Module> module, int &cpu_id);
+  CpuJitPresence cpu_jit_presence(int native_id, std::size_t entry_budget) const;
   JitOwnershipCounts jit_ownership_counts(std::size_t module_budget) const;
 
   JITModule *get_runtime_jit_module();

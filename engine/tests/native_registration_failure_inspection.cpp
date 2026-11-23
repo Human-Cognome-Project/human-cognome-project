@@ -348,12 +348,12 @@ void run(int workers, bool prepared) {
 }
 }  // namespace
 
-taichi::lang::JITModule *registration_real_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>)
-    __asm__("__real__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE");
-taichi::lang::JITModule *registration_wrap_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>)
-    __asm__("__wrap__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EE");
+taichi::lang::JITModule *registration_real_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>, int &)
+    __asm__("__real__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi");
+taichi::lang::JITModule *registration_wrap_jit(taichi::lang::LlvmRuntimeExecutor *, std::unique_ptr<llvm::Module>, int &)
+    __asm__("__wrap__ZN6taichi4lang19LlvmRuntimeExecutor17create_jit_moduleESt10unique_ptrIN4llvm6ModuleESt14default_deleteIS4_EERi");
 taichi::lang::JITModule *registration_wrap_jit(taichi::lang::LlvmRuntimeExecutor *executor,
-                                             std::unique_ptr<llvm::Module> input) {
+                                             std::unique_ptr<llvm::Module> input, int &cpu_id) {
   Attempt *attempt = nullptr;
   if (active && active->current_record) {
     check(active->attempt_count < active->attempts.size(), "attempt observer storage exhausted");
@@ -368,7 +368,7 @@ taichi::lang::JITModule *registration_wrap_jit(taichi::lang::LlvmRuntimeExecutor
     active->next_fault = Fault::None;
     if (attempt->fault == Fault::BeforeModule) throw Injected{Fault::BeforeModule};
   }
-  auto *module = registration_real_jit(executor, std::move(input));
+  auto *module = registration_real_jit(executor, std::move(input), cpu_id);
   if (active) { capture(module, Kind::Module); active->latest_module = module; }
   if (attempt) {
     attempt->module = module;

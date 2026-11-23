@@ -1,24 +1,28 @@
 # Private exchange-owner resource inventory
 
-The [fresh-ID CPU JIT attribution inspection](CPU-JIT-ATTRIBUTION.md) at `b533ff93`
-uses existing session lookup to separate issued-but-unretained names from
-retained dylibs, with retry/finalization and live-owner scope preserved. Current
-CPU failure metadata does not publish the native ID. Null lookup does not prove
-issuance, and presence is not complete IR/ORC/wrapper/dependency ownership.
-Production is exactly provisionally accepted #412 `37170176`; no association,
-cleanup, retirement, admission change or saving is implemented by this inspection.
+The [native CPU ID association](CPU-JIT-ID-ASSOCIATION.md) at tested `2664a3bd`
+implements #413's reviewed direction from main `3c495db7`. An issued ID survives
+creation failure in the existing CPU row; the live session's own count prepays
+native dylib lookup. No-ID, issued/no-dylib and retained-dylib states are distinct;
+short work refuses lookup. All results remain incomplete for backend resources.
+There is no new owner, session field, registry, client borrow or control request.
 
-The minimum proposal stores only an issued ID in the existing CPU row and uses
-an owner-local query, prepaid by the existing issuance count. Seven compiled
-layout comparisons project row 80→88 bytes / capacity eight 640→704; richer
-links project 96 or 104 bytes per row. These are forecasts reconciled to actual
-baseline native capacity, not newly allocated owner storage. Two 40-byte test
-tokens retain metadata references without adding client borrows or new controls;
-only the expired record metadata may be observed after Runtime. No raw session
-address supplies a lifetime/epoch guard. Quick, 18 Clang/12 GCC CTests and seven
-minimal cases pass, with 119 probe phases and all original histories unchanged.
-The [naming report](CPU-JIT-NAME-ISSUANCE.md) preserves its implementation costs
-and evidence. Return the owner-local association proposal for review.
+Actual native row extent grows 80→88 bytes and capacity eight 640→704; launcher
+extent stays 56. The attempt snapshot grows 56→64 and the presence result is 56
+caller bytes, separate from retained owner storage. Base/concrete compiled data
+remain 40/168 bytes and HCP wrapper/guard/control request remain 48/16/48.
+Failed IR/dylibs/wrappers remain retained; no saving, cleanup, registered retirement,
+admission credit or complete B follows. Matching native/client rebuilds are required.
+
+Quick, 24 Clang/18 GCC CTests and seven minimal cases pass locally, including
+35 creation/shutdown windows and 154 production-presence phases across seven
+histories. Query phases add no C++ new calls or client borrows; original histories
+and actual storage deltas reconcile against the verified integrated before bundle.
+Runtime-destroyed record metadata is safe to observe as expired, but no backend
+query occurs after shutdown. Implementation review and authoritative GitHub CI
+remain separate. The earlier [attribution inspection](CPU-JIT-ATTRIBUTION.md)
+retains its 80→88-byte forecast and source-pinned evidence; this report measures
+the actual implementation.
 
 The [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
 at `505ab435` implements #406's approved next slice for review. It requires

@@ -77,10 +77,21 @@ CpuRegistrationAttempt KernelLauncher::cpu_registration_attempt(std::size_t inde
   result.record = entry.record; result.stage = entry.stage;
   result.failed = entry.failed; result.module = entry.module;
   result.module_status = entry.module_status;
+  result.native_id = entry.native_id;
   result.status = entry.record.observation().status == OwnershipCountStatus::Unavailable ||
                           entry.module_status == OwnershipCountStatus::Incomplete
                       ? OwnershipCountStatus::Incomplete : OwnershipCountStatus::Present;
   return result;
+}
+
+CpuJitPresence KernelLauncher::cpu_registration_jit_presence(
+    std::size_t index, std::size_t entry_budget) const {
+  if (index >= issued_attempts_) {
+    CpuJitPresence result; result.status = OwnershipCountStatus::Absent;
+    return result;
+  }
+  const auto id = index < contexts_.size() ? contexts_[index].registration.native_id : -1;
+  return get_runtime_executor()->cpu_jit_presence(id, entry_budget);
 }
 
 CpuRegistrationAttemptCounts KernelLauncher::cpu_registration_attempt_counts(std::size_t entry_budget) const noexcept {
@@ -234,7 +245,7 @@ KernelLauncher::Handle KernelLauncher::register_llvm_kernel(
       // Any exception through this call leaves resource association incomplete.
       attempt.stage = CpuRegistrationStage::CreatingModule;
       attempt.module_status = OwnershipCountStatus::Incomplete;
-      auto *jit_module = executor->create_jit_module(std::move(data.module));
+      auto *jit_module = executor->create_jit_module(std::move(data.module), attempt.native_id);
       attempt.module = jit_module;
       if (jit_module) attempt.module_status = OwnershipCountStatus::Present;
       attempt.stage = CpuRegistrationStage::ModuleReturned;

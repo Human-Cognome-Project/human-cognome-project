@@ -12,6 +12,27 @@ HCP modernization records and tests.
 
 ## Modified upstream files
 
+CPU issued-ID association and presence under #343:
+
+- `taichi/program/cpu_jit_presence.h`, `registration_attempts.h`,
+  `kernel_launcher.h`, `program_impl.h`; `taichi/runtime/cpu/kernel_launcher.{h,cpp}`
+  — store only the native ID in the existing CPU registration row and expose an
+  owner-local non-lazy presence query. No ID is distinct from an issued ID with
+  no retained dylib. Snapshots retain no owner and never authorize cleanup/B.
+- `taichi/jit/jit_session.{h,cpp}`, `taichi/runtime/cpu/jit_cpu.cpp`,
+  `jit_module_id.h` and `taichi/runtime/llvm/llvm_runtime_executor.{h,cpp}` — a
+  synchronous, non-retained output is assigned before formatting/creation.
+  CPU presence uses the existing session counter under its mutex to prepay LLVM's
+  linear name lookup; insufficient work reports no dylib result. A platform that
+  can create independent dylibs leaves this bound unavailable. Other backends
+  keep explicit unavailable CPU observation and their existing creation behavior.
+- The original one-argument factory remains for runtime/other callers; CPU
+  registration uses the output-bearing overload. Matching test interposers follow
+  that overload. Rebuild matching SDK/components/clients: launcher/session virtual
+  interfaces, CPU row layout and attempt snapshots change. No session/executor
+  field, second registry, control allocation, cleanup or admission behavior is
+  added. Runtime bitcode and serialized/AOT formats are unchanged.
+
 CPU JIT naming under #343:
 
 - `taichi/runtime/cpu/jit_cpu.cpp` and `jit_module_id.h` — issue a checked
