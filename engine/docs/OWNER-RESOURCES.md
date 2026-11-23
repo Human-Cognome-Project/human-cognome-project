@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+The [private request-preflight extraction](PREPARED-REQUEST-PREFLIGHT.md) at
+tested `9c3f03a8` implements #415's approved mechanical slice. It moves the
+existing binding/layout/frame/scratch checks into a helper before native
+allocation, with exact status/demand/order and remaining owner behaviour.
+No class layout, resource charge, lifetime, cleanup, registry or admission policy
+changes. Quick, eight Clang/six GCC CTests pass locally and original real histories
+match. New implementation review and authoritative CI remain separate.
+
 The [real refused-submission/JIT trace](REFUSED-SUBMISSION-JIT-TRACE.md) at
 `3468a26a` follows #414 review at `e0fa10bb`. Both hosted gates passed;
 #414 integrated at `c5770a2e`, with current handoff main `d78c6d86`. A real

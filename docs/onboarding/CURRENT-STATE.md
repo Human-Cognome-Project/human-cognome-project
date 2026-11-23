@@ -1,6 +1,22 @@
 # Current implementation and work
 
-## November 23, 2026 — real submission/JIT trace for review
+## November 23, 2026 — private prepared-request preflight for review
+
+The [private extraction and qualification](../../engine/docs/PREPARED-REQUEST-PREFLIGHT.md)
+at tested `9c3f03a8` follows [#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574).
+One private helper now owns binding/layout/frame/scratch preflight at the existing
+point before staging/native allocation. Check order, status/demand and the rest
+of submission reconstruct exactly; public types, ownership and numerical code
+are unchanged. Quick, eight Clang/six GCC CTests pass locally. Original real
+histories, 132 phases and 24,024 row/dylib observations compare exactly.
+
+#415 is provisionally source-accepted at `8101a1ed`, open with smoke passed and native hosted qualification pending; main is `d78c6d86`. This branch explicitly pins that reviewed dependency.
+
+Return this extraction for review and authoritative GitHub CI. Broader ownership,
+cleanup, admission credit, complete accounting and #324 remain separate; held
+#75/#111/#123 are unchanged. [Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — real submission/JIT trace source-accepted
 
 The [source-pinned disposition](../../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md)
 at `3468a26a` follows [#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
@@ -13,9 +29,9 @@ Existing retry, sibling dispatch and finalization boundaries remain checked.
 Quick and four Clang/four GCC CTests pass locally; original histories match the
 verified #414 bundle. Production/fork are unchanged. Existing observations suffice
 to resume a behaviour-preserving responsibility split; complete native peak/byte
-accounting still constrains admission credit. The proposed next change is private
-binding/layout/frame/scratch preflight extraction, pending review and authoritative
-GitHub CI. [Current handoff](../core-local-study-continuation-plan.md)
+accounting still constrains admission credit. #415 decision 7106148574 authorizes
+private binding/layout/frame/scratch extraction; the implementation above has
+separate review and authoritative CI. [Current handoff](../core-local-study-continuation-plan.md)
 
 ## November 23, 2026 — integrated CPU baseline
 

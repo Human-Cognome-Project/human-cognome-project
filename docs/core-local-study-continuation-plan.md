@@ -1,36 +1,31 @@
 # Core continuation after local CUDA corrections
 
-## November 23, 2026 — refused-submission disposition awaiting review
+## November 23, 2026 — private request-preflight extraction awaiting review
 
-[#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
-accepted the source and authorized one real refused-submission/retry trace.
-Both hosted workflows subsequently passed and #414 integrated at `c5770a2e`,
-with no differences from reviewed `e0fa10bb`. Main `d78c6d86` reconciles the
-notes. The tested observer is carried onto current main; all differences from
-its tested tree are Markdown. No agent integration merge was created. The [original implementation report](../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
-preserves its source and measured 80→88-byte row / +64-byte capacity-eight cost.
+[#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574)
+accepts reviewed `8101a1ed` for bounded continuation and authorizes the private
+binding/layout/frame/scratch extraction. #415 is provisionally source-accepted at `8101a1ed`, open with smoke passed and native hosted qualification pending; main is `d78c6d86`. This branch explicitly pins that reviewed dependency.
 
-The [new trace/disposition](../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md) at
-`3468a26a` changes only the existing test observer. A real prepared plan refusal
-adds 78 CPU rows/confirmed wrappers/present dylibs with no published study handle;
-all new rows have zero client borrows but remain registered. Original cache/root,
-retry/sibling-dispatch and finalization histories remain exact. Quick and four
-Clang/four GCC real submission CTests pass locally against the matching CPU SDK.
-The verified source-pinned bundle includes the reused #414 evidence.
+The [implementation and evidence](../engine/docs/PREPARED-REQUEST-PREFLIGHT.md)
+at `9c3f03a8` moves only those checks into a private helper in `active_session.cpp`.
+The caller still performs source/resource, owner, capability and duplicate checks
+first. Helper failure returns the same result with identical statuses/demand;
+success proceeds at the same point before candidate/native construction. No new
+public API, class layout, allocator, registry or numerical behaviour is introduced.
 
-Disposition for review: existing observations suffice to resume the broader
-behaviour-preserving responsibility split. Complete live/peak compiler/ORC bytes
-remain unknown for total resource admission or recovery credit. The smallest
-proposed next PR extracts only binding/layout/frame/scratch request preflight into
-a private assembly helper, at the same point before candidate/native allocation.
-Preserve owner/capability/duplicate ordering, exact statuses, native construction,
-bootstrap/map transfer, lifetime/drain and following ticks. This is a proposal,
-not an implemented split or a new public Analyst interface.
+The whole original translation unit reconstructs byte for byte after adapting
+the helper's refusal returns. Quick CI, eight Clang/six GCC CTests pass locally,
+including active prepared submission and real late refusal/retry/sibling dispatch
+on bulk/direct CPU. The verified #415 comparison retains all original histories,
+132 phases and 24,024 individual row/dylib observations exactly. Parent inspection
+[source/evidence](../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md) stays separate.
 
-New review and authoritative GitHub CI remain; no retirement, admission credit,
-new registry or numerical change is authorized by this inspection. Keep
-`complete=false`. #75/#111/#123 remain held and #324 separate. All merges remain
-maintainer-only.
+Return the extraction for maintainer review and authoritative GitHub CI before
+selecting a further implementation. Keep bootstrap, map transfer, source/JIT
+lifetime, drain and tick execution with their current owners. Complete native
+bytes/peaks, registered retirement, cleanup, admission credit, GPU/concurrency and
+#324 remain separate. Keep `complete=false`; #75/#111/#123 remain held. All merges
+remain maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

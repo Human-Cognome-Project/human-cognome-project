@@ -1,25 +1,21 @@
 # Engine and Analyst-facing refactoring plan
 
-## November 23, 2026 — real refusal trace and responsibility-split disposition
+## November 23, 2026 — private prepared-request preflight extraction
 
-[#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
-accepts the source and authorizes a real owner/CPU/JIT trace. The
-[new trace](../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md) at `3468a26a` awaits
-review. Qualified #414 is integrated at `c5770a2e`; main `d78c6d86` contains
-the updated handoff. The tested observer is carried onto this current main
-with all executable sources unchanged.
-The new observer reconciles retained rows, record identities, confirmed wrappers
-and live-owner dylib presence across real refusal, retry, dispatch and finalization.
-Production is unchanged; quick and four Clang/four GCC CTests pass locally.
+The [implementation](../engine/docs/PREPARED-REQUEST-PREFLIGHT.md) at tested
+`9c3f03a8` follows [#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574).
+The existing binding/layout/frame/scratch checks now form one private helper in
+the same translation unit, after owner/capability/duplicate checks and before
+native allocation. Original statuses, demand, check order and remaining submission
+code reconstruct exactly. Ownership, bootstrap/map transfer, JIT lifetime, ticks,
+public interfaces and class layouts remain unchanged.
 
-The disposition returns to the broader responsibility split: existing evidence
-suffices for a behaviour-preserving separation. Complete native resource bytes
-remain relevant to admission/recovery credit, not a prerequisite for that mechanical
-work. The smallest proposed next change isolates binding/layout/frame/scratch
-request preflight inside private assembly code, preserving all native ownership,
-publication and status order. New review and authoritative CI remain; no cleanup,
-registry, admission credit, public Analyst interface or numerical change follows.
-[Current handoff](core-local-study-continuation-plan.md)
+Quick, eight Clang/six GCC CTests pass locally; original refusal/retry and survivor
+histories, 132 phases and 24,024 row/dylib observations compare exactly. #415 is provisionally source-accepted at `8101a1ed`, open with smoke passed and native hosted qualification pending; main is `d78c6d86`. This branch explicitly pins that reviewed dependency.
+
+This bounded responsibility split awaits review and authoritative GitHub CI.
+No broader extraction, cleanup, registry, admission credit, public Analyst API or
+numerical change follows from it. [Current handoff](core-local-study-continuation-plan.md)
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
