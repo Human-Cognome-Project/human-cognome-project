@@ -1,23 +1,8 @@
 # Current implementation and work
 
-## November 23, 2026 — CPU JIT ID association for review
-
-The [native implementation and measured cost](../../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
-at tested `2664a3bd` follows #413 decision 7101856435 from main `3c495db7`.
-The existing CPU row retains its issued ID before formatting/creation; a live-owner
-query prepays lookup using the session's authoritative issuance bound. Seven
-histories cover no ID, issued/no dylib, retained dylib, short work, retry and
-finalization with surviving dispatch. Actual row extent is 80→88 bytes, or
-640→704 at capacity eight; launcher extent remains 56 bytes.
-
-Quick CI, 24 Clang/18 GCC CTests and seven minimal cases pass locally. The
-source-pinned archive verifies unchanged prior histories and measured deltas.
-This implementation awaits maintainer review and authoritative GitHub CI;
-the integrated baseline below remains separate. [Current handoff](../core-local-study-continuation-plan.md)
-
 ## November 23, 2026 — integrated CPU baseline
 
-Repository smoke and native CPU reproducibility passed on all four reviewed heads. Each merge reproduced its reviewed source tree.
+Repository smoke and native CPU reproducibility passed on all five reviewed heads. Each merge reproduced its reviewed source tree.
 
 | PR | Reviewed head | Merge on main | Integrated work |
 | --- | --- | --- | --- |
@@ -25,10 +10,11 @@ Repository smoke and native CPU reproducibility passed on all four reviewed head
 | #411 | `0945bca6` | `39f4948a` | Inspection of partial JIT creation and retry |
 | #412 | `37170176` | `555e65c1` | CPU JIT name reservation before fallible creation |
 | #413 | `2e6bade4` | `daf6f74d` | Inspection of issued IDs and session-owned dylibs |
+| #414 | `e0fa10bb` | `c5770a2e` | Native registration-row JIT ID and bounded live-session presence query |
 
-Production code reserves a fresh name on retry. The #413 fixture shows that an issued name can have no dylib or a retained dylib. The native registration row is still 80 bytes. The projected 88-byte row applies to the proposed ID-only change. [Attribution evidence](../../engine/docs/CPU-JIT-ATTRIBUTION.md)
+The session reserves a fresh JIT ID before fallible creation. The CPU registration row now carries that ID, and the live session can distinguish an issued name with no dylib from a retained dylib. The measured slot is 88 bytes, or 704 bytes at capacity eight; the launcher remains 56 bytes. [Implementation and qualification](../../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
 
-The ID-only implementation for review above follows this baseline; use the [continuation plan](../core-local-study-continuation-plan.md). Registered retirement, ORC cleanup, admission credit, complete resource accounting, GPU/concurrency qualification and #324 remain separate. #75, #111 and #123 remain held.
+For the next refusal/retry trace, use the [continuation plan](../core-local-study-continuation-plan.md). Registered retirement, ORC cleanup, admission credit, complete resource accounting, GPU/concurrency qualification and #324 remain separate. #75, #111 and #123 remain held.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
