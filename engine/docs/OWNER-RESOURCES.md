@@ -1,22 +1,23 @@
 # Private exchange-owner resource inventory
 
-The [CPU JIT creation inspection](CPU-JIT-CREATION-OWNERSHIP.md) at `e3667ef7`
-separates session-owned dylibs, accepted IR/default trackers, non-owning global
-lookup exposure and published wrappers. A recoverable C++ failure can retain an
-empty dylib absent from wrapper counts; its guarded retry requests the unchanged
-name. An outer factory-return failure retains a wrapper and permits ordinary
-retry. Actual survivor dispatch shares the existing thread service, and captured
-dylibs remain through finalization until session/Runtime teardown. Interior LLVM
-errors and independent resource cleanup remain unqualified.
+The [checked CPU JIT naming implementation](CPU-JIT-NAME-ISSUANCE.md) at
+`14783678` reserves a checked ID before fallible creation, reusing the existing
+session counter. Fourteen real inner retries in seven histories receive fresh
+names and dispatch, while the empty failed dylib remains owned by the session
+and outside global lookup exposure. Survivor handles/tasks, shared thread
+service, expired identity and shutdown remain checked. No persistent field,
+normal-issuance allocation, native interface/layout change, cleanup, registered
+retirement, admission credit or achieved saving is introduced.
 
-Production is exactly provisionally accepted #410 `b1e29134`, whose
-[native attempt metadata](NATIVE-REGISTRATION-ATTEMPTS.md) adds 8 bytes per launcher,
-32 per slot and longer retention of existing 48-byte record controls. Those
-source-specific costs remain unchanged. Quick, 18 Clang/12 GCC CTests and seven
-minimal cases pass, with seven original registration/attempt histories unchanged.
-The next naming proposal reserves a checked CPU ID before fallible creation;
-no new persistent field, cleanup, registered retirement, row reuse, complete B
-or admission credit is implemented. Return the proposal for review.
+The original [JIT ownership inspection](CPU-JIT-CREATION-OWNERSHIP.md) keeps its
+`e3667ef7` source/evidence. Its guarded inner retry is replaced at this new source
+by actual creation/dispatch with a distinct name, retaining the failed object's
+272-byte request separately from IR/ORC/executable and whole-owner accounting.
+Quick, 18 Clang/12 GCC CTests and seven minimal cases pass; all seven original
+registration/attempt histories and their storage/ABI outputs match. The
+[accepted attempt metadata](NATIVE-REGISTRATION-ATTEMPTS.md) retains its #410
+source-specific costs. Pre-return completeness remains false, and further
+attribution/cleanup requires separate review. Return this implementation for review.
 
 The [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
 at `505ab435` implements #406's approved next slice for review. It requires

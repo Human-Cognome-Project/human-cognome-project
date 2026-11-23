@@ -3,6 +3,7 @@
 #include "engine/runtime.h"
 #include "engine/transfer.h"
 #include "taichi/codegen/llvm/compiled_kernel_data.h"
+#include "taichi/runtime/cpu/jit_module_id.h"
 #include "taichi/runtime/program_impls/llvm/llvm_program.h"
 #include "llvm/ExecutionEngine/Orc/Core.h"
 
@@ -24,16 +25,16 @@ using Access = engine::testing::CompiledKernelAccess;
 constexpr auto unlimited = std::numeric_limits<std::size_t>::max();
 constexpr int cells = 64;
 void check(bool ok, const char *message) { if (!ok) throw std::runtime_error(message); }
-enum class Window { Complete, Generator, Returned };
+enum class Window { Complete, Creation, Generator, Returned };
 const char *name(Window w) {
   switch (w) {
     case Window::Complete: return "complete";
+    case Window::Creation: return "before_dylib";
     case Window::Generator: return "before_generator";
     case Window::Returned: return "after_wrapper_return";
   }
   return "invalid";
 }
-struct GuardedRetry {};
 struct ReturnedModuleFault {};
 struct Lib {
   JITDylib *dylib{};
@@ -50,7 +51,7 @@ struct Trace {
   JITModule *latest_module{};
   std::array<Lib, 8> libs{};
   std::size_t lib_count{}, pool_calls{};
-  bool injecting{}, guarded_retry{}, retry_intercepted{};
+  bool injecting{}, creation_refused{};
   bool probing{}, pool_mismatch{}, finalizing{}, finalized{}, ended{};
   const void *pool{};
   std::array<JITDylib *, 8> search{};
@@ -96,16 +97,15 @@ void launch(engine::Runtime &runtime, engine::CompiledKernel &k, Ndarray &array,
   engine::argument_int(ctx, 1, value); k.launch(ctx); runtime.synchronize();
   check(bool(ctx.prepared) == prepared, "dispatch mode changed"); output_is(array, value);
 }
-void fail(engine::Runtime &runtime, engine::CompiledKernel &k, Ndarray &array, bool prepared, bool retry) {
+void fail(engine::Runtime &runtime, engine::CompiledKernel &k, Ndarray &array, bool prepared) {
   auto invocation = k.invocation(prepared); auto &ctx = invocation.get();
   ctx.set_arg_ndarray({0}, array); ctx.set_arg_int({1}, 99);
-  bool caught = false; active->guarded_retry = retry;
+  bool caught = false;
   try { k.launch(ctx); }
-  catch (const std::bad_alloc &) { caught = !retry; }
-  catch (const GuardedRetry &) { caught = retry; }
-  catch (const ReturnedModuleFault &) { caught = !retry && active->window == Window::Returned; }
+  catch (const std::bad_alloc &) { caught = active->window == Window::Creation || active->window == Window::Generator; }
+  catch (const ReturnedModuleFault &) { caught = active->window == Window::Returned; }
   allocation_lifetime::fail_at = 0;
-  active->injecting = false; active->guarded_retry = false;
+  active->injecting = false;
   check(caught && !ctx.prepared && !data(k).get_handle(), "failure published a handle or prepared state");
   runtime.synchronize(); output_is(array, 0, false);
 }
@@ -145,28 +145,36 @@ void run_window(int workers, bool prepared, Window window) {
       std::array<int, cells> zero{}; engine::upload(array, zero.data(), sizeof(zero));
       const auto calls_before = trace.pool_calls;
       trace.injecting = window != Window::Complete;
-      if (trace.injecting) fail(runtime, *candidate, array, prepared, false);
+      if (trace.injecting) fail(runtime, *candidate, array, prepared);
       else launch(runtime, *candidate, array, 17, prepared);
-      check(trace.lib_count == 5, "candidate did not create exactly one dylib");
-      auto &partial = trace.libs[4];
       const bool complete = window == Window::Complete;
-      const bool exposed = window != Window::Generator;
-      check(partial.name == "4" && (complete || trace.pool_calls == calls_before), "failure crossed the wrong JIT boundary or dispatched");
-      auto flags = trace.execution->lookupFlags(LookupKind::Static,
-          {{partial.dylib, JITDylibLookupFlags::MatchAllSymbols}},
-          SymbolLookupSet(trace.execution->intern(candidate_task)));
-      partial.ir = bool(flags);
-      if (!flags) llvm::consumeError(flags.takeError());
-      else check(flags->size() == 1, "accepted IR symbol flags were not retained");
-      check(partial.ir == exposed, "candidate symbol coverage differs from expected IR acceptance");
-      if (partial.ir) {
-        partial.tracker = partial.dylib->getDefaultResourceTracker().get();
-        check(!partial.tracker->isDefunct(), "IR default tracker became defunct");
+      const bool created = window != Window::Creation;
+      const bool exposed = complete || window == Window::Returned;
+      const auto snapshot_dylibs = created ? 5u : 4u;
+      check(trace.lib_count == snapshot_dylibs && (complete || trace.pool_calls == calls_before),
+            "failure crossed the wrong JIT boundary or dispatched");
+      Lib *partial = created ? &trace.libs[4] : nullptr;
+      if (partial) {
+        check(partial->name == "4", "initial naming order changed");
+        auto flags = trace.execution->lookupFlags(LookupKind::Static,
+            {{partial->dylib, JITDylibLookupFlags::MatchAllSymbols}},
+            SymbolLookupSet(trace.execution->intern(candidate_task)));
+        partial->ir = bool(flags);
+        if (!flags) llvm::consumeError(flags.takeError());
+        else check(flags->size() == 1, "accepted IR symbol flags were not retained");
+        check(partial->ir == exposed, "candidate symbol coverage differs from expected IR acceptance");
+        if (partial->ir) {
+          partial->tracker = partial->dylib->getDefaultResourceTracker().get();
+          check(!partial->tracker->isDefunct(), "IR default tracker became defunct");
+        }
+      } else {
+        check(trace.creation_refused && !trace.execution->getJITDylibByName("4"),
+              "before-creation failure retained an unexpected dylib");
       }
       trace.probing = true; auto *global_address = trace.session->lookup(task); trace.probing = false;
       check(global_address == first_address && trace.search_count == (exposed ? 5u : 4u) &&
                 trace.search[0] == trace.libs[0].dylib &&
-                (trace.search[trace.search_count - 1] == partial.dylib) == exposed,
+                (!partial || (trace.search[trace.search_count - 1] == partial->dylib) == exposed),
             "actual native session lookup exposure differs from the publication boundary");
       const auto counts = llvm_impl.jit_ownership_counts(unlimited);
       check(counts.modules == (exposed ? 5u : 4u) && counts.runtime_modules == 1,
@@ -178,20 +186,23 @@ void run_window(int workers, bool prepared, Window window) {
                   entry.module_status == OwnershipCountStatus::Incomplete && !entry.module &&
                   entry.record.observation().record == record,
               "native attempt hid unreturned JIT side effects");
-        if (window == Window::Generator) {
-          // Stop before violating LLVM's unique-name precondition. This is
-          // a guarded observation, not qualification of a recovered inner retry.
-          fail(runtime, *candidate, array, prepared, true);
-          check(trace.retry_intercepted && trace.lib_count == 5 &&
-                    impl.cpu_registration_attempt(4).failed, "guarded retry changed the native name");
-        } else {
-          launch(runtime, *candidate, array, 19, prepared);
-          check(trace.lib_count == 6 && trace.libs[5].name == "5" &&
-                    data(*candidate).get_handle()->get_launch_id() == 4 &&
-                    data(*candidate).borrow_observation().record == record &&
-                    llvm_impl.jit_ownership_counts(unlimited).modules == 6,
-                "returned-wrapper retry changed the record or reused backend identity");
-        }
+        launch(runtime, *candidate, array, 19, prepared);
+        const auto retry_index = snapshot_dylibs;
+        const auto wrappers = window == Window::Returned ? 6u : 5u;
+        const auto retry = impl.cpu_registration_attempt(4);
+        check(trace.lib_count == snapshot_dylibs + 1 && trace.libs[retry_index].name == "5" &&
+                  data(*candidate).get_handle()->get_launch_id() == 4 &&
+                  data(*candidate).borrow_observation().record == record &&
+                  llvm_impl.jit_ownership_counts(unlimited).modules == wrappers &&
+                  retry.stage == CpuRegistrationStage::Published && !retry.failed &&
+                  retry.module_status == OwnershipCountStatus::Present && retry.module == trace.latest_module &&
+                  retry.record.observation().record == record && impl.cpu_registration_attempt(3).failed,
+              "real retry reused a name, changed the record or lost attempt association");
+        trace.probing = true; trace.session->lookup(task); trace.probing = false;
+        check(trace.search_count == wrappers, "retry did not publish its lookup exposure");
+        if (window == Window::Generator)
+          for (std::size_t i = 0; i < trace.search_count; ++i)
+            check(trace.search[i] != partial->dylib, "empty failed dylib became globally exposed");
       }
       libraries_live();
       check(first_module->lookup_function(task) == first_address &&
@@ -202,11 +213,11 @@ void run_window(int workers, bool prepared, Window window) {
       check(data(*first).get_handle()->get_launch_id() == 0 &&
                 data(*sibling).get_handle()->get_launch_id() == 1 && !trace.pool_mismatch,
             "partial creation changed native survivor handles/services");
-      std::cout << "cpu_jit_creation,window=" << name(window) << ",snapshot_dylibs=5,accepted_ir=" << partial.ir
+      std::cout << "cpu_jit_creation,window=" << name(window) << ",snapshot_dylibs=" << snapshot_dylibs << ",accepted_ir=" << (partial && partial->ir)
                 << ",lookup_exposed=" << exposed << ",stored_wrappers=" << counts.modules
                 << ",final_dylibs=" << trace.lib_count
-                << ",same_name_guarded_retry=" << (window == Window::Generator)
-                << ",successful_outer_retry=" << (window == Window::Returned) << ",default_tracker=" << bool(partial.tracker)
+                << ",same_name_guarded_retry=0,successful_inner_retry=" << (window == Window::Creation || window == Window::Generator)
+                << ",successful_outer_retry=" << (window == Window::Returned) << ",default_tracker=" << bool(partial && partial->tracker)
                 << ",shared_thread_service=1"
                    ",surviving_handles_tasks_dispatch=1,complete_resources=0 PASS\n";
     }
@@ -254,10 +265,9 @@ llvm::Expected<JITDylib &> jit_real_dylib(ExecutionSession *, std::string)
 llvm::Expected<JITDylib &> jit_wrap_dylib(ExecutionSession *, std::string)
     __asm__("__wrap__ZN4llvm3orc16ExecutionSession14createJITDylibENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE");
 llvm::Expected<JITDylib &> jit_wrap_dylib(ExecutionSession *session, std::string dylib_name) {
-  if (active && active->guarded_retry) {
-    check(dylib_name == active->libs[4].name && session == active->execution,
-          "inner failure unexpectedly advanced the native naming counter");
-    active->retry_intercepted = true; throw GuardedRetry{};
+  if (active && active->injecting && active->window == Window::Creation) {
+    check(dylib_name == "4", "before-creation failure did not receive its issued ID");
+    active->creation_refused = true; throw std::bad_alloc();
   }
   auto result = jit_real_dylib(session, std::move(dylib_name));
   if (active && result) {
@@ -307,12 +317,23 @@ int main(int argc, char **argv) {
     check(argc == 3, "expected workers and prepared|dynamic");
     const int workers = std::stoi(argv[1]); const std::string path(argv[2]);
     check((workers == 1 || workers == 2) && (path == "prepared" || path == "dynamic"), "unsupported mode");
+    int next = 0;
+    check(cpu::detail::issue_jit_module_id(next) == 0 && next == 1, "initial JIT ID issuance changed");
+    next = std::numeric_limits<int>::max() - 1;
+    check(cpu::detail::issue_jit_module_id(next) == std::numeric_limits<int>::max() - 1,
+          "last supported JIT ID was refused");
+    bool exhausted = false;
+    try { (void)cpu::detail::issue_jit_module_id(next); }
+    catch (const std::overflow_error &) { exhausted = true; }
+    check(exhausted && next == std::numeric_limits<int>::max(), "exhausted JIT counter mutated or overflowed");
+    std::cout << "cpu_jit_id_bounds,first=0,last_supported=" << std::numeric_limits<int>::max() - 1
+              << ",exhausted_counter_unchanged=1 PASS\n";
     allocation_lifetime::begin(); allocation_lifetime::on_released = released;
-    for (const auto window : {Window::Complete, Window::Generator, Window::Returned})
+    for (const auto window : {Window::Complete, Window::Creation, Window::Generator, Window::Returned})
       run_window(workers, path == "prepared", window);
     allocation_lifetime::on_released = nullptr; allocation_lifetime::end();
     std::cout << "cpu_jit_inspection,workers=" << workers << ",path=" << path
-              << ",windows=3,recoverable_allocation_failures=1,guarded_inner_retries=1,successful_outer_retries=1,cleanup_added=0 PASS\n";
+              << ",windows=4,recoverable_allocation_failures=2,successful_inner_retries=2,guarded_inner_retries=0,successful_outer_retries=1,cleanup_added=0 PASS\n";
     return 0;
   } catch (const std::exception &error) { std::cerr << "CPU JIT inspection: " << error.what() << '\n'; return 1; }
 }
