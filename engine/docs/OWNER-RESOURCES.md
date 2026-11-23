@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+The [private prepared-source helper](PREPARED-SOURCE-LAYOUT-HELPER.md) at
+`68448975` preserves the existing unregistered graph's unique-pointer ownership
+and returns it to the session for the same Program registration/guard assignment.
+No class field, persistent owner, backing charge, registry or cleanup policy is
+added. Quick/eight Clang/six GCC checks preserve native root/retirement and original
+refusal/retry histories; independent final Execution order is excluded from
+retirement record-set comparisons. New review and hosted qualification remain separate.
+
 The [prepared source-layout inspection](PREPARED-SOURCE-LAYOUT.md) at `adc3ad29`
 keeps Program's graph ownership distinct from Execution's backing-retirement
 responsibility and borrowed request pointers. Existing native operations and

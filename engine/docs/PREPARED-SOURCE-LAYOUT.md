@@ -1,5 +1,12 @@
 # Prepared source layout: reuse and ownership
 
+November 23 disposition: [#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435)
+source-accepts `0d1fd0a2` and authorizes the prepared-specific helper while keeping
+registration and candidate lifetime with the session. The
+[separate implementation](PREPARED-SOURCE-LAYOUT-HELPER.md) at `68448975` now
+returns that extraction for review. The original inspected source, reuse decision
+and unqualified native-materialization failure edge below are preserved.
+
 Inspection for review under #343, following [#416 decision 7107054533](https://github.com/Human-Cognome-Project/human-cognome-project/pull/416#issuecomment-7107054533).
 **Keep the prepared topology builder local. Reuse the existing native SNode
 operations and `SNodeTreeOwner`; no existing assembly builder is a drop-in

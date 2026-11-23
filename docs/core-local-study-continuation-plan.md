@@ -1,35 +1,34 @@
 # Core continuation after local CUDA corrections
 
-## November 23, 2026 — prepared source-layout disposition awaiting review
+## November 23, 2026 — private source-layout helper awaiting review
 
-[#416 decision 7107054533](https://github.com/Human-Cognome-Project/human-cognome-project/pull/416#issuecomment-7107054533)
-source-accepts `adc3ad29` and authorizes the layout inspection. #415/#416 remain
-open with smoke passed and native workflows running. Main is `d78c6d86`;
-this inspection explicitly pins reviewed #416. Maintainer integration order is
-#415, then #416 against main after verifying its integrated tree.
+[#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435)
+source-accepts `0d1fd0a2` and authorizes the prepared-specific unregistered graph
+helper. Main `fabf803f` integrates qualified #415. #416 passed both hosted gates and remains unmerged; #417 is source-accepted at `0d1fd0a2`, with smoke passed and native CI still running. This branch explicitly pins that reviewed #417 dependency.
 
-The [source-pinned reuse/keep-local decision](../engine/docs/PREPARED-SOURCE-LAYOUT.md)
-compares prepared/legacy production construction and test-local layout builders.
-Keep topology construction local to assembly and reuse existing native primitives
-and `SNodeTreeOwner`. No existing builder preserves the prepared pointer-binding,
-registration and candidate-lifetime contract as a drop-in replacement. The
-source distinguishes unregistered graph cleanup from candidate retirement after
-successful registration and records the unqualified materialization-failure edge.
+The [implementation](../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md) at tested
+`68448975` moves only root/optional primary/i32-place construction and pointer
+binding into a private helper in the same translation unit. It takes validated
+`AdmissionBindings &` and returns `unique_ptr<SNode>`, with no Program, Runtime,
+staging map, Harness or candidate owner. Source registration and guard assignment
+remain immediately after the helper call, before unchanged Harness construction.
+Preflight, request-copy semantics, shapes, pointer identity, ownership/drain,
+bootstrap, publication/map transfer and ticks retain their original contract.
 
-Smallest proposed follow-up: one private helper taking validated `AdmissionBindings &`,
-creating the same root/optional primary/i32-place graph, filling existing pointer
-slots and returning `unique_ptr<SNode>`. It takes no Program or new owner. Leave
-the Program registration/handle assignment at its current point in `submit_prepared`,
-after staging and before Harness construction. Preserve the by-value request,
-preflight, guards/drain, bootstrap, publication/map transfer and tick execution.
-This is a proposal for review; no production extraction is implemented here.
+Inlining the helper reconstructs the entire parent file byte for byte. Quick CI,
+eight Clang/six GCC CTests pass locally, with matching active results, native root
+and retirement record sets, original refusal/retry/survivor histories, 132 phases
+and 24,024 row/dylib observations against the verified before bundle. The
+initial ordered-retirement audit and its random-UUID final-order diagnosis are
+retained; comparisons exclude independent final Execution order without changing
+any runtime assertion. The
+[inspection decision](../engine/docs/PREPARED-SOURCE-LAYOUT.md) retains its source
+and native-materialization-failure limit; no rollback improvement is claimed.
 
-All executable files match tested #416 `9c3f03a8`. Source/evidence equivalence,
-reused quick/eight Clang/six GCC results and archive manifests are verified;
-native boundary/fork checks pass. No native baseline was rerun. Return this
-disposition for review and authoritative GitHub CI. New layouts, native rollback
-changes, complete accounting, cleanup, admission credit, GPU/concurrency and #324
-remain separate. #75/#111/#123 remain held; all merges remain maintainer-only.
+Return the extraction for review and authoritative GitHub CI before selecting
+further implementation. Complete accounting, native rollback, cleanup, admission
+credit, GPU/concurrency and #324 remain separate. Keep `complete=false` for
+unmeasured resources; #75/#111/#123 remain held. All merges remain maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

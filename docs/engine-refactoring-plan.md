@@ -1,21 +1,22 @@
 # Engine and Analyst-facing refactoring plan
 
-## November 23, 2026 — source-layout reuse and ownership inspection
+## November 23, 2026 — private prepared-source graph helper
 
-The [inspection](../engine/docs/PREPARED-SOURCE-LAYOUT.md) pins reviewed #416
-`adc3ad29`, following [decision 7107054533](https://github.com/Human-Cognome-Project/human-cognome-project/pull/416#issuecomment-7107054533).
-Keep prepared topology construction private to assembly. Existing native SNode
-operations and the tree-retirement guard are already reused; the legacy/test
-builders differ in pointer bindings, registration order or cleanup lifetime.
-The smallest proposed follow-up separates unregistered graph preparation and
-binding into a private helper; Program registration, candidate ownership and
-publication remain with the session. It adds no general builder or new owner.
+The [implementation](../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md) at tested
+`68448975` follows [#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435).
+The private helper borrows validated bindings and returns only the unregistered
+root/optional-primary/i32-place graph. Pointer binding statements are unchanged;
+Program registration, candidate ownership, Harness construction, bootstrap and
+map transfer remain with the session. Inlining reconstructs the full parent file.
 
-This source inspection changes no executable file. It verifies equivalence and
-reuses #416's local quick/eight Clang/six GCC evidence; local boundary/fork checks
-pass. #415/#416 are source-accepted and open with hosted native gates running.
-The disposition/proposal awaits review and authoritative CI. Main is `d78c6d86`;
-integration remains maintainer-only. [Current handoff](core-local-study-continuation-plan.md)
+Quick, eight Clang/six GCC CTests pass locally, preserving exact active results,
+native layout/retirement record sets and real refusal/retry/survivor histories.
+Independent final Execution order is excluded; runtime assertions are unchanged.
+Main `fabf803f` integrates qualified #415. #416 passed both hosted gates and remains unmerged; #417 is source-accepted at `0d1fd0a2`, with smoke passed and native CI still running. This branch explicitly pins that reviewed #417 dependency.
+
+This implementation awaits review and authoritative CI. It creates no general
+builder, persistent owner, public API, class-layout change, registry, resource
+gate, cleanup or numerical behaviour. [Current handoff](core-local-study-continuation-plan.md)
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 

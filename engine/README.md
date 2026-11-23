@@ -127,12 +127,16 @@ check order, status/demand and native ownership. Full native bytes remain an
 admission-accounting limit.
 New review and authoritative CI remain separate from the local evidence.
 
-The [prepared source-layout inspection](docs/PREPARED-SOURCE-LAYOUT.md) compares
-the following native construction with existing assembly builders. It keeps
-topology construction local and reuses the current native primitives/retirement
-guard. The proposed private helper would prepare only an unregistered graph and
-its binding pointers; registration and candidate publication stay with the
-session. Production is unchanged and the disposition awaits review.
+The [prepared source-layout inspection](docs/PREPARED-SOURCE-LAYOUT.md) records
+the approved keep-local decision and its binding, registration and lifetime
+comparison. Its original source and unqualified materialization-failure edge
+remain recorded separately.
+
+The [private source-layout helper](docs/PREPARED-SOURCE-LAYOUT-HELPER.md)
+implements that approved extraction. It constructs the unchanged unregistered
+graph and fills existing binding pointers; the session keeps native registration
+and the candidate's existing guard. Source reconstruction and CPU before/after
+controls qualify the bounded move. New review and authoritative CI remain separate.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
