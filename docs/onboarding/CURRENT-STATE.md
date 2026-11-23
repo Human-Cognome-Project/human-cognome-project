@@ -1,5 +1,22 @@
 # Current implementation and work
 
+## November 23, 2026 — real submission/JIT trace for review
+
+The [source-pinned disposition](../../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md)
+at `3468a26a` follows [#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
+on reviewed `e0fa10bb`. Both hosted workflows passed and #414 is integrated
+at `c5770a2e`; current main `d78c6d86` reconciles the handoff. The tested observer
+is carried onto that main with only Markdown differences from the tested tree. The first real prepared plan refusal adds 78 retained CPU rows,
+confirmed wrappers and present dylibs, despite no study handle being published.
+Existing retry, sibling dispatch and finalization boundaries remain checked.
+
+Quick and four Clang/four GCC CTests pass locally; original histories match the
+verified #414 bundle. Production/fork are unchanged. Existing observations suffice
+to resume a behaviour-preserving responsibility split; complete native peak/byte
+accounting still constrains admission credit. The proposed next change is private
+binding/layout/frame/scratch preflight extraction, pending review and authoritative
+GitHub CI. [Current handoff](../core-local-study-continuation-plan.md)
+
 ## November 23, 2026 — integrated CPU baseline
 
 Repository smoke and native CPU reproducibility passed on all five reviewed heads. Each merge reproduced its reviewed source tree.
@@ -14,7 +31,7 @@ Repository smoke and native CPU reproducibility passed on all five reviewed head
 
 The session reserves a fresh JIT ID before fallible creation. The CPU registration row now carries that ID, and the live session can distinguish an issued name with no dylib from a retained dylib. The measured slot is 88 bytes, or 704 bytes at capacity eight; the launcher remains 56 bytes. [Implementation and qualification](../../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
 
-For the next refusal/retry trace, use the [continuation plan](../core-local-study-continuation-plan.md). Registered retirement, ORC cleanup, admission credit, complete resource accounting, GPU/concurrency qualification and #324 remain separate. #75, #111 and #123 remain held.
+For the trace disposition and proposed next slice, use the [continuation plan](../core-local-study-continuation-plan.md). Registered retirement, ORC cleanup, admission credit, complete resource accounting, GPU/concurrency qualification and #324 remain separate. #75, #111 and #123 remain held.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

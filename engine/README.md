@@ -115,8 +115,15 @@ implements #413's reviewed direction: retain the issued ID in the existing CPU
 row and query presence through the live session with its own prepaid bound.
 Actual row extent grows 80→88 bytes / capacity eight 640→704. Seven histories
 preserve no-ID/failure/retry/finalization and survivor dispatch. Local checks pass;
-implementation review and authoritative GitHub CI remain separate. Cleanup,
+#414 passed hosted qualification and is integrated at `c5770a2e`. Cleanup,
 registered retirement and admission credit remain outside this scope.
+
+The [real submission/JIT disposition](docs/REFUSED-SUBMISSION-JIT-TRACE.md)
+connects that integrated API to real owner refusal, retry, surviving
+dispatch and finalization. It reconciles rows, record identities and present
+dylibs without production changes. The proposed next responsibility split is
+private request preflight; full native bytes remain an admission-accounting limit.
+New review and authoritative CI remain separate from the local evidence.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with

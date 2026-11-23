@@ -1,10 +1,25 @@
 # Engine and Analyst-facing refactoring plan
 
-## November 23, 2026 — CPU registration and JIT attribution
+## November 23, 2026 — real refusal trace and responsibility-split disposition
 
-#414 integrates the ID-only association in the existing CPU registration row. The owner can distinguish no issued ID, an issued name with no dylib and a retained dylib. Insufficient work performs zero native name lookups. The measured row grows from 80 to 88 bytes. [Implementation and evidence](../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
+[#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
+accepts the source and authorizes a real owner/CPU/JIT trace. The
+[new trace](../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md) at `3468a26a` awaits
+review. Qualified #414 is integrated at `c5770a2e`; main `d78c6d86` contains
+the updated handoff. The tested observer is carried onto this current main
+with all executable sources unchanged.
+The new observer reconciles retained rows, record identities, confirmed wrappers
+and live-owner dylib presence across real refusal, retry, dispatch and finalization.
+Production is unchanged; quick and four Clang/four GCC CTests pass locally.
 
-The next #343 task traces a refused submission and retry through the owners to establish what this evidence resolves for the broader responsibility split. Cleanup and admission changes remain deferred. [Current handoff](core-local-study-continuation-plan.md) · [Maintainer decision](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
+The disposition returns to the broader responsibility split: existing evidence
+suffices for a behaviour-preserving separation. Complete native resource bytes
+remain relevant to admission/recovery credit, not a prerequisite for that mechanical
+work. The smallest proposed next change isolates binding/layout/frame/scratch
+request preflight inside private assembly code, preserving all native ownership,
+publication and status order. New review and authoritative CI remain; no cleanup,
+registry, admission credit, public Analyst interface or numerical change follows.
+[Current handoff](core-local-study-continuation-plan.md)
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 
