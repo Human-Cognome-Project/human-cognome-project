@@ -1,41 +1,14 @@
 # Core continuation after local CUDA corrections
 
-**Fresh-ID CPU JIT attribution — 2026-11-22 (inspection/proposal for review):**
-[Existing native presence, unknowns, prepaid work and storage models](../engine/docs/CPU-JIT-ATTRIBUTION.md)
-at tested `b533ff93` follows [#412 review 7084634921](https://github.com/Human-Cognome-Project/human-cognome-project/pull/412#issuecomment-7084634921).
-With a known issued ID, existing session lookup separates a consumed name with
-no retained dylib from a retained dylib across failure/retry/finalization. Null
-lookup alone does not prove issuance. Current CPU failure output exposes no
-native ID; the fixture's captured-call provenance is not a production API and
-cannot observe a formatting failure before that call. Presence supplies neither
-full resource coverage nor cleanup eligibility.
+## November 23, 2026 — next task under #343
 
-Quick CI, 18 Clang/12 GCC CTests and seven warm/viewport-OFF cases pass. Seven
-histories preserve every original registration/attempt/naming output and add
-119 presence probes, 49 post-finalization phases and seven compiled layout
-comparisons. Actual native getter calls and C++ allocation witnesses verify
-zero short-work lookups, one fully prepaid lookup, zero query new calls and no
-added client borrows. Production and fork `9c9e4228` are exactly #412.
+Start from current main. The qualified code baseline is `daf6f74d`. #410–#413 have merged, and #413’s attribution fixture and storage forecast are available for reuse. [Attribution report](../engine/docs/CPU-JIT-ATTRIBUTION.md) · [Integration record](onboarding/CURRENT-STATE.md)
 
-The smallest proposal writes an issued ID into the existing CPU row before
-formatting and exposes owner-local bounded presence using the native name table.
-The existing counter can conservatively prepay its linear search. Compiled models
-project native row 80→88 bytes, or capacity-eight storage 640→704, for ID-only
-association; richer links project 96/104-byte rows. These are candidate costs,
-not allocated production storage or achieved saving. Record metadata alone may
-outlive Runtime; a session address is not an epoch/lifetime guard. Return the
-proposal for review; cleanup, retirement and admission changes remain separate.
+1. Store the issued native JIT ID in the existing CPU registration row before formatting the name or starting creation. Preserve the distinction between an attempt that never received an ID and an issued ID with no dylib.
+2. Query dylib presence through the live owning session. Use its authoritative issuance bound to budget the native lookup. Exercise insufficient budget, a retained dylib, retry and finalization. A saved session address cannot establish lifetime after shutdown.
+3. Verify surviving dispatch and measure the actual slot size and capacity cost against the integrated 80-byte slot. The ID-only forecast is 88 bytes per slot, or 64 additional bytes at capacity eight. Return the implementation and source-pinned evidence for review.
 
-**Directly confirmed dependency state:** main `6441a740` integrates #408 with
-reviewed `4747d113`'s exact tree. #410 targets main; #410 → #411 → #412 remain
-open; #410 has both gates passed, while #411/#412 have smoke passed and native
-gates pending at inspection. #411's decision
-is recorded in 7084632898; #412 `37170176` is provisionally accepted. The current
-branch stays on #412 for review/integration. The [naming implementation](../engine/docs/CPU-JIT-NAME-ISSUANCE.md)
-retains its own source/evidence. A chat “accepted” signals review; direct refs,
-reviews and handoffs determine changes. No contributor merge or duplicate CI
-dispatch is performed. Full B, registered/ORC retirement, GPU/concurrency, #324
-and held #75/#111/#123 remain separate. All merges belong to the maintainer.
+Registered retirement, ORC cleanup and admission credit remain deferred. [Maintainer decision](https://github.com/Human-Cognome-Project/human-cognome-project/pull/413#issuecomment-7101856435)
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)
