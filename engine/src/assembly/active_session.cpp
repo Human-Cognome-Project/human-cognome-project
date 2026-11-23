@@ -11,6 +11,49 @@ namespace {
 void require(bool ok) {
   if (!ok) throw warm::Error("invalid or incomplete active input");
 }
+
+// The session checks source/owner/capability/duplicate identity first. This
+// borrowed request preflight runs before staging or native allocation.
+bool preflight_prepared_request(const PreparedStudySubmission &request,
+                                const warm::Bundle &recipe,
+                                PreparedSubmissionResult &out) {
+  const auto &source = request.source;
+  const auto &b = request.bindings;
+  if (b.source.owner != source->owner() || b.source.study != source->study() ||
+      b.source.generation != source->generation() ||
+      b.source.recipe.selection != recipe.ref.selection ||
+      b.source.recipe.revision != recipe.ref.revision || b.focus.empty())
+    return false;
+  // The supported letter subset declares root plus an optional primary step.
+  // No caller-owned native pointer crosses this setup boundary.
+  if (b.layout.size() != recipe.nodes.size() || b.layout.empty() || b.layout.size() > 2) {
+    out.preparation_status = detail::AdmissionPlanStatus::Unsupported;
+    return false;
+  }
+  for (std::size_t i=0; i<b.layout.size(); ++i) {
+    const auto &v = b.layout[i];
+    if (v.node.layout || v.node.parent != (i ? 0 : -1) ||
+        v.node.role != (i ? ScaleRole::PrimaryStep : ScaleRole::Root) ||
+        v.node.parent != recipe.nodes[i].parent || int(v.node.role) != int(recipe.nodes[i].role) ||
+        v.units != (i ? 64. : 1.)) {
+      out.preparation_status = detail::AdmissionPlanStatus::Unsupported;
+      return false;
+    }
+  }
+  for (double coordinate : b.frame_anchor) if (coordinate != 0) {
+    out.preparation_status = detail::AdmissionPlanStatus::Unsupported;
+    return false;
+  }
+  const auto &limits = request.capacity.limits();
+  const auto scratch = field::detail::PreparedStorage::required_scratch(
+      limits,false,request.capacity.profile());
+  if (scratch > limits[field::Budget::ScratchBytes]) {
+    out.preparation_status = detail::AdmissionPlanStatus::CapacityExhausted;
+    out.failure = {field::Budget::ScratchBytes,scratch,limits[field::Budget::ScratchBytes]};
+    return false;
+  }
+  return true;
+}
 }  // namespace
 
 struct ActiveSession::Execution {
@@ -91,39 +134,7 @@ PreparedSubmissionResult ActiveSession::submit_prepared(PreparedStudySubmission 
     return out;
   }
   if (executions_.count(source->study())) return out;
-  if (b.source.owner != source->owner() || b.source.study != source->study() ||
-      b.source.generation != source->generation() ||
-      b.source.recipe.selection != recipe.ref.selection ||
-      b.source.recipe.revision != recipe.ref.revision || b.focus.empty())
-    return out;
-  // The supported letter subset declares root plus an optional primary step.
-  // No caller-owned native pointer crosses this setup boundary.
-  if (b.layout.size() != recipe.nodes.size() || b.layout.empty() || b.layout.size() > 2) {
-    out.preparation_status = detail::AdmissionPlanStatus::Unsupported;
-    return out;
-  }
-  for (std::size_t i=0; i<b.layout.size(); ++i) {
-    const auto &v = b.layout[i];
-    if (v.node.layout || v.node.parent != (i ? 0 : -1) ||
-        v.node.role != (i ? ScaleRole::PrimaryStep : ScaleRole::Root) ||
-        v.node.parent != recipe.nodes[i].parent || int(v.node.role) != int(recipe.nodes[i].role) ||
-        v.units != (i ? 64. : 1.)) {
-      out.preparation_status = detail::AdmissionPlanStatus::Unsupported;
-      return out;
-    }
-  }
-  for (double coordinate : b.frame_anchor) if (coordinate != 0) {
-    out.preparation_status = detail::AdmissionPlanStatus::Unsupported;
-    return out;
-  }
-  const auto &limits = request.capacity.limits();
-  const auto scratch = field::detail::PreparedStorage::required_scratch(
-      limits,false,request.capacity.profile());
-  if (scratch > limits[field::Budget::ScratchBytes]) {
-    out.preparation_status = detail::AdmissionPlanStatus::CapacityExhausted;
-    out.failure = {field::Budget::ScratchBytes,scratch,limits[field::Budget::ScratchBytes]};
-    return out;
-  }
+  if (!preflight_prepared_request(request,recipe,out)) return out;
   const auto start = std::chrono::steady_clock::now();
   // Reserve the publication map node before native publication. A successful
   // bootstrap transfers this node without allocation; failures never enter the

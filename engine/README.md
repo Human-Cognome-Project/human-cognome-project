@@ -121,8 +121,10 @@ registered retirement and admission credit remain outside this scope.
 The [real submission/JIT disposition](docs/REFUSED-SUBMISSION-JIT-TRACE.md)
 connects that integrated API to real owner refusal, retry, surviving
 dispatch and finalization. It reconciles rows, record identities and present
-dylibs without production changes. The proposed next responsibility split is
-private request preflight; full native bytes remain an admission-accounting limit.
+dylibs without production changes. The [private request-preflight extraction](docs/PREPARED-REQUEST-PREFLIGHT.md)
+implements the approved binding/layout/frame/scratch split, preserving exact
+check order, status/demand and native ownership. Full native bytes remain an
+admission-accounting limit.
 New review and authoritative CI remain separate from the local evidence.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)

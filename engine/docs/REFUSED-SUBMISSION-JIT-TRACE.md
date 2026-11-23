@@ -1,5 +1,13 @@
 # Real submission refusal, CPU registration and JIT presence
 
+November 23 disposition: [#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574)
+source-accepts `8101a1ed`, inspects the patch/committed trace and authorizes private
+binding/layout/frame/scratch preflight extraction. The local histories remain
+contributor-reported. #415 is provisionally source-accepted at `8101a1ed`, open with smoke passed and native hosted qualification pending; main is `d78c6d86`. This branch explicitly pins that reviewed dependency.
+The [separate implementation](PREPARED-REQUEST-PREFLIGHT.md) at `9c3f03a8` now
+returns that extraction for review. Original trace source, observations and
+proposal below retain their historical scope.
+
 Inspection/disposition under #343, following [#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403).
 Existing observations suffice to resume a behaviour-preserving responsibility
 split. They do not supply complete native resource accounting for an admission
