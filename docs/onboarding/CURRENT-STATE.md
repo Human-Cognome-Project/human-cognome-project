@@ -1,6 +1,37 @@
 # Current implementation and work
 
-## November 23, 2026 — private prepared-request preflight for review
+## November 23, 2026 — leaf-reference investigation for review
+
+The [hosted artifact and native boundary inspection](../../engine/docs/LEAF-REFERENCE-INSPECTION.md)
+at main `3080687a` follows [#420 decision 7111426753](https://github.com/Human-Cognome-Project/human-cognome-project/pull/420#issuecomment-7111426753).
+The original #417 failure is inferred to occur in round 28, but lacks tick,
+leaf and compared inputs. A separate native witness produces X=29 versus the
+original reference's 29.25 at a Q6 boundary on eight worker/path/compiler profiles.
+That demonstrates a comparison weakness without diagnosing the hosted operands.
+The original and diagnostic focused moving controls pass locally; the original
+failure's cause remains unresolved. Production, tests and tolerances are unchanged.
+
+Next proposed slice: failure-only context/packet/cohort capture at the existing
+assertion, retaining the exact comparison and numerical execution. Reused #416
+quick evidence is source-equivalent and verified; no full baseline was repeated.
+This independent inspection starts from main, whose relevant sources match
+#417 and #418. Pending refactoring contributions remain separate from main:
+
+| PR | Reviewed head | Current disposition |
+| --- | --- | --- |
+| #417 | `0d1fd0a2` | Source-accepted; same-head attempt 2 passed, original failure preserved; unmerged |
+| #418 | `7831326c` | Private unregistered source-layout helper; hosted-qualified, unmerged |
+| #419 | `eabf688d` | Responsibility reconciliation; hosted-qualified, unmerged |
+| #420 | `e83bb3a6` | Standalone logical header/target source-accepted; hosted-qualified, unmerged |
+
+The successful retry uses the same source, binary hash and declared optimizer
+target as the original; it does not explain the missing leaf comparison.
+Return this disposition for review and authoritative CI. Disposition of the
+prior integration hold and all merges remain
+maintainer-only; #324, complete accounting/admission credit and held #75/#111/#123
+remain separate. [Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — private prepared-request preflight integrated in #416
 
 The [private extraction and qualification](../../engine/docs/PREPARED-REQUEST-PREFLIGHT.md)
 at tested `9c3f03a8` follows [#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574).
@@ -10,18 +41,18 @@ of submission reconstruct exactly; public types, ownership and numerical code
 are unchanged. Quick, eight Clang/six GCC CTests pass locally. Original real
 histories, 132 phases and 24,024 row/dylib observations compare exactly.
 
-#415 is provisionally source-accepted at `8101a1ed`, open with smoke passed and native hosted qualification pending; main is `d78c6d86`. This branch explicitly pins that reviewed dependency.
+#415 and #416 passed hosted qualification and are integrated at `fabf803f` and `3080687a`. The original tested source is retained here; latest work and pending-stack qualification are recorded above.
 
-Return this extraction for review and authoritative GitHub CI. Broader ownership,
+This extraction is integrated. Broader ownership,
 cleanup, admission credit, complete accounting and #324 remain separate; held
 #75/#111/#123 are unchanged. [Current handoff](../core-local-study-continuation-plan.md)
 
-## November 23, 2026 — real submission/JIT trace source-accepted
+## November 23, 2026 — real submission/JIT trace integrated in #415
 
 The [source-pinned disposition](../../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md)
 at `3468a26a` follows [#414 review 7103232403](https://github.com/Human-Cognome-Project/human-cognome-project/pull/414#issuecomment-7103232403)
 on reviewed `e0fa10bb`. Both hosted workflows passed and #414 is integrated
-at `c5770a2e`; current main `d78c6d86` reconciles the handoff. The tested observer
+at `c5770a2e`; then-current main `d78c6d86` reconciles the handoff. The tested observer
 is carried onto that main with only Markdown differences from the tested tree. The first real prepared plan refusal adds 78 retained CPU rows,
 confirmed wrappers and present dylibs, despite no study handle being published.
 Existing retry, sibling dispatch and finalization boundaries remain checked.
@@ -35,7 +66,7 @@ separate review and authoritative CI. [Current handoff](../core-local-study-cont
 
 ## November 23, 2026 — integrated CPU baseline
 
-Repository smoke and native CPU reproducibility passed on all five reviewed heads. Each merge reproduced its reviewed source tree.
+Repository smoke and native CPU reproducibility passed on all seven reviewed heads. Each merge reproduced its reviewed source tree.
 
 | PR | Reviewed head | Merge on main | Integrated work |
 | --- | --- | --- | --- |
@@ -44,6 +75,8 @@ Repository smoke and native CPU reproducibility passed on all five reviewed head
 | #412 | `37170176` | `555e65c1` | CPU JIT name reservation before fallible creation |
 | #413 | `2e6bade4` | `daf6f74d` | Inspection of issued IDs and session-owned dylibs |
 | #414 | `e0fa10bb` | `c5770a2e` | Native registration-row JIT ID and bounded live-session presence query |
+| #415 | `8101a1ed` | `fabf803f` | Real refusal/retry to native row and JIT ownership trace |
+| #416 | `adc3ad29` | `3080687a` | Private prepared-request binding/layout/frame/scratch preflight |
 
 The session reserves a fresh JIT ID before fallible creation. The CPU registration row now carries that ID, and the live session can distinguish an issued name with no dylib from a retained dylib. The measured slot is 88 bytes, or 704 bytes at capacity eight; the launcher remains 56 bytes. [Implementation and qualification](../../engine/docs/CPU-JIT-ID-ASSOCIATION.md)
 

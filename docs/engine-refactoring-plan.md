@@ -1,5 +1,27 @@
 # Engine and Analyst-facing refactoring plan
 
+## November 23, 2026 — qualification investigation before integration
+
+The [leaf-reference disposition](../engine/docs/LEAF-REFERENCE-INSPECTION.md)
+at inspected main `3080687a` follows [#420 review 7111426753](https://github.com/Human-Cognome-Project/human-cognome-project/pull/420#issuecomment-7111426753).
+Both original failed #417 and passing #418 artifacts are inspected. The failed
+moving comparison lacks its leaf/tick/operands. A separate native rounding-boundary
+witness triggers the same exact-Q6 predicate on eight profiles, while focused
+moving controls pass. Original cause remains unresolved; no production, test,
+tolerance or numerical change follows from this documentation-only inspection.
+The next proposed slice is failure-only operand/context capture before choosing
+a comparison or arithmetic correction.
+
+#416's private preflight is integrated on main. #417's layout inspection, #418's
+private graph helper, #419's sufficient-transaction disposition and #420's logical
+header/target are source-accepted but unmerged. All four now pass hosted gates,
+with #417 qualified by its same-head attempt 2. Its original failure remains
+preserved and undiagnosed; the successful retry has the same source/native
+binary/optimizer target. Preserve the approved direction without duplicating
+extractions. Disposition of the prior integration hold stays with the maintainer;
+review this inspection and authoritative CI before further implementation.
+[Current handoff](core-local-study-continuation-plan.md)
+
 ## November 23, 2026 — private prepared-request preflight extraction
 
 The [implementation](../engine/docs/PREPARED-REQUEST-PREFLIGHT.md) at tested
@@ -11,9 +33,9 @@ code reconstruct exactly. Ownership, bootstrap/map transfer, JIT lifetime, ticks
 public interfaces and class layouts remain unchanged.
 
 Quick, eight Clang/six GCC CTests pass locally; original refusal/retry and survivor
-histories, 132 phases and 24,024 row/dylib observations compare exactly. #415 is provisionally source-accepted at `8101a1ed`, open with smoke passed and native hosted qualification pending; main is `d78c6d86`. This branch explicitly pins that reviewed dependency.
+histories, 132 phases and 24,024 row/dylib observations compare exactly. #415 and #416 passed hosted qualification and are integrated at `fabf803f` and `3080687a`. The original tested source is retained here; latest work and pending-stack qualification are recorded above.
 
-This bounded responsibility split awaits review and authoritative GitHub CI.
+This bounded responsibility split is integrated in #416.
 No broader extraction, cleanup, registry, admission credit, public Analyst API or
 numerical change follows from it. [Current handoff](core-local-study-continuation-plan.md)
 

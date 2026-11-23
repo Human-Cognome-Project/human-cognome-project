@@ -1,10 +1,47 @@
 # Core continuation after local CUDA corrections
 
-## November 23, 2026 — private request-preflight extraction awaiting review
+## November 23, 2026 — hosted leaf-reference disposition awaiting review
+
+[#420 decision 7111426753](https://github.com/Human-Cognome-Project/human-cognome-project/pull/420#issuecomment-7111426753)
+source-accepts `e83bb3a6` and directs investigation of #417 before a code or
+tolerance proposal. The [source-pinned report](../engine/docs/LEAF-REFERENCE-INSPECTION.md)
+personally inspects both original #417 and passing #418 ZIPs and verifies their
+digests, test-merge trees, native source and IR-audit controls. This branch starts
+from current main `3080687a`, with byte-identical executable source to #417.
+The logical header implementation remains on open #420; it is not added here.
+
+Source/control-flow inference narrows the hosted assertion to an ordinary tick
+of `three_level_overlap` round 28. Tick, leaf, packets and ordered body/source
+inputs are absent. Both the original and temporary failure-diagnostic moving
+controls pass locally. A separate valid native fixture demonstrates the exact
+comparison rejecting X=29 against reference 29.25 in all eight one/two-worker ×
+bulk/direct × default/no-unroll profiles. A one-f64-ULP arithmetic difference
+straddles a Q6 boundary. This is a constructed counterexample, not proof of the
+original failure's cause or an assertion correction. No repository C++ is changed.
+
+The report retains raw artifacts, source/build/probe commands, hex inputs,
+comparison reconstruction, verified archive and reused source-equivalent #416
+quick evidence. Next proposed PR: capture fixture/round/tick, leaf identity,
+before/after packets/selectors, visits/publications and ordered cohort inputs
+only when the existing comparison fails; then throw the same assertion. Use
+the native boundary witness to exercise that capture. Review actual hosted
+operands before selecting a reference/error-bound or arithmetic correction.
+
+Main remains `3080687a`, integrating #415/#416. #417–#420 are open/source-accepted
+and now pass hosted smoke/native qualification. #417's same-head attempt 2
+passes with the same recorded source/native binary/optimizer target as the
+preserved original failure. Its successful ZIP and final statuses have a separate
+completion archive; the initial evidence is unchanged. The failure's cause is
+unresolved. No extra rerun was dispatched here. Return the investigation for
+review and authoritative CI; disposition of the prior integration hold and all
+merges remain maintainer-only. #324, accounting/cleanup/admission credit,
+GPU/concurrency and held #75/#111/#123 remain separate.
+
+## November 23, 2026 — private request-preflight extraction integrated in #416
 
 [#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574)
 accepts reviewed `8101a1ed` for bounded continuation and authorizes the private
-binding/layout/frame/scratch extraction. #415 is provisionally source-accepted at `8101a1ed`, open with smoke passed and native hosted qualification pending; main is `d78c6d86`. This branch explicitly pins that reviewed dependency.
+binding/layout/frame/scratch extraction. #415 and #416 passed hosted qualification and are integrated at `fabf803f` and `3080687a`. The original tested source is retained here; latest work and pending-stack qualification are recorded above.
 
 The [implementation and evidence](../engine/docs/PREPARED-REQUEST-PREFLIGHT.md)
 at `9c3f03a8` moves only those checks into a private helper in `active_session.cpp`.
@@ -20,8 +57,7 @@ on bulk/direct CPU. The verified #415 comparison retains all original histories,
 132 phases and 24,024 individual row/dylib observations exactly. Parent inspection
 [source/evidence](../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md) stays separate.
 
-Return the extraction for maintainer review and authoritative GitHub CI before
-selecting a further implementation. Keep bootstrap, map transfer, source/JIT
+The extraction is integrated; latest work and qualification are recorded above. Keep bootstrap, map transfer, source/JIT
 lifetime, drain and tick execution with their current owners. Complete native
 bytes/peaks, registered retirement, cleanup, admission credit, GPU/concurrency and
 #324 remain separate. Keep `complete=false`; #75/#111/#123 remain held. All merges

@@ -13,6 +13,14 @@ The modified fork is expected at:
 engine/taichi/
 ```
 
+The [current leaf-reference investigation](docs/LEAF-REFERENCE-INSPECTION.md)
+inspects #417's original hosted failure and #418's passing artifact. It records
+the missing moving-cut operands and a separate native Q6 rounding-boundary
+counterexample. The next proposed slice captures failure context while retaining
+the comparison. Current main integrates #416; #417–#420 remain separate open,
+hosted-qualified contributions after #417's same-head retry. Its original failure
+remains undiagnosed; integration remains with the maintainer. See the [handoff](../docs/core-local-study-continuation-plan.md).
+
 ## Layout
 
 | Path | Role |
