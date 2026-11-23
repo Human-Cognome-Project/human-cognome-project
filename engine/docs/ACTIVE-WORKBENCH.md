@@ -1,5 +1,106 @@
 # Bounded active workbench — Stage D
 
+## Logical header and standalone target — 2026-11-23
+
+Contributor implementation under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
+following [#419 decision 7109569209](https://github.com/Human-Cognome-Project/human-cognome-project/pull/419#issuecomment-7109569209)
+at reviewed `eabf688d3508524596d2deda5759b569b3a21fe8`. Tested source
+`77559b32e5af1f1873bd8b58de85ff158f056103`, tree
+`3b9582c0ae06762b1b4e9aa9ffc7d5d045ceb854`, native fork tree
+`a94a9eb350c94dfa2eb586bee49c53e0ee886648`; recursive pins match.
+Published source `bbfd866adfca29ecbbbf280d452fc567a103b360` has the exact tested
+tree. Connected-app commit metadata differs because shell HTTPS push lacked
+credentials; the evidence's incremental Git bundle retains the exact local
+tested commits, with both initial/corrected tree mappings verified.
+
+[`active_assembly.h`](../src/assembly/active_assembly.h) now holds the unchanged
+logical declarations. [`active_workbench.h`](../src/assembly/active_workbench.h)
+includes it as the compatibility umbrella and retains the native session/report
+declarations. Logical implementation stays in `active_workbench.cpp` and calls
+the existing `detail::intrinsic_enclosing_radius` directly for supplied local
+geometry. The public `assembly::enclosing_radius` symbol and its delegation in
+`study.cpp` remain unchanged. There is no new geometry formula or API semantics.
+
+[`active_assembly.cmake`](../src/assembly/active_assembly.cmake) exposes the
+existing logical target with only `membership_fields → letter_projection →
+warm_values` dependencies. The native session explicitly links `study_assembly`;
+structural preparation explicitly links `field_core`. Its test also explicitly
+links `study_assembly` because the existing test compares the public enclosure
+wrapper with the intrinsic helper. The first qualification build exposed that
+previously transitive test dependency; the correction and failed logs are retained.
+
+An actual standalone [`active_assembly_test`](../tests/active_assembly_test.cpp)
+compiles, links and exercises both legacy logical binding and v2 structural
+binding, private scope/owner/version refusal, unavailable inputs, provenance,
+revision/restart, inherited/replaced/cleared focus and geometry exceptions.
+Opaque layout tokens are copied only; this test creates no native tree, runs no
+physics and accesses no database. Shared/alternative occurrence rows remain
+distinct from selected live exposure. Initial development assertions that
+confused those rows and assumed definition order were corrected, with failed
+logs retained; production behavior was unchanged by those test corrections.
+
+### Qualification and preserved boundaries
+
+- Fresh standalone Clang 15, GCC 11 and GCC 13 builds pass all five CTests.
+  Dependency files contain no native engine/field/Taichi or libpq headers;
+  link commands and `ldd` contain no Taichi, LLVM or libpq dependency.
+  The active archive no longer has an unresolved public geometry-wrapper symbol.
+  These runs used `5a3f35ad`; pure source, test and standalone CMake are identical
+  at tested `77559b32`. Only the explicit native test link changed afterwards,
+  so the successful standalone suite was reused without rerunning it.
+- The same 29 logical checks pass against original `eabf688d` implementation and
+  declarations, adapting only the new test's include spelling to the old umbrella
+  and using the original native-linked wrapper. Their output matches all three
+  standalone compilers and both native wrapper builds exactly. This before
+  comparator is native-linked; it is not a claim of standalone support before
+  this change.
+- Clean-source quick local CI and sixteen Clang/fourteen GCC 11 native CTests
+  pass at `77559b32` against the matching Clang/LLVM 15 CPU SDK. Existing native
+  active-workbench, assembly, provenance, plan, viewport, prepared-plan lifetime,
+  prepared submission and real refusal/retry/sibling controls are reused.
+  Clang covers active submission with one/two workers × bulk/direct; GCC uses
+  one-worker bulk/two-worker direct. No native test assertion was replaced.
+- Original #418 real histories match across 132 phases and 24,024 row/dylib
+  observations. Native registrations/backing and retirement record sets match,
+  with only compilation duration normalized and independent UUID-keyed final
+  Execution retirement order compared as sets. Earlier ordered records and
+  existing drain assertions remain intact. The original archive/manifests and
+  reused raw logs are verified.
+- Source reconstruction proves byte-identical logical declarations and unchanged
+  native declarations, class layouts and function signatures. The logical
+  implementation reconstructs after reversing only includes and the geometry
+  call substitution. The public wrapper/intrinsic source, session, prepared
+  owner, field code and fork are unchanged. The existing Clang study archive
+  remains byte-identical, retaining the public geometry symbol. Runtime bitcode
+  stays `4a57d249a308b5a4523e788025515e7adbccce7565ecafe2871cc34094ca7ada`.
+
+Archive `/tmp/hcp-active-assembly-77559b32-evidence.tar.gz`, SHA-256
+`b44c1c0e4b928089238b1553aa23de429bcddac0c0577aee6b1d21acdc5f1c68`,
+retains source pins, commands, exact source proof, standalone
+headers/link/dependency evidence, original comparator, clean native tests,
+before/after comparisons, failed development/build logs and verified reused
+evidence. Fresh extraction verifies root and qualification manifests. This is
+machine-local contributor evidence, not independently inspected hosted evidence.
+The native command-file capture was reconciled to the actual executed runner;
+the initial capture, original manifest and correction receipt are retained.
+
+### Hosted state and next action
+
+Main remains `3080687a`. #417–#419 are open and source-accepted; this branch pins
+reviewed #419. Smoke passed on all three. #417's native run
+[45220070965, job 137859808354](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45220070965/job/137859808354)
+failed in `native-compiler (2, direct)` / `Collect and audit modules, then exercise
+no-unroll modes`; its aggregate failed. The job log is retained, but detailed
+assertions are redirected into the uploaded artifact, which was not inspected
+here. Do not classify this as a flake or a repaired gate. #418/#419 native CI
+remains pending at handoff. This local pass does not clear the hosted failure.
+
+Return the bounded implementation for review and authoritative GitHub CI;
+reconcile the existing hosted failure before dependency-order integration.
+The prepared candidate transaction remains together under its session owner.
+Native rollback/cleanup, complete accounting, admission credit, concurrency/GPU
+and #324 are separate; #75/#111/#123 remain held. All merges stay maintainer-only.
+
 **Current scope (2026-10-23):** This is the retained bounded **v1/FixedStudy**
 workbench. #153 completed the type-phase simplification previously requested in
 #152. Earlier local-test prerequisites below are historical; the full operational

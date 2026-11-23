@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Build and test projection and membership values without PostgreSQL or Taichi
+      - name: Build and test projection, membership and active values without PostgreSQL or Taichi
         run: |
           cmake -S engine/tests/letter_projection -B /tmp/hcp-projection
           cmake --build /tmp/hcp-projection -j 2

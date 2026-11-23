@@ -1,43 +1,70 @@
 # Engine and Analyst-facing refactoring plan
 
-## November 23, 2026 — qualification investigation before integration
+## November 23, 2026 — integrated through #420
 
-The [leaf-reference disposition](../engine/docs/LEAF-REFERENCE-INSPECTION.md)
-at inspected main `3080687a` follows [#420 review 7111426753](https://github.com/Human-Cognome-Project/human-cognome-project/pull/420#issuecomment-7111426753).
-Both original failed #417 and passing #418 artifacts are inspected. The failed
-moving comparison lacks its leaf/tick/operands. A separate native rounding-boundary
-witness triggers the same exact-Q6 predicate on eight profiles, while focused
-moving controls pass. Original cause remains unresolved; no production, test,
-tolerance or numerical change follows from this documentation-only inspection.
-The next proposed slice is failure-only operand/context capture before choosing
-a comparison or arithmetic correction.
+Main `fae58e79` integrates #417–#420 after hosted qualification. The prepared layout helper and standalone logical ActiveAssembly target are integrated. The first #417 attempt remains evidence of a leaf/reference mismatch in round 28. Its same-head retry passed. The constructed Q6 boundary witness explains how the calculations can diverge; the original operands are unknown.
 
-#416's private preflight is integrated on main. #417's layout inspection, #418's
-private graph helper, #419's sufficient-transaction disposition and #420's logical
-header/target are source-accepted but unmerged. All four now pass hosted gates,
-with #417 qualified by its same-head attempt 2. Its original failure remains
-preserved and undiagnosed; the successful retry has the same source/native
-binary/optimizer target. Preserve the approved direction without duplicating
-extractions. Disposition of the prior integration hold stays with the maintainer;
-review this inspection and authoritative CI before further implementation.
+The next bounded task is failure-only capture of the tick, leaf, packets and ordered inputs at the existing assertion. Preserve its exact predicate and the production calculation. [Inspection and evidence](../engine/docs/LEAF-REFERENCE-INSPECTION.md)
+
+## November 23, 2026 — logical caller boundary implemented for review
+
+The [value-only header/target and qualification](../engine/docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23)
+at tested `77559b32` deliver [#419's approved slice](https://github.com/Human-Cognome-Project/human-cognome-project/pull/419#issuecomment-7109569209).
+Pass 2 separates the actual logical caller dependency, preserves the compatibility
+umbrella/public geometry symbol and reuses existing intrinsic validation. Native
+consumers explicitly retain field/study providers. The candidate transaction
+remains together; declarations, numerical behavior and execution ownership are
+unchanged. Standalone callers now compile, link and exercise logical semantics.
+
+Quick, sixteen Clang/fourteen GCC CTests and all five standalone tests on three
+compilers pass. The original 29 logical checks and real native histories match;
+source proof, initial failures/correction and complete evidence are retained.
+Published `bbfd866a` has the exact tested tree. This branch pins source-accepted
+#419 ahead of integration. Main is `3080687a`; #417–#419 are open, with smoke
+passed. #417's two-worker direct compiler gate/aggregate failed; #418/#419 native
+CI remains pending. Reconcile the failure before integration; local results do
+not clear it. [Current handoff](core-local-study-continuation-plan.md)
+
+## November 23, 2026 — current responsibility disposition
+
+The [reconciled existing map](../engine/docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+at inspected `7831326c` follows [#418 decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534).
+Pass 1 finds a sufficient prepared transaction boundary: preserve staging,
+refusal propagation and map publication under the session candidate owner.
+The remaining mixed responsibility affects logical callers: one umbrella header
+and the enclosure-validation link still pull native study machinery into
+`ActiveAssembly`. The proposed next slice separates that header/target boundary
+using existing intrinsic geometry validation, with compatibility and exact
+identity/private-input/focus/exception controls. No production extraction is
+implemented by this reconciliation. #419 source-accepts the disposition and
+authorizes the implementation recorded above.
+
+New compiler/include/symbol and boundary/fork checks pass. Executable source is
+identical to tested #418 `68448975`; prior local quick/eight Clang/six GCC
+evidence is verified and reused without rerunning a baseline. Main `3080687a`
+integrates qualified #416. Its then-pending #417/#418 CI state is superseded by
+the latest handoff above; the original inspection/qualification pin is retained.
 [Current handoff](core-local-study-continuation-plan.md)
 
-## November 23, 2026 — private prepared-request preflight extraction
+## November 23, 2026 — private prepared-source graph helper
 
-The [implementation](../engine/docs/PREPARED-REQUEST-PREFLIGHT.md) at tested
-`9c3f03a8` follows [#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574).
-The existing binding/layout/frame/scratch checks now form one private helper in
-the same translation unit, after owner/capability/duplicate checks and before
-native allocation. Original statuses, demand, check order and remaining submission
-code reconstruct exactly. Ownership, bootstrap/map transfer, JIT lifetime, ticks,
-public interfaces and class layouts remain unchanged.
+The [implementation](../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md) at tested
+`68448975` follows [#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435).
+The private helper borrows validated bindings and returns only the unregistered
+root/optional-primary/i32-place graph. Pointer binding statements are unchanged;
+Program registration, candidate ownership, Harness construction, bootstrap and
+map transfer remain with the session. Inlining reconstructs the full parent file.
 
-Quick, eight Clang/six GCC CTests pass locally; original refusal/retry and survivor
-histories, 132 phases and 24,024 row/dylib observations compare exactly. #415 and #416 passed hosted qualification and are integrated at `fabf803f` and `3080687a`. The original tested source is retained here; latest work and pending-stack qualification are recorded above.
+Quick, eight Clang/six GCC CTests pass locally, preserving exact active results,
+native layout/retirement record sets and real refusal/retry/survivor histories.
+Independent final Execution order is excluded; runtime assertions are unchanged.
+#418 decision 7109138534 source-accepts final `7831326c`. Main `3080687a`
+integrates qualified #416. At that review #417/#418 had smoke success and native
+CI pending; subsequent findings and current work are recorded above.
 
-This bounded responsibility split is integrated in #416.
-No broader extraction, cleanup, registry, admission credit, public Analyst API or
-numerical change follows from it. [Current handoff](core-local-study-continuation-plan.md)
+This implementation awaits authoritative CI. It creates no general
+builder, persistent owner, public API, class-layout change, registry, resource
+gate, cleanup or numerical behaviour. [Current handoff](core-local-study-continuation-plan.md)
 
 Authorized direction: 2026-11-15. Owner: [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343). Numerical derivation remains [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
 

@@ -1,5 +1,12 @@
 # Private prepared-request preflight
 
+November 23 disposition: [#416 decision 7107054533](https://github.com/Human-Cognome-Project/human-cognome-project/pull/416#issuecomment-7107054533)
+source-accepts `adc3ad29` and independently reconstructs the parent translation
+unit. The local passes remain contributor-reported; parent #415/#416 native gates
+and integration remain separate. The authorized [layout inspection](PREPARED-SOURCE-LAYOUT.md)
+pins that head and returns a separate keep-local/reuse decision. The original
+implementation source and evidence below remain unchanged.
+
 Implementation for review under #343, following [#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574).
 `ActiveSession::submit_prepared` delegates its binding, layout, frame and scratch
 checks to one private helper in the same translation unit. The accepted request,

@@ -1,67 +1,103 @@
 # Core continuation after local CUDA corrections
 
-## November 23, 2026 — hosted leaf-reference disposition awaiting review
+## November 23, 2026 — integrated through #420
 
-[#420 decision 7111426753](https://github.com/Human-Cognome-Project/human-cognome-project/pull/420#issuecomment-7111426753)
-source-accepts `e83bb3a6` and directs investigation of #417 before a code or
-tolerance proposal. The [source-pinned report](../engine/docs/LEAF-REFERENCE-INSPECTION.md)
-personally inspects both original #417 and passing #418 ZIPs and verifies their
-digests, test-merge trees, native source and IR-audit controls. This branch starts
-from current main `3080687a`, with byte-identical executable source to #417.
-The logical header implementation remains on open #420; it is not added here.
+Main `fae58e79` integrates #417–#420 after hosted qualification. The prepared layout helper and standalone logical ActiveAssembly target are integrated. The first #417 attempt remains evidence of a leaf/reference mismatch in round 28. Its same-head retry passed. The constructed Q6 boundary witness explains how the calculations can diverge; the original operands are unknown.
 
-Source/control-flow inference narrows the hosted assertion to an ordinary tick
-of `three_level_overlap` round 28. Tick, leaf, packets and ordered body/source
-inputs are absent. Both the original and temporary failure-diagnostic moving
-controls pass locally. A separate valid native fixture demonstrates the exact
-comparison rejecting X=29 against reference 29.25 in all eight one/two-worker ×
-bulk/direct × default/no-unroll profiles. A one-f64-ULP arithmetic difference
-straddles a Q6 boundary. This is a constructed counterexample, not proof of the
-original failure's cause or an assertion correction. No repository C++ is changed.
+The next bounded task is failure-only capture of the tick, leaf, packets and ordered inputs at the existing assertion. Preserve its exact predicate and the production calculation. [Inspection and evidence](../engine/docs/LEAF-REFERENCE-INSPECTION.md)
 
-The report retains raw artifacts, source/build/probe commands, hex inputs,
-comparison reconstruction, verified archive and reused source-equivalent #416
-quick evidence. Next proposed PR: capture fixture/round/tick, leaf identity,
-before/after packets/selectors, visits/publications and ordered cohort inputs
-only when the existing comparison fails; then throw the same assertion. Use
-the native boundary witness to exercise that capture. Review actual hosted
-operands before selecting a reference/error-bound or arithmetic correction.
+## November 23, 2026 — standalone logical boundary awaiting review
 
-Main remains `3080687a`, integrating #415/#416. #417–#420 are open/source-accepted
-and now pass hosted smoke/native qualification. #417's same-head attempt 2
-passes with the same recorded source/native binary/optimizer target as the
-preserved original failure. Its successful ZIP and final statuses have a separate
-completion archive; the initial evidence is unchanged. The failure's cause is
-unresolved. No extra rerun was dispatched here. Return the investigation for
-review and authoritative CI; disposition of the prior integration hold and all
-merges remain maintainer-only. #324, accounting/cleanup/admission credit,
-GPU/concurrency and held #75/#111/#123 remain separate.
+[#419 decision 7109569209](https://github.com/Human-Cognome-Project/human-cognome-project/pull/419#issuecomment-7109569209)
+source-accepts `eabf688d` and authorizes the combined logical header/target slice.
+The [implementation and evidence](../engine/docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23)
+at tested `77559b32` preserve the old umbrella, public geometry wrapper, logical
+declarations/semantics and native owner/lifecycle. `active_assembly` now links
+only membership/projection/warm values; native consumers declare their own
+field/study dependencies. No further prepared orchestration helper was added.
 
-## November 23, 2026 — private request-preflight extraction integrated in #416
+Quick local CI, sixteen Clang/fourteen GCC native CTests and five standalone
+tests on Clang 15/GCC 11/GCC 13 pass. Standalone `5a3f35ad` source equivalence
+and 29 original-versus-new logical checks are verified. Real native histories,
+132 phases and 24,024 row/dylib observations match with prior retirement-order
+limits intact. The first missing native test link and development assertion
+failures are retained with the correction; no native assertion was weakened.
+Published `bbfd866a` has the exact tested tree; source-pin mappings and an
+incremental bundle retain the local tested commits in the evidence archive.
 
-[#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574)
-accepts reviewed `8101a1ed` for bounded continuation and authorizes the private
-binding/layout/frame/scratch extraction. #415 and #416 passed hosted qualification and are integrated at `fabf803f` and `3080687a`. The original tested source is retained here; latest work and pending-stack qualification are recorded above.
+Main is still `3080687a`; this branch pins reviewed #419. #417–#419 are open and
+source-accepted with smoke passed. #417 native run 45220070965 failed its
+two-worker direct compiler job 137859808354 and aggregate. The component report
+links the exact step/log and uninspected redirected-artifact limit. #418/#419
+native CI remains pending. Do not treat the local pass as hosted qualification.
 
-The [implementation and evidence](../engine/docs/PREPARED-REQUEST-PREFLIGHT.md)
-at `9c3f03a8` moves only those checks into a private helper in `active_session.cpp`.
-The caller still performs source/resource, owner, capability and duplicate checks
-first. Helper failure returns the same result with identical statuses/demand;
-success proceeds at the same point before candidate/native construction. No new
-public API, class layout, allocator, registry or numerical behaviour is introduced.
+Return this implementation for review and authoritative CI; reconcile that
+existing failure before integration in dependency order. Native rollback/cleanup,
+complete accounting, admission credit, GPU/concurrency and #324 remain separate;
+#75/#111/#123 stay held. All merges remain maintainer-only.
 
-The whole original translation unit reconstructs byte for byte after adapting
-the helper's refusal returns. Quick CI, eight Clang/six GCC CTests pass locally,
-including active prepared submission and real late refusal/retry/sibling dispatch
-on bulk/direct CPU. The verified #415 comparison retains all original histories,
-132 phases and 24,024 individual row/dylib observations exactly. Parent inspection
-[source/evidence](../engine/docs/REFUSED-SUBMISSION-JIT-TRACE.md) stays separate.
+## November 23, 2026 — responsibility disposition source-accepted
 
-The extraction is integrated; latest work and qualification are recorded above. Keep bootstrap, map transfer, source/JIT
-lifetime, drain and tick execution with their current owners. Complete native
-bytes/peaks, registered retirement, cleanup, admission credit, GPU/concurrency and
-#324 remain separate. Keep `complete=false`; #75/#111/#123 remain held. All merges
-remain maintainer-only.
+[#418 decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534)
+source-accepts `7831326c` and requests reconciliation before another extraction.
+The [existing map now reconciles the current prepared path](../engine/docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+at that exact source. The prepared transaction has a sufficient owner boundary:
+keep staging, refusal propagation and publication together. Caller choices,
+prepared ownership, native authority and completed observation remain distinct.
+
+The next outstanding boundary is the logical caller's dependency on native
+study/session declarations and geometry linkage. Fresh Clang include probes and
+a newly compiled logical object confirm both dependencies. The proposed next
+slice separates value-only declarations while retaining the umbrella, reuses
+the existing intrinsic validation and proves an independent logical target.
+It must preserve geometry exceptions, private-input/identity/focus behavior and
+native lifecycle. This is a reviewable proposal; no code/build move is made here.
+
+Boundary/fork checks pass; executable sources match tested #418 `68448975`.
+Original quick/eight Clang/six GCC evidence is verified and reused, not rerun.
+The map retains commands, source pins, new versus reused evidence and archive.
+Main `3080687a` integrates qualified #416 with the exact reviewed `adc3ad29`
+tree. #417 `0d1fd0a2` and #418 `7831326c` remain open and source-accepted;
+smoke passed, native CPU CI remains in progress. This branch depends on #418.
+
+#419 decision 7109569209 source-accepts this disposition and authorizes the
+logical-header/geometry implementation above. The map retains its original
+inspection pin and acceptance/files list. Do not peel more prepared orchestration
+helpers merely to shrink the method. Complete accounting, native rollback/cleanup,
+admission credit, GPU/concurrency and #324 remain separate; #75/#111/#123 stay held. All merges and
+dependency integration remain maintainer-only.
+
+## November 23, 2026 — private source-layout helper source-accepted
+
+[#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435)
+source-accepts `0d1fd0a2` and authorizes the prepared-specific unregistered graph
+helper. #418 decision 7109138534 source-accepts the resulting `7831326c`.
+Main `3080687a` integrates qualified #416. At that review #417/#418 had smoke
+success and native CI pending; subsequent findings and current work are above.
+
+The [implementation](../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md) at tested
+`68448975` moves only root/optional primary/i32-place construction and pointer
+binding into a private helper in the same translation unit. It takes validated
+`AdmissionBindings &` and returns `unique_ptr<SNode>`, with no Program, Runtime,
+staging map, Harness or candidate owner. Source registration and guard assignment
+remain immediately after the helper call, before unchanged Harness construction.
+Preflight, request-copy semantics, shapes, pointer identity, ownership/drain,
+bootstrap, publication/map transfer and ticks retain their original contract.
+
+Inlining the helper reconstructs the entire parent file byte for byte. Quick CI,
+eight Clang/six GCC CTests pass locally, with matching active results, native root
+and retirement record sets, original refusal/retry/survivor histories, 132 phases
+and 24,024 row/dylib observations against the verified before bundle. The
+initial ordered-retirement audit and its random-UUID final-order diagnosis are
+retained; comparisons exclude independent final Execution order without changing
+any runtime assertion. The
+[inspection decision](../engine/docs/PREPARED-SOURCE-LAYOUT.md) retains its source
+and native-materialization-failure limit; no rollback improvement is claimed.
+
+The extraction's authoritative GitHub CI remains pending. Complete accounting,
+native rollback, cleanup, admission credit, GPU/concurrency and #324 remain
+separate. Keep `complete=false` for
+unmeasured resources; #75/#111/#123 remain held. All merges remain maintainer-only.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

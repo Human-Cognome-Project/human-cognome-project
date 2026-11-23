@@ -70,6 +70,23 @@ matched Taichi build path, failing command and CTest output
 documentation problem, not a passing run. Do not fix runtime mismatch by mixing
 headers/libraries/bitcode from different builds.
 
+## Optional: check logical assembly without the native runtime
+
+The independent value suite includes `active_assembly_test`, which compiles,
+links and exercises logical shared/private input, identity, focus and geometry
+validation without Taichi or PostgreSQL. This optional check does not execute
+native physics or replace `engine_smoke_test` above. It runs in the hosted
+native CPU workflow's `projection-values` job.
+
+```sh
+cmake -S engine/tests/letter_projection -B /tmp/hcp-logical-values
+cmake --build /tmp/hcp-logical-values -j 2
+ctest --test-dir /tmp/hcp-logical-values --output-on-failure
+```
+
+All five value CTests must pass. For the source-pinned implementation and native
+compatibility evidence, see the [logical boundary](../../engine/docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23).
+
 ## Optional: look at a retained capture
 
 Open [the bundled viewport](../../tools/viewport/index.html) locally in a

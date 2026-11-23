@@ -13,13 +13,7 @@ The modified fork is expected at:
 engine/taichi/
 ```
 
-The [current leaf-reference investigation](docs/LEAF-REFERENCE-INSPECTION.md)
-inspects #417's original hosted failure and #418's passing artifact. It records
-the missing moving-cut operands and a separate native Q6 rounding-boundary
-counterexample. The next proposed slice captures failure context while retaining
-the comparison. Current main integrates #416; #417–#420 remain separate open,
-hosted-qualified contributions after #417's same-head retry. Its original failure
-remains undiagnosed; integration remains with the maintainer. See the [handoff](../docs/core-local-study-continuation-plan.md).
+The [leaf-reference investigation](docs/LEAF-REFERENCE-INSPECTION.md) records the original hosted failure, successful retry and a constructed quantization-boundary case. The next diagnostic captures the operands when the existing comparison fails.
 
 ## Layout
 
@@ -39,9 +33,11 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) before changing boundaries.
 
 The active workbench keeps logical `ActiveAssembly` implementation in
 `src/assembly/active_workbench.cpp` and native `ActiveSession` lifetime/reporting
-implementation in `src/assembly/active_session.cpp`. They retain one public
-header and the same library target; see the
-[ownership contract and split evidence](docs/ACTIVE-WORKBENCH.md#native-implementation-split--2026-11-15).
+implementation in `src/assembly/active_session.cpp`. Logical callers use the
+value-only `assembly/active_assembly.h` and standalone `active_assembly` target;
+`assembly/active_workbench.h` remains the compatibility umbrella. Native callers
+retain the `active_workbench` target and explicit study/field dependencies. See
+the [boundary and qualification](docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23).
 
 The [native nested-instance inspection](docs/NATIVE-INSTANCE-INSPECTION.md)
 compares compiled layouts, indexed runtime cells and HCP occurrences, including
@@ -134,6 +130,25 @@ implements the approved binding/layout/frame/scratch split, preserving exact
 check order, status/demand and native ownership. Full native bytes remain an
 admission-accounting limit.
 New review and authoritative CI remain separate from the local evidence.
+
+The [prepared source-layout inspection](docs/PREPARED-SOURCE-LAYOUT.md) records
+the approved keep-local decision and its binding, registration and lifetime
+comparison. Its original source and unqualified materialization-failure edge
+remain recorded separately.
+
+The [private source-layout helper](docs/PREPARED-SOURCE-LAYOUT-HELPER.md)
+implements that approved extraction. It constructs the unchanged unregistered
+graph and fills existing binding pointers; the session keeps native registration
+and the candidate's existing guard. Source reconstruction and CPU before/after
+controls qualify the bounded move. #418 source-accepts the helper; authoritative
+native CPU CI remains pending after smoke success.
+
+The [responsibility reconciliation](docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+finds a sufficient prepared transaction boundary. #419 source-accepts that
+disposition and authorizes the logical caller's header/geometry separation
+implemented above. Its original source-pinned dependency probes remain historical.
+The current handoff records the existing #417 hosted compiler failure; new local
+qualification does not clear that failure or pending authoritative CI.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with

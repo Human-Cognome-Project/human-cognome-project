@@ -1,37 +1,90 @@
 # Current implementation and work
 
-## November 23, 2026 — leaf-reference investigation for review
+## November 23, 2026 — integrated through #420
 
-The [hosted artifact and native boundary inspection](../../engine/docs/LEAF-REFERENCE-INSPECTION.md)
-at main `3080687a` follows [#420 decision 7111426753](https://github.com/Human-Cognome-Project/human-cognome-project/pull/420#issuecomment-7111426753).
-The original #417 failure is inferred to occur in round 28, but lacks tick,
-leaf and compared inputs. A separate native witness produces X=29 versus the
-original reference's 29.25 at a Q6 boundary on eight worker/path/compiler profiles.
-That demonstrates a comparison weakness without diagnosing the hosted operands.
-The original and diagnostic focused moving controls pass locally; the original
-failure's cause remains unresolved. Production, tests and tolerances are unchanged.
+Main `fae58e79` integrates #417–#420 after hosted qualification. The prepared layout helper and standalone logical ActiveAssembly target are integrated. The first #417 attempt remains evidence of a leaf/reference mismatch in round 28. Its same-head retry passed. The constructed Q6 boundary witness explains how the calculations can diverge; the original operands are unknown.
 
-Next proposed slice: failure-only context/packet/cohort capture at the existing
-assertion, retaining the exact comparison and numerical execution. Reused #416
-quick evidence is source-equivalent and verified; no full baseline was repeated.
-This independent inspection starts from main, whose relevant sources match
-#417 and #418. Pending refactoring contributions remain separate from main:
+The next bounded task is failure-only capture of the tick, leaf, packets and ordered inputs at the existing assertion. Preserve its exact predicate and the production calculation. [Inspection and evidence](../../engine/docs/LEAF-REFERENCE-INSPECTION.md)
 
-| PR | Reviewed head | Current disposition |
-| --- | --- | --- |
-| #417 | `0d1fd0a2` | Source-accepted; same-head attempt 2 passed, original failure preserved; unmerged |
-| #418 | `7831326c` | Private unregistered source-layout helper; hosted-qualified, unmerged |
-| #419 | `eabf688d` | Responsibility reconciliation; hosted-qualified, unmerged |
-| #420 | `e83bb3a6` | Standalone logical header/target source-accepted; hosted-qualified, unmerged |
+## November 23, 2026 — standalone logical ActiveAssembly for review
 
-The successful retry uses the same source, binary hash and declared optimizer
-target as the original; it does not explain the missing leaf comparison.
-Return this disposition for review and authoritative CI. Disposition of the
-prior integration hold and all merges remain
-maintainer-only; #324, complete accounting/admission credit and held #75/#111/#123
-remain separate. [Current handoff](../core-local-study-continuation-plan.md)
+The [logical header/target implementation and qualification](../../engine/docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23)
+follows [#419 decision 7109569209](https://github.com/Human-Cognome-Project/human-cognome-project/pull/419#issuecomment-7109569209).
+The unchanged logical declarations now have a value-only header and independent
+target. The compatibility umbrella and public geometry symbol remain; logical
+validation reuses the existing intrinsic calculation. Explicit native consumers
+keep their own field/study links. The prepared candidate transaction is unchanged.
 
-## November 23, 2026 — private prepared-request preflight integrated in #416
+At tested `77559b32`, quick local CI and sixteen Clang/fourteen GCC CTests pass.
+Three standalone compilers pass all five tests; their source at `5a3f35ad` is
+identical in this scope. The 29 logical checks match original native-linked
+behavior, and original native refusal/retry/sibling histories remain preserved.
+Published `bbfd866a` has the exact tested tree; evidence retains the tested commits.
+
+Main remains `3080687a`; #417–#419 are open/source-accepted with smoke passed.
+#417's native compiler two-worker direct job failed, and its aggregate failed;
+the local pass does not clear it. #418/#419 native CI remains pending. Return
+this bounded implementation for review/authoritative CI and reconcile that
+failure before dependency-order integration. [Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — responsibility reconciliation source-accepted
+
+The [current responsibility map](../../engine/docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+at inspected `7831326c` follows [#418 decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534).
+The prepared candidate transaction has a sufficient owner boundary; staging,
+refusal results and map transfer remain together. The next proposed slice is
+the logical caller's combined header/geometry dependency: `ActiveAssembly` still
+loads and links native study preparation. Existing pure geometry machinery can
+serve that boundary without a new formula. No code/build extraction is included.
+
+Fresh compiler/header/symbol inspection and boundary/fork checks pass. All
+executable sources match tested #418 `68448975`; quick/eight Clang/six GCC
+evidence is manifest-verified and reused, with no native baseline rerun.
+#419 [decision 7109569209](https://github.com/Human-Cognome-Project/human-cognome-project/pull/419#issuecomment-7109569209)
+source-accepts this disposition and authorizes the bounded implementation above.
+This entry retains its original inspection pin; current hosted state and task
+ownership are recorded in the latest entry.
+[Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — prepared source-layout helper source-accepted
+
+The [implementation and qualification](../../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md)
+at tested `68448975` follows [#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435).
+One private helper borrows validated bindings, fills the root/optional-primary
+pointers and returns the unchanged unregistered i32-place graph. The session
+keeps registration, candidate guard, Harness construction, bootstrap and map
+transfer at their existing points. Inlining reconstructs the parent file exactly.
+
+Quick, eight Clang/six GCC CTests pass locally. Active results, native root/backing
+records, retirement record sets and original real histories match, including
+132 phases and 24,024 row/dylib observations. Independent final Execution order
+is excluded from retirement comparisons; drain assertions are unchanged.
+#418 decision 7109138534 source-accepts final `7831326c`. Main `3080687a`
+integrates qualified #416. At that review #417/#418 had smoke success and native
+CI pending; the latest entry records the subsequent #417 failure and current task.
+
+The helper's authoritative GitHub CI remains pending. Broader owner
+changes, rollback, complete accounting, cleanup, admission credit and #324 remain
+separate; #75/#111/#123 stay held. [Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — prepared source-layout inspection source-accepted
+
+The [reuse and ownership disposition](../../engine/docs/PREPARED-SOURCE-LAYOUT.md)
+at inspected `adc3ad29` follows [#416 decision 7107054533](https://github.com/Human-Cognome-Project/human-cognome-project/pull/416#issuecomment-7107054533).
+Keep the small topology builder local; reuse native SNode operations and the
+existing retirement guard. Legacy/test builders have different binding or tree
+lifetime contracts. The smallest proposed follow-up extracts only unregistered
+graph preparation/pointer binding into a private helper, leaving Program
+registration, candidate ownership and publication with the session.
+
+Production/executable source is unchanged. Source equivalence and the reused
+#416 local quick/eight Clang/six GCC evidence are verified; boundary/fork checks
+pass. No native baseline was rerun for this inspection. #417 decision 7108110435
+source-accepts the disposition and authorizes the helper above. Current parent
+qualification/integration and implementation review are recorded in the latest
+entry and [handoff](../core-local-study-continuation-plan.md).
+
+## November 23, 2026 — private prepared-request preflight source-accepted
 
 The [private extraction and qualification](../../engine/docs/PREPARED-REQUEST-PREFLIGHT.md)
 at tested `9c3f03a8` follows [#415 decision 7106148574](https://github.com/Human-Cognome-Project/human-cognome-project/pull/415#issuecomment-7106148574).
@@ -41,9 +94,12 @@ of submission reconstruct exactly; public types, ownership and numerical code
 are unchanged. Quick, eight Clang/six GCC CTests pass locally. Original real
 histories, 132 phases and 24,024 row/dylib observations compare exactly.
 
-#415 and #416 passed hosted qualification and are integrated at `fabf803f` and `3080687a`. The original tested source is retained here; latest work and pending-stack qualification are recorded above.
+#415 passed both hosted gates and is integrated at `fabf803f`. #416 is
+source-accepted and has passed both hosted gates; its integration status is
+recorded above. This entry retains its original qualification pin.
 
-This extraction is integrated. Broader ownership,
+#416's source acceptance and hosted qualification support the reviewed follow-up
+above. Broader ownership,
 cleanup, admission credit, complete accounting and #324 remain separate; held
 #75/#111/#123 are unchanged. [Current handoff](../core-local-study-continuation-plan.md)
 

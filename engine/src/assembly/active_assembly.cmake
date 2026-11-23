@@ -1,0 +1,6 @@
+include(${CMAKE_CURRENT_LIST_DIR}/membership_fields.cmake)
+if(NOT TARGET active_assembly)
+  add_library(active_assembly STATIC ${CMAKE_CURRENT_LIST_DIR}/active_workbench.cpp)
+  target_link_libraries(active_assembly PUBLIC membership_fields)
+  target_compile_options(active_assembly PRIVATE -Wall -Wextra -Wpedantic)
+endif()
