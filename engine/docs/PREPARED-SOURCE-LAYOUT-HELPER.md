@@ -107,8 +107,13 @@ lifetime comparisons and the manifest-verified #416 comparison bundle. Fresh
 extraction verifies manifests and reused raw-log equality. This machine-local
 path does not publish raw evidence remotely.
 
-Return this helper extraction for maintainer review and authoritative GitHub CI.
-Parent qualification/integration remains separately recorded in the current
-handoff. Broader ownership changes, native rollback, complete accounting, cleanup,
-admission credit and #324 remain separate; #75/#111/#123 remain held. No further
+#418 [decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534)
+source-accepts final `7831326c` after independent source reconstruction. The
+maintainer did not independently inspect the local raw archive. Smoke passed;
+native CPU CI remains in progress. Main `3080687a` integrates qualified #416;
+#417/#418 remain open. The [responsibility reconciliation](RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+is the requested next disposition before another extraction and preserves this
+implementation's original evidence pin. Broader ownership changes, native
+rollback, complete accounting, cleanup, admission credit and #324 remain
+separate; #75/#111/#123 remain held. No further
 implementation scope follows from the local pass.

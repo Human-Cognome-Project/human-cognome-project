@@ -1,5 +1,25 @@
 # Engine and Analyst-facing refactoring plan
 
+## November 23, 2026 — current responsibility disposition
+
+The [reconciled existing map](../engine/docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+at inspected `7831326c` follows [#418 decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534).
+Pass 1 finds a sufficient prepared transaction boundary: preserve staging,
+refusal propagation and map publication under the session candidate owner.
+The remaining mixed responsibility affects logical callers: one umbrella header
+and the enclosure-validation link still pull native study machinery into
+`ActiveAssembly`. The proposed next slice separates that header/target boundary
+using existing intrinsic geometry validation, with compatibility and exact
+identity/private-input/focus/exception controls. No production extraction is
+implemented by this reconciliation; return the disposition before that work.
+
+New compiler/include/symbol and boundary/fork checks pass. Executable source is
+identical to tested #418 `68448975`; prior local quick/eight Clang/six GCC
+evidence is verified and reused without rerunning a baseline. Main `3080687a`
+integrates qualified #416. #417/#418 remain open and source-accepted, with smoke
+passed and native CPU CI in progress. New review/authoritative CI remain separate.
+[Current handoff](core-local-study-continuation-plan.md)
+
 ## November 23, 2026 — private prepared-source graph helper
 
 The [implementation](../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md) at tested
@@ -12,9 +32,11 @@ map transfer remain with the session. Inlining reconstructs the full parent file
 Quick, eight Clang/six GCC CTests pass locally, preserving exact active results,
 native layout/retirement record sets and real refusal/retry/survivor histories.
 Independent final Execution order is excluded; runtime assertions are unchanged.
-Main `fabf803f` integrates qualified #415. #416 passed both hosted gates and remains unmerged; #417 is source-accepted at `0d1fd0a2`, with smoke passed and native CI still running. This branch explicitly pins that reviewed #417 dependency.
+#418 decision 7109138534 source-accepts final `7831326c`. Main `3080687a`
+integrates qualified #416; #417/#418 remain open with native CI running after
+smoke success. Current work is the source-pinned disposition above.
 
-This implementation awaits review and authoritative CI. It creates no general
+This implementation awaits authoritative CI. It creates no general
 builder, persistent owner, public API, class-layout change, registry, resource
 gate, cleanup or numerical behaviour. [Current handoff](core-local-study-continuation-plan.md)
 

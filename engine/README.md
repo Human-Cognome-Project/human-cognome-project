@@ -136,7 +136,15 @@ The [private source-layout helper](docs/PREPARED-SOURCE-LAYOUT-HELPER.md)
 implements that approved extraction. It constructs the unchanged unregistered
 graph and fills existing binding pointers; the session keeps native registration
 and the candidate's existing guard. Source reconstruction and CPU before/after
-controls qualify the bounded move. New review and authoritative CI remain separate.
+controls qualify the bounded move. #418 source-accepts the helper; authoritative
+native CPU CI remains pending after smoke success.
+
+The [current responsibility reconciliation](docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+finds a sufficient prepared transaction boundary and proposes the logical
+caller's header/geometry dependency as the next slice. Fresh compiler and symbol
+inspection confirm that `ActiveAssembly` still loads and links native study
+machinery. This documentation-only disposition reuses verified #418 local
+evidence; its proposed extraction requires review before implementation.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with
