@@ -1,33 +1,41 @@
 # Current implementation and work
 
-**#408 combined correction — 2026-11-22 (qualified candidate awaiting maintainer integration/review):**
-[Borrow-aware inspection, preserved reports and combined evidence](../../engine/docs/NATIVE-REGISTRATION-FAILURES.md)
-at tested `cf26b62e` applies [review 7082256953](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082256953)
-on #407 `fccae608`. The fixture uses `k.compiled_data()` through the native borrow
-contract. Production is exactly #407; no registration-attempt ownership is
-implemented. Both native reports and their original source/evidence pins remain.
+**Native CPU registration attempts — 2026-11-22 (implementation submitted for review):**
+[Existing-slot metadata, safe identity and measured cost](../../engine/docs/NATIVE-REGISTRATION-ATTEMPTS.md)
+at tested `635ee3ea` follows [review 7082960643](https://github.com/Human-Cognome-Project/human-cognome-project/pull/408#issuecomment-7082960643).
+Each existing CPU row retains progress, failure, compiled-record identity and any
+confirmed module link. Consumed IDs without row metadata remain explicit gaps;
+entering the JIT factory marks observation incomplete before earlier side effects
+can escape a returned wrapper. Record identity shares existing invalidatable
+metadata without acquiring a client borrow or extending data/Program lifetime.
+It stays safe through finalization/Runtime destruction; unknown identity stays
+unavailable. No second registry or execution authority is introduced.
 
-Quick, thirteen Clang/nine GCC CTests and five warm/viewport-OFF cases pass.
-Seven original registration histories/112 snapshots, both fault windows,
-retries, surviving handles/tasks/dispatch and shutdown remain unchanged.
-Seven removal cases preserve 83 observed C++ requests / 7,010 requested bytes
-released, with guard move/unwind/expiration and architecture controls passing.
-These are separately pinned combined results; original #408/#407 measurements
-retain their original sources. No registered/ORC retirement or admission change
-is added. Inner JIT failures, complete B, GPU, concurrency and #324 stay separate.
+Measured CPU launcher extent grows 48→56 bytes and slot extent 48→80; the
+six-slot fixture's capacity grows 384→640 bytes. Its existing four 48-byte
+controls now remain after finalization until rows/caller identities release.
+Native compiled-data/HCP wrapper/guard extents are unchanged. Those are scoped
+costs, not whole-owner peak, complete B, admission credit or achieved saving.
+Quick CI, 23 Clang/17 GCC CTests and six minimal cases pass. Seven new attempt
+histories cover row-allocation gaps, confirmed-module failure, uncertain JIT
+side effects, retry/dispatch and escaped identity lifetime. All seven original
+registration histories/112 snapshots match; removal/borrow/backing and real
+legacy/prepared submission controls pass. Local evidence is separately pinned;
+GitHub CI is authoritative and acceptance remains maintainer work.
 
-**Directly confirmed state:** main `2fdcfcbc` integrates qualified #406 with
-reviewed `33da9a0f`'s exact tree. #407 `fccae608` targets main and is provisionally
-accepted in [review 7082250727](https://github.com/Human-Cognome-Project/human-cognome-project/pull/407#issuecomment-7082250727);
-smoke passed and authoritative native qualification remains pending.
-#408 remains open: its original #405-based inspection is accepted, while the
-combined correction requires integration/review. Seven Markdown conflicts are
-reconciled in this candidate; all merge events/integration into #408 remain
-maintainer-only. A draft qualification PR supplies new authoritative GitHub CI
-on the combined tree, without rewriting either PR history.
-A chat “accepted” signals review; confirm refs/handoffs for actual state.
-Return the combined head before implementing registration-attempt ownership.
-Earlier entries retain their source-specific handoffs.
+**Directly confirmed dependency state:** main `ff82d2cc` integrates qualified
+#407. The maintainer resolved #408 at `4747d113`, exactly #409's `5a9ad101` tree,
+preserving both histories. Review 7082960643 accepts that correction for
+continued work and authorizes this bounded next implementation. #408 remains
+open with smoke passed and native 45050309075 pending at inspection; #409's
+candidate is incorporated, not another merge required from this contributor.
+The new branch is stacked on resolved #408. Reconcile dependent hosted gates
+before maintainer integration; no duplicate dispatch. A chat “accepted” signals
+review; refs/reviews/handoffs determine actual state. Return this source, focused
+evidence and cost for review before selecting further registered-resource work.
+Registered retirement, row reuse, ORC cleanup, full B/admission, GPU/concurrency
+and #324 remain separate. Held #75/#111/#123 are unchanged. All merge events
+belong to the maintainer. Earlier entries retain their source-specific handoffs.
 
 **Recipe-backed parent targets — integrated in #398:**
 [Actual 72-byte rows, complete exports and pool phases](../../engine/docs/PROJECTION-PARENT-TARGET-INDICES.md)

@@ -57,6 +57,55 @@ LaunchContextStorage KernelLauncher::context_storage(std::size_t index,
   return result;
 }
 
+CpuRegistrationAttempt KernelLauncher::cpu_registration_attempt(std::size_t index) const noexcept {
+  CpuRegistrationAttempt result;
+  result.owner = this; result.id = index;
+  if (index >= issued_attempts_) {
+    result.status = OwnershipCountStatus::Absent;
+    return result;
+  }
+  // A failed resize still consumed the existing append-only handle ID. A later
+  // resize may materialize that gap, but must never invent its record identity.
+  if (index >= contexts_.size() ||
+      contexts_[index].registration.stage == CpuRegistrationStage::Unobserved) {
+    result.status = OwnershipCountStatus::Incomplete;
+    result.failed = true;
+    result.module_status = OwnershipCountStatus::Absent; // No JIT call before row storage.
+    return result;
+  }
+  const auto &entry = contexts_[index].registration;
+  result.record = entry.record; result.stage = entry.stage;
+  result.failed = entry.failed; result.module = entry.module;
+  result.module_status = entry.module_status;
+  result.status = entry.record.observation().status == OwnershipCountStatus::Unavailable ||
+                          entry.module_status == OwnershipCountStatus::Incomplete
+                      ? OwnershipCountStatus::Incomplete : OwnershipCountStatus::Present;
+  return result;
+}
+
+CpuRegistrationAttemptCounts KernelLauncher::cpu_registration_attempt_counts(std::size_t entry_budget) const noexcept {
+  CpuRegistrationAttemptCounts result;
+  result.owner = this; result.issued_attempts = issued_attempts_; result.stored_slots = contexts_.size();
+  result.status = OwnershipCountStatus::Incomplete;
+  if (issued_attempts_ > entry_budget) return result;
+  for (std::size_t i = 0; i < issued_attempts_; ++i) {
+    ++result.visited_attempts;
+    const auto entry = cpu_registration_attempt(i);
+    if (entry.stage == CpuRegistrationStage::Unobserved) {
+      ++result.missing_metadata; ++result.failed_attempts; continue;
+    }
+    ++result.recorded_attempts;
+    result.failed_attempts += entry.failed;
+    result.published_attempts += entry.stage == CpuRegistrationStage::Published;
+    result.unknown_records += entry.record.observation().status == OwnershipCountStatus::Unavailable;
+    result.known_modules += bool(entry.module);
+    result.uncertain_modules += entry.module_status == OwnershipCountStatus::Incomplete;
+  }
+  if (!result.missing_metadata && !result.unknown_records && !result.uncertain_modules)
+    result.status = OwnershipCountStatus::Present;
+  return result;
+}
+
 std::unique_ptr<LaunchContextBuilder::Prepared>
 KernelLauncher::prepare_llvm_kernel(Handle handle, LaunchContextBuilder &ctx) {
   auto state = std::make_unique<LaunchContextBuilder::Prepared>();
@@ -164,33 +213,53 @@ KernelLauncher::Handle KernelLauncher::register_llvm_kernel(
 
   if (!compiled.get_handle()) {
     compiled.mark_registration_started();  // Before any row/JIT side effects.
+    if (issued_attempts_ >= std::size_t(std::numeric_limits<int>::max()))
+      throw std::overflow_error("CPU registration slot IDs exhausted");
     auto handle = make_handle();
     auto index = handle.get_launch_id();
+    issued_attempts_ = std::size_t(index) + 1;
     contexts_.resize(index + 1);
 
     auto &ctx = contexts_[index];
+    auto &attempt = ctx.registration;
+    attempt.record = compiled.record_identity(); // Non-lazy; unknown stays unknown.
+    attempt.stage = CpuRegistrationStage::RowAllocated;
     auto *executor = get_runtime_executor();
 
-    auto data = compiled.get_internal_data().compiled_data.clone();
-    auto parameters = compiled.get_internal_data().args;
-    auto *jit_module = executor->create_jit_module(std::move(data.module));
+    try {
+      auto data = compiled.get_internal_data().compiled_data.clone();
+      attempt.stage = CpuRegistrationStage::IrCloned;
+      auto parameters = compiled.get_internal_data().args;
+      // The session may create a dylib/IR before it can return/store a wrapper.
+      // Any exception through this call leaves resource association incomplete.
+      attempt.stage = CpuRegistrationStage::CreatingModule;
+      attempt.module_status = OwnershipCountStatus::Incomplete;
+      auto *jit_module = executor->create_jit_module(std::move(data.module));
+      attempt.module = jit_module;
+      if (jit_module) attempt.module_status = OwnershipCountStatus::Present;
+      attempt.stage = CpuRegistrationStage::ModuleReturned;
 
-    // Construct task_funcs
-    using TaskFunc = int32 (*)(void *);
-    std::vector<TaskFunc> task_funcs;
-    task_funcs.reserve(data.tasks.size());
-    for (auto &task : data.tasks) {
-      auto *func_ptr = jit_module->lookup_function(task.name);
-      TI_ASSERT_INFO(func_ptr, "Offloaded datum function {} not found",
-                     task.name);
-      task_funcs.push_back((TaskFunc)(func_ptr));
+      // Construct task_funcs
+      using TaskFunc = int32 (*)(void *);
+      std::vector<TaskFunc> task_funcs;
+      task_funcs.reserve(data.tasks.size());
+      for (auto &task : data.tasks) {
+        auto *func_ptr = jit_module->lookup_function(task.name);
+        TI_ASSERT_INFO(func_ptr, "Offloaded datum function {} not found",
+                       task.name);
+        task_funcs.push_back((TaskFunc)(func_ptr));
+      }
+
+      // Populate ctx
+      ctx.parameters = std::move(parameters);
+      ctx.task_funcs = std::move(task_funcs);
+
+      compiled.set_handle(handle);
+      attempt.stage = CpuRegistrationStage::Published;
+    } catch (...) {
+      attempt.failed = true;
+      throw;
     }
-
-    // Populate ctx
-    ctx.parameters = std::move(parameters);
-    ctx.task_funcs = std::move(task_funcs);
-
-    compiled.set_handle(handle);
   }
   return *compiled.get_handle();
 }

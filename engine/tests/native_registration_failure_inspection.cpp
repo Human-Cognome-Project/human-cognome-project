@@ -1,3 +1,5 @@
+#define HCP_ALLOCATION_LIFETIME
+#include "allocation_observation.h"
 #include "engine/runtime.h"
 #include "engine/transfer.h"
 #include "taichi/codegen/llvm/compiled_kernel_data.h"
@@ -29,13 +31,17 @@ struct Attempt {
   std::size_t row{};
   JITModule *module{};
   Fault fault{};
+  const void *record_identity{};
 };
+struct Control { void *allocation{}; std::size_t bytes{}; bool released{}; };
 // Fixed observer storage, never an execution or retirement authority. Copied
 // identities are inspected only while live; delete observers never dereference.
 struct Trace {
   std::array<Object, 64> objects{};
   std::size_t object_count{}, attempt_count{}, serial{}, last_data_release{}, first_module_release{};
   std::array<Attempt, 16> attempts{};
+  std::array<Control, 8> controls{};
+  std::size_t control_count{};
   Program *program{};
   const CompiledKernelData *current_record{};
   JITModule *runtime_module{}, *latest_module{};
@@ -44,6 +50,27 @@ struct Trace {
   std::size_t data_during_finalize{}, modules_during_finalize{}, finalize_calls{}, snapshots{}, cache_returns{};
 };
 thread_local Trace *active{};
+void control_released(void *pointer, std::size_t) noexcept {
+  if (active) for (auto &c : active->controls)
+    if (c.allocation == pointer) c.released = true;
+}
+std::size_t control_bytes() {
+  std::size_t bytes = 0;
+  for (const auto &c : active->controls) if (c.allocation && !c.released) bytes += c.bytes;
+  return bytes;
+}
+void capture_control(const CompiledKernelData &data) {
+  const auto record = reinterpret_cast<std::uintptr_t>(data.borrow_observation().record);
+  check(record, "fixture did not acquire native borrow metadata");
+  for (const auto &e : allocation_lifetime::table) if (e.pointer) {
+    const auto begin = reinterpret_cast<std::uintptr_t>(e.pointer);
+    if (record < begin || record - begin >= e.bytes) continue;
+    for (const auto &c : active->controls) if (c.allocation == e.pointer) return;
+    check(active->control_count < active->controls.size(), "control observer full");
+    active->controls[active->control_count++] = {e.pointer, e.bytes, false}; return;
+  }
+  throw std::runtime_error("native control request not captured");
+}
 void capture(const void *address, Kind kind) {
   for (std::size_t i = 0; i < active->object_count; ++i) {
     const auto &o = active->objects[i];
@@ -84,6 +111,33 @@ void snapshot(Program &program, const char *phase, std::size_t data_count,
   const auto cache = impl->compiler_ownership_counts(unlimited);
   const auto jit = implementation(program).jit_ownership_counts(unlimited);
   const auto registry = impl->launch_registry_storage();
+  const auto attempts = impl->cpu_registration_attempt_counts(unlimited);
+  std::size_t failed_attempts = 0;
+  for (std::size_t i = 0; i < active->attempt_count; ++i)
+    failed_attempts += active->attempts[i].fault != Fault::None;
+  check(!attempts.complete && attempts.issued_attempts == rows &&
+            attempts.recorded_attempts == rows && attempts.visited_attempts == rows &&
+            !attempts.missing_metadata && !attempts.unknown_records &&
+            attempts.failed_attempts == failed_attempts && attempts.uncertain_modules == failed_attempts &&
+            attempts.published_attempts == rows - failed_attempts && attempts.known_modules == rows - failed_attempts &&
+            (attempts.status == OwnershipCountStatus::Present ||
+             (!rows && attempts.status == OwnershipCountStatus::Absent) ||
+             (failed_attempts && attempts.status == OwnershipCountStatus::Incomplete)),
+        "native attempt coverage/uncertainty differs from observed registration");
+  for (std::size_t i = 0; i < active->attempt_count; ++i) {
+    const auto entry = impl->cpu_registration_attempt(i);
+    const auto identity = entry.record.observation();
+    const auto &observed = active->attempts[i];
+    const bool failed = observed.fault != Fault::None;
+    check(entry.owner == registry.owner && entry.id == i && entry.failed == failed &&
+              entry.stage == (failed ? CpuRegistrationStage::CreatingModule : CpuRegistrationStage::Published) &&
+              entry.module_status == (failed ? OwnershipCountStatus::Incomplete : OwnershipCountStatus::Present) &&
+              entry.module == (failed ? nullptr : observed.module) &&
+              identity.record == observed.record_identity && !identity.untracked_clients &&
+              identity.status == (inspect_data ? OwnershipCountStatus::Present : OwnershipCountStatus::Absent) &&
+              (inspect_data ? identity.owner == cache.owner : !identity.owner && !identity.tracked_borrows),
+          "native attempt association or expired identity differs from its observed record");
+  }
   std::size_t observed_registered = 0;
   if (inspect_data) for (std::size_t i = 0; i < active->object_count; ++i) {
     const auto &o = active->objects[i];
@@ -101,6 +155,10 @@ void snapshot(Program &program, const char *phase, std::size_t data_count,
   check(cache.visited_entries == cache.pending_entries + cache.disk_metadata_entries,
         "compiler map coverage changed");
   ++active->snapshots;
+  std::cout << "registration_storage,phase=" << phase
+            << ",launcher_bytes=" << registry.object_bytes
+            << ",slot_capacity_bytes=" << registry.context_capacity_bytes
+            << ",selected_control_bytes=" << control_bytes() << " PASS\n";
   std::cout << "registration_sample,phase=" << phase << ",data_inspected=" << inspect_data
             << ",definitions_live=" << live(Kind::Definition) << ",pending_objects=" << data_count
             << ",registered_records=" << registered << ",launch_slots=" << rows
@@ -118,6 +176,7 @@ std::unique_ptr<engine::CompiledKernel> kernel(engine::Runtime &runtime, const c
   check(runtime.program().get_program_impl()->owns_compiled_kernel(Access::definition(*result), data),
         "definition did not resolve to the native owner");
   capture(&Access::definition(*result), Kind::Definition); capture(&data, Kind::Data);
+  capture_control(data);
   ++active->cache_returns; return result;
 }
 struct CurrentRecord {
@@ -247,6 +306,7 @@ void run(int workers, bool prepared) {
     Ndarray first_output(&program, PrimitiveType::i32, {1}), sibling_output(&program, PrimitiveType::i32, {1});
     Ndarray candidate_output(&program, PrimitiveType::i32, {1});
     const int zero = 0; engine::upload(candidate_output, &zero, sizeof(zero));
+    allocation_lifetime::begin(); allocation_lifetime::on_released = control_released;
     {
       auto first = kernel(runtime, "registration_first");
       launch(runtime, *first, first_output, 7, prepared); auto *first_module = trace.latest_module;
@@ -277,6 +337,8 @@ void run(int workers, bool prepared) {
             trace.data_during_finalize == 4 && !trace.modules_during_finalize &&
             trace.first_module_release > trace.last_data_release,
         "pending-data / native-session shutdown boundary changed");
+  check(trace.control_count == 4 && !control_bytes(), "selected controls survived Runtime destruction");
+  allocation_lifetime::on_released = nullptr; allocation_lifetime::end();
   std::cout << "registration_inspection,workers=" << workers << ",path=" << (prepared ? "prepared" : "dynamic")
             << ",definitions=8,compiled_records=4,registered_records=4,launch_slots=6"
                ",kernel_modules=5,runtime_modules=1,registration_attempts=6,empty_failed_slots=2"
@@ -301,7 +363,8 @@ taichi::lang::JITModule *registration_wrap_jit(taichi::lang::LlvmRuntimeExecutor
               !compiled.get_handle() && registry.status == taichi::lang::LaunchMetadataStatus::Present &&
               registry.contexts, "JIT attempt was not a cloned, handle-free registration with an existing row");
     attempt = &active->attempts[active->attempt_count++];
-    *attempt = {active->current_record, registry.contexts - 1, nullptr, active->next_fault};
+    *attempt = {active->current_record, registry.contexts - 1, nullptr, active->next_fault,
+                active->current_record->borrow_observation().record};
     active->next_fault = Fault::None;
     if (attempt->fault == Fault::BeforeModule) throw Injected{Fault::BeforeModule};
   }

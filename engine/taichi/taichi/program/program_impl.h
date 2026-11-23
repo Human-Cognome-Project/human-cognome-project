@@ -219,6 +219,19 @@ class ProgramImpl {
     return result;
   }
 
+  CpuRegistrationAttemptCounts cpu_registration_attempt_counts(std::size_t entry_budget) const noexcept {
+    if (kernel_launcher_) return kernel_launcher_->cpu_registration_attempt_counts(entry_budget);
+    CpuRegistrationAttemptCounts result;
+    result.status = OwnershipCountStatus::Absent;
+    return result;
+  }
+  CpuRegistrationAttempt cpu_registration_attempt(std::size_t index) const noexcept {
+    if (kernel_launcher_) return kernel_launcher_->cpu_registration_attempt(index);
+    CpuRegistrationAttempt result;
+    result.status = OwnershipCountStatus::Absent;
+    return result;
+  }
+
   virtual DeviceCapabilityConfig get_device_caps() {
     return {};
   }

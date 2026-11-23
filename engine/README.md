@@ -99,11 +99,13 @@ requests are separate from complete B, automatic policy, registered/JIT/ORC
 retirement and admission.
 
 The [registration-failure inspection and combined correction](docs/NATIVE-REGISTRATION-FAILURES.md)
-keep the accepted original #405-based evidence separate from the new #407 ABI
-qualification. The fixture now reads data through the checked native borrow
-accessor; both outer fault windows, retries, surviving dispatch and shutdown
-remain checked. The current handoff preserves both reports and proposes native
-attempt ownership for later review. Registered/ORC retirement remains separate.
+preserve the original source/ABI pins. Its reviewed next slice,
+[native CPU registration attempts](docs/NATIVE-REGISTRATION-ATTEMPTS.md), records
+progress beside existing slots and shares lifetime-safe metadata identity without
+acquiring a client borrow. Missing rows/identity and earlier JIT side effects
+stay explicitly incomplete. Focused failure/retry/dispatch/shutdown evidence and
+actual launcher/slot/longer-control-lifetime costs are recorded separately from
+registered retirement, ORC cleanup and admission.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with

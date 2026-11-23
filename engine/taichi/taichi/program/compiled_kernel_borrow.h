@@ -11,6 +11,7 @@
 namespace taichi::lang {
 class CompiledKernelData;
 class KernelCompilationManager;
+class CompiledKernelIdentity;
 
 struct CompiledBorrowObservation {
   OwnershipCountStatus status{OwnershipCountStatus::Unavailable};
@@ -56,6 +57,7 @@ class CompiledKernelBorrow {
  private:
   friend class CompiledKernelData;
   friend class KernelCompilationManager;
+  friend class CompiledKernelIdentity;
   struct State {
     const CompiledKernelData *data;
     const void *owner;
@@ -81,5 +83,22 @@ class CompiledKernelBorrow {
     if (state_) { --state_->borrows; state_.reset(); }
   }
   std::shared_ptr<State> state_;
+};
+
+// Keeps only the existing record metadata alive, without acquiring a client
+// borrow or extending data/Program/context lifetime. No data accessor exists.
+// Empty/unmanaged identity stays unavailable; observation never creates state.
+class CompiledKernelIdentity {
+ public:
+  CompiledKernelIdentity() = default;
+  CompiledBorrowObservation observation() const noexcept {
+    return CompiledKernelBorrow::observe(state_);
+  }
+
+ private:
+  friend class CompiledKernelData;
+  explicit CompiledKernelIdentity(std::shared_ptr<CompiledKernelBorrow::State> state)
+      : state_(std::move(state)) {}
+  std::shared_ptr<CompiledKernelBorrow::State> state_;
 };
 }  // namespace taichi::lang

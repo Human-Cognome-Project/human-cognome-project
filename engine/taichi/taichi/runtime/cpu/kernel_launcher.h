@@ -13,6 +13,13 @@ class KernelLauncher : public LLVM::KernelLauncher {
     using TaskFunc = int32 (*)(void *);
     std::vector<TaskFunc> task_funcs;
     std::vector<std::pair<std::vector<int>, Callable::Parameter>> parameters;
+    struct Registration {
+      CompiledKernelIdentity record;
+      const void *module{};
+      OwnershipCountStatus module_status{OwnershipCountStatus::Absent};
+      CpuRegistrationStage stage{CpuRegistrationStage::Unobserved};
+      bool failed{false};
+    } registration;
   };
 
  public:
@@ -20,6 +27,8 @@ class KernelLauncher : public LLVM::KernelLauncher {
   LaunchRegistryStorage registry_storage() const override;
   LaunchContextStorage context_storage(std::size_t index,
                                        std::size_t parameter_budget) const override;
+  CpuRegistrationAttemptCounts cpu_registration_attempt_counts(std::size_t entry_budget) const noexcept override;
+  CpuRegistrationAttempt cpu_registration_attempt(std::size_t index) const noexcept override;
 
   void launch_llvm_kernel(Handle handle, LaunchContextBuilder &ctx) override;
   std::unique_ptr<LaunchContextBuilder::Prepared> prepare_llvm_kernel(
@@ -30,6 +39,7 @@ class KernelLauncher : public LLVM::KernelLauncher {
 
  private:
   std::vector<Context> contexts_;
+  std::size_t issued_attempts_{0};
 };
 
 }  // namespace cpu
