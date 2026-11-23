@@ -1,8 +1,10 @@
 #include "assembly/projection_access.h"
-#include "assembly/active_workbench.h"
+#include "assembly/active_assembly.h"
+#include "assembly/intrinsic_geometry.h"
 
 #include <algorithm>
 #include <limits>
+#include <map>
 #include <set>
 
 namespace assembly {
@@ -74,7 +76,7 @@ ActiveAssembly::ActiveAssembly(LetterProjection p, warm::Uuid owner,
             v.mass <= std::uint64_t(std::numeric_limits<std::int64_t>::max()) &&
             definitions.insert(v.ref.object).second &&
             entries.insert(v.entry).second);
-    enclosing_radius(v.centroid, v.components);
+    detail::intrinsic_enclosing_radius(v.centroid, v.components);
   }
   for (const auto &e : local_->context) register_ref(e.target);
 }
