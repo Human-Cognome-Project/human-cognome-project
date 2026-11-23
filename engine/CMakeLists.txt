@@ -61,7 +61,7 @@ add_library(structural_admission_plan STATIC src/assembly/structural_admission_p
 target_link_libraries(structural_admission_plan PUBLIC active_assembly field_core)
 target_compile_options(structural_admission_plan PRIVATE -Wall -Wextra -Werror)
 add_executable(structural_admission_plan_test tests/structural_admission_plan_test.cpp)
-target_link_libraries(structural_admission_plan_test PRIVATE structural_admission_plan)
+target_link_libraries(structural_admission_plan_test PRIVATE structural_admission_plan study_assembly)
 target_compile_options(structural_admission_plan_test PRIVATE -Wall -Wextra -Werror)
 add_test(NAME structural_admission_plan_test COMMAND structural_admission_plan_test)
 
