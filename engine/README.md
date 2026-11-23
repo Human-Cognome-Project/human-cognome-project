@@ -108,12 +108,12 @@ actual launcher/slot/longer-control-lifetime costs are recorded separately from
 registered retirement, ORC cleanup and admission.
 
 The [CPU JIT creation ownership inspection](docs/CPU-JIT-CREATION-OWNERSHIP.md)
-distinguishes partial dylibs, IR/default trackers, lookup exposure, wrapper
-publication and shared runtime/thread services. Its bounded
-[checked-name implementation](docs/CPU-JIT-NAME-ISSUANCE.md) now reserves a naming
-ID before fallible creation, so actual inner retry uses a fresh name and CPU
-slot. Original findings and new retry evidence remain separately pinned. Native
-layouts and persistent storage are unchanged; cleanup/retirement remain separate.
+and [checked-name implementation](docs/CPU-JIT-NAME-ISSUANCE.md) preserve their
+original sources and evidence. The next [attribution inspection](docs/CPU-JIT-ATTRIBUTION.md)
+uses fresh IDs and existing native state to distinguish retained dylibs from
+consumed names with no dylib. It measures minimal row-storage candidates and
+prepaid lookup work, while keeping owner lifetime and incomplete resource coverage
+explicit. Production association, cleanup and retirement remain proposals.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with

@@ -6,6 +6,7 @@
 #include "taichi/runtime/cpu/jit_module_id.h"
 #include "taichi/runtime/program_impls/llvm/llvm_program.h"
 #include "llvm/ExecutionEngine/Orc/Core.h"
+#include "cpu_jit_attribution_probe.h"
 
 #include <array>
 #include <iostream>
@@ -22,6 +23,7 @@ namespace {
 using namespace taichi::lang;
 using namespace llvm::orc;
 using Access = engine::testing::CompiledKernelAccess;
+namespace attribution = cpu_jit_attribution_inspection;
 constexpr auto unlimited = std::numeric_limits<std::size_t>::max();
 constexpr int cells = 64;
 void check(bool ok, const char *message) { if (!ok) throw std::runtime_error(message); }
@@ -56,6 +58,10 @@ struct Trace {
   const void *pool{};
   std::array<JITDylib *, 8> search{};
   std::size_t search_count{};
+  int last_native_id{-1};
+  bool probing_presence{};
+  std::size_t presence_lookups{};
+  attribution::Token candidate_token, retry_token;
 };
 thread_local Trace *active{};
 // Fixed observers use public native/ORC boundaries. They neither remove resources
@@ -116,6 +122,39 @@ void libraries_live() {
           "session lost a retained dylib");
   }
 }
+attribution::Presence association(Trace &trace, ProgramImpl &impl,
+                                const attribution::Token &token,
+                                const char *phase, bool expected_dylib) {
+  const auto bound = std::size_t(trace.last_native_id) + 1;
+  check(trace.lib_count <= bound && !trace.execution->getPlatform(),
+        "witness does not support the proposed issuance work bound");
+  const auto borrows = token.record.observation().tracked_borrows;
+  trace.presence_lookups = 0; trace.probing_presence = true;
+  allocation_observation::calls = 0; allocation_observation::enabled = true;
+  const auto short_work = attribution::probe(token, trace.session, *trace.execution, bound, bound - 1);
+  auto future = token; future.native_id = int(bound);
+  const auto unissued = attribution::probe(future, trace.session, *trace.execution, bound, bound);
+  const auto no_owner = attribution::probe(token, nullptr, *trace.execution, bound, bound);
+  const auto skipped = trace.presence_lookups;
+  const auto found = attribution::probe(token, trace.session, *trace.execution, bound, bound);
+  allocation_observation::enabled = false; trace.probing_presence = false;
+  check(short_work.status == OwnershipCountStatus::Incomplete && !short_work.charged_entries &&
+            !short_work.dylib && short_work.dylib_status == OwnershipCountStatus::Unavailable &&
+            unissued.status == OwnershipCountStatus::Absent && no_owner.status == OwnershipCountStatus::Unavailable &&
+            !skipped && trace.presence_lookups == 1 && !allocation_observation::calls &&
+            found.status == OwnershipCountStatus::Present && !found.complete && found.charged_entries == bound &&
+            found.dylib_status == (expected_dylib ? OwnershipCountStatus::Present : OwnershipCountStatus::Absent) &&
+            bool(found.dylib) == expected_dylib && token.record.observation().tracked_borrows == borrows,
+        "attribution proposal model lost presence, bounded work, owner or allocation controls");
+  const auto entry = impl.cpu_registration_attempt(token.cpu_slot);
+  check(entry.record.observation().record == token.record.observation().record &&
+            token.cpu_slot != std::size_t(token.native_id), "CPU slot or compiled-record attribution changed");
+  std::cout << "cpu_jit_attribution,window=" << name(trace.window) << ",phase=" << phase
+            << ",cpu_slot=" << token.cpu_slot << ",native_id=" << token.native_id
+            << ",issued_bound=" << bound << ",retained_dylib=" << expected_dylib
+            << ",short_native_lookups=0,full_native_lookups=1,new_calls=0,client_borrows_added=0,complete=0 PASS\n";
+  return found;
+}
 void run_window(int workers, bool prepared, Window window) {
   Trace trace; trace.window = window; active = &trace;
   {
@@ -131,6 +170,9 @@ void run_window(int workers, bool prepared, Window window) {
       Ndarray array(&program, PrimitiveType::i32, {cells});
       auto first = kernel(runtime, "jit_first"), sibling = kernel(runtime, "jit_sibling"), third = kernel(runtime, "jit_third");
       launch(runtime, *first, array, 7, prepared); auto *first_module = trace.latest_module;
+      check(impl.launch_registry_storage().contexts == 1 &&
+                impl.launch_registry_storage().context_capacity_bytes == sizeof(attribution::CurrentSlot),
+            "layout model differs from actual native one-slot storage");
       launch(runtime, *sibling, array, 11, prepared); auto *sibling_module = trace.latest_module;
       launch(runtime, *third, array, 13, prepared);
       check(trace.lib_count == 4 && trace.pool_calls >= 3 && !trace.pool_mismatch,
@@ -179,6 +221,12 @@ void run_window(int workers, bool prepared, Window window) {
       const auto counts = llvm_impl.jit_ownership_counts(unlimited);
       check(counts.modules == (exposed ? 5u : 4u) && counts.runtime_modules == 1,
             "wrapper count included a partial backend-only module");
+      trace.candidate_token = {trace.session, 3, trace.last_native_id, data(*candidate).record_identity()};
+      check(trace.last_native_id == 4 && counts.owner == trace.session, "issued-ID owner scope changed");
+      const auto initial = association(trace, impl, trace.candidate_token, "before_retry", created);
+      check(initial.dylib == (partial ? partial->dylib : nullptr), "ID lookup returned another dylib");
+      // A null native name lookup alone cannot prove the name was issued.
+      check(!trace.execution->getJITDylibByName("5"), "future name already exists");
       if (!complete) {
         const auto entry = impl.cpu_registration_attempt(3);
         check(entry.status == OwnershipCountStatus::Incomplete && !entry.complete &&
@@ -203,6 +251,28 @@ void run_window(int workers, bool prepared, Window window) {
         if (window == Window::Generator)
           for (std::size_t i = 0; i < trace.search_count; ++i)
             check(trace.search[i] != partial->dylib, "empty failed dylib became globally exposed");
+        trace.retry_token = {trace.session, 4, trace.last_native_id, data(*candidate).record_identity()};
+        const auto retained = association(trace, impl, trace.candidate_token, "after_retry", created);
+        const auto retried = association(trace, impl, trace.retry_token, "retry", true);
+        check(retained.dylib == initial.dylib && retried.dylib == trace.libs[retry_index].dylib &&
+                  retried.dylib != retained.dylib, "retry replaced the failed attempt association");
+      }
+      if (window == Window::Generator) {
+        const auto storage = impl.launch_registry_storage();
+        check(storage.context_capacity_bytes % sizeof(attribution::CurrentSlot) == 0,
+              "native slot capacity is not a whole layout extent");
+        const auto capacity = storage.context_capacity_bytes / sizeof(attribution::CurrentSlot);
+        std::cout << "cpu_jit_attribution_layout,native_slot=" << sizeof(attribution::CurrentSlot)
+                  << ",id_slot=" << sizeof(attribution::IdSlot)
+                  << ",appended_link_slot=" << sizeof(attribution::AppendedLinkSlot)
+                  << ",packed_link_slot=" << sizeof(attribution::PackedLinkSlot)
+                  << ",capacity=" << capacity << ",native_capacity_bytes=" << storage.context_capacity_bytes
+                  << ",id_capacity_bytes=" << capacity * sizeof(attribution::IdSlot)
+                  << ",appended_link_capacity_bytes=" << capacity * sizeof(attribution::AppendedLinkSlot)
+                  << ",packed_link_capacity_bytes=" << capacity * sizeof(attribution::PackedLinkSlot)
+                  << ",observer_token_bytes=" << sizeof(attribution::Token)
+                  << ",presence_snapshot_bytes=" << sizeof(attribution::Presence)
+                  << ",production_association=0 PASS\n";
       }
       libraries_live();
       check(first_module->lookup_function(task) == first_address &&
@@ -226,8 +296,13 @@ void run_window(int workers, bool prepared, Window window) {
     const auto identity = impl.cpu_registration_attempt(3).record.observation();
     check(identity.status == OwnershipCountStatus::Absent && !identity.owner && !identity.tracked_borrows,
           "finalization retained live compiled data identity");
+    association(trace, impl, trace.candidate_token, "after_finalize", window != Window::Creation);
+    if (window != Window::Complete) association(trace, impl, trace.retry_token, "retry_after_finalize", true);
   }
   check(trace.ended, "native ExecutionSession teardown was not observed");
+  check(trace.candidate_token.record.observation().status == OwnershipCountStatus::Absent &&
+            !trace.candidate_token.record.observation().owner,
+        "escaped attribution record metadata is not safely expired");
   std::size_t dylib_bytes = 0;
   for (std::size_t i = 0; i < trace.lib_count; ++i) {
     check(trace.libs[i].released, "selected dylib request survived Runtime"); dylib_bytes += trace.libs[i].bytes;
@@ -265,6 +340,13 @@ llvm::Expected<JITDylib &> jit_real_dylib(ExecutionSession *, std::string)
 llvm::Expected<JITDylib &> jit_wrap_dylib(ExecutionSession *, std::string)
     __asm__("__wrap__ZN4llvm3orc16ExecutionSession14createJITDylibENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE");
 llvm::Expected<JITDylib &> jit_wrap_dylib(ExecutionSession *session, std::string dylib_name) {
+  if (active) {
+    int id = -1;
+    const auto parsed = std::from_chars(dylib_name.data(), dylib_name.data() + dylib_name.size(), id);
+    check(parsed.ec == std::errc{} && parsed.ptr == dylib_name.data() + dylib_name.size() &&
+              id > active->last_native_id, "native issuance witness is not unique and monotonic");
+    active->last_native_id = id;
+  }
   if (active && active->injecting && active->window == Window::Creation) {
     check(dylib_name == "4", "before-creation failure did not receive its issued ID");
     active->creation_refused = true; throw std::bad_alloc();
@@ -278,6 +360,14 @@ llvm::Expected<JITDylib &> jit_wrap_dylib(ExecutionSession *session, std::string
       allocation_lifetime::fail_at = allocation_lifetime::counts.attempts + 1;
   }
   return result;
+}
+JITDylib *jit_real_presence(ExecutionSession *, llvm::StringRef)
+    __asm__("__real__ZN4llvm3orc16ExecutionSession17getJITDylibByNameENS_9StringRefE");
+JITDylib *jit_wrap_presence(ExecutionSession *, llvm::StringRef)
+    __asm__("__wrap__ZN4llvm3orc16ExecutionSession17getJITDylibByNameENS_9StringRefE");
+JITDylib *jit_wrap_presence(ExecutionSession *session, llvm::StringRef name) {
+  if (active && active->probing_presence) ++active->presence_lookups;
+  return jit_real_presence(session, name);
 }
 llvm::Expected<llvm::JITEvaluatedSymbol> jit_real_lookup(ExecutionSession *, llvm::ArrayRef<JITDylib *>, SymbolStringPtr, SymbolState)
     __asm__("__real__ZN4llvm3orc16ExecutionSession6lookupENS_8ArrayRefIPNS0_8JITDylibEEENS0_15SymbolStringPtrENS0_11SymbolStateE");

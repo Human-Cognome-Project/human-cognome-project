@@ -1,5 +1,14 @@
 # Checked CPU JIT name issuance
 
+**Updated disposition — 2026-11-22:** [Review 7084634921](https://github.com/Human-Cognome-Project/human-cognome-project/pull/412#issuecomment-7084634921)
+provisionally accepts #412 `37170176` and authorizes the
+[fresh-ID attribution inspection](CPU-JIT-ATTRIBUTION.md) at `b533ff93`.
+#411's decision is now [recorded at 7084632898](https://github.com/Human-Cognome-Project/human-cognome-project/pull/411#issuecomment-7084632898).
+Main `6441a740` integrates qualified #408; #410 targets main, with #410 → #411 →
+#412 still open for native qualification/integration. The original naming report
+below preserves its `14783678` source/cost/evidence and historical state. The new
+inspection changes no production association, cleanup or admission behavior.
+
 This bounded #343 implementation follows the naming proposal in the
 [CPU JIT ownership inspection](CPU-JIT-CREATION-OWNERSHIP.md). The maintainer's
 acceptance and request to proceed in the working conversation authorize this

@@ -1,23 +1,24 @@
 # Private exchange-owner resource inventory
 
-The [checked CPU JIT naming implementation](CPU-JIT-NAME-ISSUANCE.md) at
-`14783678` reserves a checked ID before fallible creation, reusing the existing
-session counter. Fourteen real inner retries in seven histories receive fresh
-names and dispatch, while the empty failed dylib remains owned by the session
-and outside global lookup exposure. Survivor handles/tasks, shared thread
-service, expired identity and shutdown remain checked. No persistent field,
-normal-issuance allocation, native interface/layout change, cleanup, registered
-retirement, admission credit or achieved saving is introduced.
+The [fresh-ID CPU JIT attribution inspection](CPU-JIT-ATTRIBUTION.md) at `b533ff93`
+uses existing session lookup to separate issued-but-unretained names from
+retained dylibs, with retry/finalization and live-owner scope preserved. Current
+CPU failure metadata does not publish the native ID. Null lookup does not prove
+issuance, and presence is not complete IR/ORC/wrapper/dependency ownership.
+Production is exactly provisionally accepted #412 `37170176`; no association,
+cleanup, retirement, admission change or saving is implemented by this inspection.
 
-The original [JIT ownership inspection](CPU-JIT-CREATION-OWNERSHIP.md) keeps its
-`e3667ef7` source/evidence. Its guarded inner retry is replaced at this new source
-by actual creation/dispatch with a distinct name, retaining the failed object's
-272-byte request separately from IR/ORC/executable and whole-owner accounting.
-Quick, 18 Clang/12 GCC CTests and seven minimal cases pass; all seven original
-registration/attempt histories and their storage/ABI outputs match. The
-[accepted attempt metadata](NATIVE-REGISTRATION-ATTEMPTS.md) retains its #410
-source-specific costs. Pre-return completeness remains false, and further
-attribution/cleanup requires separate review. Return this implementation for review.
+The minimum proposal stores only an issued ID in the existing CPU row and uses
+an owner-local query, prepaid by the existing issuance count. Seven compiled
+layout comparisons project row 80→88 bytes / capacity eight 640→704; richer
+links project 96 or 104 bytes per row. These are forecasts reconciled to actual
+baseline native capacity, not newly allocated owner storage. Two 40-byte test
+tokens retain metadata references without adding client borrows or new controls;
+only the expired record metadata may be observed after Runtime. No raw session
+address supplies a lifetime/epoch guard. Quick, 18 Clang/12 GCC CTests and seven
+minimal cases pass, with 119 probe phases and all original histories unchanged.
+The [naming report](CPU-JIT-NAME-ISSUANCE.md) preserves its implementation costs
+and evidence. Return the owner-local association proposal for review.
 
 The [serialized unregistered-record operation](NATIVE-UNREGISTERED-REMOVAL.md)
 at `505ab435` implements #406's approved next slice for review. It requires
