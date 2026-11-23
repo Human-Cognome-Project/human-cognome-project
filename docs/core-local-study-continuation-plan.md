@@ -1,5 +1,32 @@
 # Core continuation after local CUDA corrections
 
+## November 23, 2026 — refactor exit disposition awaiting review
+
+[#422 decision 7114219288](https://github.com/Human-Cognome-Project/human-cognome-project/pull/422#issuecomment-7114219288)
+source-accepts the diagnostic and authorizes reconciliation of #343's exits.
+The [existing responsibility map](../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23)
+checks those criteria at main `fae58e79`, integrated through #420. It proposes
+completion of Passes 1–3's ownership/build work for the supported CPU path.
+Native-reuse decisions distinguish necessary semantics, implemented replacements
+and unsupported capabilities. No new extraction is justified by this trace.
+The owning plan also reconciles the integrated positive retained preset,
+preserving the original preset's refusal and broader limits.
+
+Fresh pure/native graphs, header/source and boundary checks pass. Verified quick,
+sixteen Clang/fourteen GCC native CTests and three standalone five-test suites
+are reused with exact executable equivalence, not rerun. #420's twelve native
+jobs and smoke passed on the exact integrated tree. Source-pinned raw evidence,
+commands, initial probe corrections and inspection are retained and verified.
+Return this documentation-only completion disposition for review/hosted CI.
+
+#421/#422 remain open and separate from this main-based inspection; preserve
+their reviewed diagnostic and reconcile their gates before maintainer integration.
+Pass 4/#324, full B/admission, registered/JIT retirement, general instance updates,
+GPU/concurrency and concrete Analyst work remain separate. After integration,
+the maintainer-owned onboarding rebuild can use the resulting main. Further
+engineering needs an accepted capability scope or a demonstrated ownership/
+build-boundary gap. Held #75/#111/#123 and maintainer-only merges remain.
+
 ## November 23, 2026 — standalone logical boundary awaiting review
 
 [#419 decision 7109569209](https://github.com/Human-Cognome-Project/human-cognome-project/pull/419#issuecomment-7109569209)

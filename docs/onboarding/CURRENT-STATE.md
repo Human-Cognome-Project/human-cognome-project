@@ -1,5 +1,25 @@
 # Current implementation and work
 
+## November 23, 2026 — refactor exits reconciled for review
+
+[#422 decision 7114219288](https://github.com/Human-Cognome-Project/human-cognome-project/pull/422#issuecomment-7114219288)
+source-accepts the diagnostic at `0520385c` and authorizes return to #343.
+The [source-pinned exit disposition](../../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23)
+at current main `fae58e79` proposes completion of the supported CPU ownership/
+build work in Passes 1–3. Pure logical and native ownership boundaries now have
+contracts, coverage and recorded native-reuse decisions. No further extraction
+is established by this trace; Pass 4/#324 and broader capabilities stay separate.
+
+Fresh build-graph/header/source inspection passes. Exact executable equivalence
+permits reuse of verified quick, sixteen Clang/fourteen GCC native CTests and
+three standalone five-test suites; #420 native/smoke passed on the integrated
+tree. This documentation disposition still requires review and authoritative CI.
+#421/#422 remain open with their qualification/integration separate. Preserve
+the reviewed diagnostic for future failures. Full B/admission, registered/JIT
+retirement, general updates, GPU/concurrency and Analyst implementation remain
+outside this completion proposal. The onboarding rebuild is maintainer-owned
+after integration; all merges remain maintainer-only.
+
 ## November 23, 2026 — standalone logical ActiveAssembly for review
 
 The [logical header/target implementation and qualification](../../engine/docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23)

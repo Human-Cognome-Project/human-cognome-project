@@ -29,6 +29,11 @@ engine/taichi/
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) before changing boundaries.
 
+The [refactor exit reconciliation](docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23)
+maps the integrated ownership/build boundaries and native-reuse decisions to
+#343's exit criteria, with source-pinned evidence and separate capability limits.
+Its completion disposition is for review; #324 mathematics remains separate.
+
 The active workbench keeps logical `ActiveAssembly` implementation in
 `src/assembly/active_workbench.cpp` and native `ActiveSession` lifetime/reporting
 implementation in `src/assembly/active_session.cpp`. Logical callers use the
