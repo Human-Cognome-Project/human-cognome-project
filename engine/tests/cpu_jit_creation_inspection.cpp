@@ -455,7 +455,7 @@ int main(int argc, char **argv) {
       run_window(workers, path == "prepared", window);
     allocation_lifetime::on_released = nullptr; allocation_lifetime::end();
     std::cout << "cpu_jit_inspection,workers=" << workers << ",path=" << path
-              << ",windows=5,recoverable_allocation_failures=3,successful_inner_retries=3,guarded_inner_retries=0,successful_outer_retries=1,cleanup_added=0 PASS\n";
+              << ",windows=5,recoverable_allocation_failures=3,successful_inner_retries=2,successful_no_id_retries=1,guarded_inner_retries=0,successful_outer_retries=1,cleanup_added=0 PASS\n";
     return 0;
   } catch (const std::exception &error) { std::cerr << "CPU JIT inspection: " << error.what() << '\n'; return 1; }
 }
