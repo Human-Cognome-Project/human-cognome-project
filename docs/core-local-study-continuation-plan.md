@@ -1,6 +1,36 @@
 # Core continuation after local CUDA corrections
 
-## November 23, 2026 — responsibility disposition awaiting review
+## November 23, 2026 — standalone logical boundary awaiting review
+
+[#419 decision 7109569209](https://github.com/Human-Cognome-Project/human-cognome-project/pull/419#issuecomment-7109569209)
+source-accepts `eabf688d` and authorizes the combined logical header/target slice.
+The [implementation and evidence](../engine/docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23)
+at tested `77559b32` preserve the old umbrella, public geometry wrapper, logical
+declarations/semantics and native owner/lifecycle. `active_assembly` now links
+only membership/projection/warm values; native consumers declare their own
+field/study dependencies. No further prepared orchestration helper was added.
+
+Quick local CI, sixteen Clang/fourteen GCC native CTests and five standalone
+tests on Clang 15/GCC 11/GCC 13 pass. Standalone `5a3f35ad` source equivalence
+and 29 original-versus-new logical checks are verified. Real native histories,
+132 phases and 24,024 row/dylib observations match with prior retirement-order
+limits intact. The first missing native test link and development assertion
+failures are retained with the correction; no native assertion was weakened.
+Published `bbfd866a` has the exact tested tree; source-pin mappings and an
+incremental bundle retain the local tested commits in the evidence archive.
+
+Main is still `3080687a`; this branch pins reviewed #419. #417–#419 are open and
+source-accepted with smoke passed. #417 native run 45220070965 failed its
+two-worker direct compiler job 137859808354 and aggregate. The component report
+links the exact step/log and uninspected redirected-artifact limit. #418/#419
+native CI remains pending. Do not treat the local pass as hosted qualification.
+
+Return this implementation for review and authoritative CI; reconcile that
+existing failure before integration in dependency order. Native rollback/cleanup,
+complete accounting, admission credit, GPU/concurrency and #324 remain separate;
+#75/#111/#123 stay held. All merges remain maintainer-only.
+
+## November 23, 2026 — responsibility disposition source-accepted
 
 [#418 decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534)
 source-accepts `7831326c` and requests reconciliation before another extraction.
@@ -24,11 +54,11 @@ Main `3080687a` integrates qualified #416 with the exact reviewed `adc3ad29`
 tree. #417 `0d1fd0a2` and #418 `7831326c` remain open and source-accepted;
 smoke passed, native CPU CI remains in progress. This branch depends on #418.
 
-Return this disposition for review and authoritative GitHub CI before the
-logical-header/geometry implementation. Read the map's acceptance/files list
-to resume; do not peel more prepared orchestration helpers merely to shrink the
-method. Complete accounting, native rollback/cleanup, admission credit, GPU,
-concurrency and #324 remain separate; #75/#111/#123 stay held. All merges and
+#419 decision 7109569209 source-accepts this disposition and authorizes the
+logical-header/geometry implementation above. The map retains its original
+inspection pin and acceptance/files list. Do not peel more prepared orchestration
+helpers merely to shrink the method. Complete accounting, native rollback/cleanup,
+admission credit, GPU/concurrency and #324 remain separate; #75/#111/#123 stay held. All merges and
 dependency integration remain maintainer-only.
 
 ## November 23, 2026 — private source-layout helper source-accepted
@@ -36,8 +66,8 @@ dependency integration remain maintainer-only.
 [#417 decision 7108110435](https://github.com/Human-Cognome-Project/human-cognome-project/pull/417#issuecomment-7108110435)
 source-accepts `0d1fd0a2` and authorizes the prepared-specific unregistered graph
 helper. #418 decision 7109138534 source-accepts the resulting `7831326c`.
-Main `3080687a` integrates qualified #416. #417/#418 remain open after smoke
-success, with native CI running; current work is the disposition above.
+Main `3080687a` integrates qualified #416. At that review #417/#418 had smoke
+success and native CI pending; subsequent findings and current work are above.
 
 The [implementation](../engine/docs/PREPARED-SOURCE-LAYOUT-HELPER.md) at tested
 `68448975` moves only root/optional primary/i32-place construction and pointer

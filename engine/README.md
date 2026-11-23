@@ -31,9 +31,11 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) before changing boundaries.
 
 The active workbench keeps logical `ActiveAssembly` implementation in
 `src/assembly/active_workbench.cpp` and native `ActiveSession` lifetime/reporting
-implementation in `src/assembly/active_session.cpp`. They retain one public
-header and the same library target; see the
-[ownership contract and split evidence](docs/ACTIVE-WORKBENCH.md#native-implementation-split--2026-11-15).
+implementation in `src/assembly/active_session.cpp`. Logical callers use the
+value-only `assembly/active_assembly.h` and standalone `active_assembly` target;
+`assembly/active_workbench.h` remains the compatibility umbrella. Native callers
+retain the `active_workbench` target and explicit study/field dependencies. See
+the [boundary and qualification](docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23).
 
 The [native nested-instance inspection](docs/NATIVE-INSTANCE-INSPECTION.md)
 compares compiled layouts, indexed runtime cells and HCP occurrences, including
@@ -139,12 +141,12 @@ and the candidate's existing guard. Source reconstruction and CPU before/after
 controls qualify the bounded move. #418 source-accepts the helper; authoritative
 native CPU CI remains pending after smoke success.
 
-The [current responsibility reconciliation](docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
-finds a sufficient prepared transaction boundary and proposes the logical
-caller's header/geometry dependency as the next slice. Fresh compiler and symbol
-inspection confirm that `ActiveAssembly` still loads and links native study
-machinery. This documentation-only disposition reuses verified #418 local
-evidence; its proposed extraction requires review before implementation.
+The [responsibility reconciliation](docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
+finds a sufficient prepared transaction boundary. #419 source-accepts that
+disposition and authorizes the logical caller's header/geometry separation
+implemented above. Its original source-pinned dependency probes remain historical.
+The current handoff records the existing #417 hosted compiler failure; new local
+qualification does not clear that failure or pending authoritative CI.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with

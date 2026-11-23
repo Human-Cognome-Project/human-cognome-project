@@ -1,6 +1,27 @@
 # Current implementation and work
 
-## November 23, 2026 — responsibility reconciliation for review
+## November 23, 2026 — standalone logical ActiveAssembly for review
+
+The [logical header/target implementation and qualification](../../engine/docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23)
+follows [#419 decision 7109569209](https://github.com/Human-Cognome-Project/human-cognome-project/pull/419#issuecomment-7109569209).
+The unchanged logical declarations now have a value-only header and independent
+target. The compatibility umbrella and public geometry symbol remain; logical
+validation reuses the existing intrinsic calculation. Explicit native consumers
+keep their own field/study links. The prepared candidate transaction is unchanged.
+
+At tested `77559b32`, quick local CI and sixteen Clang/fourteen GCC CTests pass.
+Three standalone compilers pass all five tests; their source at `5a3f35ad` is
+identical in this scope. The 29 logical checks match original native-linked
+behavior, and original native refusal/retry/sibling histories remain preserved.
+Published `bbfd866a` has the exact tested tree; evidence retains the tested commits.
+
+Main remains `3080687a`; #417–#419 are open/source-accepted with smoke passed.
+#417's native compiler two-worker direct job failed, and its aggregate failed;
+the local pass does not clear it. #418/#419 native CI remains pending. Return
+this bounded implementation for review/authoritative CI and reconcile that
+failure before dependency-order integration. [Current handoff](../core-local-study-continuation-plan.md)
+
+## November 23, 2026 — responsibility reconciliation source-accepted
 
 The [current responsibility map](../../engine/docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
 at inspected `7831326c` follows [#418 decision 7109138534](https://github.com/Human-Cognome-Project/human-cognome-project/pull/418#issuecomment-7109138534).
@@ -12,10 +33,11 @@ serve that boundary without a new formula. No code/build extraction is included.
 
 Fresh compiler/header/symbol inspection and boundary/fork checks pass. All
 executable sources match tested #418 `68448975`; quick/eight Clang/six GCC
-evidence is manifest-verified and reused, with no native baseline rerun. Main
-`3080687a` integrates qualified #416 with its exact reviewed tree. #417/#418
-remain open and source-accepted, smoke passed and native CPU CI in progress.
-Return the disposition for review and authoritative CI before implementation.
+evidence is manifest-verified and reused, with no native baseline rerun.
+#419 [decision 7109569209](https://github.com/Human-Cognome-Project/human-cognome-project/pull/419#issuecomment-7109569209)
+source-accepts this disposition and authorizes the bounded implementation above.
+This entry retains its original inspection pin; current hosted state and task
+ownership are recorded in the latest entry.
 [Current handoff](../core-local-study-continuation-plan.md)
 
 ## November 23, 2026 — prepared source-layout helper source-accepted
@@ -32,8 +54,8 @@ records, retirement record sets and original real histories match, including
 132 phases and 24,024 row/dylib observations. Independent final Execution order
 is excluded from retirement comparisons; drain assertions are unchanged.
 #418 decision 7109138534 source-accepts final `7831326c`. Main `3080687a`
-integrates qualified #416; #417/#418 remain open with native CI running after
-smoke success. Current task ownership is recorded above.
+integrates qualified #416. At that review #417/#418 had smoke success and native
+CI pending; the latest entry records the subsequent #417 failure and current task.
 
 The helper's authoritative GitHub CI remains pending. Broader owner
 changes, rollback, complete accounting, cleanup, admission credit and #324 remain
