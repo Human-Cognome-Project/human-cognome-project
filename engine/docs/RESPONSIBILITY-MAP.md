@@ -1,5 +1,12 @@
 # Engine responsibility map and first bounded extraction
 
+**2026-11-23 implementation update:** #419 source-accepts the reconciliation
+below and authorizes its logical caller boundary. The [header/standalone target](ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23)
+at tested `77559b32` implements that slice for review while preserving the
+prepared candidate transaction. The original dependency probes below describe
+their inspected `7831326c` source; they do not override this implementation or
+the latest [handoff](../../docs/core-local-study-continuation-plan.md).
+
 ## Current prepared-path reconciliation — 2026-11-23
 
 Pass 1 disposition under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
