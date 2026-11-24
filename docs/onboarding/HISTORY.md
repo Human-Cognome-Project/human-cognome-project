@@ -1,5 +1,7 @@
 # Follow the development history
 
+The [refactor exit record](../../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23) connects the historical map to the integrated logical/native split. Dated queue entries describe their original source.
+
 This route is for understanding the journey: decisions, alternatives, failed attempts, corrections and the evidence available at each step. Historical records are part of the project, not disposable onboarding overhead.
 
 | Question | Start with |

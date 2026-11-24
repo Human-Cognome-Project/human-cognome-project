@@ -1,5 +1,7 @@
 # First local native check
 
+For a first contribution to composition, identity or focus, start with the [standalone value suite](#optional-check-logical-assembly-without-the-native-runtime). For work on native execution, use the matched runtime build below.
+
 For environment recovery and existing contribution selection, read the
 [fresh-instance brief](AGENT-START.md) first. A clean smoke check is the setup
 gate; it is not a request to duplicate an already running full CI suite.

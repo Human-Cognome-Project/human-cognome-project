@@ -1,8 +1,14 @@
 # Current implementation and work
 
+## Current state
+
 ## November 24, 2026 — accepted CPU refactor boundary
 
 Main `01dc9783` integrates #421 and #422 after hosted smoke and native CPU qualification. The maintainer accepts Passes 1–3 for the supported CPU path. The [exit evidence](../../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23) identifies the owners, independent logical build and native reuse decisions. The [leaf diagnostic](../../engine/docs/LEAF-FAILURE-DIAGNOSTICS.md) captures future mismatches. The original #417 operands remain unknown. Pass 4 proceeds separately under #324. The maintainer owns the onboarding rebuild against this integrated code.
+
+## Active and deferred work
+
+The CPU ownership/build refactor is complete for its supported profiles. See the [implemented path and remaining capabilities](INTEGRATED-PATH.md#where-qualification-stops). The November 23 and earlier entries below retain the status at their source pins.
 
 ### Prior handoffs
 
@@ -1463,7 +1469,7 @@ Harness coverage/lifetime, then combined admission. The projection-copy audit st
 
 Read when selecting work, reviewing acceptance or asking what is built. For the next bounded task, use the [continuation handoff](../core-local-study-continuation-plan.md#next-agent-task--2026-11-05). You do not need the conceptual introduction first.
 
-## Current state
+## Historical implementation records
 
 **Maintainer integration — 2026-11-12:** #301 common/CPU allocation records are accepted and integrated by the merge containing this record, preserving reviewed `63a46aab6db261d2b8ecf189d06999d87f2f2dd2`. Native 43282494612 passed all 12 jobs and smoke 43282494900 passed. Personally inspected 116 passing regression tests (29/29/29/29), including allocation_record_test, and database job 131415289289 with addressed_reads=24/private_reads=0. #302 array/root exports remain provisionally accepted at `aa48a2e4` (review 5880581671); #303 prepared CPU exports at `bb0dfd28` are provisionally accepted in [review 5880964608](https://github.com/Human-Cognome-Project/human-cognome-project/pull/303#pullrequestreview-5880964608). Both remain unmerged with native qualification active; their smoke checks passed. Contributor-local artifacts were not independently inspected. This does not establish full B, combined admission or GPU qualification.
 
@@ -1720,7 +1726,7 @@ Do not copy historical “next” instructions back into this table.
 <a id="active-and-deferred-work--2026-10-19"></a>
 <a id="active-and-deferred-work--2026-10-20"></a>
 
-## Active and deferred work
+## Historical work queue
 
 **Immediate work:** node/list/ambient exports under #303 review 5880964608, remaining metadata/alias resolution, then trusted borrowed accounting. Preserve refusal/retry, reclamation and native authority.
 

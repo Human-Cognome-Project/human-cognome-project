@@ -1,5 +1,7 @@
 # Agent guidance
 
+Find the owner, source file and executable example for an engine change. [Integrated walkthrough](docs/onboarding/INTEGRATED-PATH.md).
+
 Read this short file in full before contributing. Then follow [bounded work](docs/onboarding/AGENT-START.md) or [review](docs/onboarding/REVIEW.md). Humans and agents can choose conceptual, operational or historical paths at the [onboarding entry](docs/onboarding/README.md); those paths are not cumulative prerequisites.
 
 ## Rules for every contribution

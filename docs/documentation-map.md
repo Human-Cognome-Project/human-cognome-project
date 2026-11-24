@@ -1,5 +1,7 @@
 # Documentation map and authority
 
+Find the maintained source and data-flow map for the integrated CPU path. [Integrated walkthrough](onboarding/INTEGRATED-PATH.md).
+
 Choose an [onboarding path](onboarding/README.md) for bounded work, understanding, review, first run or history.
 This catalog locates project-maintained documentation; it is not a requirement
 to read every research record before a first build.

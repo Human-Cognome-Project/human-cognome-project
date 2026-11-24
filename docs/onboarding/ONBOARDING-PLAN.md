@@ -1,5 +1,7 @@
 # Layered onboarding plan and maintenance contract
 
+The November 24 rebuild uses the [integrated source walkthrough](INTEGRATED-PATH.md), the role-specific routes and the refactor exit evidence. The sequence below records the original onboarding plan.
+
 Authorized by Patrick on 2026-11-08 while implementation work continues separately. This supersedes the earlier deferral of broad onboarding factoring until after the engine PoC. Engine responsibility factoring remains its own work under #229.
 
 ## Goal

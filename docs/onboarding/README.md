@@ -1,5 +1,7 @@
 # Choose your path
 
+For the implemented CPU path, trace a letter recipe from its shared lease through active composition, native publication and completed observation. [Follow the integrated path](INTEGRATED-PATH.md).
+
 HCP onboarding is layered by the reader's purpose. Choose one path; the others remain available when your question or task crosses a boundary. Humans and agents use the same routes.
 
 For an initial picture, think of Minecraft's composition from a relatively small set of building elements. HCP's intended model builds complexity through composition and records stable structures as reusable elements for further use. [Understand HCP](UNDERSTAND.md) connects that picture to definitions, live occurrences and fields.

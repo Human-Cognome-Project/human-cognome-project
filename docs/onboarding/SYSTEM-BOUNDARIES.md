@@ -1,5 +1,7 @@
 # system boundaries
 
+The [integrated data-flow map](INTEGRATED-PATH.md) gives the actual interfaces used by the supported CPU path. Start there for changes crossing warm, active owner, native or viewer boundaries.
+
 Read before changing component responsibilities, runtime languages, privacy or cross-component interfaces. Component-local work must preserve the applicable boundaries.
 
 [Choose another path](README.md) · [Bounded work](AGENT-START.md)

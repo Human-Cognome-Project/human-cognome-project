@@ -1,5 +1,7 @@
 # Contributing to the Human Cognome Project
 
+Choose a first contribution by following one letter study from recipe to report. [Integrated walkthrough](docs/onboarding/INTEGRATED-PATH.md).
+
 **Choose your path:** [bounded work, understanding, review or history](docs/onboarding/README.md).
 
 HCP accepts code, research, testing, documentation and architecture critique. The structural migration is complete; current guidance reflects the recovered native C++ engine, curated Taichi fork and separated kernel/network architecture.

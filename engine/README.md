@@ -1,5 +1,7 @@
 # Engine
 
+Locate the contract and test for a specific stage of execution. [Integrated walkthrough](../docs/onboarding/INTEGRATED-PATH.md).
+
 HCP's engine path is native C++.
 
 It links directly against the project's modified Taichi fork rather than using

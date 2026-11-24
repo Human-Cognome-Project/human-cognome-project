@@ -1,5 +1,7 @@
 # numerics
 
+For a numerical rejection on the supported CPU hierarchy, begin with the [leaf diagnostic](../../engine/docs/LEAF-FAILURE-DIAGNOSTICS.md). It preserves the exact predicate and records the operands at failure.
+
 Read before changing field/tick calculations, activity, focus or their tests. This is the accepted direction summary; follow its owning numerical contracts for exact predicates.
 
 [Choose another path](README.md) · [Bounded work](AGENT-START.md)

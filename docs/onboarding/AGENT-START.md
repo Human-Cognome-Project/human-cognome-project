@@ -1,5 +1,7 @@
 # Work on a bounded task
 
+For an engine task, identify the owner and its test before editing. Logical focus and identity have a standalone target. Native admission, ticking and reporting use the session and Harness. [Locate the owner](INTEGRATED-PATH.md).
+
 Use this route to implement or fix a defined slice without loading the project's conceptual history. Read the short root [AGENTS](../../AGENTS.md) and [work discipline](WORK-DISCIPLINE.md); component instructions still apply.
 
 ## 1. Establish the source and avoid duplicate work
