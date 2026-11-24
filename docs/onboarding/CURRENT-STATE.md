@@ -1,5 +1,9 @@
 # Current implementation and work
 
+## November 24 — operator study before PoC
+
+The next milestone is an editable native study with object creation/destruction and observation across ticks at several LoDs. Main has prepared native mutation and private exchange, a bounded session submission path and completed-state observation. The general operator edit and multi-level inspection path is the work ahead. See the [current handoff](../core-local-study-continuation-plan.md).
+
 ## November 23, 2026 — leaf failure diagnostics awaiting review
 
 [#421 decision 7113221968](https://github.com/Human-Cognome-Project/human-cognome-project/pull/421#issuecomment-7113221968)

@@ -6,6 +6,8 @@ Read before changing field/tick calculations, activity, focus or their tests. Th
 
 ## Target terminology for #324
 
+At the working LoD, structural composition is settled for the calculation. The parent fields exposed by the immediately coarser level carry their subtree contributions down to a common base. Inspect a finer level to observe how its confounding contributions become part of the coarser object’s structure. Use the retained masses for initial observations. Record any temporary mass adjustment with the original value, override and exposure.
+
 The **structural target** is derived from parent/object classification forces along the composition path. Parent values aggregate upward and establish the coherence frame. The **confounded target** incorporates all participating fields, including the structural contributions. Contextual fields act within the degrees of freedom supplied by that structure. Either target can move, and the two may coincide.
 
 At the working level, parent fields and core whole-particle fields are structural. Effects across these structures are confounding or transitive. For letters, each endpoint binds its ordered Unicode character parent or parents. Each character in turn has its own construction. Sharing a core definition supplies a possible path between endpoints. The imposed cross-language comparison determines whether an effect along that path participates. [Language-to-core construction](../language-component-unicode-plan.md).

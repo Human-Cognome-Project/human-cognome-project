@@ -1,5 +1,11 @@
 # Core continuation after local CUDA corrections
 
+## November 24 — next deliverable: a live editable study
+
+Give the operator one running study in which to create nested SNode-backed objects, insert or destroy live occurrences at will, and follow the survivors across ticks. Build and expose the same composition explicitly down to nibbles or rolled up at a selected LoD. Surface the confounding contributions at that exposure and the structural value they supply one level up. The operator examines the traces before choosing patterns, PoC claims or formal pattern checks.
+
+Begin with the [existing prepared update](../engine/docs/PREPARED-UPDATES.md), [representation exchange](../engine/docs/ATOMIC-EXCHANGE.md), [session](../engine/src/assembly/active_workbench.h) and [completed observation](../tools/viewport/native/completed_state.cpp). Trace one operator add and one destroy through session authorization, native commit, handle retirement and the next completed observation. Connect existing operations where supported and identify the smallest missing owner operation. Keep successful edits observable between completed ticks, preserve surviving motion and keep shared definitions reusable. Then expose the multi-level trace described in [Pass 4](engine-refactoring-plan.md#pass-4-inspect-and-implement-the-mathematical-distinction-separately).
+
 ## November 23, 2026 — leaf failure diagnostics awaiting review
 
 [#421 decision 7113221968](https://github.com/Human-Cognome-Project/human-cognome-project/pull/421#issuecomment-7113221968)
