@@ -1,5 +1,7 @@
 # Engine and Analyst-facing refactoring plan
 
+> **Program reference.** The supported CPU ownership/build refactor (#343, Passes 1–3) is complete. Follow the [core continuation plan](core-local-study-continuation-plan.md) for active work and [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324) for Pass 4 mathematics.
+
 ## November 23, 2026 — leaf failure diagnostics awaiting review
 
 [#421 decision 7113221968](https://github.com/Human-Cognome-Project/human-cognome-project/pull/421#issuecomment-7113221968)
