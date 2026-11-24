@@ -1,5 +1,30 @@
 # Current implementation and work
 
+## November 24, 2026 — completed response capture for review
+
+Main `b528d494` integrates #427/#429. [#430 re-review 7145505449](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7145505449)
+resolves the preparation-budget hold and provisionally accepts the English A
+whole-field subset at `8dbe7ec7`. It remains open/unmerged: smoke and viewport
+checks pass while native CPU CI is running. Acceptance does not imply integration.
+
+The independent main-based [completed response capture](../../engine/docs/COMPLETED-RESPONSE-CAPTURE.md)
+at `5ef44d60` exposes actual native response operands, full recipient claims,
+packet/comparison paths and exact fractions at the same completed snapshot as
+the existing intent diagnostic. The CLI independently requests this read-only
+trace; budget refusal exposes no stale rows and subsequent edits/ticks succeed.
+Sixteen local CTests, eighteen model tests, capture audits and 147 offline browser
+assertions pass at the clean public implementation pin. Source-pinned raw evidence
+and a portable native example are linked in the report. Return this increment
+for maintainer review and authoritative hosted CI; it is not yet accepted.
+
+Next remains the semantic English/French parent-to-native binding trace,
+identical pre-tick imposed-field off/on comparison, multibyte/repeated constituent
+controls and fine-to-coarse structural rollup alongside derived targets and motion.
+The exported local/inherited path and production eligibility are not semantic
+structural/confounding labels; the existing candidate is not relabelled. No target,
+brake, resource policy, GPU or general LoD qualification is included. #424/#425
+remain maintainer-owned documentation; all merges remain maintainer-only.
+
 ## November 24, 2026 — live study accepted; LoD claim observation for review
 
 [#427 re-review 7140102237](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7140102237)

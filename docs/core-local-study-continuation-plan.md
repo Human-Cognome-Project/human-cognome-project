@@ -1,5 +1,39 @@
 # Core continuation after local CUDA corrections
 
+## November 24, 2026 — completed native response capture for review
+
+[#430 re-review 7145505449](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7145505449)
+resolves its probe-metering hold and provisionally accepts `8dbe7ec7`. The PR
+remains open, with smoke/viewport passed and native CPU CI running. Main stays
+`b528d494`, integrating #427 and #429. The older awaiting-re-review entry below
+records the prior disposition rather than the current hold state.
+
+Following [#343's capability direction](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343#issuecomment-7137040893),
+the independent [response observation increment](../engine/docs/COMPLETED-RESPONSE-CAPTURE.md)
+at public `5ef44d60` copies the existing native response surface into an optional
+completed snapshot. Actual row order, full claims, packet/comparison association,
+exact fractions, operands and separate production/extraction flags survive the
+same generation/tick/frame boundary. The live English-pair CLI can request this
+without changing numerical authority. Zero-budget captures contain no stale rows
+and complete later physical commands with the independent intent still available.
+
+Quick local CI and Clang/GCC observer/operator profiles pass sixteen CTests;
+eighteen model tests, both native capture audits, bundle fidelity and 147 offline
+browser assertions pass at the clean public implementation pin. The linked report
+retains exact source/backend/configuration/commands, raw evidence and its verified
+archive, initial environment failures and the portable final-tick example.
+Return this bounded increment for maintainer review and authoritative GitHub CI.
+
+This is a raw-response prerequisite, not completion of the worked semantic/target
+example. Continue English A/French A parent rows through projection, explicit
+roles, native bindings and fields; hold pre-tick structure/positions/frame fixed
+for imposed cross-language off/on controls. Include multibyte and repeated ordered
+constituents, measure transmitted effect separately from shared parentage and
+count fine-to-coarse structural rollup once. Establish native structural/confounded
+target correspondence before applying those labels to the existing diagnostic;
+the settled brake reference is not reopened. Broader LoD, peripheral rollups,
+patterns/PoC and resource policy remain separate. All merges stay maintainer-only.
+
 ## November 24, 2026 — live study accepted; LoD claim observation for review
 
 [#427 re-review 7140102237](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7140102237)
