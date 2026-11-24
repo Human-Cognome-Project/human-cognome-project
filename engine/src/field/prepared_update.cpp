@@ -1282,6 +1282,8 @@ UpdateResult Harness::update_prepared_impl(
     }
     // Claims begin mutation, even though no numerical survivor has been
     // written.
+    answer.claims.particles_before = s.particles.size();
+    answer.claims.fields_before = s.fields.size();
     for (bool particle : {true, false}) {
       std::size_t size = 0;
       for (std::size_t c = 0; c < count; ++c)
@@ -1326,6 +1328,10 @@ UpdateResult Harness::update_prepared_impl(
         }
       }
     }
+    // Both native families have claimed incoming records; outgoing ownership
+    // remains live until the later retirement loop. Read the actual map counts.
+    answer.claims.particles_peak = s.particles.size();
+    answer.claims.fields_peak = s.fields.size();
     if (s.failure_point == 2)
       throw std::runtime_error("injected failure after native claims");
     upload(*s.destinations_array, s.destinations.data(),
@@ -1430,6 +1436,8 @@ UpdateResult Harness::update_prepared_impl(
         answer.readback_bytes += (1 + 5 * size) * sizeof(std::int64_t);
       }
     }
+    answer.claims.particles_after = s.particles.size();
+    answer.claims.fields_after = s.fields.size();
     runtime_->synchronize();
     ++answer.synchronizations;
     exposed_ = candidate.particles;
@@ -1460,6 +1468,7 @@ UpdateResult Harness::update_prepared_impl(
     answer.generation = ++s.generation;
     if (refresh)
       live_hierarchy_->finish_refresh(s.generation);
+    answer.claims.sampled = true;
     return reject(UpdateStatus::Ok);
   } catch (...) {
     // Backend failure is never advertised as ordinary invalid input. Mutation

@@ -123,6 +123,7 @@ void session_case(int workers, field::HostPath path) {
     PreparedOccurrenceEdit restore{first,true,*recycled.prepared_generation}; restore.clone_from=second;
     const auto mismatch=no_new([&] { return session.edit_prepared(handle,source->owner(),restore); });
     check(mismatch.publication.status == UpdateStatus::InvalidInput &&
+          !mismatch.publication.claims.sampled &&
           mismatch.publication.generation == *recycled.prepared_generation,
           "evicted declared destination accepted a different template");
     const auto rejected=observe(); unchanged(recycled,rejected);
@@ -197,6 +198,10 @@ void session_case(int workers, field::HostPath path) {
   PreparedOccurrenceEdit add{created,true,*state.prepared_generation}; add.clone_from=first;
   const auto clone=no_new([&] { return session.edit_prepared(handle,source->owner(),add); });
   check(clone.publication.status == UpdateStatus::Ok,"new composed occurrence entry was not admitted");
+  check(clone.publication.claims.sampled && clone.publication.claims.particles_before == 2 &&
+        clone.publication.claims.particles_peak == 3 && clone.publication.claims.particles_after == 3 &&
+        clone.publication.claims.fields_before == 2 && clone.publication.claims.fields_peak == 2 &&
+        clone.publication.claims.fields_after == 2,"admission lost native claim observation");
   auto three=observe();
   check(three.body_records.size() == 3 && snapshot(three).is_object(),"new live occurrence not observable");
   survivor(state,three,first); survivor(state,three,second);

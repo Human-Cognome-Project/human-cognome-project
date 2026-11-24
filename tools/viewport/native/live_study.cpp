@@ -153,7 +153,14 @@ int main(int argc, char **argv) {
           const auto result=session.edit_prepared(handle,source->owner(),edit);
           const auto code=result.publication.status;
           if (code != field::UpdateStatus::Ok && code != field::UpdateStatus::NoChange) rejected=true;
+          Json claims{{"sampled",result.publication.claims.sampled}};
+          if (result.publication.claims.sampled) {
+            const auto &c=result.publication.claims;
+            claims["particles"]={{"before",c.particles_before},{"peak",c.particles_peak},{"after",c.particles_after}};
+            claims["fields"]={{"before",c.fields_before},{"peak",c.fields_peak},{"after",c.fields_after}};
+          }
           emit({{"command",command},{"entry",entry},{"status",status(code)},
+            {"native_claims",std::move(claims)},
             {"preparation_status",int(result.preparation.status)},
             {"preparation_work",result.preparation.charged}});
         } else throw std::invalid_argument("expected observe, list, add ENTRY, remove ENTRY, tick [N] or quit");

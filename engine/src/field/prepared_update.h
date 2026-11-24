@@ -54,6 +54,14 @@ enum class UpdateStatus {
   InvalidNumerics,
   Unready
 };
+// Completed native record-map observations at the exclusive update barriers.
+// A rejected/preflight-only request has sampled=false: zero is not a measured
+// peak. Counts are occupied native records, not backing bytes or admission credit.
+struct UpdateClaimObservation {
+  bool sampled{};
+  std::uint64_t particles_before{}, fields_before{}, particles_peak{}, fields_peak{},
+      particles_after{}, fields_after{};
+};
 struct UpdateResult {
   UpdateStatus status{UpdateStatus::InvalidInput};
   BudgetFailure failure{};
@@ -65,5 +73,6 @@ struct UpdateResult {
   std::uint64_t contact_pairs{}, contact_work{};
   // Completed intradevice copy requests, separate from host transfer bytes.
   std::uint64_t native_copy_bytes{};
+  UpdateClaimObservation claims{};
 };
 }  // namespace field
