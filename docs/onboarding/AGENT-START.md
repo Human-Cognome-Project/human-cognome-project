@@ -8,7 +8,7 @@ Use this route to implement or fix a defined slice without loading the project's
 
 Inspect `git status --short`; preserve existing work. Fetch current refs, record the chosen SHA and check submodule revisions. Inspect [open PRs](https://github.com/Human-Cognome-Project/human-cognome-project/pulls), their scope, latest reviews, heads and checks before choosing work. Use current main unless the task explicitly names a contribution or integration branch.
 
-For outstanding work, read the [current continuation task](../core-local-study-continuation-plan.md). Consult [current state](CURRENT-STATE.md) when you need accepted/held boundaries or another component's work. This page deliberately does not duplicate the task queue.
+For the editable-study milestone, start at the [maintainer assignment](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343#issuecomment-7137040893) and check the issue for a newer decision. Use the [continuation record](../core-local-study-continuation-plan.md) for supporting evidence. Consult [current state](CURRENT-STATE.md) when you need accepted/held boundaries or another component's work. This page deliberately does not duplicate the task queue.
 
 ## 2. Load only the contracts your change touches
 

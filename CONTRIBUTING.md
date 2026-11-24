@@ -122,35 +122,9 @@ All merge events are handled by the maintainer for engineering discipline.
 Agents prepare reviewable work, local CI evidence and PRs, and reconcile hosted
 checks. Acceptance or a request to pull/proceed does not authorize an agent merge.
 
-## Current repository map
+## Find the owning component
 
-```text
-human-cognome-project/
-├── engine/
-│   ├── src/engine/         # native Taichi runtime/compiler wrapper
-│   ├── src/field/          # native field/tick mechanics
-│   ├── tests/              # native engine/field/index-cap regression tests
-│   ├── docs/               # recovered engine/harness design + vetting record
-│   └── taichi/             # curated modified Taichi fork
-├── kernels/
-│   ├── database/           # PostgreSQL record + database/cache-manager family
-│   └── wal/                # WAL manager family
-├── network/
-│   └── endpoint/           # shared local box/endpoint/scheduler substrate
-├── research/
-│   ├── field/
-│   ├── ledger/
-│   └── packages/
-├── data/
-│   └── postgres/snapshots/
-├── docs/
-│   └── onboarding/        # orientation and first native check
-├── tools/
-│   ├── viewport/          # optional read-only study inspection
-│   └── legacy-extraction/  # retained read-only migration toolkit
-├── archive/
-└── review/
-```
+Use the [source walkthrough](docs/onboarding/INTEGRATED-PATH.md) for logical assembly, native execution and observation. The [documentation catalog](docs/documentation-map.md) covers database, WAL, network, data and research. For running or examining a study, use the [operator route](docs/onboarding/OPERATOR.md).
 
 By contributing, you agree that contributions are licensed under AGPL-3.0 and governed by the [Covenant](covenant.md).
 

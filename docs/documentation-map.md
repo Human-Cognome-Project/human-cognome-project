@@ -6,6 +6,8 @@ Choose an [onboarding path](onboarding/README.md) for bounded work, understandin
 This catalog locates project-maintained documentation; it is not a requirement
 to read every research record before a first build.
 
+For running or watching studies, begin with the [operator route](onboarding/OPERATOR.md). Earlier decisions and retired instructions are indexed on the [history route](onboarding/HISTORY.md).
+
 ## How to use the documentation
 
 | Kind | How to interpret it |
