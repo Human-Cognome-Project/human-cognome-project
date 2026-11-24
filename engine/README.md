@@ -15,6 +15,12 @@ engine/taichi/
 
 The [leaf-reference investigation](docs/LEAF-REFERENCE-INSPECTION.md) records the original hosted failure, successful retry and a constructed quantization-boundary case. [Failure-only diagnostics](docs/LEAF-FAILURE-DIAGNOSTICS.md) now capture completed operands at the unchanged assertion; the native witness checks their output, original rejection and silent success behavior.
 
+The [live editable CPU study](docs/LIVE-EDITABLE-STUDY.md) adds an operator CLI
+through the prepared session/owner: add a declared-template occurrence, tick,
+remove it and tick the same study. Commands, a captured run, identity/survivor
+controls and scoped local qualification are included for review. Whole-field LoD
+exchange follows separately.
+
 ## Layout
 
 | Path | Role |
