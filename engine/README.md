@@ -21,6 +21,12 @@ remove it and tick the same study. Commands, a captured run, identity/survivor
 controls and scoped local qualification are included for review. Whole-field LoD
 exchange follows separately.
 
+The [native claim-overlap observation](docs/EXCHANGE-CLAIM-OBSERVATION.md)
+records actual particle/field occupancy before claims, before retirement and
+after retirement. Real expansion/compression and peak-refusal controls support
+the whole-field LoD preparation review in #428. The operator exposes the same
+observation for ordinary edits; whole-field LoD remains the next integration.
+
 ## Layout
 
 | Path | Role |
