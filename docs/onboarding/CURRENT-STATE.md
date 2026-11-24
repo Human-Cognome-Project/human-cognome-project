@@ -1,5 +1,23 @@
 # Current implementation and work
 
+## November 24, 2026 — #427 destination correction awaiting re-review
+
+[#427 finding 7139439148](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7139439148)
+holds `40257763` for an immutable-template check bypass after instance metadata
+reuse. The [correction and captured trace](../../engine/docs/LIVE-EDITABLE-STUDY.md#declared-destination-correction--awaiting-re-review)
+at `deacbe68` validate the declared destination independently of slot residency.
+The regression rejects a mismatched template without changing generation, full
+claims or physical state, then restores the original template and verifies no-op
+adds. A captured CLI trace completes subsequent edits/ticking in the same study.
+
+Quick local CI, twelve Clang/eight GCC edit profiles and three minimal native
+controls pass at the same clean source: 26 CTests plus two placement controls.
+The report preserves the red reproduction, source-pinned raw evidence and
+original qualification as separate scopes. Return this correction for maintainer
+re-review and authoritative CI; the hold is not treated as acceptance. Existing
+hosted jobs were left running. Whole-field LoD and allocation policy remain
+separate follow-ups. All merges remain maintainer-only.
+
 ## November 24, 2026 — first live editable study awaiting review
 
 Following [#343's live-study handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343#issuecomment-7137040893),
