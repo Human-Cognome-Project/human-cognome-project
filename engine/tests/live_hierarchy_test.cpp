@@ -3128,7 +3128,7 @@ int main(int argc, char **argv) {
     }
     int failures = 0;
     const auto run = [&](const char *name, auto action) {
-      const int id_begin = only == "placement" ? SNode::counter.load() : 0;
+      const int id_begin = only == "placement" ? taichi::lang::SNode::counter.load() : 0;
       try {
         action();
         std::cout << "case_result,name=" << name << " PASS\n";
@@ -3138,8 +3138,8 @@ int main(int argc, char **argv) {
                   << '\n';
       }
       if (only == "placement") {
-        const int id_end = SNode::counter.load();
-        const int capacity = r.program().config.llvm_snode_capacity;
+        const int id_end = taichi::lang::SNode::counter.load();
+        const int capacity = r.program().compile_config().llvm_snode_capacity;
         std::cout << "placement_snode_ids,case=" << name
                   << ",begin=" << id_begin << ",end=" << id_end
                   << ",created=" << id_end-id_begin
