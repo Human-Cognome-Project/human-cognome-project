@@ -1,5 +1,11 @@
 # Live editable CPU study
 
+Maintainer [re-review 7140102237](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7140102237)
+resolves the correction at `389cfdd3` and provisionally accepts the first live
+editable CPU study pending hosted CI. The [native claim observation](EXCHANGE-CLAIM-OBSERVATION.md)
+is a separate whole-field LoD measurement prerequisite; earlier captures and
+qualification pins below remain historical evidence for their exact sources.
+
 Contributor implementation under #343/#156, following the
 [#343 live-study handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343#issuecomment-7137040893)
 and the [November 24 direction in #425](https://github.com/Human-Cognome-Project/human-cognome-project/blob/dcbcef71f0ed1c1752935a20da28bdc93dc9c182/docs/core-local-study-continuation-plan.md).

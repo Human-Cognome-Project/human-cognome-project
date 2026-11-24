@@ -1,5 +1,30 @@
 # Core continuation after local CUDA corrections
 
+## November 24, 2026 — live study accepted; LoD claim observation for review
+
+[#427 re-review 7140102237](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7140102237)
+resolves the destination-template finding and provisionally accepts `389cfdd3`
+for the first live editable CPU study. It remains unmerged; authoritative hosted
+CI is separate. Whole-field LoD exchange is the assigned continuation.
+
+The [claim-overlap measurement increment](../engine/docs/EXCHANGE-CLAIM-OBSERVATION.md) at `4267c1e1`
+records actual native map occupancy during the existing atomic exchange:
+particles 1→3→2 / fields 3→9→7 on expansion, particles 2→3→1 / fields 7→9→3
+on compression. The final-fit/peak-overflow control still refuses nine fields
+against seven slots without claims. The operator exposes sampled observations
+and keeps refusal/no-op distinct from zero peaks. No allocation policy changed.
+
+Ten local CTests, eight native exchange/preflight controls and two placement
+controls pass on clean pinned CPU source, including a minimal build without
+viewport/warm integration. Raw captures, actual capacities/scratch, inline result
+bytes and freshly verified evidence are linked above. Return this separate
+dependent increment for review and authoritative CI. It is a measurement
+prerequisite, not whole-field operator completion. [#428](https://github.com/Human-Cognome-Project/human-cognome-project/issues/428)
+records per-logical-occurrence state staging, whole-field publication and the
+focus-preset question. Continue that integration, then confounding/structural
+trace; peripheral rollup and allocation-policy revision remain separate. All
+merges remain maintainer-only.
+
 ## November 24, 2026 — #427 destination correction awaiting re-review
 
 [#427 finding 7139439148](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7139439148)

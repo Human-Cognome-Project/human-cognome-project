@@ -375,6 +375,7 @@ void admission_preflight(engine::Runtime &r, HostPath path) {
   for (int repeat = 0; repeat < 3; ++repeat) {
     const auto result = invoke();
     require(result.status == UpdateStatus::Ok &&
+                !result.claims.sampled &&
                 result.generation == f.h.prepared_storage().generation,
             "generated source/hierarchy preflight failed");
   }
