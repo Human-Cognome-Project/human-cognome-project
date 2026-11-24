@@ -2,7 +2,7 @@
 
 ## November 24 — operator study before PoC
 
-The next milestone is an editable native study with object creation/destruction and observation across ticks at several LoDs. Main has prepared native mutation and private exchange, a bounded session submission path and completed-state observation. The general operator edit and multi-level inspection path is the work ahead. See the [current handoff](../core-local-study-continuation-plan.md).
+The next milestone is an editable native study with a temporary operator CLI for object insertion/removal, whole-field LoD exchange in place and observation across ticks. Main has prepared native mutation and private exchange, a bounded session submission path and completed-state observation. The general operator edit and multi-level inspection path is the work ahead. See the [current handoff](../core-local-study-continuation-plan.md).
 
 ## November 23, 2026 — leaf failure diagnostics awaiting review
 
