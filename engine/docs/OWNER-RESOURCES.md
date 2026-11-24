@@ -1,5 +1,14 @@
 # Private exchange-owner resource inventory
 
+The [whole-field LoD subset](WHOLE-FIELD-LOD.md) at `6a94343b` prepares both
+English aggregate/byte alternatives and per-occurrence native staging in the
+existing owner. Source-pinned CPU controls measure the added `48*B` native bytes,
+672-byte binding allowance, private owner/workspace extents, 32,890 owner-domain
+bytes and real particle/field claim peaks. Exact/one-short setup, no-new/native
+backing and unready-failure checks pass. These requested bounds and occupied
+records remain distinct from complete B, executable/ORC resources, RSS and
+admission credit. New review and authoritative CI remain separate.
+
 The [private prepared-source helper](PREPARED-SOURCE-LAYOUT-HELPER.md) at
 `68448975` preserves the existing unregistered graph's unique-pointer ownership
 and returns it to the session for the same Program registration/guard assignment.

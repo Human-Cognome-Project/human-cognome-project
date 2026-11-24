@@ -1,5 +1,36 @@
 # Current implementation and work
 
+## November 24, 2026 — whole-field LoD CPU subset for review
+
+[#429 review 7141016819](https://github.com/Human-Cognome-Project/human-cognome-project/pull/429#issuecomment-7141016819)
+provisionally accepts the claim measurement at `b2c516bf`. [#428 direction 7141017357](https://github.com/Human-Cognome-Project/human-cognome-project/issues/428#issuecomment-7141017357)
+selects an inherited membership focus for the first whole-field study and requires
+per-occurrence native state staging in one whole-field transaction. Main was
+`98cdbe03` at source selection; #427/#429 remain separate reviewed dependencies.
+
+The [implementation and captured evidence](../../engine/docs/WHOLE-FIELD-LOD.md) at `6a94343b` add opt-in
+`--whole-field`, `lod parts` and `lod aggregate` to the live English A study.
+Every live occurrence transfers its own outgoing native centre/velocity into
+one unticked generation; the same membership field claim survives both exposures.
+The initial supported owner has one aggregate/one declared byte per logical
+occurrence. Actual record peaks are particles 2→4→2 and fields 3→6→4 on expansion,
+4→6→3 on compression. Ordinary fine add/remove and continued ticking stay live.
+
+Forty scoped local CTests, native grouping/legacy exchange/preflight/compiler
+controls and three raw capture audits pass with source-pinned evidence. Exact/
+one-short resource controls, unready failures, unchanged survivor/refusal state,
+no recurring C++ new and native backing/compiler stability are retained. The
+report records scratch, owner metadata, the original failed audit build and the
+corrected pin. A crowded restored occurrence can exhaust the configured 65,536
+placement cells; that refusal remains healthy and permits following ticks.
+
+Return this dependent contribution for maintainer review and authoritative
+GitHub CI. Local success does not integrate it or qualify general multibyte
+owner adaptation, GPU/concurrency, full B or allocation-policy changes. Next is
+the fine confounding/next-level structural trace alongside targets and motion;
+peripheral rollup/pattern/PoC acceptance follows separately. All merges remain
+maintainer-only.
+
 ## November 24, 2026 — live study accepted; LoD claim observation for review
 
 [#427 re-review 7140102237](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7140102237)
