@@ -4,6 +4,12 @@ Read before changing field/tick calculations, activity, focus or their tests. Th
 
 [Choose another path](README.md) · [Bounded work](AGENT-START.md)
 
+## Target terminology for #324
+
+The **structural target** is derived from parent/object classification forces along the composition path. Parent values aggregate upward and establish the coherence frame. The **confounded target** incorporates all participating fields, including the structural contributions. Contextual fields act within the degrees of freedom supplied by that structure. Either target can move, and the two may coincide.
+
+Use *centroid* for an actual geometric or mass-weighted centre. Keep the proposed endpoint and accepted tick position distinct from both targets. The existing combined diagnostic retains its source-defined meaning. Its relationship to the confounded target and the distance governing braking remain open. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
+
 ## Latest model direction — 2026-10-23
 
 The directions below have bounded CPU implementations through #201. Read

@@ -377,6 +377,8 @@ remain required. Actual GPU behavior/performance is unexecuted here.
 
 ## Combined destination and the discretization brake
 
+For the current #324 discussion, distinguish the structural target (parent/object classification forces) and the confounded target (all participating fields). The historical “combined destination” below is an earlier proposal. The choice of brake reference remains open. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
+
 **2026-11-13 correction scope:** [#324 comparison proposal](INTENT-DERIVATION.md)
 separates spatial intent from force and accepted motion. The historical force-magnitude
 reach below is not a justified spatial destination. Production behavior is unchanged;

@@ -111,8 +111,7 @@ where the current implementation preserves, loses or has not yet implemented
 the distinction. State the mathematical representation and supported conditions
 before proposing an algorithm; do not silently choose projection, clipping,
 rigidity or a new constraint solver. This is the intended model to investigate,
-not a claim that existing code already enforces it. Keep structural intent,
-contextual influence and actual tick trajectory separately observable.
+not a claim that existing code already enforces it. Keep the structural target, confounded target and actual tick trajectory separately observable.
 
 The Analyst occupies the player/controller role in the gaming-engine structure.
 Humans (currently the user) and LLM agents exercise or supplement that role while
@@ -275,9 +274,11 @@ Findings from this pass may reshape Pass 2 before extraction; do not build a new
 
 ### Pass 4: inspect and implement the mathematical distinction separately
 
-Under #324, investigate structural intent derived from composition/primary identity, with nonstructural fields separately accounted for in motion. Trace the actual native SNode representation and operations. Establish weighting, frame, publication time, invalidation and rolled-up/repeated-path semantics. Do not equate raw tree depth with conceptual scale.
+Use **structural target** for the composition-derived target and **confounded target** for the target incorporating all participating fields within the structural frame. Trace each separately from the existing combined candidate and from the accepted endpoint. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
 
-The existing combined candidate is an implemented diagnostic, not yet this structural reference. Track structural intent drift, motion relative to it and nonstructural contributions independently. A structural reference can move as its contributing structure changes. Preserve participating-mass force generation followed by whole-body inertia. No weighting law, brake, sleep predicate or orbital classifier is preselected. The purpose is better separated observation and analysis; interpretation of trajectories is not an extra acceptance gate.
+Under #324, investigate the structural target derived from composition/primary identity, with nonstructural fields separately accounted for in motion. Trace the actual native SNode representation and operations. Establish weighting, frame, publication time, invalidation and rolled-up/repeated-path semantics. Do not equate raw tree depth with conceptual scale.
+
+The existing combined candidate is an implemented diagnostic, not yet this structural reference. Track structural target drift, motion relative to it and nonstructural contributions independently. A structural reference can move as its contributing structure changes. Preserve participating-mass force generation followed by whole-body inertia. No weighting law, brake, sleep predicate or orbital classifier is preselected. The purpose is better separated observation and analysis; interpretation of trajectories is not an extra acceptance gate.
 
 Numerical inspection can inform earlier boundaries, but mathematical changes need their own derivation, independent controls and source-pinned validation. Do not bury them in file moves or native-reuse substitutions.
 
