@@ -2,6 +2,8 @@
 
 The combined candidate described here has its own calculation and validity rules. In current #324 terminology, the structural target follows the composition path and the confounded target incorporates all participating fields. Their relationship to this candidate requires derivation. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
 
+For the next derivation, separate parent and core whole-particle fields from effects transmitted across structures. The first worked case and controls are specified in [Pass 4](../../docs/engine-refactoring-plan.md#pass-4-inspect-and-implement-the-mathematical-distinction-separately).
+
 Status: proposed, not an accepted numerical law or kernel correction. Authorized
 by [#324 comment 6859051253](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-6859051253).
 Source baseline: main `647c64845f1314cea1cdc6142fd82a108d09bf56`; numerical code
