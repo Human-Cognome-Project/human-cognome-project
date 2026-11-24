@@ -257,6 +257,10 @@ foreach(threads 1 2)
     endif()
     add_test(NAME live_hierarchy_${threads}_${path}
         COMMAND live_hierarchy_test ${live_hierarchy_args})
+    add_test(NAME leaf_failure_diagnostics_${threads}_${path}
+        COMMAND live_hierarchy_test ${live_hierarchy_args} --case leaf_failure_diagnostics)
+    set_tests_properties(leaf_failure_diagnostics_${threads}_${path} PROPERTIES
+        ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 180)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
       add_test(NAME hierarchy_seed_transport_${threads}_${path}
           COMMAND live_hierarchy_test ${live_hierarchy_args} --case hierarchy_seed_transport)

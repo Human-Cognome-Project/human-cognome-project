@@ -5,6 +5,9 @@ preserves #417's failed moving assertion and identifies missing failure operands
 A separate native Q6 boundary witness demonstrates an arithmetic/reference
 comparison discrepancy. It does not diagnose the hosted leaf or change the
 accepted calculation, predicate, publication protocol or tolerance below.
+[Failure-only test diagnostics](LEAF-FAILURE-DIAGNOSTICS.md) now capture the
+completed operands at that unchanged assertion. Their native witness verifies
+the original rejection, full output, unchanged state and silent success path.
 
 Status: **C3-1 accepted in #195** under
 [#194](../../docs/production-hierarchy-response-plan.md) and the superseding
