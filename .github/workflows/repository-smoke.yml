@@ -9,6 +9,8 @@ on:
       - "kernels/database/**"
       - "kernels/wal/**"
       - ".github/workflows/repository-smoke.yml"
+      - ".github/workflows/ci-prose-scope.yml"
+      - ".github/scripts/ci-prose-scope.sh"
   push:
     branches:
       - "main"
@@ -19,8 +21,12 @@ on:
       - "kernels/database/**"
       - "kernels/wal/**"
       - ".github/workflows/repository-smoke.yml"
+      - ".github/workflows/ci-prose-scope.yml"
+      - ".github/scripts/ci-prose-scope.sh"
 
 jobs:
+  scope:
+    uses: ./.github/workflows/ci-prose-scope.yml
   native-engine-boundary:
     runs-on: ubuntu-latest
     steps:
@@ -62,6 +68,8 @@ jobs:
           done
 
   endpoint-substrate:
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.scope != 'prose' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -86,6 +94,8 @@ jobs:
           /tmp/dataflow_test
 
   database-codec:
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.scope != 'prose' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -102,6 +112,8 @@ jobs:
           /tmp/codec_advtest
 
   database-command:
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.scope != 'prose' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -122,6 +134,8 @@ jobs:
           /tmp/span_planner_test
 
   wal-pure:
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.scope != 'prose' }}
     runs-on: ubuntu-latest
     defaults:
       run:

@@ -1,9 +1,97 @@
 # Current implementation and work
 
-## November 24 — operator study before PoC
+## November 24, 2026 — live study accepted; LoD claim observation for review
 
-The next milestone is an editable native study with a temporary operator CLI for object insertion/removal, whole-field LoD exchange in place and observation across ticks. Main has prepared native mutation and private exchange, a bounded session submission path and completed-state observation. The general operator edit and multi-level inspection path is the work ahead. See the [current handoff](../core-local-study-continuation-plan.md).
+[#427 re-review 7140102237](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7140102237)
+resolves the destination-template finding and provisionally accepts `389cfdd3`
+for the first live editable CPU study. It remains unmerged; authoritative hosted
+CI is separate. Whole-field LoD exchange is the assigned continuation.
 
+The [claim-overlap measurement increment](../../engine/docs/EXCHANGE-CLAIM-OBSERVATION.md) at `4267c1e1`
+records actual native map occupancy during the existing atomic exchange:
+particles 1→3→2 / fields 3→9→7 on expansion, particles 2→3→1 / fields 7→9→3
+on compression. The final-fit/peak-overflow control still refuses nine fields
+against seven slots without claims. The operator exposes sampled observations
+and keeps refusal/no-op distinct from zero peaks. No allocation policy changed.
+
+Ten local CTests, eight native exchange/preflight controls and two placement
+controls pass on clean pinned CPU source, including a minimal build without
+viewport/warm integration. Raw captures, actual capacities/scratch, inline result
+bytes and freshly verified evidence are linked above. Return this separate
+dependent increment for review and authoritative CI. It is a measurement
+prerequisite, not whole-field operator completion. [#428](https://github.com/Human-Cognome-Project/human-cognome-project/issues/428)
+records per-logical-occurrence state staging, whole-field publication and the
+focus-preset question. Continue that integration, then confounding/structural
+trace; peripheral rollup and allocation-policy revision remain separate. All
+merges remain maintainer-only.
+
+## November 24, 2026 — #427 destination correction awaiting re-review
+
+[#427 finding 7139439148](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7139439148)
+holds `40257763` for an immutable-template check bypass after instance metadata
+reuse. The [correction and captured trace](../../engine/docs/LIVE-EDITABLE-STUDY.md#declared-destination-correction--awaiting-re-review)
+at `deacbe68` validate the declared destination independently of slot residency.
+The regression rejects a mismatched template without changing generation, full
+claims or physical state, then restores the original template and verifies no-op
+adds. A captured CLI trace completes subsequent edits/ticking in the same study.
+
+Quick local CI, twelve Clang/eight GCC edit profiles and three minimal native
+controls pass at the same clean source: 26 CTests plus two placement controls.
+The report preserves the red reproduction, source-pinned raw evidence and
+original qualification as separate scopes. Return this correction for maintainer
+re-review and authoritative CI; the hold is not treated as acceptance. Existing
+hosted jobs were left running. Whole-field LoD and allocation policy remain
+separate follow-ups. All merges remain maintainer-only.
+
+## November 24, 2026 — first live editable study awaiting review
+
+Following [#343's live-study handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343#issuecomment-7137040893),
+the [implementation and captured run](../../engine/docs/LIVE-EDITABLE-STUDY.md) at
+`36c38715` add a native CLI and a bounded prepared-owner occurrence edit. One
+study adds a distinct declared-template occurrence, ticks, removes it and ticks
+again while preserving active survivor state, full identity and reusable source
+definitions. The existing observer exposes completed ticks/generations/live rows.
+
+The branch starts at current main `98cdbe03`, integrating #423. Quick CI,
+23 Clang/20 GCC focused CTests and three minimal native CTests pass locally
+on the same clean implementation pin, including all new worker/path profiles.
+Commands, raw capture, refusal/budget/failure/survivor controls and freshly verified
+source-pinned evidence are linked above. This is contributor CPU evidence for
+provisional review; authoritative GitHub CI remains separate.
+
+Next is whole-field LoD exchange in place over declared compositions, then the
+fine confounding/next-level structural trace alongside targets and motion. Record
+actual capacities, live counts and old-plus-incoming peak on a real exchange
+before changing allocation policy. No further mechanical refactor, target/brake
+arithmetic or onboarding rebuild is assigned to this slice; #424/#425 remain
+maintainer-owned documentation. Peripheral rollup and pattern/PoC acceptance
+follow later. All merges remain maintainer-only.
+
+## November 24, 2026 — accepted CPU refactor boundary
+
+Main `01dc9783` integrates #421 and #422 after hosted smoke and native CPU qualification. The maintainer accepts Passes 1–3 for the supported CPU path. The [exit evidence](../../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23) identifies the owners, independent logical build and native reuse decisions. The [leaf diagnostic](../../engine/docs/LEAF-FAILURE-DIAGNOSTICS.md) captures future mismatches. The original #417 operands remain unknown. Pass 4 proceeds separately under #324. The maintainer owns the onboarding rebuild against this integrated code.
+
+### Prior handoffs
+
+## November 23, 2026 — refactor exits reconciled for review
+
+[#422 decision 7114219288](https://github.com/Human-Cognome-Project/human-cognome-project/pull/422#issuecomment-7114219288)
+source-accepts the diagnostic at `0520385c` and authorizes return to #343.
+The [source-pinned exit disposition](../../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23)
+at current main `fae58e79` proposes completion of the supported CPU ownership/
+build work in Passes 1–3. Pure logical and native ownership boundaries now have
+contracts, coverage and recorded native-reuse decisions. No further extraction
+is established by this trace; Pass 4/#324 and broader capabilities stay separate.
+
+Fresh build-graph/header/source inspection passes. Exact executable equivalence
+permits reuse of verified quick, sixteen Clang/fourteen GCC native CTests and
+three standalone five-test suites; #420 native/smoke passed on the integrated
+tree. This documentation disposition still requires review and authoritative CI.
+#421/#422 remain open with their qualification/integration separate. Preserve
+the reviewed diagnostic for future failures. Full B/admission, registered/JIT
+retirement, general updates, GPU/concurrency and Analyst implementation remain
+outside this completion proposal. The onboarding rebuild is maintainer-owned
+after integration; all merges remain maintainer-only.
 ## November 23, 2026 — leaf failure diagnostics awaiting review
 
 [#421 decision 7113221968](https://github.com/Human-Cognome-Project/human-cognome-project/pull/421#issuecomment-7113221968)
@@ -993,8 +1081,6 @@ Next authorized slice: a separate test-boundary correction for #342's unresolved
 **Current handoff — 2026-11-15, coding-agent transition (supersedes prior status):** main contains #341 plus documentation updates. Runtime merge `64fd23d02eb33fa00129ce78bd20fc5ad225f8e5` passed smoke 43713977016 and all 12 native jobs in 43713977014. Current pre-handoff main `1a5843e2e20f07477323351e2841eb1358b1c8d2` only adds review documentation. No history rewrite or source reset is needed. Fetch current main and inspect local status/uncommitted work before switching the replacement coding environment; this remote reconciliation does not inspect or certify the local/WSL checkout.
 
 #342 remains open at `0d0adec5b1beda5db55aa8d54358b6f7d2c0bb1b`, with current main's #341 source incorporated and no source conflict. Smoke and the corrected standalone projection job passed. The moved ActiveAssembly checks passed in native active_workbench_test. However, native run 43715143149 failed: live_intent_activity_2_bulk in job 132815906747 reported `equal-force publication control changed force`. This is a distinct unresolved regression, not the repaired header dependency. All other regression tests passed (168/169 total); database and four compiler profiles passed. The aggregate gate failed. Preserve this evidence and inspect/reproduce the two-worker bulk publication case before integration; do not assume a flake, weaken checks or change mathematics to mask it. No duplicate CI or merge requested. Held #75/#111/#123 unchanged; no other new PR is open.
-
-**Terminology update (November 24):** “centroid of intent” in the dated note below refers to the proposed structural target. The confounded target includes all participating fields. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
 
 **Mathematical direction for inspection:** Patrick proposes deriving the centroid of intent from the study's structural composition path, using the native Taichi operations on its SNode representation, while treating attached nonstructural elements as confounding fields. Record structural intent, nonstructural influence and actual endpoint/trajectory separately. Trace explicit composition roles rather than equating all storage nesting or attached membership/comparison edges with composition. Determine weighting/frame/publication semantics before choosing a formula. The existing combined candidate diagnostic must not be silently relabelled as this structural quantity. See #324's 2026-11-15 clarification, which supersedes older all-influence assumptions. No new braking/activity/stability law is selected. Preserve participating-force/whole-body-inertia accounting and reuse Taichi machinery.
 
