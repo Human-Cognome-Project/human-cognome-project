@@ -1,6 +1,6 @@
 # Spatial intent: comparison proposal for #324
 
-The combined candidate described here has its own calculation and validity rules. In current #324 terminology, the structural target follows the composition path and the confounded target incorporates all participating fields. Their relationship to this candidate requires derivation. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
+The combined candidate described here has its own calculation and validity rules. In current #324 terminology, the structural target follows the composition path and the confounded target incorporates all participating fields. The confounded target is the final all-fields target calculation for the tick. The brake acts only on motion relative to that target. For fixed pre-tick inputs, braking preserves both calculated targets. [Brake clarification](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7135937435). Check the diagnostic against this definition before using it as the motion reference. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
 
 For the next derivation, separate parent and core whole-particle fields from effects transmitted across structures. The first worked case and controls are specified in [Pass 4](../../docs/engine-refactoring-plan.md#pass-4-inspect-and-implement-the-mathematical-distinction-separately).
 

@@ -10,7 +10,7 @@ The **structural target** is derived from parent/object classification forces al
 
 At the working level, parent fields and core whole-particle fields are structural. Effects across these structures are confounding or transitive. For letters, each endpoint binds its ordered Unicode character parent or parents. Each character in turn has its own construction. Sharing a core definition supplies a possible path between endpoints. The imposed cross-language comparison determines whether an effect along that path participates. [Language-to-core construction](../language-component-unicode-plan.md).
 
-Use *centroid* for an actual geometric or mass-weighted centre. Keep the proposed endpoint and accepted tick position distinct from both targets. The existing combined diagnostic retains its source-defined meaning. Its relationship to the confounded target and the distance governing braking remain open. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
+Use *centroid* for an actual geometric or mass-weighted centre. Keep the proposed endpoint and accepted tick position distinct from both targets. The existing combined diagnostic retains its source-defined meaning. The confounded target is the final all-fields target calculation for the tick. The brake acts only on motion relative to that target. For fixed pre-tick inputs, braking preserves both calculated targets. [Brake clarification](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7135937435). [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
 
 ## Latest model direction — 2026-10-23
 
