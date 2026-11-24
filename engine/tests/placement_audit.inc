@@ -3,7 +3,7 @@ const std::array<std::set<int>, 19> &placement_writers() {
       {{3, 4, 5}, {4, 5}, {0, 3, 4, 5}, {1}, {2},
        {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
        {3, 4, 5}, {1, 2}, {5, 6, 7}, {1, 2, 3, 4, 5, 6, 7},
-       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}, {2, 4}, {1}, {3}}};
+       {0, 1, 2}, {1, 3, 5, 7, 9, 11}, {0, 3, 4, 5}, {1}, {0, 1, 2, 3, 4, 5}, {7}, {2, 4}, {1, 2}, {3}}};
   return value;
 }
 void placement_module_contract(Harness &h,
@@ -123,6 +123,14 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                     ctx.array_bindings[arg].rank == 1 && ctx.array_bindings[arg].elements == 8,
                 "replacement staging lacks native outgoing-state binding");
       }
+      if(index==17) {
+        require(ctx.array_ptrs.at({2,taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY})==
+                    reinterpret_cast<void *>(surfaces[4]->get_device_allocation_ptr_as_int()) &&
+                ctx.array_bindings[2].type==taichi::lang::PrimitiveType::f64 &&
+                ctx.array_bindings[2].rank==2 && ctx.array_bindings[2].elements==
+                    9*h.prepared_storage().capacity.command_capacity(),
+                "grouped native target/motion staging lacks the reserved request binding");
+      }
       if (index == 16) {
         require(ctx.array_ptrs.at({5, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}) ==
                     reinterpret_cast<void *>(surfaces[41]->get_device_allocation_ptr_as_int()) &&
@@ -204,6 +212,15 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
         require(!erase.empty(), "missing placement omission target");
         for (auto *i : erase)
           i->eraseFromParent();
+      });
+      if(index==17)reject("omitted_group_target_motion",[&](llvm::Module &clone) {
+        hierarchy_audit::Analyzer a(kernel,clone,100);
+        std::vector<llvm::Instruction *> erase;
+        for(auto &fn:clone)for(auto &bb:fn)for(auto &instruction:bb)
+          if(auto *s=llvm::dyn_cast<llvm::StoreInst>(&instruction))
+            if(a.data_arg(s->getPointerOperand())==2)erase.push_back(s);
+        require(!erase.empty(),"missing grouped staging omission target");
+        for(auto *instruction:erase)instruction->eraseFromParent();
       });
       if (index == 2 || index == 12 || (index >= 14 && index <= 16) || index == 18)
         reject("contracted_interval_math", [&](llvm::Module &clone) {

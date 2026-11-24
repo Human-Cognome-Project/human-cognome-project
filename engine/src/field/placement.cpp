@@ -82,6 +82,7 @@ void Placement::append_layout(const BudgetDemand &l,
       sizeof(std::int64_t));                                // native + host
   add("placement-focal", 8, sizeof(double));                // native + host
   add("placement-intrinsic-input", 6 * b, sizeof(double));  // native + host
+  add("placement-group-target-motion", 6 * b, sizeof(double)); // native only
   add("placement-occupancy", 4 * (p + b), sizeof(double));
   add("placement-interval-heap", 7 * c, sizeof(double));
   add("placement-candidate-output", 21 * b,
@@ -124,7 +125,7 @@ Placement::Placement(Harness &h) : h_(h) {
   stats_ = allocate(r, PrimitiveType::i64, {16});
   focal_ = allocate(r, d, {4});
   keep_ = allocate(r, i, {p});
-  requests_ = allocate(r, d, {3, b});
+  requests_ = allocate(r, d, {9, b});
   occupancy_ = allocate(r, d, {4, p + b});
   cells_ = allocate(r, d, {7, c});
   attempt_ = allocate(r, d, {7, b});
@@ -249,9 +250,10 @@ void Placement::build() {
                              number, current, limit, prefix, capacity,
                              h_.profile_.body_fraction_bits,
                              bootstrap ? b.create_ndarray_arg_load(
-                                 {12}, PrimitiveType::u64, 2, 0) : nullptr,
+                                 {13}, PrimitiveType::u64, 2, 0) : nullptr,
                              bootstrap ? b.create_arg_load(
-                                 {13}, PrimitiveType::i32, false, 0) : nullptr);
+                                 {14}, PrimitiveType::i32, false, 0) : nullptr,
+                             b.create_arg_load({12}, PrimitiveType::i32, false, 0));
     search.emit();
     std::vector<Param> parameters{
          Param::array(PrimitiveType::f64, 2),
@@ -260,7 +262,8 @@ void Placement::build() {
          Param::array(PrimitiveType::f64, 2), Param::array(PrimitiveType::u64),
          Param::scalar(PrimitiveType::i32), Param::scalar(PrimitiveType::i32),
          Param::scalar(PrimitiveType::i64), Param::scalar(PrimitiveType::i64),
-         Param::scalar(PrimitiveType::i32), Param::scalar(PrimitiveType::i32)};
+         Param::scalar(PrimitiveType::i32), Param::scalar(PrimitiveType::i32),
+         Param::scalar(PrimitiveType::i32)};
     if (bootstrap) {
       parameters.push_back(Param::array(PrimitiveType::u64, 2));
       parameters.push_back(Param::scalar(PrimitiveType::i32));
@@ -337,9 +340,17 @@ void Placement::build() {
                 {b.get_int32(mapping.second), rank})));
       auto transfer = b.get_if_guard(b.create_if(
           b.create_arg_load({5}, PrimitiveType::i32, false, 0)), true);
-      for (int k = 0; k < 3; ++k)
+      for (int k = 0; k < 3; ++k) {
+        auto *velocity = b.create_local_var(PrimitiveType::f64);
+        b.create_local_store(velocity,b.create_global_load(b.create_external_ptr(exchange,{b.get_int32(3+k)})));
+        {
+          auto grouped = b.get_if_guard(b.create_if(b.create_cmp_eq(
+              b.create_arg_load({5},PrimitiveType::i32,false,0),b.get_int32(2))),true);
+          b.create_local_store(velocity,b.create_global_load(b.create_external_ptr(inputs,{b.get_int32(6+k),rank})));
+        }
         b.create_global_store(b.create_external_ptr(starts, {b.get_int32(kVelX + k), command}),
-            b.create_global_load(b.create_external_ptr(exchange, {b.get_int32(3 + k)})));
+            b.create_local_load(velocity));
+      }
     }
     initialize_ = engine::CompiledKernel(
         r, "placement_initialize_b" + std::to_string(capacity), b.extract_ir(),
@@ -349,7 +360,7 @@ void Placement::build() {
         engine::MathMode::Strict);
   }
 }
-void Placement::initialize(int bodies, bool exchange) {
+void Placement::initialize(int bodies, int exchange) {
   auto call = initialize_.invocation(true);
   auto &c = call.get();
   if (!c.prepared) {
@@ -400,7 +411,7 @@ void Placement::capture() {
 void Placement::solve(int number,
                       std::uint64_t limit,
                       std::uint64_t prefix,
-                      int cells, bool bootstrap) {
+                      int cells, bool bootstrap, bool grouped) {
   auto &kernel = bootstrap ? bootstrap_solve_ : solve_;
   auto call = kernel.invocation(true);
   auto &c = call.get();
@@ -412,7 +423,7 @@ void Placement::solve(int number,
     c.set_arg_ndarray({4}, *attempt_);
     c.set_arg_ndarray({5}, *counts_);
     if (bootstrap)
-      c.set_arg_ndarray({12}, *bootstrap_contributions_);
+      c.set_arg_ndarray({13}, *bootstrap_contributions_);
   }
   engine::argument_int(c, 6, number);
   engine::argument_int(c, 7, count_values_[PlacementCounters::Occupants]);
@@ -420,8 +431,9 @@ void Placement::solve(int number,
   engine::argument_int(c, 9, prefix);
   engine::argument_int(c, 10, cells);
   engine::argument_int(c, 11, intrinsics_.size());
+  engine::argument_int(c, 12, grouped);
   if (bootstrap)
-    engine::argument_int(c, 13, bootstrap_edges_);
+    engine::argument_int(c, 14, bootstrap_edges_);
   kernel.launch(c);
 }
 void Placement::publish(bool enabled) {
@@ -473,7 +485,8 @@ PlacementResult Placement::attempt(std::uint64_t expected,
                                    std::uint64_t cells,
                                    bool publication, bool bootstrap,
                                    const UpdateRef *focus, std::size_t focus_count,
-                                   const engine::RecordHandle *outgoing, std::size_t outgoing_count) {
+                                   const engine::RecordHandle *outgoing, std::size_t outgoing_count,
+                                   const PlacementExchangeGroup *groups, std::size_t group_count) {
   auto &h = h_;
   auto &s = *h.prepared_;
   const auto &l = s.capacity.limits();
@@ -484,6 +497,7 @@ PlacementResult Placement::attempt(std::uint64_t expected,
   q.completed_ticks = s.completed_ticks;
   q.frame_anchor = h.frame_anchor_;
   const bool exchange = outgoing || outgoing_count;
+  const bool grouped = groups || group_count;
   const auto fail = [&](Budget b, std::uint64_t needed,
                         std::uint64_t capacity) {
     q.status = PlacementStatus::CapacityExhausted;
@@ -521,6 +535,8 @@ PlacementResult Placement::attempt(std::uint64_t expected,
     return q;
   if (exchange && (publication || bootstrap || !outgoing || !outgoing_count))
     return q;
+  if (grouped && (!exchange || !groups || !group_count || group_count > body_count || outgoing_count > l[Budget::Particles]))
+    return q;
   if (bootstrap && focus_count > l[Budget::Focus])
     return fail(Budget::Focus, focus_count, l[Budget::Focus]);
   if (bootstrap && (!bootstrap_contributions_ || publication ||
@@ -557,6 +573,11 @@ PlacementResult Placement::attempt(std::uint64_t expected,
   if (exchange) {
     prefix = sat_add(prefix, sat_add(sat_mul(64, p + 1),
         sat_add(command_count, sat_add(sat_mul(64, body_count), 128))));
+    q.source_work_bound = prefix;
+  }
+  if (grouped) {
+    prefix = sat_add(prefix,sat_add(sat_mul(sat_mul(128,p+1),group_count),
+        sat_mul(128,sat_add(body_count,sat_add(group_count,command_count)))));
     q.source_work_bound = prefix;
   }
   if (prefix > work)
@@ -615,6 +636,29 @@ PlacementResult Placement::attempt(std::uint64_t expected,
           ++retired;
         }
       if (retired != outgoing_count) return q;
+      if (grouped) {
+        std::size_t old_end=0,new_end=0;
+        for (std::size_t i=0;i<group_count;++i) {
+          const auto &group=groups[i];
+          if (group.outgoing_begin!=old_end || group.incoming_begin!=new_end ||
+              !group.outgoing_count || !group.incoming_count ||
+              group.outgoing_count>outgoing_count-old_end || group.incoming_count>body_count-new_end) return q;
+          std::uint64_t old_mass=0,new_mass=0;
+          for(std::size_t j=0;j<group.outgoing_count;++j) {
+            const auto mass=s.source_masses[outgoing[old_end+j].record];
+            if(mass>(UINT64_C(1)<<53)-old_mass) return q;
+            old_mass+=mass;
+          }
+          for(std::size_t j=0;j<group.incoming_count;++j) {
+            const auto mass=*commands[intrinsics_[new_end+j].command].exact_mass;
+            if(mass>(UINT64_C(1)<<53)-new_mass) return q;
+            new_mass+=mass;
+          }
+          if(old_mass!=new_mass) return q;
+          old_end+=group.outgoing_count;new_end+=group.incoming_count;
+        }
+        if(old_end!=outgoing_count || new_end!=body_count) return q;
+      }
     }
     std::fill(s.new_row_values.doubles().begin(),
               s.new_row_values.doubles().end(), 0);
@@ -697,6 +741,22 @@ PlacementResult Placement::attempt(std::uint64_t expected,
                    request_values_.size() * sizeof(double));
     q.upload_bytes += keep_values_.size() * sizeof(int) +
                      request_values_.size() * sizeof(double);
+    if (grouped) for(std::size_t i=0;i<group_count;++i) {
+      const auto &group=groups[i];
+      const auto state=stage_exchange_state(expected,outgoing+group.outgoing_begin,group.outgoing_count,work,true);
+      q.upload_bytes+=state.upload_bytes;q.readback_bytes+=state.readback_bytes;q.synchronizations+=state.synchronizations;
+      if(state.status!=UpdateStatus::Ok) {q.status=translate(state.status);q.failure=state.failure;return q;}
+      target_exchange(int(group.incoming_begin),int(group.incoming_begin+group.incoming_count));
+    }
+    // Group reductions used the selection mask. Restore the complete prospective
+    // occupancy exclusion before capture; all outgoing alternatives are absent.
+    if(grouped) {
+      std::fill(keep_values_.begin(),keep_values_.end(),0);
+      for(int row=0;row<h.particles_;++row)
+        keep_values_[row]=s.particle_headers[row].record>=0 && s.validation[row]>0;
+      engine::upload(*keep_,keep_values_.data(),keep_values_.size()*sizeof(int));
+      q.upload_bytes+=keep_values_.size()*sizeof(int);
+    }
     if (bootstrap) {
       engine::upload(*bootstrap_contributions_, bootstrap_values_.data(),
                      bootstrap_values_.size() * sizeof(std::uint64_t));
@@ -736,7 +796,7 @@ PlacementResult Placement::attempt(std::uint64_t expected,
       return q;
     }
     q.retained = count_values_[PlacementCounters::Occupants];
-    solve(body_count, work, prefix, int(cells), bootstrap);
+    solve(body_count, work, prefix, int(cells), bootstrap, grouped);
     h.runtime_->synchronize();
     ++q.synchronizations;
     engine::readback(*counts_, count_values_.data(), sizeof(count_values_));
@@ -764,11 +824,11 @@ PlacementResult Placement::attempt(std::uint64_t expected,
     if (s.failure_point == 300)
       throw std::runtime_error("injected placement candidate failure");
     if (!publication) {
-      initialize(int(body_count), exchange);
-      if (exchange) balance_exchange(int(body_count));
+      initialize(int(body_count), grouped ? 2 : int(exchange));
+      if (exchange && !grouped) balance_exchange(int(body_count));
       h.runtime_->synchronize();
       ++q.synchronizations;
-      if (exchange) {
+      if (exchange && !grouped) {
         std::array<double, 32> diagnostic{};
         engine::readback(*exchange_balance_, diagnostic.data(), sizeof(diagnostic));
         q.readback_bytes += sizeof(diagnostic);
@@ -776,6 +836,17 @@ PlacementResult Placement::attempt(std::uint64_t expected,
           q.status = PlacementStatus::InvalidNumerics;
           return q;
         }
+      }
+      if(grouped) for(std::size_t i=0;i<group_count;++i) {
+        const auto &group=groups[i];
+        const auto state=stage_exchange_state(expected,outgoing+group.outgoing_begin,group.outgoing_count,work,true);
+        q.upload_bytes+=state.upload_bytes;q.readback_bytes+=state.readback_bytes;q.synchronizations+=state.synchronizations;
+        if(state.status!=UpdateStatus::Ok) {q.status=translate(state.status);q.failure=state.failure;return q;}
+        balance_exchange(int(group.incoming_count),int(group.incoming_begin));
+        h.runtime_->synchronize();++q.synchronizations;
+        std::array<double,32> diagnostic{};
+        engine::readback(*exchange_balance_,diagnostic.data(),sizeof(diagnostic));q.readback_bytes+=sizeof(diagnostic);
+        if(diagnostic[22]!=0) {q.status=PlacementStatus::InvalidNumerics;return q;}
       }
       q.placements = body_count;
       return q;

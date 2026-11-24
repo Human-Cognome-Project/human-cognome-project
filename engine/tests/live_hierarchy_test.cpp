@@ -3022,6 +3022,7 @@ void capture_current(engine::Runtime &r,
 #include "exchange_owner_multiple.inc"
 #include "exchange_owner_equal.inc"
 #include "placement_audit.inc"
+#include "grouped_exchange_cases.inc"
 }  // namespace
 int main(int argc, char **argv) {
   try {
@@ -3173,6 +3174,8 @@ int main(int argc, char **argv) {
       run("exchange_commit", [&] { exchange_commit(r, path); });
     if (only == "placement" || only == "exchange_fields")
       run("exchange_fields", [&] { exchange_fields(r, path); });
+    if (only == "placement" || only == "grouped_exchange")
+      run("grouped_exchange", [&] { grouped_exchange(r, path); });
     if (only == "placement" || only == "exchange_owner")
       run("exchange_owner", [&] { exchange_owner(r, path); });
     if (only == "placement" || only == "exchange_owner_multiple")

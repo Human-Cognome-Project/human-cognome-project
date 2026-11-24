@@ -8,7 +8,7 @@
 
 namespace assembly {
 namespace testing { struct ActiveAssemblyAccess; }
-namespace detail { class StructuralAdmissionPlan; }
+namespace detail { class StructuralAdmissionPlan; class PreparedLodWorkspace; }
 struct LocalRef {
   warm::ObjectKey object;
   warm::Uuid version, owner;
@@ -61,6 +61,10 @@ class ActiveAssembly {
   ActiveAssembly revise(std::optional<LocalInput> local) const;
   ActiveAssembly restart() const;
   ActiveAssembly focus(std::vector<FocalField> fields) const;
+  // Caller-side immutable view of the same declared recipe/study. No native
+  // state changes; the prepared owner separately validates/commits exposure.
+  ActiveAssembly expose_all(warm::Exposure) const;
+  warm::Exposure exposure(std::uint64_t entry) const { return projection_.exposure(entry); }
   bool inputs_available() const {
     return !requires_local_ || local_.has_value();
   }
@@ -78,6 +82,7 @@ class ActiveAssembly {
 
  private:
   friend class detail::StructuralAdmissionPlan;
+  friend class detail::PreparedLodWorkspace;
   friend struct testing::ActiveAssemblyAccess;
   ActiveAssembly(LetterProjection projection, warm::Uuid owner, bool required,
                  std::optional<LocalInput> local);

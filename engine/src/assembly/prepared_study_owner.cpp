@@ -1,5 +1,7 @@
 #include "assembly/prepared_study_owner.h"
 #include "assembly/prepared_occurrence_workspace.h"
+#include "assembly/prepared_lod_workspace.h"
+#include "assembly/prepared_submission.h"
 #include "field/cascade_source.h"
 #include <new>
 #include <stdexcept>
@@ -23,7 +25,8 @@ bool empty(const field::Harness &h) {
 PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
     const std::shared_ptr<const ActiveAssembly> &source, const warm::Uuid &session,
     const AdmissionBindings &bindings, const std::shared_ptr<ReservationDomain> &domain,
-    std::uint64_t plan_allowance, std::uint64_t metadata_allowance, bool editable_occurrences) {
+    std::uint64_t plan_allowance, std::uint64_t metadata_allowance, bool editable_occurrences,
+    const PreparedLodAlternative *alternative) {
   PreparedOwnerResult out;
   PreparationWork work(metadata_allowance);
   try {
@@ -43,7 +46,32 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
       ::new (static_cast<void *>(p)) PreparedStudyOwner(h,source,std::move(prepared.plan),domain);
     });
     owner->reserve_metadata(session,bindings,work);
-    if (editable_occurrences) {
+    if (alternative) {
+      if(!editable_occurrences || !alternative->source || prepared.work.charged>plan_allowance) {
+        owner.reset();out.status=AdmissionPlanStatus::InvalidInput;out.metadata_work=work.result();out.reservation=domain->result();return out;
+      }
+      auto other=StructuralAdmissionPlan::build(*alternative->source,alternative->bindings,
+          h.prepared_storage().capacity,domain,plan_allowance-prepared.work.charged);
+      out.plan_work=other.work;
+      if(out.plan_work.charged<=UINT64_MAX-prepared.work.charged)out.plan_work.charged+=prepared.work.charged;
+      if(out.plan_work.next_required) {
+        if(out.plan_work.next_required>UINT64_MAX-prepared.work.charged) {
+          out.plan_work.status=PreparationStatus::Overflow;
+          out.plan_work.next_required=0;
+          other.status=AdmissionPlanStatus::Overflow;
+        } else out.plan_work.next_required+=prepared.work.charged;
+      }
+      if(!other.plan) {
+        out.status=other.status;out.failure=other.failure;owner.reset();out.metadata_work=work.result();out.reservation=domain->result();return out;
+      }
+      try {
+        owner->lod_=reserve_unique<PreparedLodWorkspace>(domain,[&](auto *p){
+          ::new(static_cast<void*>(p))PreparedLodWorkspace(*owner,*alternative->source,std::move(other.plan),work);
+        });
+      } catch(const warm::Error &) {
+        owner.reset();out.status=AdmissionPlanStatus::Unsupported;out.metadata_work=work.result();out.reservation=domain->result();return out;
+      }
+    } else if (editable_occurrences) {
       const auto &limits=h.prepared_storage().capacity.limits();
       if (limits[field::Budget::Potential] < limits[field::Budget::Particles]) {
         out.status=AdmissionPlanStatus::CapacityExhausted;
@@ -114,8 +142,8 @@ void PreparedStudyOwner::authorize(const warm::Uuid &owner, const ExecutionHandl
 bool PreparedStudyOwner::ready() const {
   if (phase_ != PreparedOwnerPhase::Published || !h_.ready()) return false;
   const auto &s = h_.prepared_storage();
-  if (plan_ || (edits_ ? edits_->live_.size() : occurrences_.size()) != bodies_.size() ||
-      field_sources_.size() != fields_.size() ||
+  if (plan_ || (lod_ ? lod_->live_.size() : edits_ ? edits_->live_.size() : occurrences_.size()) != bodies_.size() ||
+      (lod_ ? lod_->field_sources().size() : field_sources_.size()) != fields_.size() ||
       s.generation != generation_ || s.particles.context() != context_ ||
       s.live.particles != bodies_.size() || s.live.fields != fields_.size()) return false;
   const auto current = [](const auto &handles, const auto &headers, std::uint64_t context) {
@@ -158,9 +186,9 @@ PreparedStudyOwner::AssociationRows PreparedStudyOwner::AssociationView::read() 
   if (generation_ != owner_->generation_ || !owner_->ready() ||
       tick_ != owner_->h_.prepared_storage().completed_ticks)
     throw warm::Stale("prepared owner: stale association view");
-  return {*owner_->source_,{owner_->edits_ ? owner_->edits_->catalogue_ : owner_->occurrences_,
-                          owner_->edits_ ? &owner_->edits_->live_ : nullptr},
-          owner_->field_sources_,owner_->bodies_,owner_->fields_,
+  return {*owner_->source_,{owner_->lod_ ? owner_->lod_->catalogue_ : owner_->edits_ ? owner_->edits_->catalogue_ : owner_->occurrences_,
+                          owner_->lod_ ? &owner_->lod_->live_ : owner_->edits_ ? &owner_->edits_->live_ : nullptr},
+          owner_->lod_ ? owner_->lod_->field_sources() : owner_->field_sources_,owner_->bodies_,owner_->fields_,
           owner_->scales_,owner_->h_.prepared_storage().source_masses};
 }
 PreparedStudyOwner::AssociationView PreparedStudyOwner::associations(const warm::Uuid &owner,
@@ -176,6 +204,7 @@ ActiveReport PreparedStudyOwner::report_metadata(const warm::Uuid &authorization
   report.handle = handle_;
   report.prepared_generation = generation_;
   report.prepared_completed_tick = h_.prepared_storage().completed_ticks;
+  if(lod_)report.prepared_exposure=lod_->exposure();
   report.owner = rows.source.owner();
   report.instance = rows.source.instance();
   report.origins = rows.source.origins();
@@ -190,7 +219,7 @@ ActiveReport PreparedStudyOwner::report_metadata(const warm::Uuid &authorization
   for (std::size_t i=0; i<rows.occurrences.size(); ++i) {
     const auto body = rows.body(i);
     const auto &entry = body.source;
-    if (edits_) {
+    if (edits_ || lod_) {
       bool origin=false;
       for (const auto &item : report.origins)
         if (item.occurrence.study == rows.source.study() && item.occurrence.source == entry.occurrence) {
@@ -281,9 +310,12 @@ field::UpdateResult PreparedStudyOwner::bootstrap(const warm::Uuid &owner,
     // swaps transfer all nested pins without allocating or copying keys. No
     // association/plan loan exists before Published. Retire replay data only
     // after final claim verification; native storage now owns exact masses.
-    occurrences_.swap(plan_->occurrences_);
-    field_sources_.swap(plan_->fields_);
-    plan_.reset();
+    if(lod_)lod_->sides_[0].plan=std::move(plan_);
+    else {
+      occurrences_.swap(plan_->occurrences_);
+      field_sources_.swap(plan_->fields_);
+      plan_.reset();
+    }
     generation_ = result.generation;
     phase_ = PreparedOwnerPhase::Published; // The only map visibility boundary.
     return result;

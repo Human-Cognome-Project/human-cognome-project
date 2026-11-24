@@ -23,8 +23,8 @@ const char *status(field::UpdateStatus value) {
   return "unknown";
 }
 void help() {
-  std::cout << "viewport_live_study [--threads N] [--direct] [--commands FILE]\n"
-      "Commands: observe; list; add ENTRY [TEMPLATE_ENTRY]; remove ENTRY; tick [N]; quit\n"
+  std::cout << "viewport_live_study [--threads N] [--direct] [--whole-field] [--commands FILE]\n"
+      "Commands: observe; list; add ENTRY [TEMPLATE_ENTRY]; remove ENTRY; lod aggregate|parts; tick [N]; quit\n"
       "The fixture English-pair catalogue declares entries 2 and 10. Both start live.\n"
       "A new root entry copies a declared template (default 2) within capacity.\n";
 }
@@ -34,10 +34,12 @@ int main(int argc, char **argv) {
     engine::InstanceSettings settings; settings.read_environment=false; settings.cpu_threads=1;
     auto path=field::HostPath::BulkCopy;
     std::string command_file;
+    bool whole_field=false;
     for (int i=1; i<argc; ++i) {
       const std::string arg=argv[i];
       if (arg == "--help") { help(); return 0; }
       if (arg == "--direct") path=field::HostPath::CpuDirect;
+      else if(arg == "--whole-field")whole_field=true;
       else if (arg == "--threads" && i+1<argc)
         settings.cpu_threads=int(viewport::parse_count("--threads",argv[++i],1,1024));
       else if (arg == "--commands" && i+1<argc) command_file=argv[++i];
@@ -51,9 +53,18 @@ int main(int argc, char **argv) {
     std::istream &input=command_file.empty() ? std::cin : file;
     letter_fixture::Fixture fixture;
     const auto english=fixture.ref(fixture.english);
-    const auto source=std::make_shared<const assembly::ActiveAssembly>(assembly::ActiveAssembly::assemble(
-        viewport::prepared_english_pair(fixture.base,english),warm::new_uuid(),false));
-    auto request=viewport::editable_english_pair_submission(source,english,path);
+    std::optional<warm::ToolRef> membership;
+    if(whole_field) {
+      membership=fixture.add(letter_fixture::object("02.00.00.00.00"),"English",0);
+      fixture.base.tools.at(fixture.tools.at(fixture.english)).member_of={*membership};
+    }
+    auto assembled=assembly::ActiveAssembly::assemble(whole_field
+        ? viewport::whole_english_pair(fixture.base,english,*membership)
+        : viewport::prepared_english_pair(fixture.base,english),warm::new_uuid(),false);
+    const auto source=std::make_shared<const assembly::ActiveAssembly>(whole_field
+        ? assembled.expose_all(warm::Exposure::Aggregate) : std::move(assembled));
+    auto request=whole_field ? viewport::whole_english_pair_submission(source,english,*membership,path)
+        : viewport::editable_english_pair_submission(source,english,path);
     const auto catalogue=request.bindings.bodies;
     const auto limits=request.capacity.limits();
     const auto resources=request.resources;
@@ -73,7 +84,11 @@ int main(int argc, char **argv) {
       for (const auto &body : state.report.prepared.particles) {
         const auto id=std::string(body.occurrence.id);
         const auto existing=declared.find(id);
-        if (existing != declared.end()) context.occurrences.emplace(id,existing->second);
+        if (existing != declared.end()) {
+          auto display=existing->second;
+          if(state.report.prepared_exposure)display.exposure=*state.report.prepared_exposure==warm::Exposure::Parts?"parts":"aggregate";
+          context.occurrences.emplace(id,std::move(display));
+        }
         else {
           // The only new-entry operation copies a declared root aggregate.
           // Labels describe the validated definition; live membership comes
@@ -81,15 +96,19 @@ int main(int argc, char **argv) {
           const assembly::Origin *origin=nullptr;
           for (const auto &item : state.report.origins)
             if (assembly::occurrence_text(item.occurrence) == id) origin=&item;
-          if (!origin || !origin->occurrence.source.path.empty() || !origin->shared)
+          if (!origin || !origin->shared || (origin->occurrence.source.path.size()!=0 &&
+              (origin->occurrence.source.path.size()!=2 || origin->occurrence.source.path[0]!=0 || origin->occurrence.source.path[1]!=0)))
             throw std::runtime_error("unsupported live display provenance");
           std::string label;
           for (const auto &tool : source->shared_recipe().tools)
             if (tool.ref == *origin->shared && tool.notation) label=std::string(*tool.notation);
-          context.occurrences.emplace(id,viewport::DisplayContext{"aggregate",id,std::move(label)});
+          auto aggregate=origin->occurrence;aggregate.source.path.clear();
+          context.occurrences.emplace(id,viewport::DisplayContext{origin->occurrence.source.path.empty()?"aggregate":"parts",
+              assembly::occurrence_text(aggregate),std::move(label)});
         }
       }
-      context.source={{"kind","fixture_only"},{"profile","editable-english-pair"}};
+      context.source={{"kind","fixture_only"},{"profile",whole_field?"whole-field-english-pair":"editable-english-pair"}};
+      if(state.report.prepared_exposure)result["exposure"]=*state.report.prepared_exposure==warm::Exposure::Parts?"parts":"aggregate";
       result["completed_tick"]=state.tick;
       result["generation"]=*state.prepared_generation;
       result["owner_metadata_bytes"]=resources->result().live_bytes;
@@ -97,8 +116,11 @@ int main(int argc, char **argv) {
       result["live_occurrences"]=Json::array();
       for (std::size_t i=0; i<state.body_records.size(); ++i) {
         const auto &claim=state.body_records[i];
+        const auto capacity=state.report.prepared.capacity;
+        const auto velocity=[&](int axis) {return state.report.particles64.at((field::kVelX+axis)*capacity+claim.record);};
         result["live_occurrences"].push_back({{"id",std::string(state.report.prepared.particles[i].occurrence.id)},
-          {"context",claim.context},{"incarnation",claim.incarnation},{"address",claim.address},{"record",claim.record}});
+          {"context",claim.context},{"incarnation",claim.incarnation},{"address",claim.address},{"record",claim.record},
+          {"velocity",{velocity(0),velocity(1),velocity(2)}}});
       }
       result["observation"]=viewport::snapshot(state,context);
       std::cout << result.dump() << '\n'; std::cout.flush();
@@ -128,6 +150,21 @@ int main(int argc, char **argv) {
         if (words>>trailing) throw std::invalid_argument("too many command arguments");
         if ((command == "observe" || command == "list") && argument.empty()) {
           emit({{"command",command},{"status","ok"},{"catalogue",available}});
+        } else if(command == "lod" && (argument=="aggregate" || argument=="parts")) {
+          assembly::PreparedLodEdit edit{argument=="parts"?warm::Exposure::Parts:warm::Exposure::Aggregate,*observe().prepared_generation};
+          edit.preparation_work=10000000;edit.placement_work=100000000;edit.placement_cells=65536;edit.hierarchy_work=1000000;
+          const auto result=session.lod_prepared(handle,source->owner(),edit);
+          const auto &p=result.publication;
+          if(p.status!=field::UpdateStatus::Ok && p.status!=field::UpdateStatus::NoChange)rejected=true;
+          Json claims{{"sampled",p.claims.sampled}};
+          if(p.claims.sampled) {
+            const auto &c=p.claims;
+            claims["particles"]={{"before",c.particles_before},{"peak",c.particles_peak},{"after",c.particles_after}};
+            claims["fields"]={{"before",c.fields_before},{"peak",c.fields_peak},{"after",c.fields_after}};
+          }
+          emit({{"command",command},{"requested_exposure",argument},{"status",status(p.status)},
+            {"native_claims",std::move(claims)},{"preparation_work",result.preparation.charged},
+            {"failure",{{"budget",field::budget_name(p.failure.budget)},{"required",p.failure.required},{"capacity",p.failure.capacity}}}});
         } else if (command == "tick") {
           const auto ticks=argument.empty() ? 1 : viewport::parse_count("tick",argument,1,1000000);
           for (std::uint64_t i=0; i<ticks; ++i) {
@@ -163,7 +200,7 @@ int main(int argc, char **argv) {
             {"native_claims",std::move(claims)},
             {"preparation_status",int(result.preparation.status)},
             {"preparation_work",result.preparation.charged}});
-        } else throw std::invalid_argument("expected observe, list, add ENTRY, remove ENTRY, tick [N] or quit");
+        } else throw std::invalid_argument("expected observe, list, add ENTRY, remove ENTRY, lod aggregate|parts, tick [N] or quit");
       } catch (const std::invalid_argument &error) {
         rejected=true; emit({{"command",command},{"status","invalid_input"},{"message",error.what()}});
       }
