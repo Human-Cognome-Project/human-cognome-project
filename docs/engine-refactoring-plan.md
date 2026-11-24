@@ -1,5 +1,31 @@
 # Engine and Analyst-facing refactoring plan
 
+## November 24, 2026 — accepted CPU refactor boundary
+
+Main `01dc9783` integrates #421 and #422 after hosted smoke and native CPU qualification. The maintainer accepts Passes 1–3 for the supported CPU path. The [exit evidence](../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23) identifies the owners, independent logical build and native reuse decisions. The [leaf diagnostic](../engine/docs/LEAF-FAILURE-DIAGNOSTICS.md) captures future mismatches. The original #417 operands remain unknown. Pass 4 proceeds separately under #324. The maintainer owns the onboarding rebuild against this integrated code.
+
+### Prior handoffs
+
+## November 23, 2026 — exit reconciliation for review
+
+[#422 decision 7114219288](https://github.com/Human-Cognome-Project/human-cognome-project/pull/422#issuecomment-7114219288)
+source-accepts the diagnostic and authorizes this return to #343.
+The [existing map reconciles the exit criteria](../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23)
+at integrated main `fae58e79`. It proposes completion of Passes 1–3's ownership/
+build work for the supported CPU path. Pure logical input and native session/
+prepared ownership have explicit contracts, coverage and recorded native-reuse
+decisions. No further extraction is justified by this trace; Pass 4/#324 remains
+separate. The original criteria below remain unchanged.
+
+Fresh configure/graph/header/source checks pass. Verified quick, sixteen Clang/
+fourteen GCC native CTests and three standalone five-test suites are reused with
+exact executable equivalence. #420's twelve native jobs and smoke passed on the
+exact integrated tree. The verified archive retains raw results and inspection.
+This disposition awaits review and its own hosted gates. #421/#422 remain open;
+preserve their reviewed diagnostic and reconcile qualification before maintainer
+integration. Full B/admission, registered/JIT retirement, general instance updates,
+GPU/concurrency and concrete Analyst work are separate. The post-refactor
+onboarding rebuild remains maintainer-owned.
 ## November 23, 2026 — leaf failure diagnostics awaiting review
 
 [#421 decision 7113221968](https://github.com/Human-Cognome-Project/human-cognome-project/pull/421#issuecomment-7113221968)
@@ -283,7 +309,20 @@ Numerical inspection can inform earlier boundaries, but mathematical changes nee
 
 ## Relationship to ongoing work
 
-The default retained capture remains v1/flat, with #341's prepared-C3 diagnostic unavailable in that mode. Structural source, sealed plan, bounded prepared ownership, combined native bootstrap and actual claim mapping are built. The [explicit active prepared submission](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md) and [opt-in English pair profile](../engine/docs/RETAINED-PREPARED-CAPTURE.md) are integrated through #372/#373. #374's provisionally accepted actual-source refusal route resolves the earlier missing-connection obstacle using verified isolated restores. The remaining profile blocker is explicit membership comparison choice: English A has four unique inherited targets. The [membership decision](../engine/docs/RETAINED-MEMBERSHIP-DECISION.md) proposes a complete six-node qualification chain, unchanged ParentValue focus and concrete bounds, with native fixture evidence. Production still refuses unsupported memberships; no full retained-C3 execution or inferred Analyst policy follows. Do not duplicate native admission/installers or replay report geometry as authoritative state.
+The default retained capture remains v1/flat, with #341's prepared-C3 diagnostic
+unavailable in that mode. Structural source, sealed preparation, bounded owner,
+combined native bootstrap and actual claim mapping are built. The
+[explicit prepared submission](../engine/docs/ACTIVE-PREPARED-SUBMISSION.md) and
+[original opt-in English-pair profile](../engine/docs/RETAINED-PREPARED-CAPTURE.md)
+remain separate from the [positive retained preset](../engine/docs/RETAINED-POSITIVE-CAPTURE.md)
+integrated through #376. The latter implements #375's explicit six-comparison
+membership/focus/resource choice and has actual acquired-source, full-claim,
+completed native tick and release evidence. The original preset still refuses
+its unsupported membership input. That earlier blocker is resolved for the
+separate positive preset, not for arbitrary retained studies, general prepared
+revision/adoption or #324 semantics. Native owners remain execution authority;
+reports are observations, not admission inputs. These bounded capabilities do
+not imply full operational/resource or concrete Analyst completion.
 
 Full accounting/admission acceptance and GPU qualification keep their existing limits. Held #75/#111/#123 are unchanged. This refactoring plan does not activate them or authorize implementing future Analyst decisions.
 

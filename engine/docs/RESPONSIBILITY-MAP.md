@@ -1,5 +1,152 @@
 # Engine responsibility map and first bounded extraction
 
+## Refactor exit reconciliation — 2026-11-23
+
+Disposition for review under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),
+following [#422 decision 7114219288](https://github.com/Human-Cognome-Project/human-cognome-project/pull/422#issuecomment-7114219288).
+Inspected main: `fae58e7991f58d7bb3a781e93f4487bea3346efb`, tree
+`bf06d65f2f25d96508e21c563d42a60eb49dab7a`, native fork tree
+`a94a9eb350c94dfa2eb586bee49c53e0ee886648`; recursive pins match.
+Main integrates through #420 and has the exact tree of reviewed #420
+`e83bb3a6e92669b5f907223345d672ca9b020fd0`. This inspection changes Markdown only.
+
+**Proposed completion disposition:** the ownership/build-boundary work in
+Passes 1–3 satisfies the refactor exit criteria for the current supported CPU
+path. The inspected responsibilities have explicit owners, independently usable
+pure/native build boundaries, source-pinned equivalence and executable coverage,
+and recorded native-reuse decisions. No further substantive ownership/build
+extraction is established by this trace. Pass 3 explicitly permits unresolved
+replacement opportunities with reasons; it does not require every possible
+native representation or cleanup feature to be implemented. Pass 4 remains
+under #324. This is a bounded disposition for maintainer review, not an issue
+closure or acceptance of those separate capabilities.
+
+### Exit criteria against the integrated source
+
+| Required exit evidence | Current source, contract and evidence | Disposition |
+| --- | --- | --- |
+| Responsibility/dependency map, lifecycle and completed tick | The source-pinned maps below distinguish composition, caller controls, session publication, prepared ownership, native execution, observation and peer kernels. The prepared trace replaces the original missing-bridge finding. The completed-tick trace retains the field/activity/publication boundary. | Pass 1 delivered. Historical source pins remain explicit; the current logical dependency is corrected below. |
+| Explicit contracts, owners and lifetimes for extracted units | `ActiveAssembly` owns logical input; `ActiveSession::Execution` owns source-tree/Harness/prepared-owner lifetime; `PreparedStudyOwner` owns the source-bound preparation/publication state. Native arrays and kernels remain the execution authority. Source guards, component drains, refusal/retry and owner-authorized observation have focused tests. | Pass 2 delivered for the supported subset. Candidate staging, status propagation and map transfer remain one publication transaction. |
+| Independent pure/native build boundaries | Fresh standalone and native CMake graphs give `active_assembly → membership_fields → letter_projection → warm_values`. Its header compiles using only the two exported project include roots. Native `active_workbench`, `prepared_study_owner`, `structural_admission_plan` and `study_assembly` reach `field_core → engine_support → engine::taichi`. | The logical header/geometry gap from the `7831326c` inspection is resolved by integrated #420. Pure callers need no Taichi/libpq; native consumers declare their dependencies. |
+| Preserved public behavior and numerical contracts | The [logical split evidence](ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23) reconstructs original declarations/implementation, preserves the public geometry wrapper and compares all 29 logical checks with the original native-linked implementation. Session, prepared owner, field/fork and numerical code are unchanged by that split. | Source equivalence and CPU coverage support the refactor, without a mathematical correction. The original #417 leaf failure remains a separate unresolved observation. |
+| Evidence-backed native reuse and justified retained wrappers | The decisions below distinguish actual native allocation/traversal/copy/cache ownership from HCP provenance, publication and admission semantics. Replacements and ownership corrections have their own measured controls; unresolved operations retain explicit limits. | Pass 3's recorded-decision exit is satisfied within the investigated path. No new host allocator, scheduler, JIT registry or semantic authority is needed for this disposition. |
+| Focused evidence, hosted qualification and next-context handoff | Current executable sources equal locally qualified `77559b32`; verified quick, sixteen Clang/fourteen GCC CTests and three standalone five-test suites are reused. #420's smoke/native workflows passed on its exact integrated tree. This section, the owning plan and current handoff state what remains separate. | Existing qualification is preserved. This documentation PR still requires review and its own authoritative hosted gates; no accepted baseline was rerun. |
+
+The actual interfaces remain
+[`active_assembly.h`](../src/assembly/active_assembly.h),
+[`active_workbench.h`](../src/assembly/active_workbench.h),
+[`prepared_submission.h`](../src/assembly/prepared_submission.h),
+[`prepared_study_owner.h`](../src/assembly/prepared_study_owner.h) and
+[`field.h`](../src/field/field.h). The compatibility umbrella remains available;
+the independently usable logical target does not include session declarations.
+
+### Current request, owner and observation boundary
+
+[`letter_capture.cpp`](../../tools/viewport/native/letter_capture.cpp) and
+[`prepared_letter_profile.cpp`](../../tools/viewport/native/prepared_letter_profile.cpp)
+choose the explicit source/profile, comparison topology, focus, budgets, parameters
+and pacing. They pass pointer-free bindings to `ActiveSession::submit_prepared`.
+The session checks authorization/capability/duplicates, runs private request
+preflight, reserves candidate publication storage, constructs/registers its native
+source graph and prepares the owner. `PreparedStudyOwner::bootstrap` delegates
+combined native admission to the Harness, validates actual claims, moves durable
+typed association rows and releases its private replay plan after final use.
+Only a ready owner transfers into the session's visible execution map.
+
+`tick_prepared` delegates to that owner/Harness. Authorized reports and
+[`viewport::observe`](../../tools/viewport/native/completed_state.cpp) copy the
+completed state under generation/full-handle checks. Capture serialization and
+browser controls supply no simulation state authority. Execution destruction
+drains before dependent owner/Harness/FixedStudy teardown, then retires the source
+tree while Runtime lives. Native cache/JIT retention has a different owner and
+lifetime from candidate publication. These are coherent work units; another
+extraction needs evidence of a distinct owner, policy or lifetime.
+
+The default retained capture remains legacy v1. Integrated #376 also supplies
+the explicit [positive retained English-pair preset](RETAINED-POSITIVE-CAPTURE.md):
+actual acquired pins, six declared comparisons, native claims, a following tick
+and release are evidenced. The older preset's unsupported-membership refusal
+remains separate. Neither a missing prepared bridge nor that older refusal is
+the present refactoring blocker. General retained studies and general prepared
+revision/adoption are broader capabilities, not completed by this bounded preset.
+
+### Native reuse: decisions retained at this source
+
+| Mechanism inspected | Integrated decision and reason |
+| --- | --- |
+| Sparse selection, claim allocation and recycling | `NativeSet` emits native sparse operations; `PreparedRecordMap` uses the fork's `prepared_node_*` allocator accessors. NodeManager owns allocation/recycle storage. HCP declarations, exact source identity, context/incarnation/address/record and bounded preflight remain necessary semantics; native coordinates/active bits cannot replace those guards. See [instance comparison](NATIVE-INSTANCE-INSPECTION.md) and [private binding contract](PRIVATE-INSTANCE-BINDING.md). |
+| Source/activity/candidate tree lifetime | Existing Program trees and `SNodeTreeOwner` supply retirement authority. Activity and selection own their trees while NativeSet borrows; Execution owns its source tree with ordered drain/dependent teardown. [Component](NATIVE-TRAVERSAL-TREE-OWNERSHIP.md) and [session](SESSION-SOURCE-TREE-OWNERSHIP.md) corrections address the measured retained-root boundaries without another lifecycle manager. |
+| Compilation, launch and registered native state | `CompiledKernel` uses native compilation/launcher preparation. Borrow guards, attempt rows and ID-to-dylib queries attach to existing native owners. [Unregistered removal](NATIVE-UNREGISTERED-REMOVAL.md) has positive eligibility checks; the [real refusal trace](REFUSED-SUBMISSION-JIT-TRACE.md) demonstrates why zero client borrows do not authorize registered/JIT removal or admission credit. No parallel JIT registry is introduced. |
+| Redundant numerical transport | [Initial seed](NATIVE-HIERARCHY-SEED-TRANSPORT.md) and [refresh metadata](NATIVE-REFRESH-METADATA-TRANSPORT.md) use existing native fill/copy primitives, preserving validation, padding, publication/failure rules and following-tick controls. Removed host requests are measured separately from native copy volume or retained memory. |
+| Repeated immutable semantic backing | [Preparing-owner plan consumption](PREPARED-BOOTSTRAP-CONSUMPTION.md), owner-private immutable recipe sharing, [membership target pins](MEMBERSHIP-TARGET-TABLE.md) and [projection parent indices](PROJECTION-PARENT-TARGET-INDICES.md) remove demonstrated duplicate backing. Current `PreparedStudyOwner` moves typed rows after commit; `LetterProjection` shares its recipe only on the private owner/spare path. Native storage does not supply full HCP source/definition provenance; detached/public values retain it. |
+| Reduction, packet/history and composition meaning | Native IR supplies traversal, arithmetic, atomics and storage, while HCP supplies exact participation and the complete-packet/history/pending-input protocol. No inspected native primitive replaces that whole contract. The native nested-instance witness proves bounded indexed storage reuse, not an operational HCP generation/provenance/exposure adapter or a structural-intent formula. |
+
+These decisions cover the inspected supported path. They do not certify every
+possible native optimization or promote an integer storage witness into the
+production representation. The earlier map's reuse questions retain their
+source-specific findings; this section records their current disposition.
+
+### Separate capabilities and qualification limits
+
+| Remaining work | Why refactor completion does not claim it |
+| --- | --- |
+| #324 coherence/structural-intent mathematics | A derivation, independent controls and separately reviewed numerical changes are still required. Current combined diagnostics and equal-cohort retained capture do not establish that model. |
+| Complete resource accounting/admission credit | Native compiler/ORC bytes, dependencies and overlapping peaks remain incomplete. Counts, root retirement and present dylibs are not a complete B charge. Keep the [owner inventory](OWNER-RESOURCES.md) and [operation contract](../../docs/core-operation-readiness-plan.md) limits. |
+| Registered/JIT retirement and source-materialization failure recovery | Registered unloading needs coordinated handle/row invalidation, ORC dependencies and error handling. Existing native materialization failure limits are also preserved. Explicit current ownership is not proof of safe reclamation, rollback or a recovered budget. |
+| Mixed revisions, general instance updates and indexed representation | Per-instance source pins, operational stale-coordinate guards, exposure/claim publication and supported layout/schema changes need their own reviewed contracts. The current one-revision-per-definition and shared-v2/f64/root-or-primary submission subset remain explicit. |
+| GPU and concurrent operation | This reconciliation reuses CPU evidence and preserves exclusive synchronous owner calls. It adds no hardware/concurrency qualification or backend support. |
+| Analyst implementation and onboarding rebuild | Controls remain adapters for human/agent choices. Concrete Analyst decisions stay unimplemented. The [post-refactor onboarding/maps rebuild](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343#issuecomment-7043064545) is explicitly maintainer-owned after integration. |
+
+#421 and #422 remain open at this inspection. #422's
+[reviewed failure diagnostic](https://github.com/Human-Cognome-Project/human-cognome-project/blob/0520385c208b6b8b2cb7a940e35672cfe721db32/engine/docs/LEAF-FAILURE-DIAGNOSTICS.md)
+must be preserved for future rejections; its original predicate/production math
+are unchanged. Its provisional source acceptance is separate from integration
+and hosted qualification. Held #75/#111/#123 stay held; all merges and issue
+completion decisions remain with the maintainer.
+
+### Source-pinned inspection and reused qualification
+
+New checks at this main: fresh pure/native CMake configure, Graphviz and File API
+inspection; logical-header syntax/dependency inspection using only exported
+project includes; five standalone test names enumerated; exact source/tree and
+recursive-pin comparison; native/fork integrity; and retained-evidence verification.
+These are inspection checks, not newly executed native/standalone test suites.
+
+Only seven Markdown files differ from locally tested `77559b32` and published
+`bbfd866a`. All executable source is identical. The standalone source at
+`5a3f35ad` also matches that qualification in its pure scope. The verified
+`b44c1c0e4b928089238b1553aa23de429bcddac0c0577aee6b1d21acdc5f1c68`
+archive supplies quick CI, sixteen Clang/fourteen GCC native CTests, three
+standalone five-test suites and original-versus-new source/29-check equivalence.
+Fresh extraction verifies its root and all three qualification manifests; the
+graph/result audit checks the raw outcomes and standalone dynamic dependencies.
+These remain local contributor evidence, reused without executing those suites.
+
+Personally inspected hosted metadata records #420 native
+[45243359995](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45243359995)
+and smoke [45243359926](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45243359926)
+successful at `e83bb3a6`. All twelve native jobs passed, including independent
+projection values, build, four regression shards, four compiler profiles,
+database and aggregate. This verifies hosted status; no new claim of personally
+inspecting every hosted raw artifact is made. The #417 failed attempt and its
+passing retry do not establish the missing original failure operands.
+
+Archive `/tmp/hcp-refactor-fae58e79-evidence.tar.gz`, SHA-256
+`451ab0a1fca7d974c6184e902c6c5fdfd53e4fb4f8a87c806ad6834a169e2096`,
+retains source/tree/blob ledger, commands, fresh graphs/File API/compile inputs,
+header probes, source equivalence, raw reused evidence/manifests, graph/result
+audit and review/hosted metadata. Initial probe/audit errors and their corrected
+scripts are preserved separately: the header probe initially omitted the declared
+warm-value include root; the audit initially classified the Clang executable's
+LLVM installation path as a dependency. Production was untouched. Fresh extraction
+verifies this archive's root, reused root and three reused profile manifests.
+The bundle is machine-local; its digest does not publish raw evidence.
+
+Next: review this bounded completion disposition and reconcile its hosted gates.
+After the accepted refactor is integrated, the maintainer can rebuild onboarding
+from the resulting main. Further engineering should follow the separately owned
+capability contracts or a newly evidenced ownership/build-boundary problem.
+
 **2026-11-23 implementation update:** #419 source-accepts the reconciliation
 below and authorizes its logical caller boundary. The [header/standalone target](ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23)
 at tested `77559b32` implements that slice for review while preserving the
