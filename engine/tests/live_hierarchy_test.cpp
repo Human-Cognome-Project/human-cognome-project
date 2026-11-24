@@ -3099,7 +3099,8 @@ int main(int argc, char **argv) {
     // These qualification cases create many independent owners in one
     // Program. Native SNode IDs are monotonic even after a fixture is released.
     // Reserve this test-runner metadata explicitly; model budgets are unchanged.
-    if (only == "placement" || only == "hierarchy_seed_transport" || only == "refresh_transport") settings.snode_capacity = 2048;
+    if (only == "placement") settings.snode_capacity = 4096;
+    else if (only == "hierarchy_seed_transport" || only == "refresh_transport") settings.snode_capacity = 2048;
     taichi::lang::default_compile_config.print_kernel_asm = dump_code;
     taichi::lang::default_compile_config.print_kernel_llvm_ir_optimized = dump_code;
     engine::Runtime r(settings);
@@ -3127,6 +3128,7 @@ int main(int argc, char **argv) {
     }
     int failures = 0;
     const auto run = [&](const char *name, auto action) {
+      const int id_begin = only == "placement" ? SNode::counter.load() : 0;
       try {
         action();
         std::cout << "case_result,name=" << name << " PASS\n";
@@ -3134,6 +3136,17 @@ int main(int argc, char **argv) {
         ++failures;
         std::cout << "case_failure,name=" << name << ",reason=" << e.what()
                   << '\n';
+      }
+      if (only == "placement") {
+        const int id_end = SNode::counter.load();
+        const int capacity = r.program().config.llvm_snode_capacity;
+        std::cout << "placement_snode_ids,case=" << name
+                  << ",begin=" << id_begin << ",end=" << id_end
+                  << ",created=" << id_end-id_begin
+                  << ",highest=" << id_end-1 << ",capacity=" << capacity
+                  << std::endl;
+        require(id_end >= id_begin && id_end <= capacity,
+                "placement qualification exhausted its Program SNode ID budget");
       }
     };
     if (only == "refresh_limits")
