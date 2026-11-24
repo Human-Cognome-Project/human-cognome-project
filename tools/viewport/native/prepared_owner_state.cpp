@@ -11,7 +11,7 @@ namespace viewport {
 struct PreparedOwnerAccess {
   static CompletedState observe(assembly::detail::PreparedStudyOwner &owner,
       const warm::Uuid &authorization, const assembly::ExecutionHandle &handle,
-      std::optional<IntentRequest> request) {
+      std::optional<IntentRequest> request, std::optional<ResponseRequest> responses) {
     if (request && (!std::isfinite(request->gravity) || request->gravity < 0))
       throw std::invalid_argument("viewport: invalid diagnostic gravity");
     auto &h = owner.h_;
@@ -26,11 +26,12 @@ struct PreparedOwnerAccess {
           a.incarnation != b.incarnation || a.record != b.record)
         throw std::invalid_argument("viewport: mismatched prepared owner claim");
     }
-    return viewport::observe(h,std::move(binding),request);
+    return viewport::observe(h,std::move(binding),request,responses);
   }
 };
 CompletedState observe(assembly::detail::PreparedStudyOwner &owner, const warm::Uuid &authorization,
-    const assembly::ExecutionHandle &handle, std::optional<IntentRequest> request) {
-  return PreparedOwnerAccess::observe(owner,authorization,handle,request);
+    const assembly::ExecutionHandle &handle, std::optional<IntentRequest> request,
+    std::optional<ResponseRequest> responses) {
+  return PreparedOwnerAccess::observe(owner,authorization,handle,request,responses);
 }
 }

@@ -66,6 +66,42 @@ export function validateSnapshot(value) {
     } else requireValue(q.rows.length === 0 && q.work_used === '0' && q.readback_bytes === '0',
       'Failed candidate observation contains results.');
   }
+  if (value.response_trace) {
+    const q=value.response_trace, e=value.execution;
+    for (const key of ['tick', 'work_limit', 'work_required', 'work_used', 'readback_bytes', 'capacity', 'count']) decimal(q[key]);
+    if (q.generation !== null) decimal(q.generation);
+    requireValue(e && q.generation === e.prepared_generation && q.tick === capture.tick &&
+      q.frame.every((x,i) => Number.isFinite(x) && x === frame.reference[i]), 'Response frame/generation/tick mismatch.');
+    if (q.status === 'ok') {
+      requireValue(e.mode === 'installed_hierarchy' && q.generation !== null &&
+        BigInt(q.count) === BigInt(q.rows.length) && BigInt(q.count) <= BigInt(q.capacity) &&
+        BigInt(q.work_required) === 1n+BigInt(q.count)+16n*BigInt(q.capacity) &&
+        BigInt(q.work_used) === BigInt(q.work_required) && BigInt(q.work_used) <= BigInt(q.work_limit) &&
+        BigInt(q.readback_bytes) === 112n*BigInt(q.capacity), 'Invalid response shape/work metadata.');
+      const packets=new Map(), comparisons=new Set();
+      for (const p of q.packets) {
+        decimal(p.comparison);
+        requireValue(!packets.has(p.slot) && !comparisons.has(p.comparison) &&
+          e.comparisons.some(c => c.comparison === p.comparison), 'Invalid response packet mapping.');
+        packets.set(p.slot,p.comparison); comparisons.add(p.comparison);
+      }
+      requireValue(packets.size === e.comparisons.length, 'Incomplete response packet mapping.');
+      for (const row of q.rows) {
+        decimal(row.numerator); decimal(row.denominator);
+        decimal(row.body.context); decimal(row.body.incarnation);
+        requireValue(e.body_records.some(b => Object.keys(b).every(k => b[k] === row.body[k])) &&
+          packets.has(row.child) && packets.has(row.parent) &&
+          (row.kind !== 'local' || row.child === row.parent), 'Invalid response recipient/path mapping.');
+        const values=[...row.delta,...row.recipient,row.body_mass,row.source_mass];
+        requireValue(values.every(x => x === null || Number.isFinite(x)) &&
+          (!row.extraction_valid || values.every(Number.isFinite)), 'Invalid response extraction values.');
+      }
+    } else requireValue(q.rows.length === 0 && q.packets.length === 0 && q.work_used === '0' &&
+      q.readback_bytes === '0' && q.capacity === '0' && q.count === '0' &&
+      (q.status !== 'unavailable' || q.work_required === '0') &&
+      (q.generation !== null || (e.mode === 'flat' && q.status === 'unavailable')),
+      'Failed response observation contains results.');
+  }
   bindings.forEach((b, i) => {
     requireValue(b.id === i, 'Binding IDs must be contiguous and ordered.');
     if (i === 0) requireValue(b.role === 'root' && b.parent === -1 && b.level === 0, 'Invalid conceptual root.');

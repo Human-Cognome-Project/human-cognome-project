@@ -37,6 +37,8 @@ struct CompletedState {
   std::size_t requested_readback_bytes{};
   // Optional field-only diagnostic, copied at the same completed boundary.
   Json intent = nullptr;
+  // Exact native response operands and packet identities, independently requested.
+  Json response_trace = nullptr;
 };
 struct HarnessBinding {
   assembly::ActiveReport mapping;
@@ -48,17 +50,22 @@ struct HarnessBinding {
 // slots. Binding rejects partial coverage; later reads reject recycled/stale maps.
 HarnessBinding bind(field::Harness &execution, assembly::ActiveReport mapping);
 struct IntentRequest { double gravity; std::uint64_t work_limit; };
+struct ResponseRequest { std::uint64_t work_limit; };
 CompletedState observe(field::Harness &execution, const HarnessBinding &binding,
-                       std::optional<IntentRequest> intent = std::nullopt);
+                       std::optional<IntentRequest> intent = std::nullopt,
+                       std::optional<ResponseRequest> responses = std::nullopt);
 // Consume detached metadata after the same validation as the retained binding.
 CompletedState observe(field::Harness &execution, HarnessBinding &&binding,
-                       std::optional<IntentRequest> intent = std::nullopt);
+                       std::optional<IntentRequest> intent = std::nullopt,
+                       std::optional<ResponseRequest> responses = std::nullopt);
 CompletedState observe(assembly::ActiveSession &session, const warm::Uuid &owner,
                        const assembly::ExecutionHandle &handle,
-                       std::optional<IntentRequest> intent = std::nullopt);
+                       std::optional<IntentRequest> intent = std::nullopt,
+                       std::optional<ResponseRequest> responses = std::nullopt);
 CompletedState observe(assembly::detail::PreparedStudyOwner &, const warm::Uuid &owner,
                        const assembly::ExecutionHandle &,
-                       std::optional<IntentRequest> intent = std::nullopt);
+                       std::optional<IntentRequest> intent = std::nullopt,
+                       std::optional<ResponseRequest> responses = std::nullopt);
 Json snapshot(const CompletedState &state, const CaptureContext &capture);
 CaptureContext context(const assembly::ActiveAssembly &assembly,
                        const assembly::ExecutionHandle &handle,

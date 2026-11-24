@@ -2,6 +2,46 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 
+test('native response paths preserve sparse identities and exact ratios without deriving targets', () => {
+  const f=fixture();
+  f.numerics={profile:'trial_f64',storage_bits:64,body_fraction_bits:52,field_fraction_bits:52};
+  const record=n => ({context:'41',incarnation:String(n+1),address:n,record:n});
+  f.execution={backend:'native_cpu',mode:'installed_hierarchy',completed_tick:'0',prepared_generation:'7',
+    body_records:f.particles.map(p => record(p.slot)), comparisons:[1,2].map(n =>
+      ({comparison:String(n),field:record(n),level:n-1,calculation_bits:64,storage_bits:64,fraction_bits:52}))};
+  const row={body:record(0),child:3,parent:11,kind:'inherited',numerator:'9007199254740993',
+    denominator:'18446744073709551615',delta:[1+2**-40,0,0],recipient:[0,0,0],body_mass:2,source_mass:4,
+    production_eligible:true,extraction_valid:true};
+  f.response_trace={status:'ok',generation:'7',tick:'0',frame:[0,0,0],work_limit:'100',work_required:'34',
+    work_used:'34',readback_bytes:'224',capacity:'2',count:'1',
+    packets:[{slot:3,comparison:'1'},{slot:11,comparison:'2'}],rows:[row]};
+  const parsed=parseSnapshot(JSON.stringify(f));
+  assert.deepEqual(parsed.response_trace,f.response_trace);
+  assert.equal(parsed.response_trace.rows[0].delta[0],1+2**-40);
+  const bad=edit => {const v=structuredClone(f);edit(v);assert.throws(() => validateSnapshot(v));};
+  bad(v => v.response_trace.generation='8'); bad(v => v.response_trace.tick='1');
+  bad(v => v.response_trace.frame[1]=1); bad(v => v.response_trace.count='2');
+  bad(v => v.response_trace.work_used='33'); bad(v => v.response_trace.work_required='35');
+  bad(v => v.response_trace.work_limit='33'); bad(v => v.response_trace.readback_bytes='112');
+  bad(v => v.response_trace.packets.pop()); bad(v => v.response_trace.packets[1].slot=3);
+  bad(v => v.response_trace.packets[1].comparison='1'); bad(v => v.response_trace.rows[0].child=4);
+  bad(v => v.response_trace.rows[0].body.incarnation='2');
+  bad(v => v.response_trace.rows[0].kind='local');
+  bad(v => v.response_trace.rows[0].delta[0]=null);
+  bad(v => v.response_trace.rows[0].numerator='18446744073709551616');
+  const invalid=structuredClone(f);invalid.response_trace.rows[0].delta[0]=null;
+  invalid.response_trace.rows[0].extraction_valid=false;validateSnapshot(invalid);
+  const local=structuredClone(f);local.response_trace.rows[0].kind='local';
+  local.response_trace.rows[0].parent=3;validateSnapshot(local);
+  const refused=structuredClone(f);Object.assign(refused.response_trace,{status:'budget_refused',
+    work_limit:'33',work_used:'0',readback_bytes:'0',capacity:'0',count:'0',packets:[],rows:[]});
+  validateSnapshot(refused);
+  refused.execution={backend:'native_cpu',mode:'flat',completed_tick:'0',prepared_generation:null,body_records:[],comparisons:[]};
+  Object.assign(refused.response_trace,{status:'unavailable',generation:null,work_required:'0'});
+  validateSnapshot(refused);
+  refused.response_trace.status='budget_refused';assert.throws(() => validateSnapshot(refused));
+});
+
 test('legacy optional request is explicitly unavailable without a fabricated prepared generation', () => {
   const f = fixture();
   f.execution = {backend: 'native_cpu', mode: 'flat', completed_tick: '0',
