@@ -11,6 +11,11 @@ namespace assembly::detail {
 namespace {
 void need(bool v) { if(!v) throw warm::Error("unsupported whole-field alternatives"); }
 bool same(const FieldKey &a,const FieldKey &b) {return a.kind==b.kind && a.object==b.object;}
+template<class Range,class Value> bool contains(const Range &values,const Value &value,PreparationWork &w) {
+  return std::find_if(values.begin(),values.end(),[&](const auto &candidate) {
+    w.charge(1);return candidate==value;
+  })!=values.end();
+}
 template<class T> void reserve(ReservedVector<T> &v,std::size_t n,PreparationWork &w) {
   w.elements(n,sizeof(T));v.reserve(n);
 }
@@ -104,13 +109,13 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
       const auto &p=side?*sides_[1].plan:a; int address=-1;
       if(i<a.occurrences().size()) address=p.commands()[p.occurrences()[i].command].address;
       else for(std::size_t candidate=0;candidate<limits[field::Budget::Potential];++candidate) {
-        w.charge(1);bool used=std::find(addresses_.begin(),addresses_.end(),int(candidate))!=addresses_.end();
+        w.charge(1);bool used=contains(addresses_,int(candidate),w);
         for(const auto *q:std::array<const StructuralAdmissionPlan*,2>{{&a,sides_[1].plan.get()}}) for(const auto &row:q->occurrences()) {
           w.charge(1);used|=q->commands()[row.command].address==int(candidate);
         }
         if(!used) {address=int(candidate);break;}
       }
-      need(address>=0 && std::find(addresses_.begin(),addresses_.end(),address)==addresses_.end());addresses_.push_back(address);
+      need(address>=0 && !contains(addresses_,address,w));addresses_.push_back(address);
     }
   }
 }
@@ -133,10 +138,10 @@ field::UpdateResult PreparedLodWorkspace::presence(const PreparedStudyOwner &o,c
   new_identity_=selected_==catalogue_.size();
   if(new_identity_) {
     if(!r.present || source_template_==declared.size())return out;
-    for(std::size_t i=0;i<catalogue_.size();++i){w.charge(1);if(std::find(live_.begin(),live_.end(),i)==live_.end()){selected_=i;break;}}
+    for(std::size_t i=0;i<catalogue_.size();++i){w.charge(1);if(!contains(live_,i,w)){selected_=i;break;}}
     if(selected_==catalogue_.size()) {out.status=field::UpdateStatus::CapacityExhausted;out.failure={field::Budget::Particles,live_.size()+1,catalogue_.size()};return out;}
   }
-  const bool active=std::find(live_.begin(),live_.end(),selected_)!=live_.end();
+  const bool active=contains(live_,selected_,w);
   if(active==r.present){out.status=field::UpdateStatus::NoChange;return out;}
   if(!r.present && live_.size()==1){out.status=field::UpdateStatus::Unsupported;return out;}
   changing_=false;adding_=r.present;target_=side_;

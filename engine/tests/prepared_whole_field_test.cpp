@@ -54,6 +54,10 @@ void unchanged(const viewport::CompletedState &a,const viewport::CompletedState 
     !std::memcmp(a.report.particles64.data(),b.report.particles64.data(),a.report.particles64.size()*sizeof(double)) &&
     a.report.groups64==b.report.groups64,"refused whole-field request changed completed state");
   for(std::size_t i=0;i<a.body_records.size();++i)check(same(a.body_records[i],b.body_records[i]),"refusal changed native claim");
+  check(a.comparisons.size()==b.comparisons.size(),"refusal changed comparison count");
+  for(std::size_t i=0;i<a.comparisons.size();++i)
+    check(a.comparisons[i].comparison==b.comparisons[i].comparison && same(a.comparisons[i].field,b.comparisons[i].field),
+          "refusal changed full field claim");
   check(same(focused(a),focused(b)),"refusal changed inherited focus");
 }
 void survivor(const viewport::CompletedState &a,const viewport::CompletedState &b,std::uint64_t entry) {
@@ -161,6 +165,71 @@ void run(int workers,field::HostPath path,bool short_peak) {
     <<",round_trips=3,distinct_motion=1,own_targets=1,one_generation=1,inherited_focus=same_claim,peak_particles=4,peak_fields=6,"
       "ordinary_fine_edits=1,refusal_unchanged=1,recurring_new=0 PASS\n";
 }
+void probe_budgets(int workers,field::HostPath path) {
+  Input input;auto request=input.request(path);
+  const auto slots=request.capacity.limits()[field::Budget::Particles];
+  const auto declarations=request.bindings.bodies.size();
+  const auto resources=request.resources;
+  engine::InstanceSettings settings;settings.read_environment=false;settings.cpu_threads=workers;
+  ActiveSession session(settings);auto submitted=session.submit_prepared(std::move(request),input.source->owner());
+  check(bool(submitted.handle),"probe-budget study setup failed");
+  const auto h=*submitted.handle;
+  const auto observe=[&]{return viewport::observe(session,input.source->owner(),h);};
+  auto state=observe();
+  check(no_new([&]{return session.lod_prepared(h,input.source->owner(),{warm::Exposure::Parts,*state.prepared_generation});}).publication.status==UpdateStatus::Ok,
+        "probe-budget fine exposure failed");
+  state=observe();
+  for(const auto entry:{std::uint64_t(20),std::uint64_t(30)}) {
+    PreparedOccurrenceEdit add{{h.study,{entry,{}}},true,*state.prepared_generation};add.clone_from=OccurrenceKey{h.study,{2,{}}};
+    check(no_new([&]{return session.edit_prepared(h,input.source->owner(),add);}).publication.status==UpdateStatus::Ok,
+          "probe-budget full catalogue admission failed");
+    state=observe();
+  }
+  check(slots==4 && state.body_records.size()==slots,"probe-budget fixture is not full");
+  const auto live_bytes=resources->result().live_bytes;
+  // Two study-key equality gates, two immutable declaration scans, and the
+  // catalogue/free-slot outer visits. This was the reviewed unmetered bound.
+  const auto outer_work=2*(1+2*h.study.str().size())+2*declarations+2*slots;
+  const auto full_probes=slots*(slots+1)/2;
+  PreparedOccurrenceEdit fresh{{h.study,{40,{}}},true,*state.prepared_generation};fresh.clone_from=OccurrenceKey{h.study,{2,{}}};
+  fresh.preparation_work=outer_work;
+  const auto short_full=no_new([&]{return session.edit_prepared(h,input.source->owner(),fresh);});
+  check(short_full.preparation.status==detail::PreparationStatus::WorkExhausted &&
+        !short_full.publication.claims.sampled,"full catalogue accepted outer-only work without charging live probes");
+  unchanged(state,observe());session.accept(state.report,input.source->owner());
+  fresh.preparation_work=outer_work+full_probes;
+  const auto full=no_new([&]{return session.edit_prepared(h,input.source->owner(),fresh);});
+  check(full.preparation.status==detail::PreparationStatus::Ok && full.preparation.charged==fresh.preparation_work &&
+        full.publication.status==UpdateStatus::CapacityExhausted && full.publication.failure.budget==field::Budget::Particles &&
+        full.publication.failure.required==slots+1 && !full.publication.claims.sampled,"exact full-probe work did not reach the healthy slot refusal");
+  unchanged(state,observe());
+  PreparedOccurrenceEdit remove{{h.study,{30,{}}},false,*state.prepared_generation};
+  check(no_new([&]{return session.edit_prepared(h,input.source->owner(),remove);}).publication.status==UpdateStatus::Ok,
+        "last metadata slot removal failed");
+  state=observe();fresh.expected_generation=*state.prepared_generation;
+  // Slots 0..N-2 are found after 1..N-1 comparisons; the late free slot and
+  // its separate activity lookup each inspect all N-1 live entries.
+  const auto late_probes=(slots-1)*slots/2+2*(slots-1);
+  fresh.preparation_work=outer_work+late_probes;
+  const auto short_late=no_new([&]{return session.edit_prepared(h,input.source->owner(),fresh);});
+  check(short_late.preparation.status==detail::PreparationStatus::WorkExhausted &&
+        short_late.preparation.charged==fresh.preparation_work && short_late.preparation.next_required==fresh.preparation_work+1 &&
+        !short_late.publication.claims.sampled,"late-free work did not include every free-slot/activity probe");
+  unchanged(state,observe());session.accept(state.report,input.source->owner());
+  fresh.preparation_work=UINT64_MAX;
+  const auto accepted=no_new([&]{return session.edit_prepared(h,input.source->owner(),fresh);});
+  check(accepted.preparation.status==detail::PreparationStatus::Ok && accepted.publication.status==UpdateStatus::Ok,
+        "late-free sufficient-work retry failed");
+  const auto after=observe();
+  for(const auto entry:{std::uint64_t(2),std::uint64_t(10),std::uint64_t(20)})survivor(state,after,entry);
+  check(resources->result().live_bytes==live_bytes,"probe-budget retries grew metadata storage");
+  field::Parameters64 parameters;parameters.contact_stiffness=0;
+  check(session.tick_prepared(h,input.source->owner(),parameters).status==field::TickStatus::Ok,"tick after probe-budget retry failed");
+  std::cout<<"whole_field_probe_budget,slots="<<slots<<",outer_work="<<outer_work<<",full_probes="<<full_probes
+    <<",full_required="<<full.preparation.charged<<",late_probes="<<late_probes<<",late_prefix="<<short_late.preparation.charged
+    <<",late_next="<<short_late.preparation.next_required<<",retry_work="<<accepted.preparation.charged
+    <<",unchanged_refusals=1,sufficient_retry=1,following_tick=1,recurring_new=0 PASS\n";
+}
 void setup_and_failure(int workers,field::HostPath path) {
   using namespace assembly::detail;
   using field::testing::PreparedFixtureAccess;
@@ -185,6 +254,12 @@ void setup_and_failure(int workers,field::HostPath path) {
   const auto bytes=full->result().peak_bytes,allocations=full->result().charged_work;
   const auto plan=witness.plan_work.charged,metadata=witness.metadata_work.charged;
   witness.owner.reset();check(!full->result().live_bytes,"whole-field setup teardown retained allocations");
+  // Published reviewed fixture metadata allowance, before address scans were
+  // metered. The same caller limit must now refuse and release all metadata.
+  auto reviewed_domain=domain();auto reviewed_bound=prepare(reviewed_domain,plan,28541);
+  check(!reviewed_bound.owner && reviewed_bound.status==AdmissionPlanStatus::WorkExhausted &&
+        !reviewed_domain->result().live_bytes && h.ready() && !h.prepared_storage().populated,
+        "reviewed setup allowance still omits address probes");
   for(int budget=0;budget<4;++budget) {
     auto d=domain({budget==0?bytes-1:UINT64_MAX,budget==1?allocations-1:UINT64_MAX});
     auto refused=prepare(d,budget==2?plan-1:plan,budget==3?metadata-1:metadata);
@@ -226,5 +301,7 @@ void setup_and_failure(int workers,field::HostPath path) {
 int main(int argc,char **argv){try{
   const int workers=argc>1?std::stoi(argv[1]):1;
   const auto path=argc>2&&std::string(argv[2])=="direct"?field::HostPath::CpuDirect:field::HostPath::BulkCopy;
-  run(workers,path,false);run(workers,path,true);setup_and_failure(workers,path);return 0;
+  if(argc>3 && std::string(argv[3])=="probes"){probe_budgets(workers,path);return 0;}
+  if(argc>3 && std::string(argv[3])=="setup"){setup_and_failure(workers,path);return 0;}
+  run(workers,path,false);run(workers,path,true);setup_and_failure(workers,path);probe_budgets(workers,path);return 0;
 }catch(const std::exception &e){std::cerr<<"whole-field test: "<<e.what()<<'\n';return 1;}}
