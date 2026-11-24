@@ -1,6 +1,7 @@
 #include "assembly/active_workbench.h"
 #include "assembly/prepared_submission.h"
 #include "assembly/prepared_study_owner.h"
+#include "assembly/prepared_occurrence_edit.h"
 #include "field/prepared_storage.h"
 #include "engine/snode_tree_owner.h"
 
@@ -164,7 +165,7 @@ PreparedSubmissionResult ActiveSession::submit_prepared(PreparedStudySubmission 
   e.layout.node = runtime_->program().add_snode_tree(std::move(root),false);
   e.harness = std::make_unique<field::Harness>(*runtime_,request.capacity,request.path);
   auto prepared = detail::PreparedStudyOwner::prepare(*e.harness,source,session_,b,
-      request.resources,request.plan_work,request.metadata_work);
+      request.resources,request.plan_work,request.metadata_work,request.editable_occurrences);
   out.preparation_status = prepared.status;
   out.plan_work = prepared.plan_work;
   out.metadata_work = prepared.metadata_work;
@@ -232,6 +233,12 @@ void ActiveSession::tick(const ExecutionHandle &h, const field::Parameters &p) {
   e.study->tick(p);
   ++e.completed_ticks;
 }
+PreparedOccurrenceEditResult ActiveSession::edit_prepared(const ExecutionHandle &h,
+    const warm::Uuid &authorization, const PreparedOccurrenceEdit &request) {
+  auto *owner = prepared_owner(h,authorization);
+  require(owner != nullptr);
+  return owner->edit(authorization,h,request);
+}
 field::TickResult ActiveSession::tick_prepared(const ExecutionHandle &h,
     const warm::Uuid &authorization, const field::Parameters64 &parameters,
     std::uint64_t tick_work, std::uint64_t geometry_work) {
@@ -286,6 +293,9 @@ void ActiveSession::accept(const ActiveReport &r,
       r.instance != source.instance())
     throw warm::Unauthorized("active owner required");
   require(e.prepared ? e.prepared->ready() : e.study->ready());
+  if (e.prepared && (r.prepared_generation != std::optional<std::uint64_t>(e.prepared->generation()) ||
+                    r.prepared_completed_tick != std::optional<std::uint64_t>(completed_ticks(r.handle))))
+    throw warm::Stale("prepared report: historical generation or completed tick");
 }
 field::PhaseTimes ActiveSession::timings(const ExecutionHandle &h) const {
   const auto &e = get(h);

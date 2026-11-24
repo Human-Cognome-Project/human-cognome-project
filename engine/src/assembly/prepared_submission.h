@@ -12,6 +12,10 @@ struct PreparedStudySubmission {
   field::PreparedCapacity capacity;
   std::shared_ptr<detail::ReservationDomain> resources;
   field::HostPath path{field::HostPath::BulkCopy};
+  // Reserve an owner-local edit workspace before readiness. The source's
+  // declared definitions stay immutable; declared presence and bounded root
+  // copies of those definitions can change in the live study.
+  bool editable_occurrences{false};
   std::uint64_t plan_work{UINT64_MAX}, metadata_work{UINT64_MAX};
   std::uint64_t placement_work{UINT64_MAX}, placement_cells{UINT64_MAX}, hierarchy_work{UINT64_MAX};
 };
