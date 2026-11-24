@@ -128,7 +128,7 @@ void placement_compiler(engine::Runtime &r, HostPath path) {
                     reinterpret_cast<void *>(surfaces[4]->get_device_allocation_ptr_as_int()) &&
                 ctx.array_bindings[2].type==taichi::lang::PrimitiveType::f64 &&
                 ctx.array_bindings[2].rank==2 && ctx.array_bindings[2].elements==
-                    9*h.prepared_storage().capacity.command_capacity(),
+                    9*f.h.prepared_storage().capacity.command_capacity(),
                 "grouped native target/motion staging lacks the reserved request binding");
       }
       if (index == 16) {
