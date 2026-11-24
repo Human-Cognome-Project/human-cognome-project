@@ -110,6 +110,46 @@ void session_case(int workers, field::HostPath path) {
   check(no_new([&] { return session.edit_prepared(handle,source->owner(),invalid); }).preparation.status ==
         detail::PreparationStatus::WorkExhausted,"short preparation work accepted");
   unchanged(state,observe());
+  {
+    PreparedOccurrenceEdit withdraw{first,false,*state.prepared_generation};
+    check(no_new([&] { return session.edit_prepared(handle,source->owner(),withdraw); }).publication.status == UpdateStatus::Ok,
+          "declared destination withdrawal failed");
+    auto absent=observe(); survivor(state,absent,second);
+    OccurrenceKey replacement{source->study(),{30,{}}};
+    PreparedOccurrenceEdit recycle{replacement,true,*absent.prepared_generation}; recycle.clone_from=second;
+    check(no_new([&] { return session.edit_prepared(handle,source->owner(),recycle); }).publication.status == UpdateStatus::Ok,
+          "declared destination metadata slot was not recycled");
+    auto recycled=observe(); survivor(absent,recycled,second);
+    PreparedOccurrenceEdit restore{first,true,*recycled.prepared_generation}; restore.clone_from=second;
+    const auto mismatch=no_new([&] { return session.edit_prepared(handle,source->owner(),restore); });
+    check(mismatch.publication.status == UpdateStatus::InvalidInput &&
+          mismatch.publication.generation == *recycled.prepared_generation,
+          "evicted declared destination accepted a different template");
+    const auto rejected=observe(); unchanged(recycled,rejected);
+    survivor(recycled,rejected,second); survivor(recycled,rejected,replacement);
+    session.accept(recycled.report,source->owner());
+    restore.clone_from=first;
+    check(no_new([&] { return session.edit_prepared(handle,source->owner(),restore); }).publication.status == UpdateStatus::Ok,
+          "evicted declared destination could not restore its original template");
+    auto restored=observe(); survivor(recycled,restored,second); survivor(recycled,restored,replacement);
+    check(restored.body_records.size() == 3 &&
+          *restored.prepared_generation == *recycled.prepared_generation+1,
+          "declared destination restoration lost coherent identity publication");
+    restore.expected_generation=*restored.prepared_generation;
+    check(no_new([&] { return session.edit_prepared(handle,source->owner(),restore); }).publication.status == UpdateStatus::NoChange,
+          "restored declared destination lost its original template mapping");
+    restore.clone_from=second;
+    check(no_new([&] { return session.edit_prepared(handle,source->owner(),restore); }).publication.status == UpdateStatus::InvalidInput,
+          "resident declared destination accepted a different template");
+    unchanged(restored,observe());
+    restore.clone_from.reset();
+    check(no_new([&] { return session.edit_prepared(handle,source->owner(),restore); }).publication.status == UpdateStatus::NoChange,
+          "plain add rejected the restored declared destination");
+    recycle.present=false; recycle.clone_from.reset(); recycle.expected_generation=*restored.prepared_generation;
+    check(no_new([&] { return session.edit_prepared(handle,source->owner(),recycle); }).publication.status == UpdateStatus::Ok,
+          "recycled destination regression cleanup failed");
+    state=observe(); survivor(restored,state,first); survivor(restored,state,second);
+  }
   for (int round=0; round<3; ++round) {
     edit.preparation_work=UINT64_MAX;
     edit.present=false; edit.expected_generation=*state.prepared_generation;
@@ -196,7 +236,7 @@ void session_case(int workers, field::HostPath path) {
   std::cout << "prepared_occurrence_edit,workers=" << workers << ",path="
       << (path == field::HostPath::BulkCopy ? "bulk" : "direct")
       << ",rounds=3,new_root_entry=20,add_tick_remove_tick=1,source_pins=preserved,"
-         "survivor_bits=preserved,stale_reports=rejected,recurring_new=0 PASS\n";
+         "survivor_bits=preserved,stale_reports=rejected,declared_destination_after_reuse=preserved,recurring_new=0 PASS\n";
 }
 
 }

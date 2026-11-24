@@ -140,6 +140,13 @@ field::UpdateResult PreparedOccurrenceWorkspace::prepare(const PreparedStudyOwne
     work.copy_key(catalogue_[i].occurrence);
     if (request.occurrence.source == catalogue_[i].occurrence) { selected=i; break; }
   }
+  // A declared destination keeps its immutable template even after its
+  // reusable instance metadata has been evicted by another occurrence.
+  std::size_t declared_template=definitions_.size();
+  if (request.present) for (std::size_t i=0; i<owner.occurrences_.size(); ++i) {
+    work.copy_key(request.occurrence.source); work.copy_key(owner.occurrences_[i].occurrence);
+    if (request.occurrence.source == owner.occurrences_[i].occurrence) { declared_template=i; break; }
+  }
   std::size_t source_template=definitions_.size();
   if (request.clone_from) {
     if (!request.present || !request.occurrence.source.path.empty() ||
@@ -151,14 +158,10 @@ field::UpdateResult PreparedOccurrenceWorkspace::prepare(const PreparedStudyOwne
     if (source_template == definitions_.size() ||
         !owner.occurrences_[source_template].occurrence.path.empty() || owner.occurrences_[source_template].node != 0)
       return result;
+    if (declared_template != definitions_.size() && source_template != declared_template) return result;
     if (selected != catalogue_.size() && templates_[selected] != source_template) return result;
   } else if (selected == catalogue_.size() && request.present) {
-    // A declared identity may be reintroduced after its old metadata slot was
-    // reused. Its immutable source template still supplies complete provenance.
-    for (std::size_t i=0; i<owner.occurrences_.size(); ++i) {
-      work.copy_key(request.occurrence.source); work.copy_key(owner.occurrences_[i].occurrence);
-      if (request.occurrence.source == owner.occurrences_[i].occurrence) { source_template=i; break; }
-    }
+    source_template=declared_template;
   }
   new_identity_=selected == catalogue_.size();
   if (new_identity_) {

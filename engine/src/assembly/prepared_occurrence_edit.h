@@ -7,6 +7,8 @@ namespace assembly {
 // Change live presence in this study. A new root occurrence must name a
 // declared root template; its exact definition, mass, geometry and field
 // participation are reused. No definition or exposure replacement is implied.
+// A declared destination always keeps its original template, including after
+// its retired instance metadata slot has been reused for another identity.
 struct PreparedOccurrenceEdit {
   OccurrenceKey occurrence;
   bool present{};
