@@ -405,6 +405,13 @@ independent candidate/refusal/absence regression probes even when exported inten
 is omitted. Export accounting describes the configured observation, not those
 test probes or total process work. No browser action requests native computation.
 
+The separate fixture-owned `semantic_native_trace_test` follows the English/French
+shared-core and Unicode/repeated-parent examples into actual native field claims,
+response arithmetic and a tick. Its [worked calculation, commands and seven-case
+capture](../../engine/docs/SEMANTIC-NATIVE-WORKED-TRACE.md) retain both accepted
+profiles and current representation/diagnostic limits. It does not change the
+live operator's presets or supply an operational solver.
+
 ### Native capture-to-watch integration check
 
 `tests/capture-watch.mjs` starts a supplied finite native command and watches its

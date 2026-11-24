@@ -1,5 +1,49 @@
 # Core continuation after local CUDA corrections
 
+## November 24, 2026 — semantic parents/native worked example for review
+
+[#431 review 7146490937](https://github.com/Human-Cognome-Project/human-cognome-project/pull/431#issuecomment-7146490937)
+provisionally accepts `164708c5` as raw response observation. Main remains
+`b528d494`; #430/#431 are open, with smoke/viewport passed and native CPU CI
+running. The maintainer's eventual integration retains both CLI options and
+checks whole-field exchange with response capture enabled.
+
+The [worked trace](../engine/docs/SEMANTIC-NATIVE-WORKED-TRACE.md) at `d9537f1a`
+stacks on reviewed #431 and follows the accepted English A/French A example
+through source parent rows, projection, actual declared SNode IDs/roles, pending
+participation commands, owner associations, field packets and diagnostic/motion
+observation. Parent/whole field classification is explicit rather than inferred
+from native depth. The imposed-field control uses distinct contextual revision
+pins and verifies identical pre-tick structural inputs and native state.
+
+At aggregate exposure, shared parent A actually transmits force ±32 at G=1;
+the native coefficient is 64 and the diagnostic candidate is x=-0.5. The extra
+equal-cohort comparison adds two ineligible zero-displacement rows and changes
+neither the baseline calculation nor the observed first-tick positions. At byte
+exposure, root mass remains four with local force ±16, while eligible zero
+inherited displacements leave the diagnostic unresolved. No new target/brake
+rule is selected and that status is retained.
+
+The `í` and `aá` aggregate controls admit and tick. Byte provenance and repeated
+ordinals survive, but the current byte ledgers cannot supply a complete rooted
+character rollup; repeated nibble fields also span branches. Both source plans
+refuse InvalidInput before native bootstrap. [#432](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
+records the exact source, coverage/tree witness and required representation
+disposition. Choose the next bounded extension without dropping ordered paths,
+inventing semantic SNode identity or substituting naming membership for literal
+structure. General target correspondence, fixed-input brake comparison and live
+Unicode exchange follow separately. The next structural rollup retains the common
+exposed base and any generated aspects; peripheral rollup and formal pattern/PoC
+acceptance remain later.
+
+Seven local CTests, two additional native controls and 32 fresh native snapshot/
+source-association audits pass at the clean public implementation pin. Commands,
+source/configuration/backend pins, full evidence and its verified archive, initial
+fixture failures and the portable seven-case capture are linked in the report.
+Return this dependent increment for provisional review and authoritative hosted
+CI. It changes tests/evidence, not production arithmetic or ownership. All merges
+remain maintainer-only.
+
 ## November 24, 2026 — completed native response capture for review
 
 [#430 re-review 7145505449](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7145505449)

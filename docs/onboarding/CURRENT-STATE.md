@@ -1,5 +1,30 @@
 # Current implementation and work
 
+## November 24, 2026 — semantic/native worked trace for review
+
+[#431 review 7146490937](https://github.com/Human-Cognome-Project/human-cognome-project/pull/431#issuecomment-7146490937)
+provisionally accepts `164708c5` for optional raw response observation. It and
+#430 remain open with smoke/viewport passed and native CPU CI running; main is
+`b528d494`. Preserve both CLI options and qualify a response-enabled whole-field
+exchange when the maintainer integrates them.
+
+The dependent [semantic/native worked trace](../../engine/docs/SEMANTIC-NATIVE-WORKED-TRACE.md)
+at `d9537f1a` follows English/French A, multibyte `í` and repeated `aá` from
+ordered parent pins through projection, explicit SNode roles, plan commands and
+native field/response publication. Its fixed-input aggregate control measures a
+nonzero shared-parent response and zero extra effect from the imposed equal-cohort
+comparison. Source revisions distinguish changed context while structural inputs,
+native positions and baseline arithmetic match. One actual tick is recorded.
+
+Seven local CTests, two additional native controls and 32 fresh snapshot/source
+audits pass on clean pinned CPU source. The source-pinned report and portable
+seven-case trace preserve fine ASCII unresolved coincidence and the multibyte/
+repeated byte admission refusals. [#432](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
+requests the next bounded literal-character rollup/overlapping-path representation
+disposition. Return this worked increment for review and authoritative CI; it
+does not complete general target/brake, Unicode LoD or same-study context edits.
+Production mathematics and ownership are unchanged. All merges remain maintainer-only.
+
 ## November 24, 2026 — completed response capture for review
 
 Main `b528d494` integrates #427/#429. [#430 re-review 7145505449](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7145505449)
