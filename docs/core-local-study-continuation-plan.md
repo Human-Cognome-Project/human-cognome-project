@@ -1,5 +1,11 @@
 # Core continuation after local CUDA corrections
 
+## November 24, 2026 — accepted CPU refactor boundary
+
+Main `01dc9783` integrates #421 and #422 after hosted smoke and native CPU qualification. The maintainer accepts Passes 1–3 for the supported CPU path. The [exit evidence](../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23) identifies the owners, independent logical build and native reuse decisions. The [leaf diagnostic](../engine/docs/LEAF-FAILURE-DIAGNOSTICS.md) captures future mismatches. The original #417 operands remain unknown. Pass 4 proceeds separately under #324. The maintainer owns the onboarding rebuild against this integrated code.
+
+### Prior handoffs
+
 ## November 23, 2026 — refactor exit disposition awaiting review
 
 [#422 decision 7114219288](https://github.com/Human-Cognome-Project/human-cognome-project/pull/422#issuecomment-7114219288)
@@ -26,6 +32,30 @@ GPU/concurrency and concrete Analyst work remain separate. After integration,
 the maintainer-owned onboarding rebuild can use the resulting main. Further
 engineering needs an accepted capability scope or a demonstrated ownership/
 build-boundary gap. Held #75/#111/#123 and maintainer-only merges remain.
+## November 23, 2026 — leaf failure diagnostics awaiting review
+
+[#421 decision 7113221968](https://github.com/Human-Cognome-Project/human-cognome-project/pull/421#issuecomment-7113221968)
+authorizes failure-only capture at the existing leaf assertion. The
+[implementation and evidence](../engine/docs/LEAF-FAILURE-DIAGNOSTICS.md) at
+tested public `e107c337` record caller context, complete packet bits, ordered
+source handles/ratios/weights and body positions from completed host views.
+The original comparison, rejection, reference and production arithmetic remain
+unchanged. The native Q6 witness verifies the captured output, unchanged state
+and silent successful comparison; it does not diagnose the original #417 failure.
+
+Quick local CI, sixteen Clang/GCC diagnostic profiles and fifteen existing caller
+controls pass on one clean source pin. Raw output, reconstruction of the entire
+parent test source and freshly verified evidence are retained. This branch pins
+reviewed #421 `f739cfbc`, reconciled with main `fae58e79`; #421 remains open with
+smoke passed and native CI pending. Return this dependent slice for review and
+authoritative hosted CI. Any arithmetic/reference correction needs separate
+review and actual failure operands. All merges remain maintainer-only.
+
+## November 23, 2026 — integrated through #420
+
+Main `fae58e79` integrates #417–#420 after hosted qualification. The prepared layout helper and standalone logical ActiveAssembly target are integrated. The first #417 attempt remains evidence of a leaf/reference mismatch in round 28. Its same-head retry passed. The constructed Q6 boundary witness explains how the calculations can diverge; the original operands are unknown.
+
+The next bounded task is failure-only capture of the tick, leaf, packets and ordered inputs at the existing assertion. Preserve its exact predicate and the production calculation. [Inspection and evidence](../engine/docs/LEAF-REFERENCE-INSPECTION.md)
 
 ## November 23, 2026 — standalone logical boundary awaiting review
 

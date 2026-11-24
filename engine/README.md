@@ -13,6 +13,8 @@ The modified fork is expected at:
 engine/taichi/
 ```
 
+The [leaf-reference investigation](docs/LEAF-REFERENCE-INSPECTION.md) records the original hosted failure, successful retry and a constructed quantization-boundary case. [Failure-only diagnostics](docs/LEAF-FAILURE-DIAGNOSTICS.md) now capture completed operands at the unchanged assertion; the native witness checks their output, original rejection and silent success behavior.
+
 ## Layout
 
 | Path | Role |
