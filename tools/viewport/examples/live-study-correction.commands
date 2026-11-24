@@ -1,0 +1,10 @@
+tick 1
+remove 2
+add 20 10
+add 2 10
+add 2 2
+add 2
+remove 20
+tick 1
+list
+quit

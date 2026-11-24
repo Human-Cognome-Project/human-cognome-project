@@ -8,6 +8,8 @@
 
 namespace viewport { struct ActiveSessionAccess; }
 namespace assembly {
+struct PreparedOccurrenceEdit;
+struct PreparedOccurrenceEditResult;
 namespace detail { class PreparedStudyOwner; }
 struct PreparedStudySubmission;
 struct PreparedSubmissionResult;
@@ -25,6 +27,9 @@ struct ActiveReport {
   field::Demand demand;
   field::NumericalProfile numerical_profile{};
   std::vector<double> particles64, groups64, determined64;
+  // Prepared observations are historical values after either an edit or tick.
+  // Legacy reports retain their existing logical-generation contract.
+  std::optional<std::uint64_t> prepared_generation{}, prepared_completed_tick{};
 };
 // Owns all native bindings. Destruction drains work, destroys studies/kernels
 // while their Program is alive, then finalizes it. Logical assemblies/pins are
@@ -38,6 +43,8 @@ class ActiveSession {
                          field::HostPath path = field::HostPath::BulkCopy);
   PreparedSubmissionResult submit_prepared(PreparedStudySubmission,
                                            const warm::Uuid &owner);
+  PreparedOccurrenceEditResult edit_prepared(const ExecutionHandle &, const warm::Uuid &owner,
+                                             const PreparedOccurrenceEdit &);
   field::TickResult tick_prepared(const ExecutionHandle &, const warm::Uuid &owner,
       const field::Parameters64 &, std::uint64_t tick_work = UINT64_MAX,
       std::uint64_t geometry_work = UINT64_MAX);

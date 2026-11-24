@@ -6,9 +6,9 @@ The executable baseline through #422 includes standalone logical assembly, nativ
 
 ## Active and deferred work
 
-The immediate milestone is a study an operator can edit while it runs. For the assigned implementation and current PRs, use the [coding route](AGENT-START.md#1-establish-the-source-and-avoid-duplicate-work). For what you can examine today, use the [operator route](OPERATOR.md).
+The native CPU CLI now supports adding and removing occurrences in a running study. #427 and #429 integrated the editable English pair and native claim counts. For the assigned implementation and current PRs, use the [coding route](AGENT-START.md#1-establish-the-source-and-avoid-duplicate-work). For what you can examine today, use the [operator route](OPERATOR.md).
 
-Whole-field LoD changes are in scope for the editable study. Peripheral rollup and pattern-based PoC criteria come later. Target/brake work is tracked in [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324). Full resource accounting, general mixed-revision updates, GPU/concurrency qualification and the concrete Analyst remain separate. Held #75, #111 and #123 retain their prior dispositions.
+Whole-field LoD exchange is under review in #430. Peripheral rollup and pattern-based PoC criteria come later. Target/brake work is tracked in [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324). Full resource accounting, general mixed-revision updates, GPU/concurrency qualification and the concrete Analyst remain separate. Held #75, #111 and #123 retain their prior dispositions.
 
 ## Prior decisions
 

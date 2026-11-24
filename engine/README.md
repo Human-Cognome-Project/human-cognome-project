@@ -17,6 +17,18 @@ engine/taichi/
 
 The [leaf-reference investigation](docs/LEAF-REFERENCE-INSPECTION.md) records the original hosted failure, successful retry and a constructed quantization-boundary case. [Failure-only diagnostics](docs/LEAF-FAILURE-DIAGNOSTICS.md) now capture completed operands at the unchanged assertion; the native witness checks their output, original rejection and silent success behavior.
 
+The [live editable CPU study](docs/LIVE-EDITABLE-STUDY.md) adds an operator CLI
+through the prepared session/owner: add a declared-template occurrence, tick,
+remove it and tick the same study. Commands, a captured run, identity/survivor
+controls and scoped local qualification are included for review. Whole-field LoD
+exchange follows separately.
+
+The [native claim-overlap observation](docs/EXCHANGE-CLAIM-OBSERVATION.md)
+records actual particle/field occupancy before claims, before retirement and
+after retirement. Real expansion/compression and peak-refusal controls support
+the whole-field LoD preparation review in #428. The operator exposes the same
+observation for ordinary edits; whole-field LoD remains the next integration.
+
 ## Layout
 
 | Path | Role |

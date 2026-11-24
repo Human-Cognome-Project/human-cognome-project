@@ -122,6 +122,7 @@ void exchange_fields(engine::Runtime &r, HostPath path) {
     Access::seal(*coordinator, {nodes.data(),nodes.size(),children.data(),children.size(),
                                 contributions.data(),contributions.size()});
     const auto generation = s.generation, ticks = s.completed_ticks;
+    const auto particles_before = s.particles.size(), fields_before = s.fields.size();
     const auto before = TickSnapshot(f);
     const auto history = PlacementAccess::rebase_history(f.h);
     const auto same_handle = [](auto a, auto b) {
@@ -183,6 +184,9 @@ void exchange_fields(engine::Runtime &r, HostPath path) {
                   before == TickSnapshot(f) && history == PlacementAccess::rebase_history(f.h) && f.h.ready(),
               "field peak or focal retirement rejection mutated execution");
       require(unchanged_owner(*coordinator), "rejected field plan published owner mappings");
+      require(!result.claims.sampled && s.particles.size() == particles_before &&
+                  s.fields.size() == fields_before,
+              "unclaimed refusal advertised an observed native peak or changed record counts");
       if (scenario == 2) require(result.failure.budget == Budget::Fields && result.failure.required == 9,
                                  "retired field capacity funded new claims");
       continue;
@@ -191,6 +195,28 @@ void exchange_fields(engine::Runtime &r, HostPath path) {
                 s.completed_ticks == ticks && s.live.fields == next_ids.size() &&
                 Access::fields(*coordinator).size() == next_ids.size(),
             "field lifecycle did not publish complete unticked state");
+    const auto &claims = result.claims;
+    require(claims.sampled && claims.particles_before == particles_before &&
+                claims.fields_before == fields_before &&
+                claims.particles_peak == particles_before + incoming.size() &&
+                claims.fields_peak == fields_before + additions.size() &&
+                claims.particles_after == s.particles.size() &&
+                claims.fields_after == s.fields.size() &&
+                claims.particles_after == rows.size() - declaration.outgoing().size() + incoming.size() &&
+                claims.fields_after == next_ids.size(),
+            "native claim observation did not retain actual old-plus-incoming overlap");
+    std::cout << "exchange_native_claims,direction=" << (compression ? "aggregate" : "parts")
+              << ",particle_capacity=" << s.capacity.limits()[Budget::Particles]
+              << ",field_capacity=" << s.capacity.limits()[Budget::Fields]
+              << ",participation_capacity=" << s.capacity.limits()[Budget::Participation]
+              << ",contact_capacity=" << s.capacity.limits()[Budget::Contacts]
+              << ",scratch_bytes=" << s.capacity.limits()[Budget::ScratchBytes]
+              << ",particles_before=" << claims.particles_before << ",particles_peak=" << claims.particles_peak
+              << ",particles_after=" << claims.particles_after << ",fields_before=" << claims.fields_before
+              << ",fields_peak=" << claims.fields_peak << ",fields_after=" << claims.fields_after
+              << ",active_participation=" << s.live.edges << ",active_contacts=" << s.live.contacts
+              << ",observation_bytes=" << sizeof(UpdateClaimObservation)
+              << ",result_bytes=" << sizeof(UpdateResult) << '\n';
     for (std::size_t i = 0; i + 1 < fields.size(); ++i)
       require(s.field_headers[fields[i].handle.record].record < 0, "unused outgoing field survived");
     for (const auto &field : Access::fields(*coordinator)) {

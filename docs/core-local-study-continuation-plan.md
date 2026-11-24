@@ -1,5 +1,72 @@
 # Core continuation after local CUDA corrections
 
+## November 24, 2026 — live study accepted; LoD claim observation for review
+
+[#427 re-review 7140102237](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7140102237)
+resolves the destination-template finding and provisionally accepts `389cfdd3`
+for the first live editable CPU study. It remains unmerged; authoritative hosted
+CI is separate. Whole-field LoD exchange is the assigned continuation.
+
+The [claim-overlap measurement increment](../engine/docs/EXCHANGE-CLAIM-OBSERVATION.md) at `4267c1e1`
+records actual native map occupancy during the existing atomic exchange:
+particles 1→3→2 / fields 3→9→7 on expansion, particles 2→3→1 / fields 7→9→3
+on compression. The final-fit/peak-overflow control still refuses nine fields
+against seven slots without claims. The operator exposes sampled observations
+and keeps refusal/no-op distinct from zero peaks. No allocation policy changed.
+
+Ten local CTests, eight native exchange/preflight controls and two placement
+controls pass on clean pinned CPU source, including a minimal build without
+viewport/warm integration. Raw captures, actual capacities/scratch, inline result
+bytes and freshly verified evidence are linked above. Return this separate
+dependent increment for review and authoritative CI. It is a measurement
+prerequisite, not whole-field operator completion. [#428](https://github.com/Human-Cognome-Project/human-cognome-project/issues/428)
+records per-logical-occurrence state staging, whole-field publication and the
+focus-preset question. Continue that integration, then confounding/structural
+trace; peripheral rollup and allocation-policy revision remain separate. All
+merges remain maintainer-only.
+
+## November 24, 2026 — #427 destination correction awaiting re-review
+
+[#427 finding 7139439148](https://github.com/Human-Cognome-Project/human-cognome-project/pull/427#issuecomment-7139439148)
+holds `40257763` for an immutable-template check bypass after instance metadata
+reuse. The [correction and captured trace](../engine/docs/LIVE-EDITABLE-STUDY.md#declared-destination-correction--awaiting-re-review)
+at `deacbe68` validate the declared destination independently of slot residency.
+The regression rejects a mismatched template without changing generation, full
+claims or physical state, then restores the original template and verifies no-op
+adds. A captured CLI trace completes subsequent edits/ticking in the same study.
+
+Quick local CI, twelve Clang/eight GCC edit profiles and three minimal native
+controls pass at the same clean source: 26 CTests plus two placement controls.
+The report preserves the red reproduction, source-pinned raw evidence and
+original qualification as separate scopes. Return this correction for maintainer
+re-review and authoritative CI; the hold is not treated as acceptance. Existing
+hosted jobs were left running. Whole-field LoD and allocation policy remain
+separate follow-ups. All merges remain maintainer-only.
+
+## November 24, 2026 — first live editable study awaiting review
+
+Following [#343's live-study handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343#issuecomment-7137040893),
+the [implementation and captured run](../engine/docs/LIVE-EDITABLE-STUDY.md) at
+`36c38715` add a native CLI and a bounded prepared-owner occurrence edit. One
+study adds a distinct declared-template occurrence, ticks, removes it and ticks
+again while preserving active survivor state, full identity and reusable source
+definitions. The existing observer exposes completed ticks/generations/live rows.
+
+The branch starts at current main `98cdbe03`, integrating #423. Quick CI,
+23 Clang/20 GCC focused CTests and three minimal native CTests pass locally
+on the same clean implementation pin, including all new worker/path profiles.
+Commands, raw capture, refusal/budget/failure/survivor controls and freshly verified
+source-pinned evidence are linked above. This is contributor CPU evidence for
+provisional review; authoritative GitHub CI remains separate.
+
+Next is whole-field LoD exchange in place over declared compositions, then the
+fine confounding/next-level structural trace alongside targets and motion. Record
+actual capacities, live counts and old-plus-incoming peak on a real exchange
+before changing allocation policy. No further mechanical refactor, target/brake
+arithmetic or onboarding rebuild is assigned to this slice; #424/#425 remain
+maintainer-owned documentation. Peripheral rollup and pattern/PoC acceptance
+follow later. All merges remain maintainer-only.
+
 ## November 24, 2026 — accepted CPU refactor boundary
 
 Main `01dc9783` integrates #421 and #422 after hosted smoke and native CPU qualification. The maintainer accepts Passes 1–3 for the supported CPU path. The [exit evidence](../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23) identifies the owners, independent logical build and native reuse decisions. The [leaf diagnostic](../engine/docs/LEAF-FAILURE-DIAGNOSTICS.md) captures future mismatches. The original #417 operands remain unknown. Pass 4 proceeds separately under #324. The maintainer owns the onboarding rebuild against this integrated code.
