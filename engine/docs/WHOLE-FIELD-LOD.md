@@ -1,5 +1,130 @@
 # Whole-field LoD in the live CPU study
 
+## Preparation-budget correction — awaiting re-review
+
+[Maintainer review 7144539532](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7144539532)
+holds `de9057b5` for uncharged comparisons in the live-slot and reserved-address
+searches. The review checks the positive/refusal captures and finds the requested
+first English A preset covered. #427 and #429 are now integrated at main
+`b528d494`; #430 targets main. This correction returns for re-review and its own
+authoritative GitHub CI. All merges remain maintainer-only.
+
+Corrected executable source: `b8185fe95b43833ca2c46d9217b0e2306877d839`, tree
+`2bc8b70b449c2277c2acaf2a3f4f21e7680bc348`. Preserved local `158d4e41`
+has the identical tree. Main's tree equals the reviewed #429 parent tree.
+The correction is limited to `prepared_lod_workspace.cpp` and its acceptance
+test; native placement/numerical/runtime/fork source, layouts, interfaces,
+capacity choices, allocation policy and workflow code are unchanged.
+
+### Charged searches
+
+The local membership helper charges one work unit before each actual primitive
+comparison, including unsuccessful probes. It retains the existing first-match
+semantics and adds no retained owner storage. It covers all four searches identified in review:
+
+- Setup candidate-address lookup and final reserved-address uniqueness lookup.
+- Recurring free-slot lookup and the separate selected-slot activity lookup.
+
+The surrounding candidate, catalogue, declaration and outer-slot charges remain.
+Budget exhaustion is caught at the existing preparation boundary, before native
+publication. The same reserved metadata is reused on retry. There is no new
+execution authority, source identity or native state import.
+
+### Distinguishing budget witnesses
+
+The regression uses the actual public prepared session, switches to fine
+exposure and admits entries 20/30 to fill all four metadata/native body slots.
+No synthetic live-map mutation is used. It independently counts the two study-key
+equality gates, declaration scans and catalogue/outer visits: 158 work units for
+this fixture. A fresh entry's full-slot search needs another 1+2+3+4=10 probes.
+With 158 units it now exhausts preparation work, preserving the completed state.
+With exactly 168 it finishes metadata inspection and returns the ordinary
+five-required/four-available particle-capacity refusal without claims.
+
+After removing entry 30, the free metadata slot is last. Its lookup inspects
+1+2+3+3=9 live entries; the separate activity lookup inspects another three.
+At 170 units the next key-copy charge refuses with charged=170 / next-required=171.
+This distinguishes the inner work from the outer visits. A sufficient-work retry
+charges 2,411 units and admits entry 40, preserving every survivor's full claim
+and physical bits. A following native tick succeeds. Full field claims,
+generation/tick, particle/group values and report currency are checked on refusal;
+recurring C++ new/new[] and retained metadata growth remain guarded.
+
+The setup regression also retries the previously published 28,541-unit metadata
+allowance. It now refuses and releases every owner-domain allocation before
+claims. The complete fixture requires 28,625 units: 84 additional actual address
+comparisons. Existing one-short/exact setup bytes, allocation work, plan work and
+metadata-work checks remain active, as do native backing and late owner-map
+failure controls. Requested metadata bytes (32,890), cumulative allocation work
+(35,840) and combined plan work (53,774) are unchanged. These are preparation
+work units and allocator requests, separate from placement work, native bytes,
+complete B and RSS.
+
+The following are raw successful corrected-source witness rows (the same values
+are checked in the worker/path profiles):
+
+```text
+whole_field_probe_budget,slots=4,outer_work=158,full_probes=10,full_required=168,late_probes=12,late_prefix=170,late_next=171,retry_work=2411,unchanged_refusals=1,sufficient_retry=1,following_tick=1,recurring_new=0 PASS
+whole_field_setup,peak_bytes=32890,allocation_work=35840,plan_work=53774,metadata_work=28625,one_short_refusals=4,exact_retries=4,unwind=1,backing=stable,postclaim_unready=1 PASS
+```
+
+### Correction qualification and evidence
+
+| Fresh correction scope | Result |
+| --- | --- |
+| Quick local CI | 3/3 CTests plus placement math/capacity controls |
+| Clang 15, warm/viewport ON | 4/4 whole-field profiles: one/two workers × bulk/direct |
+| GCC 11, same LLVM 15 CPU SDK | 2/2 whole-field profiles: one-worker bulk/two-worker direct |
+| Clang 15, warm/viewport OFF | Prepared-owner library compiles; no minimal CTest run claimed |
+| Current-source operator capture | Four exchanges/seven ticks; per-root state/focus/claim-peak audit passes |
+
+These nine fresh CTests include the new full/late-free probes, constructor-budget
+regression, existing three-round-trip motion/focus/peak controls, exact/one-short
+resources, stale views, native backing stability and postclaim-unready behavior.
+The runners finish with unchanged clean source/HEAD at the corrected pin. The
+new constructor/live-slot probes do not allocate recurring C++ storage. The
+original hosted run was left to finish; the corrected PR head receives its own
+automatic hosted qualification when published.
+
+
+Both regression controls fail on reviewed production code with only the new
+test patch: `full catalogue accepted outer-only work without charging live
+probes` and `reviewed setup allowance still omits address probes`. Both pass
+after the four searches are metered. The red patch, build output and complete
+red/green stdout/stderr are retained. A first GCC driver invocation exited before
+creating its evidence directory and produced no diagnostic; it is not a passing
+test result. The separate traced retry records the successful clean run. Its
+cause is not inferred from the empty log.
+
+The original forty-test/IR/capture qualification below remains evidence for its
+initial pins. It is not counted again as correction coverage. Unchanged native
+and pure source/build boundaries are verified, and the original archive is
+freshly checked before reuse. The original three captures retain their original
+work counters and source pins. The [current-source positive capture](../../tools/viewport/examples/whole-field-probe-correction-capture.jsonl)
+records the corrected operator's work reporting and continued exchange/ticking.
+The vendored Taichi reference `a94a9eb350c94dfa2eb586bee49c53e0ee886648`
+is a tree; its SHA and runtime bitcode are unchanged.
+
+Correction archive: `/tmp/hcp-430-b8185fe9-evidence.tar.gz`, SHA-256
+`2f9b3c0454218ae90137ecbd12564b242a030f166d3ba4b60f0abd09db2550cb`. Fresh extraction verifies the root and every nested manifest.
+The bundle retains clean source/toolchain/runtime/binary pins, exact commands,
+red/green regression patch/output, setup/probe witnesses, corrected raw capture,
+source equivalence and incremental Git bundle. The original archive is referenced
+by its separately verified digest and fresh root/nested checks. The full bundles
+remain machine-local; the bounded corrected capture and raw witness rows above
+are directly reviewable in Git. The final handoff commit changes only Markdown
+and that capture; executable equivalence is verified separately at submission.
+
+
+The correction does not extend the supported owner beyond the initial declared
+single-byte profile. The recorded crowded 65,537/65,536 placement-cell refusal
+below is unchanged. General multibyte adaptation, focus handover, automatic LoD,
+GPU/concurrency and allocation-policy changes remain separate. After re-review,
+the assigned capability continuation is the fine confounding/next-level
+structural trace alongside targets and motion.
+
+## Initial implementation and evidence at 6a94343b
+
 Contributor implementation for [#428](https://github.com/Human-Cognome-Project/human-cognome-project/issues/428),
 following [maintainer direction 7141017357](https://github.com/Human-Cognome-Project/human-cognome-project/issues/428#issuecomment-7141017357).
 The first explicit profile uses an inherited English membership focus which is
@@ -14,7 +139,7 @@ inspection. These dependencies and authoritative CI are separate from local
 qualification. All merges remain maintainer-only.
 
 Both native wrapper compilers use the matching Clang/LLVM 15.0.7 CPU SDK from
-fork commit `a94a9eb350c94dfa2eb586bee49c53e0ee886648`. Runtime bitcode remains
+fork tree `a94a9eb350c94dfa2eb586bee49c53e0ee886648`. Runtime bitcode remains
 `4a57d249a308b5a4523e788025515e7adbccce7565ecafe2871cc34094ca7ada`.
 
 ## Supported operation

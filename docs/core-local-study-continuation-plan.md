@@ -1,5 +1,30 @@
 # Core continuation after local CUDA corrections
 
+## November 24, 2026 — #430 preparation-budget correction for re-review
+
+Main `b528d494` integrates #427 and #429; #430 now targets main. [Maintainer
+review 7144539532](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7144539532)
+checks the positive/refusal captures and holds `de9057b5` for uncharged live-slot
+and reserved-address probes. The [correction and evidence](../engine/docs/WHOLE-FIELD-LOD.md#preparation-budget-correction--awaiting-re-review)
+at `b8185fe9` meter all four searches before each actual comparison.
+
+The actual full four-slot catalogue needs 168 work units rather than the outer
+158; the late-free search/activity prefix charges 170 and refuses the next
+171st unit unchanged. Sufficient work admits the new identity and a following
+tick succeeds. Setup metadata work becomes 28,625 from 28,541; storage and plan
+work are unchanged. Red full-slot/setup controls fail on reviewed production
+code; corrected no-new, full-claim/generation/state and retry witnesses pass.
+
+Nine fresh local CTests, a current-source operator capture/audit and minimal
+owner-library compilation qualify this correction. The original numerical/IR
+evidence is retained at its original pins with unchanged-source proof and fresh
+archive verification. No numerical/placement physics, interfaces, capacity or
+allocation-policy change is included. Existing hosted work was left running.
+Return #430 for maintainer re-review and authoritative CI at the corrected head;
+the hold is not treated as acceptance. The subsequent fine confounding/structural
+trace remains the next capability continuation after review. All merges stay
+maintainer-only.
+
 ## November 24, 2026 — whole-field LoD CPU subset for review
 
 [#429 review 7141016819](https://github.com/Human-Cognome-Project/human-cognome-project/pull/429#issuecomment-7141016819)

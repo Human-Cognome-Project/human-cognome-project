@@ -1,5 +1,13 @@
 # Private exchange-owner resource inventory
 
+The [#430 preparation-budget correction](WHOLE-FIELD-LOD.md#preparation-budget-correction--awaiting-re-review)
+at `b8185fe9` charges each reserved-address and live-slot comparison, including
+failed probes. The four-slot setup requires 28,625 metadata-work units, 84 more
+than the reviewed allowance. Full/late-free controls verify the separately
+charged inner probes, unchanged work refusal and sufficient retry. The measured
+32,890 owner-domain bytes, allocation/plan work, native backing and all capacity
+choices are unchanged. Re-review and authoritative CI remain separate.
+
 The [whole-field LoD subset](WHOLE-FIELD-LOD.md) at `6a94343b` prepares both
 English aggregate/byte alternatives and per-occurrence native staging in the
 existing owner. Source-pinned CPU controls measure the added `48*B` native bytes,
