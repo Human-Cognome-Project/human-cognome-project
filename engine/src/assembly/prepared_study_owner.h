@@ -1,22 +1,27 @@
 #pragma once
 #include "assembly/structural_admission_plan.h"
+#include "assembly/prepared_occurrence_edit.h"
 
 namespace viewport { struct PreparedOwnerAccess; }
 namespace assembly::detail {
 struct PreparedOwnerResult;
+class PreparedOccurrenceWorkspace;
 enum class PreparedOwnerPhase { Prepared, Published, Failed };
 
 // Private, exclusive logical owner on one borrowed prepared Harness. Runtime
 // outlives Harness, which outlives this owner and every borrowed observation.
 // Preparation pins an immutable source and reserves all publication metadata.
 // Bootstrap uses native generated placement/commit; this is not a second engine
-// and does not change the legacy ActiveSession or provide general live edits.
+// and does not change legacy execution. Opt-in edits reuse declared templates;
+// definition/exposure replacement and general live revision remain separate.
 class PreparedStudyOwner {
  public:
   static PreparedOwnerResult prepare(field::Harness &,
       const std::shared_ptr<const ActiveAssembly> &, const warm::Uuid &session,
       const AdmissionBindings &, const std::shared_ptr<ReservationDomain> &,
-      std::uint64_t plan_work, std::uint64_t metadata_work);
+      std::uint64_t plan_work, std::uint64_t metadata_work,
+      bool editable_occurrences = false);
+  ~PreparedStudyOwner();
   PreparedStudyOwner(const PreparedStudyOwner &) = delete;
   PreparedStudyOwner &operator=(const PreparedStudyOwner &) = delete;
   const ExecutionHandle &handle() const { return handle_; }
@@ -28,6 +33,8 @@ class PreparedStudyOwner {
   field::TickResult tick(const warm::Uuid &owner, const ExecutionHandle &,
       const field::Parameters64 &, std::uint64_t tick_work = UINT64_MAX,
       std::uint64_t geometry_work = UINT64_MAX);
+  PreparedOccurrenceEditResult edit(const warm::Uuid &, const ExecutionHandle &,
+      const PreparedOccurrenceEdit &);
   // Detached completed physical values; source/claim metadata has one builder
   // shared with the viewport observer. No comparison policy is selected here.
   ActiveReport report(const warm::Uuid &, const ExecutionHandle &);
@@ -38,8 +45,18 @@ class PreparedStudyOwner {
   // owner outlives the view. Rows/references from read() expire at the next
   // mutation; retain the stamped view, not its rows, to check again afterwards.
   struct AssociationRows {
+    // Live order indexes immutable catalogue rows without copying source pins.
+    struct Occurrences {
+      const ReservedVector<AdmissionOccurrenceCommand> &catalogue;
+      const ReservedVector<std::size_t> *live{};
+      std::size_t size() const { return live ? live->size() : catalogue.size(); }
+      const AdmissionOccurrenceCommand &at(std::size_t i) const {
+        return catalogue.at(live ? live->at(i) : i);
+      }
+      const AdmissionOccurrenceCommand &operator[](std::size_t i) const { return at(i); }
+    };
     const ActiveAssembly &source;
-    const ReservedVector<AdmissionOccurrenceCommand> &occurrences;
+    Occurrences occurrences;
     const ReservedVector<AdmissionFieldCommand> &field_sources;
     const ReservedVector<engine::RecordHandle> &bodies, &fields;
     const ReservedVector<ScaleBinding> &scales;
@@ -69,6 +86,7 @@ class PreparedStudyOwner {
   AssociationView associations(const warm::Uuid &, const ExecutionHandle &) const;
  private:
   friend struct viewport::PreparedOwnerAccess;
+  friend class PreparedOccurrenceWorkspace;
   ActiveReport report_metadata(const warm::Uuid &, const ExecutionHandle &) const;
   PreparedStudyOwner(field::Harness &, const std::shared_ptr<const ActiveAssembly> &,
       ReservedUnique<StructuralAdmissionPlan>, const std::shared_ptr<ReservationDomain> &);
@@ -80,8 +98,9 @@ class PreparedStudyOwner {
   std::shared_ptr<const ActiveAssembly> source_;
   ReservedUnique<StructuralAdmissionPlan> plan_; // Preparing/retry only; no published plan loan.
   ExecutionHandle handle_;
-  // Native handles align with the plan's immutable typed identity/index tables.
-  // Only fixed-size assignments occur after native commit. No keys are copied.
+  // Native handles align with the live association view. The optional workspace
+  // indexes reserved instance metadata; default owners retain original order.
+  // Only prepared assignments/swaps occur after commit; no key allocation.
   ReservedVector<engine::RecordHandle> bodies_, fields_;
   ReservedVector<ScaleBinding> scales_; // Pointer-free reporting metadata.
   // Moved from the private plan after all native claim checks. No key copy or
@@ -89,6 +108,7 @@ class PreparedStudyOwner {
   // replay storage is retired, while standalone plan APIs remain unchanged.
   ReservedVector<AdmissionOccurrenceCommand> occurrences_;
   ReservedVector<AdmissionFieldCommand> field_sources_;
+  ReservedUnique<PreparedOccurrenceWorkspace> edits_;
   std::uint64_t context_{}, generation_{}, initial_ticks_{};
   PreparedOwnerPhase phase_{PreparedOwnerPhase::Prepared};
 };

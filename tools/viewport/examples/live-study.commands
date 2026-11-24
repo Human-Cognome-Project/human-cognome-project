@@ -1,0 +1,9 @@
+# The same session and source definitions remain alive through all commands.
+observe
+tick 1
+add 20 2
+tick 1
+remove 20
+tick 1
+list
+quit

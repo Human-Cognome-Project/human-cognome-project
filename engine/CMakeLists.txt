@@ -65,15 +65,23 @@ target_link_libraries(structural_admission_plan_test PRIVATE structural_admissio
 target_compile_options(structural_admission_plan_test PRIVATE -Wall -Wextra -Werror)
 add_test(NAME structural_admission_plan_test COMMAND structural_admission_plan_test)
 
-add_library(prepared_study_owner STATIC src/assembly/prepared_study_owner.cpp)
+add_library(prepared_study_owner STATIC src/assembly/prepared_study_owner.cpp
+    src/assembly/prepared_occurrence_workspace.cpp)
 target_link_libraries(prepared_study_owner PUBLIC structural_admission_plan)
 target_compile_options(prepared_study_owner PRIVATE -Wall -Wextra -Werror)
 target_link_libraries(active_workbench PUBLIC prepared_study_owner)
 add_executable(prepared_study_owner_test tests/prepared_study_owner_test.cpp)
 target_link_libraries(prepared_study_owner_test PRIVATE prepared_study_owner)
 target_compile_options(prepared_study_owner_test PRIVATE -Wall -Wextra -Werror)
+add_executable(prepared_occurrence_edit_core_test tests/prepared_occurrence_edit_core_test.cpp)
+target_link_libraries(prepared_occurrence_edit_core_test PRIVATE prepared_study_owner)
+target_compile_options(prepared_occurrence_edit_core_test PRIVATE -Wall -Wextra -Werror)
 foreach(workers 1 2)
   foreach(path bulk direct)
+    add_test(NAME prepared_occurrence_edit_core_${workers}_${path}
+      COMMAND prepared_occurrence_edit_core_test ${workers} ${path})
+    set_tests_properties(prepared_occurrence_edit_core_${workers}_${path} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
     add_test(NAME prepared_study_owner_${workers}_${path} COMMAND prepared_study_owner_test ${workers} ${path})
     set_tests_properties(prepared_study_owner_${workers}_${path} PROPERTIES
         ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
@@ -548,6 +556,17 @@ endif()
 option(HCP_WITH_VIEWPORT "Build the optional offline study snapshot exporter" OFF)
 if(HCP_WITH_VIEWPORT)
   add_subdirectory(../tools/viewport/native viewport)
+  add_executable(prepared_occurrence_edit_test tests/prepared_occurrence_edit_test.cpp)
+  target_link_libraries(prepared_occurrence_edit_test PRIVATE viewport_snapshot)
+  target_compile_options(prepared_occurrence_edit_test PRIVATE -Wall -Wextra -Werror)
+  foreach(workers 1 2)
+    foreach(path bulk direct)
+      add_test(NAME prepared_occurrence_edit_${workers}_${path}
+          COMMAND prepared_occurrence_edit_test ${workers} ${path})
+      set_tests_properties(prepared_occurrence_edit_${workers}_${path} PROPERTIES
+          ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+    endforeach()
+  endforeach()
   target_link_libraries(live_hierarchy_test PRIVATE viewport_snapshot)
   target_compile_definitions(live_hierarchy_test PRIVATE HCP_HAS_VIEWPORT=1)
   if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
