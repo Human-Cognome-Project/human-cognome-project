@@ -1,5 +1,11 @@
 # Engine and Analyst-facing refactoring plan
 
+## November 23, 2026 — integrated through #420
+
+Main `fae58e79` integrates #417–#420 after hosted qualification. The prepared layout helper and standalone logical ActiveAssembly target are integrated. The first #417 attempt remains evidence of a leaf/reference mismatch in round 28. Its same-head retry passed. The constructed Q6 boundary witness explains how the calculations can diverge; the original operands are unknown.
+
+The next bounded task is failure-only capture of the tick, leaf, packets and ordered inputs at the existing assertion. Preserve its exact predicate and the production calculation. [Inspection and evidence](../engine/docs/LEAF-REFERENCE-INSPECTION.md)
+
 ## November 23, 2026 — logical caller boundary implemented for review
 
 The [value-only header/target and qualification](../engine/docs/ACTIVE-WORKBENCH.md#logical-header-and-standalone-target--2026-11-23)

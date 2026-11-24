@@ -1,5 +1,11 @@
 # Fixed installed trial hierarchy (C3-1)
 
+**Qualification investigation — 2026-11-23:** the [leaf-reference inspection](LEAF-REFERENCE-INSPECTION.md)
+preserves #417's failed moving assertion and identifies missing failure operands.
+A separate native Q6 boundary witness demonstrates an arithmetic/reference
+comparison discrepancy. It does not diagnose the hosted leaf or change the
+accepted calculation, predicate, publication protocol or tolerance below.
+
 Status: **C3-1 accepted in #195** under
 [#194](../../docs/production-hierarchy-response-plan.md) and the superseding
 [maintainer direction](../../docs/coherent-dynamics-gpu-snapshots.md).
