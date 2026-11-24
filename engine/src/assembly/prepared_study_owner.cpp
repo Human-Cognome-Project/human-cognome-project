@@ -1,4 +1,5 @@
 #include "assembly/prepared_study_owner.h"
+#include "assembly/prepared_occurrence_workspace.h"
 #include "field/cascade_source.h"
 #include <new>
 #include <stdexcept>
@@ -22,7 +23,7 @@ bool empty(const field::Harness &h) {
 PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
     const std::shared_ptr<const ActiveAssembly> &source, const warm::Uuid &session,
     const AdmissionBindings &bindings, const std::shared_ptr<ReservationDomain> &domain,
-    std::uint64_t plan_allowance, std::uint64_t metadata_allowance) {
+    std::uint64_t plan_allowance, std::uint64_t metadata_allowance, bool editable_occurrences) {
   PreparedOwnerResult out;
   PreparationWork work(metadata_allowance);
   try {
@@ -42,6 +43,18 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
       ::new (static_cast<void *>(p)) PreparedStudyOwner(h,source,std::move(prepared.plan),domain);
     });
     owner->reserve_metadata(session,bindings,work);
+    if (editable_occurrences) {
+      const auto &limits=h.prepared_storage().capacity.limits();
+      if (limits[field::Budget::Potential] < limits[field::Budget::Particles]) {
+        out.status=AdmissionPlanStatus::CapacityExhausted;
+        out.failure={field::Budget::Potential,limits[field::Budget::Particles],limits[field::Budget::Potential]};
+        owner.reset();
+        out.metadata_work=work.result(); out.reservation=domain->result(); return out;
+      }
+      owner->edits_ = reserve_unique<PreparedOccurrenceWorkspace>(domain,[&](auto *p) {
+        ::new (static_cast<void *>(p)) PreparedOccurrenceWorkspace(*owner,work);
+      });
+    }
     out.owner = std::move(owner);
     out.status = AdmissionPlanStatus::Ok;
   } catch (const PreparationStop &stop) {
@@ -71,6 +84,8 @@ PreparedStudyOwner::PreparedStudyOwner(field::Harness &h,
       context_(h.prepared_storage().particles.context()), generation_(h.prepared_storage().generation),
       initial_ticks_(h.prepared_storage().completed_ticks) {}
 
+PreparedStudyOwner::~PreparedStudyOwner() = default;
+
 void PreparedStudyOwner::reserve_metadata(const warm::Uuid &session,
     const AdmissionBindings &bindings, PreparationWork &work) {
   work.copy_key(session); work.copy_key(source_->study()); work.copy_key(source_->generation());
@@ -99,7 +114,8 @@ void PreparedStudyOwner::authorize(const warm::Uuid &owner, const ExecutionHandl
 bool PreparedStudyOwner::ready() const {
   if (phase_ != PreparedOwnerPhase::Published || !h_.ready()) return false;
   const auto &s = h_.prepared_storage();
-  if (plan_ || occurrences_.size() != bodies_.size() || field_sources_.size() != fields_.size() ||
+  if (plan_ || (edits_ ? edits_->live_.size() : occurrences_.size()) != bodies_.size() ||
+      field_sources_.size() != fields_.size() ||
       s.generation != generation_ || s.particles.context() != context_ ||
       s.live.particles != bodies_.size() || s.live.fields != fields_.size()) return false;
   const auto current = [](const auto &handles, const auto &headers, std::uint64_t context) {
@@ -142,7 +158,9 @@ PreparedStudyOwner::AssociationRows PreparedStudyOwner::AssociationView::read() 
   if (generation_ != owner_->generation_ || !owner_->ready() ||
       tick_ != owner_->h_.prepared_storage().completed_ticks)
     throw warm::Stale("prepared owner: stale association view");
-  return {*owner_->source_,owner_->occurrences_,owner_->field_sources_,owner_->bodies_,owner_->fields_,
+  return {*owner_->source_,{owner_->edits_ ? owner_->edits_->catalogue_ : owner_->occurrences_,
+                          owner_->edits_ ? &owner_->edits_->live_ : nullptr},
+          owner_->field_sources_,owner_->bodies_,owner_->fields_,
           owner_->scales_,owner_->h_.prepared_storage().source_masses};
 }
 PreparedStudyOwner::AssociationView PreparedStudyOwner::associations(const warm::Uuid &owner,
@@ -156,6 +174,8 @@ ActiveReport PreparedStudyOwner::report_metadata(const warm::Uuid &authorization
   const auto rows = associations(authorization,handle).read();
   ActiveReport report;
   report.handle = handle_;
+  report.prepared_generation = generation_;
+  report.prepared_completed_tick = h_.prepared_storage().completed_ticks;
   report.owner = rows.source.owner();
   report.instance = rows.source.instance();
   report.origins = rows.source.origins();
@@ -170,6 +190,15 @@ ActiveReport PreparedStudyOwner::report_metadata(const warm::Uuid &authorization
   for (std::size_t i=0; i<rows.occurrences.size(); ++i) {
     const auto body = rows.body(i);
     const auto &entry = body.source;
+    if (edits_) {
+      bool origin=false;
+      for (const auto &item : report.origins)
+        if (item.occurrence.study == rows.source.study() && item.occurrence.source == entry.occurrence) {
+          origin=true; break;
+        }
+      if (!origin)
+        report.origins.push_back({{rows.source.study(),entry.occurrence},entry.definition,{}});
+    }
     Occurrence occurrence{InputText(occurrence_text(rows.source.study(),entry.occurrence)),
         InputText(warm::key(entry.definition.object)),body.claim.record,entry.node,{},{}};
     mapping.particles.push_back({std::move(occurrence),body.exact_mass,{},{},0,0});

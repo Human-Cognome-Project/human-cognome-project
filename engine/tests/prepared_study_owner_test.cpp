@@ -138,6 +138,10 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
         "existing combined bootstrap publishes the owner only after commit");
   check(backing.same_backing(metrics.sample()),"bootstrap and map publication reuse prepared native backing/compilation");
   const auto committed_before_stale = state(h);
+  const PreparedOccurrenceEdit disabled{input.bindings.bodies[0].occurrence,false,owner.generation()};
+  check(no_new([&] { return owner.edit(authorization,handle,disabled); }).publication.status ==
+            field::UpdateStatus::Unsupported && committed_before_stale == state(h),
+        "default prepared owner cannot silently enable occurrence editing");
   const auto stale_attempt = no_new([&] {
     return competitor.owner->bootstrap(authorization,handle,UINT64_MAX,UINT64_MAX,UINT64_MAX);
   });
@@ -222,7 +226,8 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
       header = saved;
     }
   }
-  check(&view.read().occurrences == &associations.occurrences,"restored headers retain the same immutable association");
+  check(&view.read().occurrences.catalogue == &associations.occurrences.catalogue,
+        "restored headers retain the same immutable association");
   std::cout << "association_storage,view_bytes=" << sizeof(view)
             << ",loan_bytes=" << sizeof(associations) << ",extra_shared_owners=0,owning_allocations=0\n";
   h.inspect_prepared();
@@ -259,7 +264,8 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
   tick = owner.tick(authorization,handle,invalid);
   check(tick.status == field::TickStatus::InvalidInput && owner.ready() && committed == state(h),
         "invalid tick parameters remain a healthy native refusal");
-  check(&view.read().occurrences == &associations.occurrences,"healthy tick refusals preserve current association view");
+  check(&view.read().occurrences.catalogue == &associations.occurrences.catalogue,
+        "healthy tick refusals preserve current association view");
   tick = no_new([&] { return owner.tick(authorization,handle,p); });
   check(tick.status == field::TickStatus::Ok && tick.completed_ticks == 1 && owner.ready(),"native owner tick after generated bootstrap");
   rejects([&] { view.read(); },"completed quiet tick invalidates an old association stamp");
@@ -274,7 +280,8 @@ void lifecycle(engine::Runtime &runtime, field::HostPath path, bool parts) {
   const auto current = owner.associations(authorization,handle);
   input.source.reset();
   check(!source_lifetime.expired() && current.read().source.study() == handle.study &&
-        &current.read().occurrences == &associations.occurrences,"owner retains immutable pins after caller release and view reacquisition");
+        &current.read().occurrences.catalogue == &associations.occurrences.catalogue,
+        "owner retains immutable pins after caller release and view reacquisition");
   } // All association views/loans end before owner teardown.
   prepared.owner.reset();
   check(source_lifetime.expired() && !d->result().live_bytes && h.ready() && h.present_particles() == 2,

@@ -142,4 +142,18 @@ assembly::PreparedStudySubmission prepared_retained_english_pair_submission(
     std::shared_ptr<const assembly::ActiveAssembly> source, const warm::ToolRef &english, field::HostPath path) {
   return submission(std::move(source),english,path,true);
 }
+assembly::PreparedStudySubmission editable_english_pair_submission(
+    std::shared_ptr<const assembly::ActiveAssembly> source, const warm::ToolRef &english, field::HostPath path) {
+  auto out = prepared_english_pair_submission(std::move(source),english,path);
+  // The live study starts from the English A baseline mass, without the older
+  // demonstration's physical-mass override. Exact source mass is already two.
+  for (auto &body : out.bindings.bodies) body.mass=2.;
+  auto limits = out.capacity.limits();
+  limits[field::Budget::Batch] = 32;
+  limits[field::Budget::ScratchBytes] = field::detail::PreparedStorage::required_scratch(
+      limits,false,out.capacity.profile()) + 256*1024*1024;
+  out.capacity = field::PreparedCapacity(limits,out.capacity.profile());
+  out.editable_occurrences = true;
+  return out;
+}
 }
