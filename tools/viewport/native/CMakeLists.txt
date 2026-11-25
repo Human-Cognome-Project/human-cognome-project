@@ -14,23 +14,25 @@ add_test(NAME semantic_character_rollup_bulk COMMAND semantic_native_trace_test 
 add_test(NAME semantic_character_rollup_direct COMMAND semantic_native_trace_test --case character-rollup --threads 2 --direct)
 add_test(NAME semantic_parent_overlap COMMAND semantic_native_trace_test --case parent-overlap --threads 2 --direct)
 add_test(NAME semantic_scoped_nibble COMMAND semantic_native_trace_test --case scoped-nibble --threads 2 --direct)
-add_test(NAME semantic_scoped_nibble_no_unroll COMMAND semantic_native_trace_test
-  --case scoped-nibble --threads 2 --direct --compiler-no-unroll)
 add_test(NAME semantic_repeated_rollup COMMAND semantic_native_trace_test --case repeated-rollup --threads 2 --direct)
-add_test(NAME semantic_repeated_rollup_no_unroll COMMAND semantic_native_trace_test
-  --case repeated-rollup --threads 2 --direct --compiler-no-unroll)
-add_test(NAME semantic_unicode_exchange_bulk COMMAND semantic_native_trace_test --case unicode-exchange)
-add_test(NAME semantic_unicode_exchange_direct COMMAND semantic_native_trace_test --case unicode-exchange --threads 2 --direct)
+add_test(NAME semantic_varied_rollup_bulk COMMAND semantic_native_trace_test --case varied-rollup)
+add_test(NAME semantic_varied_rollup_direct COMMAND semantic_native_trace_test --case varied-rollup --threads 2 --direct)
 set_tests_properties(semantic_native_projection semantic_native_trace
   semantic_character_rollup_bulk semantic_character_rollup_direct semantic_parent_overlap semantic_scoped_nibble
-  semantic_scoped_nibble_no_unroll
-  semantic_repeated_rollup semantic_repeated_rollup_no_unroll
-  semantic_unicode_exchange_bulk semantic_unicode_exchange_direct PROPERTIES
+  semantic_repeated_rollup semantic_varied_rollup_bulk semantic_varied_rollup_direct PROPERTIES
   ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 add_executable(viewport_live_study live_study.cpp)
 target_include_directories(viewport_live_study PRIVATE ../../../engine/tests)
 target_link_libraries(viewport_live_study PRIVATE viewport_snapshot)
 target_compile_options(viewport_live_study PRIVATE -Wall -Wextra -Werror)
+foreach(path bulk direct)
+  add_test(NAME viewport_unicode_i_${path}
+    COMMAND "${CMAKE_COMMAND}" "-DSTUDY=$<TARGET_FILE:viewport_live_study>" "-DHOST_PATH=${path}"
+      "-DCOMMANDS=${CMAKE_CURRENT_SOURCE_DIR}/../examples/live-unicode.commands"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/check_live_unicode.cmake")
+  set_tests_properties(viewport_unicode_i_${path} PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+endforeach()
 foreach(workers 1 2)
   foreach(path bulk direct)
     set(live_study_args --threads ${workers})
@@ -55,14 +57,6 @@ foreach(workers 1 2)
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
   endforeach()
 endforeach()
-foreach(path bulk direct)
-  add_test(NAME viewport_unicode_i_${path}
-    COMMAND "${CMAKE_COMMAND}" "-DSTUDY=$<TARGET_FILE:viewport_live_study>" "-DHOST_PATH=${path}"
-      "-DCOMMANDS=${CMAKE_CURRENT_SOURCE_DIR}/../examples/live-unicode.commands"
-      -P "${CMAKE_CURRENT_SOURCE_DIR}/check_live_unicode.cmake")
-  set_tests_properties(viewport_unicode_i_${path} PROPERTIES
-    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
-endforeach()
 add_executable(viewport_options_test options_test.cpp)
 target_include_directories(viewport_options_test PRIVATE .)
 target_compile_options(viewport_options_test PRIVATE -Wall -Wextra -Wpedantic)
@@ -72,6 +66,13 @@ target_include_directories(viewport_signal_guard_test PRIVATE .)
 target_link_libraries(viewport_signal_guard_test PRIVATE Threads::Threads)
 target_compile_options(viewport_signal_guard_test PRIVATE -Wall -Wextra -Wpedantic)
 add_test(NAME viewport_signal_guard_test COMMAND viewport_signal_guard_test)
+add_test(NAME semantic_scoped_nibble_no_unroll COMMAND semantic_native_trace_test
+  --case scoped-nibble --threads 2 --direct --compiler-no-unroll)
+add_test(NAME semantic_unicode_exchange_bulk COMMAND semantic_native_trace_test --case unicode-exchange)
+add_test(NAME semantic_unicode_exchange_direct COMMAND semantic_native_trace_test --case unicode-exchange --threads 2 --direct)
+set_tests_properties(semantic_scoped_nibble_no_unroll semantic_unicode_exchange_bulk
+  semantic_unicode_exchange_direct PROPERTIES
+  ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 add_executable(viewport_snapshot_test snapshot_test.cpp)
 target_link_libraries(viewport_snapshot_test PRIVATE viewport_snapshot)
 target_include_directories(viewport_snapshot_test PRIVATE ../../../engine/tests)
@@ -120,3 +121,8 @@ if(HCP_WITH_WARM_INTEGRATION)
   target_link_libraries(viewport_letter_capture PRIVATE viewport_snapshot warm_toolbox Threads::Threads)
   target_compile_options(viewport_letter_capture PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+add_test(NAME semantic_repeated_rollup_no_unroll COMMAND semantic_native_trace_test
+  --case repeated-rollup --threads 2 --direct --compiler-no-unroll)
+set_tests_properties(semantic_repeated_rollup_no_unroll PROPERTIES
+  ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
