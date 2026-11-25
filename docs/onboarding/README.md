@@ -1,5 +1,7 @@
 # Choose your path
 
+For the implemented CPU path, trace a letter recipe from its shared lease through active composition, native publication and completed observation. [Follow the integrated path](INTEGRATED-PATH.md).
+
 HCP onboarding is layered by the reader's purpose. Choose one path; the others remain available when your question or task crosses a boundary. Humans and agents use the same routes.
 
 For an initial picture, think of Minecraft's composition from a relatively small set of building elements. HCP's intended model builds complexity through composition and records stable structures as reusable elements for further use. [Understand HCP](UNDERSTAND.md) connects that picture to definitions, live occurrences and fields.
@@ -12,6 +14,7 @@ For an initial picture, think of Minecraft's composition from a relatively small
 | Understand what HCP is doing | [Understand HCP](UNDERSTAND.md) | You can explain the model and component roles; implementation chronology is optional. |
 | Review a contribution | [Review a contribution](REVIEW.md) | You can compare its claims with the governing contract, diff and source-pinned evidence. |
 | Build or inspect something locally | [First native check](FIRST-RUN.md) | The named smoke check runs, or you have identified the concrete setup blocker. |
+| Watch a study or drive it through an agent | [Operator route](OPERATOR.md) | You can inspect a supplied capture and identify which live operations are available. |
 | Learn how and why the project developed | [Follow the history](HISTORY.md) | You can trace a decision to its context, evidence and accepted successor. |
 | Check what exists today | [Current state](CURRENT-STATE.md) | Built, provisional, held and remaining scope are distinguished. |
 

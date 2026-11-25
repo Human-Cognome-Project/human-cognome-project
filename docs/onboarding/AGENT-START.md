@@ -1,12 +1,14 @@
 # Work on a bounded task
 
+For an engine task, identify the owner and its test before editing. Logical focus and identity have a standalone target. Native admission, ticking and reporting use the session and Harness. [Locate the owner](INTEGRATED-PATH.md).
+
 Use this route to implement or fix a defined slice without loading the project's conceptual history. Read the short root [AGENTS](../../AGENTS.md) and [work discipline](WORK-DISCIPLINE.md); component instructions still apply.
 
 ## 1. Establish the source and avoid duplicate work
 
 Inspect `git status --short`; preserve existing work. Fetch current refs, record the chosen SHA and check submodule revisions. Inspect [open PRs](https://github.com/Human-Cognome-Project/human-cognome-project/pulls), their scope, latest reviews, heads and checks before choosing work. Use current main unless the task explicitly names a contribution or integration branch.
 
-For outstanding work, read the [current continuation task](../core-local-study-continuation-plan.md). Consult [current state](CURRENT-STATE.md) when you need accepted/held boundaries or another component's work. This page deliberately does not duplicate the task queue.
+Start with the latest handoff in the [core continuation plan](../core-local-study-continuation-plan.md). Confirm the assigned slice and any newer decision on the owning issue. Use [current state](CURRENT-STATE.md) for accepted, held and deferred boundaries.
 
 ## 2. Load only the contracts your change touches
 

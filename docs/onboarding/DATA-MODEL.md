@@ -1,5 +1,7 @@
 # data model
 
+Follow the same shared revision through occurrence binding, native handles and copied reports in the [integrated path](INTEGRATED-PATH.md).
+
 Read before changing addressing, structural definitions, linguistic identities, LoD or geometry. Data writes require the owning accepted data contract.
 
 [Choose another path](README.md) · [Bounded work](AGENT-START.md)

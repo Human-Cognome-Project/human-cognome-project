@@ -1,5 +1,7 @@
 # Offline study viewport
 
+For the shortest route to the supplied captures, or the status of live operator controls, see [Examine a study](../../docs/onboarding/OPERATOR.md).
+
 Capture v1 now accepts optional `numerics` metadata. Absent metadata retains
 legacy f32 validation; explicitly tagged `trial_f64` report values preserve
 double precision through native JSON and browser validation, including sub-f32
