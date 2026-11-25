@@ -7,7 +7,7 @@ namespace viewport {
 namespace {
 const warm::Tool &tool(const warm::Bundle &b, const warm::ToolRef &ref) {
   for (const auto &t : b.tools) if (t.ref == ref) return t;
-  throw PreparedLetterProfileError("prepared English pair: missing definition pin");
+  throw PreparedLetterProfileError("prepared letter profile: missing definition pin");
 }
 const warm::Tool &letter(const warm::Bundle &b, const warm::ToolRef &ref, bool retained) {
   for (const auto &t : b.tools)
@@ -195,6 +195,79 @@ assembly::PreparedStudySubmission whole_english_pair_submission(
   out.lod_alternative=PreparedLodAlternative{alternate,binding(alternate,true)};
   out.plan_work=out.metadata_work=10000000;out.placement_work=100000000;out.placement_cells=65536;out.hierarchy_work=1000000;
   return out;
+}
+assembly::PreparedStudySubmission unicode_i_submission(
+    warm::Bundle definitions, const warm::ToolRef &endpoint, warm::Uuid owner,
+    field::HostPath path) {
+  using namespace assembly;
+  using field::Budget;
+  const auto &letter = tool(definitions,endpoint);
+  if (letter.notation != u8"í" || letter.mass != 4 || letter.parents.size() != 1)
+    throw PreparedLetterProfileError("prepared í: one four-count character required");
+  const auto character = letter.parents.front().target;
+  const auto &scalar = tool(definitions,character);
+  if (scalar.mass != 4 || scalar.parents.size() != 2)
+    throw PreparedLetterProfileError("prepared í: two ordered bytes required");
+  std::array<warm::ToolRef,2> bytes{scalar.parents[0].target,scalar.parents[1].target};
+  constexpr std::array<const char *,2> names{"C3","AD"};
+  detail::AdmissionBindings fine;
+  fine.layout={{{nullptr,-1,ScaleRole::Root},1},{{nullptr,0,ScaleRole::PrimaryStep},64}};
+  const auto add=[&](FieldKey key, int level, std::vector<int> children) {
+    const int address=int(fine.fields.size());
+    fine.fields.push_back({key,5,address});
+    fine.comparisons.push_back({std::move(key),std::uint64_t(100+address),level,52,std::move(children)});
+  };
+  for (std::size_t i=0; i<bytes.size(); ++i) {
+    const auto &byte=tool(definitions,bytes[i]);
+    if (byte.notation!=names[i] || byte.mass!=2 || byte.parents.size()!=2)
+      throw PreparedLetterProfileError("prepared í: the pinned construction must be C3 AD");
+    for (const auto &parent:byte.parents)
+      add({GroupKind::ParentValue,parent.target.object},0,{});
+  }
+  for (int i=0; i<int(bytes.size()); ++i)
+    add({GroupKind::SiblingDefinition,bytes[i].object},1,{2*i,2*i+1});
+  const FieldKey focus{GroupKind::ParentValue,character.object};
+  add(focus,2,{4,5});
+  fine.focus={focus};
+
+  constexpr std::uint64_t entry=2;
+  definitions.focal_fields={{warm::FieldKind::SiblingDefinition,bytes.front().object}};
+  auto recipe=normalize_structural_letters(std::move(definitions),
+      {{entry,endpoint,warm::Exposure::Parts}});
+  auto parts=ActiveAssembly::assemble(std::move(recipe),std::move(owner),false)
+      .focus({{focus.kind,InputText(warm::key(focus.object))}});
+  auto alternate=std::make_shared<const ActiveAssembly>(std::move(parts));
+  auto source=std::make_shared<const ActiveAssembly>(alternate->expose_all(warm::Exposure::Aggregate));
+  fine.source={alternate->owner(),alternate->study(),alternate->generation(),alternate->shared_recipe().ref};
+  fine.character_rollup=detail::AdmissionCharacterRollup{{alternate->study(),{entry,{}}},character};
+  for (std::uint32_t i=0; i<bytes.size(); ++i)
+    fine.bodies.push_back({{alternate->study(),{entry,{0,i}}},bytes[i],0,3,int(i)+1,2.,{i+1,1,true}});
+
+  const FieldKey sibling{GroupKind::SiblingDefinition,endpoint.object};
+  detail::AdmissionBindings coarse;
+  coarse.source={source->owner(),source->study(),source->generation(),source->shared_recipe().ref};
+  coarse.layout=fine.layout;
+  coarse.bodies={{{source->study(),{entry,{}}},endpoint,1,3,0,4.,{3,1,true}}};
+  coarse.fields={{sibling,5,int(fine.fields.size())},fine.fields.back()};
+  coarse.comparisons={{sibling,200,0,52,{}},{focus,fine.comparisons.back().comparison,2,52,{0}}};
+  coarse.focus={focus};
+
+  auto limits=capacity(false).limits();
+  limits[Budget::Potential]=limits[Budget::Particles]=3;
+  limits[Budget::Fields]=limits[Budget::CascadeNodes]=8;
+  limits[Budget::Batch]=64;
+  limits[Budget::Participation]=32;
+  limits[Budget::CascadeLinks]=16;
+  limits[Budget::CascadeReferences]=limits[Budget::CascadeCoverage]=64;
+  limits[Budget::LiveResponses]=128;
+  const auto profile=field::NumericalProfile::trial();
+  limits[Budget::ScratchBytes]=field::detail::PreparedStorage::required_scratch(limits,false,profile)
+      +256*1024*1024;
+  PreparedStudySubmission request{source,std::move(coarse),field::PreparedCapacity(limits,profile),
+      std::make_shared<detail::ReservationDomain>(detail::ReservationBudget{16*1024*1024,16*1024*1024})};
+  request.path=path;
+  request.lod_alternative=PreparedLodAlternative{std::move(alternate),std::move(fine)};
+  return request;
 }
 warm::Bundle prepared_retained_english_pair(warm::Bundle b, const warm::ToolRef &english) {
   return recipe(std::move(b),english,true);

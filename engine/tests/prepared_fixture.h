@@ -92,6 +92,9 @@ struct PreparedFixtureAccess {
       h.particle_values_.upload(*h.particle_array_);
     h.runtime_->synchronize();
   }
+  static detail::NativeSet particle_selection(Harness &h) {
+    return h.activity_->particle_activity;
+  }
   template <class T>
   static void stage_new(Harness &h, int command,
                         const std::array<T, kParticleFieldCount> &row) {
