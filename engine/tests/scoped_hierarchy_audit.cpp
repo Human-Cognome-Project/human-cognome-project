@@ -425,7 +425,8 @@ void reject_control(const Module &original, const char *label,
   throw std::runtime_error(std::string("scoped audit accepted ") + label);
 }
 
-void check_c3(const taichi::lang::Kernel &kernel, const Module &module, bool wake) {
+void check_c3(const taichi::lang::Kernel &kernel, const Module &module, bool wake,
+              bool scoped_responses) {
   const int mode = wake ? 1 : 0;
   const auto audit = [&](Module &m) {
     Analyzer a(kernel, m, mode, wake);
@@ -435,7 +436,8 @@ void check_c3(const taichi::lang::Kernel &kernel, const Module &module, bool wak
     Analyzer abi(kernel, m, 5);
     if (wake)
       poll_rows(abi, report, scoped_rows(m, abi, false));
-    return responses(abi, report, wake);
+    return scoped_responses ? responses(abi, report, wake)
+                            : std::vector<const SelectInst *>{};
   };
   auto normalized = CloneModule(module);
   // SLP can pack two axes into a vector select and subtraction. Audit those
@@ -473,7 +475,7 @@ void scoped_audit_no_unroll() {
   llvm::cl::ParseCommandLineOptions(4, options);
 }
 
-void audit_scoped_hierarchy(field::Harness &harness) {
+void audit_scoped_hierarchy(field::Harness &harness, bool scoped_responses) {
   const auto c3 = field::testing::LiveHierarchyAccess::kernels(harness);
   const auto refresh = field::testing::LiveHierarchyAccess::refresh_kernels(harness);
   if (const auto *directory = std::getenv("HCP_SCOPED_IR_DIR")) {
@@ -488,10 +490,11 @@ void audit_scoped_hierarchy(field::Harness &harness) {
       engine::testing::CompiledKernelAccess::module(*kernels[i]).print(file, nullptr);
     }
   }
-  check_c3(engine::testing::CompiledKernelAccess::kernel(*c3[0]),
-           engine::testing::CompiledKernelAccess::module(*c3[0]), false);
+  if (scoped_responses)
+    check_c3(engine::testing::CompiledKernelAccess::kernel(*c3[0]),
+             engine::testing::CompiledKernelAccess::module(*c3[0]), false, true);
   check_c3(engine::testing::CompiledKernelAccess::kernel(*c3[1]),
-           engine::testing::CompiledKernelAccess::module(*c3[1]), true);
+           engine::testing::CompiledKernelAccess::module(*c3[1]), true, scoped_responses);
   check_seed(engine::testing::CompiledKernelAccess::kernel(*refresh[0]),
              engine::testing::CompiledKernelAccess::module(*refresh[0]));
 }
