@@ -10,8 +10,10 @@
 #include "llvm/Support/FileSystem.h"
 #include "llvm/IR/InstIterator.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Analysis/LoopInfo.h"
+#include "llvm/Transforms/Scalar/Scalarizer.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 
 namespace engine::testing {
@@ -436,12 +438,18 @@ void check_c3(const taichi::lang::Kernel &kernel, const Module &module, bool wak
     return responses(abi, report, wake);
   };
   auto normalized = CloneModule(module);
+  // SLP can pack two axes into a vector select and subtraction. Audit those
+  // lanes with the same operand checks as the scalar axis. The pass acts only
+  // on this diagnostic copy. The Program's retained IR is captured separately.
+  llvm::legacy::PassManager lanes;
+  lanes.add(llvm::createScalarizerPass());
+  lanes.run(*normalized);
   const auto paths = audit(*normalized);
   need(!verifyModule(*normalized, &errs()), "invalid scoped audit normalization");
   std::cerr << "scoped_compiler_audit," << (wake ? "poll" : "force")
             << ",response_paths=" << paths.size() << " PASS\n";
   if (wake) {
-    reject_control(module, "shift-scoped-source", "scoped child must decode its own source row and exact ratio",
+    reject_control(*normalized, "shift-scoped-source", "scoped child must decode its own source row and exact ratio",
         [&](Module &m) { audit(m); }, [&](Module &m) {
           Analyzer a(kernel, m, 5);
           auto *body = const_cast<LoadInst *>(scoped_rows(m, a, false).front().body);
@@ -450,7 +458,7 @@ void check_c3(const taichi::lang::Kernel &kernel, const Module &module, bool wak
                                           b.getInt64(1)));
         });
   } else {
-    reject_control(module, "omit-scoped-response", "missing scoped force or paired wake response",
+    reject_control(*normalized, "omit-scoped-response", "missing scoped force or paired wake response",
         [&](Module &m) { audit(m); }, [&](Module &m) {
           auto *x = const_cast<SelectInst *>(audit(m).front());
           x->setTrueValue(x->getFalseValue());
