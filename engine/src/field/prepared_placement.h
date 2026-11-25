@@ -26,6 +26,11 @@ struct PlacementIntrinsic {
   double mass{}, radius{};
   PlacementGeometry geometry;
 };
+// Contiguous partitions of outgoing handles and incoming canonical ranks.
+// Each group is one logical occurrence with its own native state reduction.
+struct PlacementExchangeGroup {
+  std::size_t outgoing_begin{}, outgoing_count{}, incoming_begin{}, incoming_count{};
+};
 struct PlacementCertificate {
   PlacementIntrinsic intrinsic;
   std::array<double, 3> position{};

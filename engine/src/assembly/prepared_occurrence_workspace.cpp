@@ -308,6 +308,7 @@ PreparedOccurrenceEditResult PreparedStudyOwner::edit(const warm::Uuid &authoriz
   PreparedOccurrenceEditResult out;
   out.publication.generation=h_.prepared_storage().generation;
   if (!ready()) { out.publication.status=field::UpdateStatus::Unready; return out; }
+  if(lod_)return edit_lod_presence(request);
   if (!edits_) { out.publication.status=field::UpdateStatus::Unsupported; return out; }
   PreparationWork work(request.preparation_work);
   try { out.publication=edits_->prepare(*this,request,work); }

@@ -1,0 +1,10 @@
+# Expected exit 1: final population fits but old + incoming claims exceed four.
+tick
+lod parts
+add 20 2
+lod aggregate
+tick
+remove 20
+lod aggregate
+tick
+quit

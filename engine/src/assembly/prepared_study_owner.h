@@ -3,9 +3,11 @@
 #include "assembly/prepared_occurrence_edit.h"
 
 namespace viewport { struct PreparedOwnerAccess; }
+namespace assembly { struct PreparedLodAlternative; }
 namespace assembly::detail {
 struct PreparedOwnerResult;
 class PreparedOccurrenceWorkspace;
+class PreparedLodWorkspace;
 enum class PreparedOwnerPhase { Prepared, Published, Failed };
 
 // Private, exclusive logical owner on one borrowed prepared Harness. Runtime
@@ -13,14 +15,15 @@ enum class PreparedOwnerPhase { Prepared, Published, Failed };
 // Preparation pins an immutable source and reserves all publication metadata.
 // Bootstrap uses native generated placement/commit; this is not a second engine
 // and does not change legacy execution. Opt-in edits reuse declared templates;
-// definition/exposure replacement and general live revision remain separate.
+// An explicitly supplied alternate reserves the first whole-field English
+// aggregate/byte exposure subset. General definition/live revision is separate.
 class PreparedStudyOwner {
  public:
   static PreparedOwnerResult prepare(field::Harness &,
       const std::shared_ptr<const ActiveAssembly> &, const warm::Uuid &session,
       const AdmissionBindings &, const std::shared_ptr<ReservationDomain> &,
       std::uint64_t plan_work, std::uint64_t metadata_work,
-      bool editable_occurrences = false);
+      bool editable_occurrences = false, const PreparedLodAlternative * = nullptr);
   ~PreparedStudyOwner();
   PreparedStudyOwner(const PreparedStudyOwner &) = delete;
   PreparedStudyOwner &operator=(const PreparedStudyOwner &) = delete;
@@ -35,6 +38,7 @@ class PreparedStudyOwner {
       std::uint64_t geometry_work = UINT64_MAX);
   PreparedOccurrenceEditResult edit(const warm::Uuid &, const ExecutionHandle &,
       const PreparedOccurrenceEdit &);
+  PreparedOccurrenceEditResult lod(const warm::Uuid &, const ExecutionHandle &, const PreparedLodEdit &);
   // Detached completed physical values; source/claim metadata has one builder
   // shared with the viewport observer. No comparison policy is selected here.
   ActiveReport report(const warm::Uuid &, const ExecutionHandle &);
@@ -87,6 +91,7 @@ class PreparedStudyOwner {
  private:
   friend struct viewport::PreparedOwnerAccess;
   friend class PreparedOccurrenceWorkspace;
+  friend class PreparedLodWorkspace;
   ActiveReport report_metadata(const warm::Uuid &, const ExecutionHandle &) const;
   PreparedStudyOwner(field::Harness &, const std::shared_ptr<const ActiveAssembly> &,
       ReservedUnique<StructuralAdmissionPlan>, const std::shared_ptr<ReservationDomain> &);
@@ -109,6 +114,10 @@ class PreparedStudyOwner {
   ReservedVector<AdmissionOccurrenceCommand> occurrences_;
   ReservedVector<AdmissionFieldCommand> field_sources_;
   ReservedUnique<PreparedOccurrenceWorkspace> edits_;
+  ReservedUnique<PreparedLodWorkspace> lod_;
+  PreparedOccurrenceEditResult edit_lod_presence(const PreparedOccurrenceEdit &);
+  PreparedOccurrenceEditResult commit_lod(PreparedOccurrenceEditResult, std::uint64_t,
+      std::uint64_t, std::uint64_t);
   std::uint64_t context_{}, generation_{}, initial_ticks_{};
   PreparedOwnerPhase phase_{PreparedOwnerPhase::Prepared};
 };

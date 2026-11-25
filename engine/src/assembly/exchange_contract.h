@@ -3,7 +3,7 @@
 #include "assembly/letter_projection.h"
 
 namespace assembly {
-namespace detail { class ExchangeOwner; class ExchangeBindings; class ExchangeCoordinator; }
+namespace detail { class ExchangeOwner; class ExchangeBindings; class ExchangeCoordinator; class PreparedLodWorkspace; }
 namespace testing { struct ExchangeContractAccess; }
 // Structural source descriptors only. No positions, velocities or native slots.
 struct ExchangeSource {
@@ -51,6 +51,7 @@ class LetterExchangeContract {
 
  private:
   friend class detail::ExchangeOwner;
+  friend class detail::PreparedLodWorkspace;
   friend class detail::ExchangeBindings;
   friend class detail::ExchangeCoordinator;
   friend struct testing::ExchangeOwnerAccess;

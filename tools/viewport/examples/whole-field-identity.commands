@@ -1,0 +1,13 @@
+# The #427 declared-destination correction also applies at the fine exposure.
+tick
+lod parts
+remove 2
+add 20 10
+add 2 10
+add 2 2
+add 2
+remove 20
+lod aggregate
+tick
+list
+quit

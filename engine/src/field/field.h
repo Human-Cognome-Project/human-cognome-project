@@ -467,7 +467,9 @@ class Harness {
                                         const UpdateRef *focus = nullptr,
                                         std::size_t focus_count = 0,
                                         const engine::RecordHandle *outgoing = nullptr,
-                                        std::size_t outgoing_count = 0);
+                                        std::size_t outgoing_count = 0,
+                                        const PlacementExchangeGroup *exchange_groups = nullptr,
+                                        std::size_t exchange_group_count = 0);
   UpdateResult update_prepared_impl(std::uint64_t,
                                     const UpdateCommand *,
                                     std::size_t,

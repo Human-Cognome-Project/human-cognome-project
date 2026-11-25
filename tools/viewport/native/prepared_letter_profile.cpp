@@ -1,6 +1,7 @@
 #include "prepared_letter_profile.h"
 #include "field/prepared_storage.h"
 #include <array>
+#include <algorithm>
 
 namespace viewport {
 namespace {
@@ -130,6 +131,70 @@ assembly::PreparedStudySubmission submission(
 }
 warm::Bundle prepared_english_pair(warm::Bundle b, const warm::ToolRef &english) {
   return recipe(std::move(b),english,false);
+}
+warm::Bundle whole_english_pair(warm::Bundle b,const warm::ToolRef &english,const warm::ToolRef &focus) {
+  const auto &a=tool(b,english);const auto &group=tool(b,focus);
+  if(!a.mass || *a.mass!=2 || a.parents.size()!=1 || a.parents[0].contribution!=2 ||
+      !a.notation || *a.notation!="A" || group.mass!=0 || !group.parents.empty() ||
+      std::find(a.member_of.begin(),a.member_of.end(),focus)==a.member_of.end())
+    throw PreparedLetterProfileError("whole English pair: declared one-byte composition and inherited focus required");
+  for(auto it=b.geometry.begin();it!=b.geometry.end();) {
+    if(it->object==english.object)it=b.geometry.erase(it);else ++it;
+  }
+  b.geometry.push_back({english.object,{},{{{},0.125}}});
+  b.focal_fields={{warm::FieldKind::Membership,focus.object}};
+  // Both native roles are declared up front; the actor view below selects the
+  // initial uniform exposure without changing this immutable recipe.
+  return assembly::normalize_structural_letters(std::move(b),
+      {{2,english,warm::Exposure::Aggregate},{10,english,warm::Exposure::Parts}});
+}
+assembly::PreparedStudySubmission whole_english_pair_submission(
+    std::shared_ptr<const assembly::ActiveAssembly> source,const warm::ToolRef &english,
+    const warm::ToolRef &focus,field::HostPath path) {
+  using namespace assembly;
+  if(!source || source->local() || source->exposure(2)!=warm::Exposure::Aggregate ||
+      source->exposure(10)!=warm::Exposure::Aggregate)
+    throw PreparedLetterProfileError("whole English pair: uniform initial aggregate view required");
+  const auto &a=tool(source->shared_recipe(),english);
+  if(!a.mass || *a.mass!=2 || a.parents.size()!=1)throw PreparedLetterProfileError("whole English pair: one-byte template required");
+  const auto &byte=tool(source->shared_recipe(),a.parents[0].target);
+  if(byte.parents.size()!=2)throw PreparedLetterProfileError("whole English pair: ordered nibble parents required");
+  auto limits=capacity(false).limits();
+  limits[field::Budget::Fields]=6;limits[field::Budget::Batch]=64;
+  limits[field::Budget::Participation]=32;limits[field::Budget::Contacts]=6;
+  limits[field::Budget::CascadeReferences]=limits[field::Budget::CascadeCoverage]=64;
+  limits[field::Budget::ScratchBytes]=field::detail::PreparedStorage::required_scratch(limits,false,field::NumericalProfile::trial())+256*1024*1024;
+  PreparedStudySubmission out{source,{},field::PreparedCapacity(limits,field::NumericalProfile::trial()),
+      std::make_shared<detail::ReservationDomain>(detail::ReservationBudget{16*1024*1024,16*1024*1024})};
+  out.path=path;out.editable_occurrences=true;
+  const auto binding=[&](const std::shared_ptr<const ActiveAssembly> &view,bool parts) {
+    detail::AdmissionBindings b;
+    b.source={view->owner(),view->study(),view->generation(),view->shared_recipe().ref};
+    b.layout={{{nullptr,-1,ScaleRole::Root},1},{{nullptr,0,ScaleRole::PrimaryStep},64}};
+    for(const auto entry:{std::uint64_t(2),std::uint64_t(10)}) {
+      warm::OccurrenceId id{entry,{}};if(parts)id.path={0,0};
+      b.bodies.push_back({{view->study(),std::move(id)},parts?byte.ref:english,parts?0:1,3,
+          (parts?80:40)+int(b.bodies.size()),2.,{parts?2u:1u,1,true}});
+    }
+    const FieldKey member{GroupKind::Membership,focus.object};
+    if(parts) {
+      const FieldKey hi{GroupKind::ParentValue,byte.parents[0].target.object},
+                     lo{GroupKind::ParentValue,byte.parents[1].target.object},
+                     sibling{GroupKind::SiblingDefinition,byte.ref.object};
+      b.fields={{hi,5,3},{lo,5,4},{sibling,5,5},{member,5,2}};
+      b.comparisons={{hi,110,0,52,{}},{lo,111,0,52,{}},{sibling,112,1,52,{0,1}},{member,102,2,52,{2}}};
+    } else {
+      const FieldKey sibling{GroupKind::SiblingDefinition,english.object},parent{GroupKind::ParentValue,byte.ref.object};
+      b.fields={{sibling,5,0},{parent,5,1},{member,5,2}};
+      b.comparisons={{sibling,100,0,52,{}},{parent,101,1,52,{0}},{member,102,2,52,{1}}};
+    }
+    b.focus={member};return b;
+  };
+  out.bindings=binding(source,false);
+  auto alternate=std::make_shared<const ActiveAssembly>(source->expose_all(warm::Exposure::Parts));
+  out.lod_alternative=PreparedLodAlternative{alternate,binding(alternate,true)};
+  out.plan_work=out.metadata_work=10000000;out.placement_work=100000000;out.placement_cells=65536;out.hierarchy_work=1000000;
+  return out;
 }
 warm::Bundle prepared_retained_english_pair(warm::Bundle b, const warm::ToolRef &english) {
   return recipe(std::move(b),english,true);

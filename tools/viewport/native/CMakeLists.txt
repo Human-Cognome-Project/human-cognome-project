@@ -16,6 +16,10 @@ foreach(workers 1 2)
       COMMAND viewport_live_study ${live_study_args} --commands ${CMAKE_CURRENT_SOURCE_DIR}/../examples/live-study.commands)
     set_tests_properties(viewport_live_study_${workers}_${path} PROPERTIES
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+    add_test(NAME viewport_whole_field_${workers}_${path}
+      COMMAND viewport_live_study ${live_study_args} --whole-field --commands ${CMAKE_CURRENT_SOURCE_DIR}/../examples/whole-field-study.commands)
+    set_tests_properties(viewport_whole_field_${workers}_${path} PROPERTIES
+      ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
   endforeach()
 endforeach()
 add_executable(viewport_options_test options_test.cpp)

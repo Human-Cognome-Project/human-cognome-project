@@ -20,14 +20,18 @@ The [leaf-reference investigation](docs/LEAF-REFERENCE-INSPECTION.md) records th
 The [live editable CPU study](docs/LIVE-EDITABLE-STUDY.md) adds an operator CLI
 through the prepared session/owner: add a declared-template occurrence, tick,
 remove it and tick the same study. Commands, a captured run, identity/survivor
-controls and scoped local qualification are included for review. Whole-field LoD
-exchange follows separately.
+controls and scoped local qualification are included for review. The first
+[whole-field LoD subset](docs/WHOLE-FIELD-LOD.md) now switches all live English A
+occurrences between aggregate and byte exposure in one native generation, using
+each occurrence's own outgoing state and an inherited membership focus.
 
 The [native claim-overlap observation](docs/EXCHANGE-CLAIM-OBSERVATION.md)
 records actual particle/field occupancy before claims, before retirement and
 after retirement. Real expansion/compression and peak-refusal controls support
 the whole-field LoD preparation review in #428. The operator exposes the same
-observation for ordinary edits; whole-field LoD remains the next integration.
+observation for ordinary edits and the explicit whole-field profile. The bounded
+operator and its source-pinned captured evidence are submitted separately for
+review and authoritative CI.
 
 ## Layout
 

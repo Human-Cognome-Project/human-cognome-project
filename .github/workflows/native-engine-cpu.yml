@@ -205,7 +205,7 @@ jobs:
   native-regression:
     needs: native-build
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
