@@ -70,3 +70,59 @@ downloading retained fixtures. The job stopped before database acceptance
 ran. Retry that job when LFS can serve the fixtures. The audit follow-up
 requires its own hosted CI and parent-first integration.
 [Parent hosted database log](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45649473132/job/139334147579)
+
+## Hosted default audit correction
+
+GitHub's default `semantic_repeated_rollup` at #439 head `a8e0d8d0`
+failed before the force audit reported a completed path. Its tested merge
+was `4c74fcff561691d6291aa6df06baa8b7c9ca7784`. The no-unroll regression
+and four ordinary compiler jobs passed.
+[Default failure](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45657234407/job/139361937031) ·
+[No-unroll result](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45657234407/job/139361937055) ·
+[Maintainer finding](https://github.com/Human-Cognome-Project/human-cognome-project/pull/439#issuecomment-7169839218)
+
+The same run's retained compiler artifact reports the `znver3` LLVM CPU
+target. The local Alder Lake fixture passed with scalar XYZ operations.
+A diagnostic executable requested `znver3` target analysis at the optimizer
+call while executing on the local x64 host. The old checker failed on both
+of those compiled force modules. This reproduces the hosted assertion at the force response matcher.
+
+In the retained `znver3` force LLVM, the scalar kind-2 comparison and
+eligibility gate are valid. Y is computed by a scalar subtraction. LLVM's
+SLP pass puts the owning branch's X and Z words and the recipient's X and Z
+positions into two lanes, subtracts the two vectors and selects the result
+with the splatted kind-2 predicate. The old scan starts at a scalar X
+subtraction and misses those two lanes. The corresponding Alder Lake
+no-unroll module exposes three scalar selections. Loop unrolling and SLP
+can vary independently. The local `znver3` no-unroll force also uses the
+two-lane form.
+
+The checker now scalarizes vector operations on its diagnostic LLVM copy,
+then traces the same per-axis parent word, recipient position, eligibility,
+branch mass and exact weight. The cloned LLVM passes verification. The
+wrong-source and omitted-displacement controls both reject, including on
+the normalized vector form. The Program's retained force, poll and seed
+modules are written before the assertions when capture is enabled. Hosted
+CI archives both compiler settings on the same two-worker direct runner.
+
+The capture-only head `55e05253` was queued when the local evidence was
+packaged. Its run will preserve the raw hosted default and no-unroll IR.
+The comparison above uses the retained local modules and the hosted log
+records for the original results.
+[Capture run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45670640893)
+
+The lane-aware source is local `beeb8bdb29fc292431e1d4c52490cb30b921c182`
+and GitHub `e5b64b78ab2a2c3090780933982925afdb4b6a21` with tree
+`5b2781cf85c9a2d4ed3aa8c92b41ecb71f12aee5`. Four scoped native runs pass
+291 assertions each and reject both controls. They use default and no-unroll
+on the actual local CPU and the diagnostic `znver3` optimizer config.
+The ordinary packet and refresh-transport profiles pass under both compiler
+settings. The shared audit entry point also passes both registered repeated
+rollup CTests at local `ef1a6360` and GitHub `fb131b35` with the identical
+tree `265fa1fdef55b23cf162a555bc263695d062d10c`. Clang/LLVM is 15.0.7
+and the fork and bitcode pins are listed in the previous section.
+
+The machine-local archive `/tmp/hcp-439-lane-audit-evidence.tar.gz` has SHA256
+`21d4a841cffe087f188a7898490e39c025b3668fa8b75d81b4cec3fd07c8517c`. It includes exact source and binary pins, original and
+corrected LLVM, both sets of assertions, the explicit optimizer-target
+override and the hosted evidence available at submission.

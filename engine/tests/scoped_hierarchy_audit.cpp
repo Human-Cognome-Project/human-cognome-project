@@ -10,8 +10,10 @@
 #include "llvm/Support/FileSystem.h"
 #include "llvm/IR/InstIterator.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Analysis/LoopInfo.h"
+#include "llvm/Transforms/Scalar/Scalarizer.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 
 namespace engine::testing {
@@ -399,8 +401,8 @@ std::vector<const SelectInst *> responses(Analyzer &a,
       count |= 1 << next;
       paths.push_back(x);
     }
-    need(eligibility && count == (wake ? 3 : 1),
-         "missing scoped force or paired wake response");
+    need(eligibility, "missing scoped response eligibility");
+    need(count == (wake ? 3 : 1), "missing scoped force or paired wake response");
   }
   need(!paths.empty(), "missing scoped response operands");
   return paths;
@@ -438,12 +440,18 @@ void check_c3(const taichi::lang::Kernel &kernel, const Module &module, bool wak
                             : std::vector<const SelectInst *>{};
   };
   auto normalized = CloneModule(module);
+  // SLP can pack two axes into a vector select and subtraction. Audit those
+  // lanes with the same operand checks as the scalar axis. The pass acts only
+  // on this diagnostic copy. The Program's retained IR is captured separately.
+  llvm::legacy::PassManager lanes;
+  lanes.add(llvm::createScalarizerPass());
+  lanes.run(*normalized);
   const auto paths = audit(*normalized);
   need(!verifyModule(*normalized, &errs()), "invalid scoped audit normalization");
   std::cerr << "scoped_compiler_audit," << (wake ? "poll" : "force")
             << ",response_paths=" << paths.size() << " PASS\n";
   if (wake) {
-    reject_control(module, "shift-scoped-source", "scoped child must decode its own source row and exact ratio",
+    reject_control(*normalized, "shift-scoped-source", "scoped child must decode its own source row and exact ratio",
         [&](Module &m) { audit(m); }, [&](Module &m) {
           Analyzer a(kernel, m, 5);
           auto *body = const_cast<LoadInst *>(scoped_rows(m, a, false).front().body);
@@ -452,7 +460,7 @@ void check_c3(const taichi::lang::Kernel &kernel, const Module &module, bool wak
                                           b.getInt64(1)));
         });
   } else {
-    reject_control(module, "omit-scoped-response", "missing scoped force or paired wake response",
+    reject_control(*normalized, "omit-scoped-response", "missing scoped force or paired wake response",
         [&](Module &m) { audit(m); }, [&](Module &m) {
           auto *x = const_cast<SelectInst *>(audit(m).front());
           x->setTrueValue(x->getFalseValue());
@@ -470,7 +478,18 @@ void scoped_audit_no_unroll() {
 void audit_scoped_hierarchy(field::Harness &harness, bool scoped_responses) {
   const auto c3 = field::testing::LiveHierarchyAccess::kernels(harness);
   const auto refresh = field::testing::LiveHierarchyAccess::refresh_kernels(harness);
-  const auto *directory = std::getenv("HCP_SCOPED_IR_DIR");
+  if (const auto *directory = std::getenv("HCP_SCOPED_IR_DIR")) {
+    const std::array kernels{c3[0], c3[1], refresh[0]};
+    const std::array names{"force", "poll", "seed"};
+    for (std::size_t i = 0; i < kernels.size(); ++i) {
+      std::error_code error;
+      llvm::raw_fd_ostream file(std::string(directory) + "/" + names[i] + ".ll",
+                                error, llvm::sys::fs::OF_Text);
+      if (error)
+        throw std::runtime_error("cannot retain scoped IR");
+      engine::testing::CompiledKernelAccess::module(*kernels[i]).print(file, nullptr);
+    }
+  }
   if (scoped_responses)
     check_c3(engine::testing::CompiledKernelAccess::kernel(*c3[0]),
              engine::testing::CompiledKernelAccess::module(*c3[0]), false, true);
@@ -478,15 +497,4 @@ void audit_scoped_hierarchy(field::Harness &harness, bool scoped_responses) {
            engine::testing::CompiledKernelAccess::module(*c3[1]), true, scoped_responses);
   check_seed(engine::testing::CompiledKernelAccess::kernel(*refresh[0]),
              engine::testing::CompiledKernelAccess::module(*refresh[0]));
-  if (!directory) return;
-  const std::array kernels{c3[0], c3[1], refresh[0]};
-  const std::array names{"force", "poll", "seed"};
-  for (std::size_t i = 0; i < kernels.size(); ++i) {
-    std::error_code error;
-    llvm::raw_fd_ostream file(std::string(directory) + "/" + names[i] + ".ll",
-                              error, llvm::sys::fs::OF_Text);
-    if (error)
-      throw std::runtime_error("cannot retain scoped IR");
-    engine::testing::CompiledKernelAccess::module(*kernels[i]).print(file, nullptr);
-  }
 }
