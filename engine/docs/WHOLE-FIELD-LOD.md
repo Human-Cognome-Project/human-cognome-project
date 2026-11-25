@@ -1,5 +1,25 @@
 # Whole-field LoD in the live CPU study
 
+## Hosted placement ID-budget correction — integration hold
+
+The earlier preparation-probe hold is resolved under [review 7145505449](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7145505449).
+Subsequent [review 7147550376](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7147550376)
+holds integration after all four compiler jobs failed at SNode ID 2048; cancelled
+regression shard 4 also contains three failures at that limit. The
+[investigation and correction](PLACEMENT-QUALIFICATION-ID-BUDGET.md) identifies
+the runner's explicit startup metadata reservation. Three complete local
+placement invocations at code `49997818` pass 75 named cases and agree on
+2,094 cumulative IDs (highest 2,093), including the 90 IDs added by grouped
+exchange fixtures. The placement-only reservation is now 4,096 and the runner
+emits bounded per-case accounting. Regression jobs receive 180 minutes to finish
+their unchanged serial inventory; per-test and compiler-job limits remain.
+Production defaults, native tree lifetime and model allocation policy are unchanged.
+
+This correction requires fresh authoritative hosted CI and maintainer re-review.
+The historical failure remains failed; no merge or acceptance is inferred from
+local qualification. The following preparation-budget evidence retains its
+original source and scope.
+
 ## Preparation-budget correction — awaiting re-review
 
 [Maintainer review 7144539532](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7144539532)
