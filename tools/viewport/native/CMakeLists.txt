@@ -21,9 +21,12 @@ set_tests_properties(semantic_native_projection semantic_native_trace
   semantic_character_rollup_bulk semantic_character_rollup_direct semantic_parent_overlap semantic_scoped_nibble
   semantic_repeated_rollup semantic_varied_rollup_bulk semantic_varied_rollup_direct PROPERTIES
   ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
+add_library(viewport_live_study_commands STATIC live_study_runner.cpp)
+target_link_libraries(viewport_live_study_commands PUBLIC viewport_snapshot)
+target_compile_options(viewport_live_study_commands PRIVATE -Wall -Wextra -Werror)
 add_executable(viewport_live_study live_study.cpp)
 target_include_directories(viewport_live_study PRIVATE ../../../engine/tests)
-target_link_libraries(viewport_live_study PRIVATE viewport_snapshot)
+target_link_libraries(viewport_live_study PRIVATE viewport_live_study_commands)
 target_compile_options(viewport_live_study PRIVATE -Wall -Wextra -Werror)
 foreach(path bulk direct)
   add_test(NAME viewport_unicode_i_${path}
@@ -117,9 +120,13 @@ if(HCP_WITH_WARM_INTEGRATION)
   add_executable(viewport_retained_capture_check retained_capture_check.cpp)
   target_include_directories(viewport_retained_capture_check PRIVATE ../vendor)
   target_compile_options(viewport_retained_capture_check PRIVATE -Wall -Wextra -Werror)
-  add_executable(viewport_letter_capture letter_capture.cpp)
-  target_link_libraries(viewport_letter_capture PRIVATE viewport_snapshot warm_toolbox Threads::Threads)
-  target_compile_options(viewport_letter_capture PRIVATE -Wall -Wextra -Wpedantic)
+  add_library(viewport_retained_letter_driver STATIC letter_capture.cpp)
+  target_link_libraries(viewport_retained_letter_driver PRIVATE viewport_live_study_commands warm_toolbox Threads::Threads)
+  target_compile_options(viewport_retained_letter_driver PRIVATE -Wall -Wextra -Wpedantic)
+  add_executable(viewport_letter_capture letter_capture_main.cpp)
+  target_link_libraries(viewport_letter_capture PRIVATE viewport_retained_letter_driver)
+  target_link_libraries(viewport_live_study PRIVATE viewport_retained_letter_driver)
+  target_compile_definitions(viewport_live_study PRIVATE HCP_HAS_RETAINED_LIVE_STUDY=1)
 endif()
 
 add_test(NAME semantic_repeated_rollup_no_unroll COMMAND semantic_native_trace_test

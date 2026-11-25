@@ -77,7 +77,7 @@ std::vector<Binding> ordered(std::vector<Binding> bindings) {
 Administrator::Administrator(const std::string &s)
     : pg_(std::make_unique<Pg>(s)) {}
 Administrator::~Administrator() = default;
-void Administrator::configure(std::vector<Binding> directory) {
+void Administrator::configure(std::vector<Binding> directory, Setup setup) {
   validate_directory(directory);
   directory = ordered(std::move(directory));
   Transaction tx(*pg_);
@@ -88,6 +88,14 @@ void Administrator::configure(std::vector<Binding> directory) {
   auto old = pg_->query(
       "SELECT " + binding_columns +
       " FROM warm_toolbox.root_binding ORDER BY scope,prefix FOR UPDATE");
+  if (setup == Setup::Fresh) {
+    need(PQntuples(old.get()) == 0, "fresh dedicated warm store required");
+    auto empty = pg_->query(
+        "SELECT NOT EXISTS (SELECT FROM warm_toolbox.tool_revision) AND "
+        "NOT EXISTS (SELECT FROM warm_toolbox.bundle_revision) AND "
+        "NOT EXISTS (SELECT FROM warm_toolbox.bundle_lease)");
+    need(cell(empty, 0, 0) == "t", "fresh dedicated warm store required");
+  }
   for (int i = 0; i < PQntuples(old.get()); ++i) {
     const auto previous = binding(old, i);
     auto next = std::find_if(
