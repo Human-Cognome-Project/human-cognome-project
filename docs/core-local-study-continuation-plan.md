@@ -1,5 +1,19 @@
 # Core continuation after local CUDA corrections
 
+## November 25, 2026 — scoped nibble experiment
+
+The residual witness in #436 is provisionally accepted at `e5744bc0`.
+The maintainer selected `ó` as the first branch coverage experiment.
+[Maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/436#issuecomment-7164713155) · [#432 direction](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7164713699)
+
+The submitted CPU experiment uses the same global nibble field and ledger
+for C3 and B3, with each byte branch selecting its own exact count-1 row.
+The field publishes mass 2, the byte branches mass 2 each and the root mass 4.
+Local publication, tick, refusal and disjoint controls pass. Hosted checks
+and maintainer review gate integration on the #436 stack. The next #432
+slice applies the row rule to the repeated-parent endpoint and its complete
+rollup. [Experiment and evidence](../engine/docs/SCOPED-NIBBLE-ROLLUP.md)
+
 ## November 25, 2026 — single-character acceptance and repeated-parent evidence
 
 The maintainer provisionally accepted #435 at `16e4ffb4` for fixed-study `í`
