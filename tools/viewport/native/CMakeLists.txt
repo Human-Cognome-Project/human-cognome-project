@@ -2,7 +2,9 @@ add_library(viewport_snapshot STATIC snapshot.cpp completed_state.cpp prepared_o
 target_link_libraries(viewport_snapshot PUBLIC active_workbench prepared_study_owner)
 target_include_directories(viewport_snapshot PUBLIC . ../vendor)
 target_compile_options(viewport_snapshot PRIVATE -Wall -Wextra -Wpedantic)
-add_executable(semantic_native_trace_test ../../../engine/tests/semantic_native_trace_test.cpp)
+add_executable(semantic_native_trace_test
+  ../../../engine/tests/semantic_native_trace_test.cpp
+  ../../../engine/tests/scoped_hierarchy_audit.cpp)
 target_include_directories(semantic_native_trace_test PRIVATE ../../../engine/tests)
 target_link_libraries(semantic_native_trace_test PRIVATE viewport_snapshot)
 target_compile_options(semantic_native_trace_test PRIVATE -Wall -Wextra -Werror)
@@ -13,9 +15,11 @@ add_test(NAME semantic_character_rollup_direct COMMAND semantic_native_trace_tes
 add_test(NAME semantic_parent_overlap COMMAND semantic_native_trace_test --case parent-overlap --threads 2 --direct)
 add_test(NAME semantic_scoped_nibble COMMAND semantic_native_trace_test --case scoped-nibble --threads 2 --direct)
 add_test(NAME semantic_repeated_rollup COMMAND semantic_native_trace_test --case repeated-rollup --threads 2 --direct)
+add_test(NAME semantic_repeated_rollup_no_unroll COMMAND semantic_native_trace_test
+  --case repeated-rollup --threads 2 --direct --compiler-no-unroll)
 set_tests_properties(semantic_native_projection semantic_native_trace
   semantic_character_rollup_bulk semantic_character_rollup_direct semantic_parent_overlap semantic_scoped_nibble
-  semantic_repeated_rollup PROPERTIES
+  semantic_repeated_rollup semantic_repeated_rollup_no_unroll PROPERTIES
   ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 add_executable(viewport_live_study live_study.cpp)
 target_include_directories(viewport_live_study PRIVATE ../../../engine/tests)

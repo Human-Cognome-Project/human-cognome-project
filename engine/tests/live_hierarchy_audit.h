@@ -107,6 +107,8 @@ struct Publication {
 struct Result {
   std::vector<Packet> packets;
   std::vector<Publication> publications;
+  std::map<const llvm::AtomicRMWInst *,
+           std::map<int, const llvm::StoreInst *>> writes;
   int force_iterations{}, child_iterations{}, wake_iterations{},
       owner_entries{};
 };
@@ -114,6 +116,7 @@ class Analyzer {
   const taichi::lang::Kernel &kernel_;
   const llvm::Module &module_;
   int mode_;
+  bool scoped_poll_;
   std::map<const llvm::Value *, std::uint64_t> atoms_;
   std::map<const llvm::Value *, Expr> memo_;
   std::uint64_t next_atom_{10000};
@@ -198,14 +201,14 @@ class Analyzer {
       if (argument_buffer(load->getPointerOperand(), offset)) {
         const auto match_shape = [&](int arg) {
           if (offset !=
-              kernel_.args_type->get_element_offset(
-                  {arg, taichi::lang::TypeFactory::SHAPE_POS_IN_NDARRAY, 1}))
+              std::int64_t(kernel_.args_type->get_element_offset(
+                  {arg, taichi::lang::TypeFactory::SHAPE_POS_IN_NDARRAY, 1})))
             return false;
           out = Expr::atom(shape_id(arg));
           shape = true;
           return true;
         };
-        if (mode_ >= 5) {
+        if (mode_ >= 5 || scoped_poll_) {
           for (std::size_t arg = 0; arg < kernel_.parameter_list.size(); ++arg)
             if (kernel_.parameter_list[arg].is_array &&
                 kernel_.parameter_list[arg].total_dim == 2 &&
@@ -249,6 +252,14 @@ class Analyzer {
           if (llvm::haveNoCommonBitsSet(op->getOperand(0), op->getOperand(1),
                                         module_.getDataLayout()))
             out = add(a, b);
+          else
+            out = unknown(v);
+          break;
+        case llvm::Instruction::Xor:
+          // A signed complement is also the scoped child row encoding.
+          if (const auto *c = llvm::dyn_cast<llvm::ConstantInt>(op->getOperand(1));
+              c && c->isMinusOne())
+            out = add(Expr(-1), a, -1);
           else
             out = unknown(v);
           break;
@@ -361,14 +372,19 @@ class Analyzer {
  public:
   Analyzer(const taichi::lang::Kernel &kernel,
            const llvm::Module &module,
-           int mode)
-      : kernel_(kernel), module_(module), mode_(mode) {
+           int mode,
+           bool scoped_poll = false)
+      : kernel_(kernel), module_(module), mode_(mode), scoped_poll_(scoped_poll) {
   }
   bool shape_value(const llvm::Value *v, int arg) {
     return expression(v) == Expr::atom(shape_id(arg));
   }
   Expr data_index(const llvm::Value *ptr, int arg, int bytes) {
     return divide(byte_offset(ptr, arg), bytes);
+  }
+  Expr index(const llvm::Value *value) { return expression(value); }
+  Expr cell_index(int arg, int column, const Expr &row) {
+    return add(row, mul(Expr::atom(shape_id(arg)), Expr(column)));
   }
   int data_arg(const llvm::Value *ptr) const {
     const auto *base =
@@ -385,8 +401,8 @@ class Analyzer {
       if ((mode_ >= 5 ? kernel_.parameter_list[id].is_array
                       : mode_ >= 3 || id < 24 || id >= 28) &&
           offset ==
-              kernel_.args_type->get_element_offset(
-                  {id, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY}))
+              std::int64_t(kernel_.args_type->get_element_offset(
+                  {id, taichi::lang::TypeFactory::DATA_PTR_POS_IN_NDARRAY})))
         return id;
     throw std::runtime_error(
         "unattributed ndarray access in production kernel");
@@ -545,6 +561,7 @@ class Analyzer {
             else
               ++result.wake_iterations;
           } else if (mode_ == 1 && id == 4) {
+            if (scoped_poll_) continue;  // Checked with the signed edges below.
             const auto *child = closest(Role::Child, anchor, false);
             need(++used[child->acquire] == 1,
                  "child reduction iteration reuses another child's packet");
@@ -637,6 +654,7 @@ class Analyzer {
               need(component >= 0,
                    "packet write has wrong inactive slot/node/word");
               written_words[writer->exchange].insert(component);
+              result.writes[writer->exchange][component] = store;
             }
       for (const auto &pub : result.publications)
         if (pub.exchange->getFunction() == &fn)
@@ -666,9 +684,16 @@ class Analyzer {
                    "production node descriptor has no acquired packet path");
             }
     }
-    for (const auto &p : result.packets)
+    for (const auto &p : result.packets) {
+      // Scoped polling has a conditional child packet and may merge the
+      // child/source counters. The signed child path audit owns these edges.
+      if (scoped_poll_ && p.role == Role::Child) {
+        ++result.child_iterations;
+        continue;
+      }
       need(used[p.acquire] == 1,
            "acquired packet has no unique semantic iteration");
+    }
     if (mode_ == 0)
       need(result.force_iterations && !result.child_iterations &&
                !result.wake_iterations && !result.owner_entries &&
