@@ -36,6 +36,13 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
       if (domain) out.reservation = domain->result();
       return out;
     }
+    if ((editable_occurrences || alternative) &&
+        (bindings.character_rollup || (alternative && alternative->bindings.character_rollup))) {
+      out.status = AdmissionPlanStatus::Unsupported;
+      out.metadata_work = work.result();
+      out.reservation = domain->result();
+      return out;
+    }
     auto prepared = StructuralAdmissionPlan::build(*source,bindings,
         h.prepared_storage().capacity,domain,plan_allowance);
     out.plan_work = prepared.work;

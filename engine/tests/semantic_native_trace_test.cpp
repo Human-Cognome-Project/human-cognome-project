@@ -34,7 +34,7 @@ struct Input {
   Json trace=Json::object();
   bool pair,parts,context;
   Input(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,
-        const std::string &profile,bool fine,bool imposed):
+        const std::string &profile,bool fine,bool imposed,bool rollup):
       pair(profile=="ascii"),parts(fine),context(imposed) {
     auto base=fixture.base;
     const auto object=pair?fixture.english:profile=="accented"?fixture.accented:fixture.repeated;
@@ -73,11 +73,13 @@ struct Input {
       bindings.fields.push_back({f,5,i});bindings.comparisons.push_back({f,std::uint64_t(100+i),0,52,{}});
       return i;
     };
+    std::vector<int> byte_fields;
     if(parts || profile=="repeated") {
       for(std::size_t i=0;i<projection.parent_count();++i) add(projection.parent(i).field);
       for(std::size_t i=0;i<projection.occurrence_count();++i) {
         const auto o=projection.occurrence(i);if(!o.active) continue;
         const int whole=add({GroupKind::SiblingDefinition,o.definition.object});
+        if (rollup) byte_fields.push_back(whole);
         std::set<int> children;
         for(const auto &p:tool(recipe,o.definition).parents) children.insert(add({GroupKind::ParentValue,p.target.object}));
         bindings.comparisons[whole].children.assign(children.begin(),children.end());
@@ -100,10 +102,25 @@ struct Input {
     }
     if(group) {const int prior=int(bindings.fields.size())-1;const int i=add({GroupKind::Membership,group->object});
       bindings.comparisons[i].children={prior};bindings.comparisons[i].level=2;}
+    if (rollup) {
+      const auto character = tool(recipe,first).parents[0].target;
+      const int root = add({GroupKind::ParentValue,character.object});
+      bindings.comparisons[root].children = byte_fields;
+      bindings.comparisons[root].level = 2;
+    }
     const auto focus=bindings.fields[context?bindings.fields.size()-2:bindings.fields.size()-1].field;
-    recipe.focal_fields={{static_cast<warm::FieldKind>(focus.kind),focus.object}};
-    source=std::make_shared<const ActiveAssembly>(ActiveAssembly::assemble(recipe,warm::new_uuid(),false));
+    // The warm recipe selects an existing byte field. The optional character
+    // field belongs to prepared admission, so select it through active focus.
+    const auto &recipe_focus = rollup ? bindings.fields[byte_fields.front()].field : focus;
+    recipe.focal_fields={{static_cast<warm::FieldKind>(recipe_focus.kind),recipe_focus.object}};
+    auto selection = ActiveAssembly::assemble(recipe,warm::new_uuid(),false);
+    if (rollup) selection = selection.focus({{focus.kind,InputText(warm::key(focus.object))}});
+    source=std::make_shared<const ActiveAssembly>(std::move(selection));
     bindings.source={source->owner(),source->study(),source->generation(),recipe.ref};bindings.focus={focus};
+    if (rollup) {
+      bindings.character_rollup = AdmissionCharacterRollup{
+          {source->study(),{requests[0].entry,{}}},tool(recipe,first).parents[0].target};
+    }
     auto root=std::make_unique<taichi::lang::SNode>(0,taichi::lang::SNodeType::root);
     auto *leaf=root.get();bindings.layout.push_back({{leaf,-1,ScaleRole::Root},1});
     if(parts) {leaf=&root->dense(taichi::lang::Axis(0),1);bindings.layout.push_back({{leaf,0,ScaleRole::PrimaryStep},64});}
@@ -112,6 +129,8 @@ struct Input {
       {"exposure",parts?"parts":"aggregate"},{"imposed_context",context},
       {"definitions",Json::array()},{"occurrences",Json::array()},{"parents",Json::array()},
       {"layouts",Json::array()},{"fields",Json::array()}};
+    if (rollup) trace["character_rollup"] = {{"character",pin(bindings.character_rollup->character)},
+        {"owner_entry",requests[0].entry},{"byte_paths",Json::array({{0,0},{0,1}})}};
     std::set<std::string> reached;
     const auto describe=[&](const auto &self,const warm::ToolRef &r)->void {
       if(!reached.insert(warm::key(r.object)).second) return;
@@ -179,6 +198,7 @@ struct Input {
         const auto mass=*tool(recipe,body.definition).mass;std::uint64_t count=0;
         if(f.kind==GroupKind::SiblingDefinition)count=f.object==body.definition.object?mass:0;
         else if(f.kind==GroupKind::Membership)count=mass;
+        else if (rollup && f.object == bindings.character_rollup->character.object) count=mass;
         else for(const auto &p:trace["parents"])if(p.at("entry")==body.occurrence.source.entry &&
           p.at("path")==Json(body.occurrence.source.path) && p.at("field")==key(f))
           count+=std::stoull(p.at("count").get<std::string>());
@@ -187,14 +207,18 @@ struct Input {
       if(full)full_fields.push_back(i);
     }
     trace["tree_witness"]={{"roots",roots},{"shared_children",shared_children},{"full_coverage_fields",full_fields}};
-    if(parts && !pair)check(full_fields.empty(),"multibyte/repeated byte ledger has no field able to serve as a complete rooted rollup");
+    if(parts && !pair && !rollup)check(full_fields.empty(),"multibyte/repeated byte ledger has no field able to serve as a complete rooted rollup");
+    if (rollup) {
+      check(roots.size()==1 && full_fields==roots && shared_children.empty(),
+            "whole-byte branches have one complete character root");
+    }
     if(parts && profile=="repeated")check(!shared_children.empty(),"repeated-byte literal tree exposes a shared parent-value field across branches");
     runtime.program().add_snode_tree(std::move(root),false);
   }
 };
 Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const std::string &profile,
-         bool parts,bool context,field::HostPath path,bool project_only) {
-  Input in(runtime,fixture,profile,parts,context);
+         bool parts,bool context,field::HostPath path,bool project_only,bool rollup=false) {
+  Input in(runtime,fixture,profile,parts,context,rollup);
   auto limits=prepared_owner_fixture::capacity().limits();
   limits[field::Budget::Particles]=8;limits[field::Budget::Fields]=16;
   limits[field::Budget::CascadeNodes]=limits[field::Budget::CascadeLevels]=16;
@@ -205,7 +229,7 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
   const field::PreparedCapacity capacity(limits,field::NumericalProfile::trial());
   auto domain=prepared_owner_fixture::domain();
   const auto plan=StructuralAdmissionPlan::build(*in.source,in.bindings,capacity,domain,UINT64_MAX);
-  const bool supported=profile=="ascii" || !parts;
+  const bool supported=profile=="ascii" || !parts || rollup;
   if(plan.status!=(supported?AdmissionPlanStatus::Ok:AdmissionPlanStatus::InvalidInput))
     std::cerr<<"plan_result,profile="<<profile<<",parts="<<parts<<",context="<<context
       <<",status="<<int(plan.status)<<",work="<<plan.work.charged<<'\n';
@@ -213,9 +237,36 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
   in.trace["plan_status"]=supported?"ok":"invalid_input";
   in.trace["plan_work"]=std::to_string(plan.work.charged);
   in.trace["native"]=nullptr;
+  std::optional<FieldKey> rollup_field;
+  if (rollup) {
+    const auto &character = in.bindings.character_rollup->character;
+    rollup_field = FieldKey{GroupKind::ParentValue,character.object};
+    auto invalid = in.bindings;
+    const auto require_refusal = [&](const AdmissionBindings &input, const char *reason) {
+      auto rejected_domain = prepared_owner_fixture::domain();
+      const auto rejected = StructuralAdmissionPlan::build(*in.source,input,capacity,rejected_domain,UINT64_MAX);
+      check(rejected.status==AdmissionPlanStatus::InvalidInput && !rejected.plan &&
+            rejected_domain->result().live_bytes==0,reason);
+    };
+    invalid.character_rollup->character.revision = warm::new_uuid();
+    require_refusal(invalid,"a stale character revision refuses without a plan or retained allocation");
+    invalid = in.bindings;
+    invalid.character_rollup->owner.source.entry++;
+    require_refusal(invalid,"a foreign occurrence refuses without a plan or retained allocation");
+    invalid = in.bindings;
+    invalid.comparisons.back().children.pop_back();
+    require_refusal(invalid,"incomplete byte coverage refuses without a plan or retained allocation");
+    invalid = in.bindings;
+    std::reverse(invalid.comparisons.back().children.begin(),invalid.comparisons.back().children.end());
+    require_refusal(invalid,"reordered byte children refuse without a plan or retained allocation");
+    invalid = in.bindings;
+    invalid.character_rollup.reset();
+    require_refusal(invalid,"a declared field alone does not create a literal rollup");
+  }
   if(!supported || project_only) return in.trace;
   in.trace["participation_commands"]=Json::array();
   std::size_t parent_rows=0;
+  std::set<std::uint64_t> rollup_ordinals;
   for(const auto &c:plan.plan->commands()) if(c.operation==field::UpdateOp::InsertParticipation) {
     const AdmissionFieldCommand *f=nullptr;const AdmissionOccurrenceCommand *o=nullptr;
     for(const auto &v:plan.plan->fields())if(v.command==c.second.command)f=&v;
@@ -223,7 +274,12 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
     check(f && o && c.exact_count,"source command resolves to actual plan occurrence/field");
     in.trace["participation_commands"].push_back({{"entry",o->occurrence.entry},{"path",o->occurrence.path},
       {"field",key(f->field)},{"ordinal",std::to_string(c.ordinal)},{"count",std::to_string(*c.exact_count)}});
-    if(f->field.kind==GroupKind::ParentValue) {
+    if (rollup_field && key(f->field)==key(*rollup_field)) {
+      check(o->occurrence.entry==in.bindings.character_rollup->owner.source.entry &&
+            c.ordinal<2 && o->occurrence.path==warm::OccurrencePath{0,std::uint32_t(c.ordinal)} &&
+            *c.exact_count==2 && c.share==1 && rollup_ordinals.insert(c.ordinal).second,
+            "each ordered byte path contributes its exact mass once at the character root");
+    } else if(f->field.kind==GroupKind::ParentValue) {
       bool match=false;
       for(const auto &p:in.trace["parents"])if(p["entry"]==o->occurrence.entry && p["path"]==Json(o->occurrence.path) &&
         p["field"]==key(f->field) && p["ordinal"]==c.ordinal && p["count"]==std::to_string(*c.exact_count))match=true;
@@ -231,7 +287,16 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
     }
   }
   check(parent_rows==in.trace["parents"].size(),"plan neither drops nor duplicates parent participation rows");
+  if (rollup) check(rollup_ordinals.size()==2,"both exact byte contributions reach the rollup");
   field::Harness harness(runtime,capacity,path);
+  if (rollup) {
+    auto rejected_domain = prepared_owner_fixture::domain();
+    const auto editable = PreparedStudyOwner::prepare(harness,in.source,warm::new_uuid(),in.bindings,
+        rejected_domain,UINT64_MAX,UINT64_MAX,true);
+    check(editable.status==AdmissionPlanStatus::Unsupported && !editable.owner &&
+          rejected_domain->result().live_bytes==0 && !harness.live_hierarchy_installed(),
+          "an editing workspace cannot prepare the fixed character rollup");
+  }
   auto prepared=PreparedStudyOwner::prepare(harness,in.source,warm::new_uuid(),in.bindings,domain,UINT64_MAX,UINT64_MAX);
   check(prepared.status==AdmissionPlanStatus::Ok,"native owner preparation failed");
   auto &owner=*prepared.owner;const auto handle=owner.handle();const auto authorization=in.source->owner();
@@ -250,6 +315,39 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
         {"position",{state.report.groups64.at(slot),state.report.groups64.at(capacity.limits()[field::Budget::Fields]+slot),
           state.report.groups64.at(2*capacity.limits()[field::Budget::Fields]+slot)}},
         {"mass",state.report.groups64.at(3*capacity.limits()[field::Budget::Fields]+slot)}});
+    }
+    if (rollup) {
+      const auto &particles = result["snapshot"].at("particles");
+      result["body_sources"] = Json::array();
+      for (std::size_t i=0; i<rows.bodies.size(); ++i) {
+        const auto body = rows.body(i);
+        check(body.source.occurrence.entry==2 &&
+              body.source.occurrence.path==warm::OccurrencePath{0,std::uint32_t(i)} &&
+              body.exact_mass==2,"native exact ledger preserves each byte occurrence");
+        result["body_sources"].push_back({{"path",body.source.occurrence.path},
+            {"definition",pin(body.source.definition)},{"claim",claim(body.claim)}});
+      }
+      check(particles.size()==2 && particles[0].at("exact_mass")=="2" &&
+            particles[1].at("exact_mass")=="2" && particles[0].at("mass")==2 &&
+            particles[1].at("mass")==2,"publication retains just the two independently claimed byte bodies");
+      const auto &first = particles[0].at("id").get_ref<const std::string &>();
+      const auto &second = particles[1].at("id").get_ref<const std::string &>();
+      check(first.substr(first.find('/'))=="/2/0/0" && second.substr(second.find('/'))=="/2/0/1" &&
+            particles[0].at("slot")!=particles[1].at("slot"),
+            "native byte slots resolve to the two exact ordered occurrence paths");
+      int whole_fields = 0;
+      int root_fields = 0;
+      for (const auto &f : result["field_sources"]) {
+        if (f.at("source")==key(*rollup_field)) {
+          check(f.at("mass")==4,"the native character root counts both byte masses once");
+          ++root_fields;
+        }
+        if (f.at("source").at("kind")==int(GroupKind::SiblingDefinition)) {
+          check(f.at("mass")==2,"each native whole-byte child carries its own mass");
+          ++whole_fields;
+        }
+      }
+      check(root_fields==1 && whole_fields==2,"one native character field and both byte child fields publish");
     }
     // Independent scalar reference for the recorded diagnostic only. Contact
     // and integration are outside this comparison; native state is never fed
@@ -294,6 +392,16 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
   field::Parameters64 parameters;parameters.gravity=1;parameters.contact_stiffness=parameters.reach_strength=0;parameters.dt=0.01;
   check(owner.tick(authorization,handle,parameters).status==field::TickStatus::Ok,"following native tick failed");
   in.trace["native"]["after"]=capture();
+  if (rollup) {
+    const auto &before=in.trace["native"]["before"], &after=in.trace["native"]["after"];
+    check(before["snapshot"]["capture"]["tick"]=="0" && after["snapshot"]["capture"]["tick"]=="1" &&
+          before["snapshot"]["capture"]["generation"]==after["snapshot"]["capture"]["generation"],
+          "character rollup publishes a following completed tick");
+    for (std::size_t i=0; i<before["field_sources"].size(); ++i)
+      check(before["field_sources"][i]["claim"]==after["field_sources"][i]["claim"],
+            "the rollup and all child field claims persist through the tick");
+    check(before["body_sources"]==after["body_sources"],"both byte claims and source paths persist through the tick");
+  }
   return in.trace;
 }
 Json signature(const Json &trace) {
@@ -354,10 +462,16 @@ int main(int argc,char **argv) {
       else if(arg=="--direct")path=field::HostPath::CpuDirect;
       else if(arg=="--projection-only")project_only=true;
       else if(arg=="--case" && i+1<argc)selected=argv[++i];
-      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode]");
+      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode|character-rollup]");
     }
-    check(selected=="all" || selected=="ascii" || selected=="unicode","unknown trace case");
+    check(selected=="all" || selected=="ascii" || selected=="unicode" ||
+          selected=="character-rollup","unknown trace case");
     engine::Runtime runtime(settings);letter_fixture::Fixture fixture;
+    if (selected=="character-rollup") {
+      std::cout<<run(runtime,fixture,"accented",true,false,path,project_only,true).dump()<<'\n';
+      std::cerr<<"semantic_native_trace,checks="<<checks<<" PASS\n";
+      return 0;
+    }
     for(const auto &profile:{std::string("ascii"),std::string("accented"),std::string("repeated")}) {
       if(selected!="all" && ((selected=="ascii")!=(profile=="ascii")))continue;
       const auto aggregate=run(runtime,fixture,profile,false,false,path,project_only);

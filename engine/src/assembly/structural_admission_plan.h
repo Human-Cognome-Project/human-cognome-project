@@ -32,6 +32,10 @@ struct AdmissionComparison {
   int level{}, retained_fraction_bits{52};
   std::vector<int> children; // Explicit ordered topology; children precede parent.
 };
+struct AdmissionCharacterRollup {
+  OccurrenceKey owner; // Inactive aggregate for this study's single scalar.
+  warm::ToolRef character;
+};
 struct AdmissionBindings {
   AdmissionSource source;
   field::FrameAnchor frame_anchor{}; // Initial supported subset: root frame zero.
@@ -40,6 +44,9 @@ struct AdmissionBindings {
   std::vector<AdmissionField> fields;
   std::vector<AdmissionComparison> comparisons;
   std::vector<FieldKey> focus; // Must match the snapshot's requested order exactly.
+  // Explicit byte-exposure root at ParentValue(character). The plan derives
+  // its full per-byte counts and ordinals from the sealed projection.
+  std::optional<AdmissionCharacterRollup> character_rollup;
 };
 struct AdmissionOccurrenceCommand {
   // The enclosing immutable plan owns the common study in source().study.
