@@ -1,5 +1,23 @@
 # Core continuation after local CUDA corrections
 
+## November 25, 2026 — live Unicode character exchange
+
+Main `06414eee` includes #430, #431 and #433. #439 is provisionally
+accepted at `a8e0d8d0` for the fixed repeated endpoint compiler audit.
+Its hosted database and four compiler jobs passed.
+[Maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/439#issuecomment-7169133212) · [Native CI](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45657234407)
+
+The live `í` fixture now expands one aggregate into `C3 AD` and compresses
+it in the same prepared study. Both directions preserve the character field
+claim and verify native coverage and mass 4. The following ticks retain the
+ordered occurrence paths. The `ó` seed and poll audits pass in both
+compiler modes and reject the shifted source row.
+[Implementation and evidence](../engine/docs/LIVE-UNICODE-EXCHANGE.md)
+
+The exchange evidence is bounded to the explicit disjoint character cohort.
+The repeated endpoint remains a fixed-study witness. Hosted CI and review
+gate the integration sequence.
+
 ## November 25, 2026 — scoped hierarchy compiler audit
 
 Main includes #430 at `6e290f5b`. The maintainer provisionally accepted

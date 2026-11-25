@@ -6,6 +6,8 @@ inherited response. The same fixture now checks the Program-retained force,
 poll and candidate-seed LLVM after bootstrapping the byte exposure.
 [Maintainer direction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/438#issuecomment-7167787666) · [Endpoint run](REPEATED-ENDPOINT-ROLLUP.md)
 
+The [live Unicode follow-up](LIVE-UNICODE-EXCHANGE.md#separate-scoped-compiler-coverage) qualifies the scoped seed and poll reduction for `ó` in both compiler modes.
+
 ## Checked operands
 
 - The poll follows the sign of the current child link. A whole link acquires
