@@ -105,7 +105,7 @@ class LiveHierarchy {
   const LiveResponseInspection &inspect_responses(std::uint64_t work_limit);
   const LiveIntentInspection &inspect_intent(double gravity, std::uint64_t work_limit);
   std::size_t binding_bytes() const;
-  const taichi::lang::Ndarray &leaf_fields() const;
+  const taichi::lang::Ndarray &movement_fields() const;
   UpdateStatus prepare_refresh(const LiveRefreshSpec &,
                                const PreparedCounts &,
                                std::size_t commands,

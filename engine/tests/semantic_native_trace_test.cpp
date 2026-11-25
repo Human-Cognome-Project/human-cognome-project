@@ -3,6 +3,7 @@
 #include "snapshot.h"
 #include "capture_options.h"
 #include "prepared_owner_fixture.h"
+#include "prepared_fixture.h"
 #include "field/cascade_source.h"
 #include <algorithm>
 #include <array>
@@ -273,6 +274,140 @@ Json refuse_on_empty_owner(field::Harness &harness, const Input &input,
         "overlap refuses without publishing or retaining owner allocations");
   return {{"status","invalid_input"},{"preparation_work",refused.plan_work.charged},
       {"retained_bytes",refused.reservation.live_bytes},{"before",before},{"after",state()}};
+}
+
+Json check_varied_movement(engine::Runtime &runtime, field::Harness &harness,
+                           PreparedStudyOwner &owner, const Input &input,
+                           const field::Parameters64 &parameters) {
+  const auto handle = owner.handle();
+  const auto &authorization = input.source->owner();
+  const auto tick = [&] {
+    const auto q = owner.tick(authorization,handle,parameters);
+    check(q.status == field::TickStatus::Ok,"selective movement tick failed");
+    return q.completed_ticks;
+  };
+  const auto drain = [&] {
+    for (int i=0; i<8; ++i) {
+      const auto completed = tick();
+      const auto &demand = harness.demand();
+      if (!demand.particles_evaluated && !demand.centroids_recomputed)
+        return completed;
+    }
+    throw std::runtime_error("ordinary selective work did not drain");
+  };
+  const auto quiet_tick = drain();
+  const auto rows = owner.associations(authorization,handle).read();
+  const auto body_for = [&](const warm::OccurrencePath &path) {
+    for (std::size_t i=0; i<rows.bodies.size(); ++i)
+      if (rows.occurrences[i].occurrence.path==path) return rows.body(i);
+    throw std::runtime_error("missing varied recipe body");
+  };
+  const auto first = body_for({0,0}), again = body_for({2,0});
+  const std::array<int,3> moving{first.claim.record,body_for({1,0}).claim.record,
+                                 body_for({3,1}).claim.record};
+  const auto field_record = [&](const FieldKey &key) {
+    for (std::size_t i=0; i<rows.fields.size(); ++i) {
+      const auto field = rows.field(i);
+      if (field.source.field.kind==key.kind && field.source.field.object==key.object)
+        return field.claim.record;
+    }
+    throw std::runtime_error("missing varied recipe field");
+  };
+  const auto &byte = first.source.definition.object;
+  const int whole = field_record({GroupKind::SiblingDefinition,byte});
+  const int character = field_record({GroupKind::ParentValue,byte});
+  const int endpoint = field_record(input.bindings.comparisons.back().field);
+  std::vector<int> shared, all;
+  for (const auto &leaf : input.trace.at("tree_witness").at("shared_children"))
+    shared.push_back(field_record(input.bindings.comparisons.at(leaf.get<int>()).field));
+  for (const auto &body : rows.bodies) all.push_back(body.record);
+  check(shared.size()==2,"the witness cancels movement in both shared publishers");
+
+  const auto packet = [&](int row) {
+    return std::array<double,4>{harness.group64(field::kCenX,row),harness.group64(field::kCenY,row),
+                               harness.group64(field::kCenZ,row),harness.group64(field::kCenM,row)};
+  };
+  const auto centre_x = [&](const auto &slots) {
+    double mass = 0, weighted = 0;
+    for (const int slot : slots) {
+      const auto value = harness.particle64(field::kMass,slot);
+      mass += value;
+      weighted += value*harness.particle64(field::kPosX,slot);
+    }
+    return weighted/mass;
+  };
+  harness.inspect_prepared();
+  const auto shared_before = std::array{packet(shared[0]),packet(shared[1])};
+  const auto whole_before = packet(whole);
+  const auto endpoint_before = packet(endpoint);
+  const auto set_motion = [&](const auto &slots, const auto &velocities) {
+    harness.inspect_prepared();
+    for (std::size_t i=0; i<slots.size(); ++i)
+      harness.particle64(field::kVelX,slots[i]) = velocities[i];
+    field::testing::PreparedFixtureAccess::upload_body_fixture64(harness);
+  };
+  taichi::lang::IRBuilder ir;
+  const auto selection = field::testing::PreparedFixtureAccess::particle_selection(harness);
+  const auto coordinate = taichi::lang::PrimitiveType::i32;
+  selection.activate(ir,ir.create_arg_load({0},coordinate,false,0));
+  engine::CompiledKernel activate(runtime,"activate_varied_motion",ir.extract_ir(),
+                                  {engine::Param::scalar(coordinate)});
+  const auto select = [&](const auto &slots) {
+    for (const auto slot : slots) {
+      auto call = activate.invocation(true);
+      engine::argument_int(call.get(),0,slot);
+      activate.launch(call.get());
+    }
+  };
+  // The +v row contributes to both shared nibbles. Each -v row
+  // cancels it in one publisher while leaving the whole 61 centre moving.
+  set_motion(moving,std::array{0.25,-0.25,-0.25});
+  select(moving);
+
+  Json observations = Json::array();
+  const std::array<int,2> repeated{first.claim.record,again.claim.record};
+  double previous = whole_before[0];
+  for (int i=0; i<3; ++i) {
+    const auto completed = tick();
+    check(harness.demand().particles_moved==moving.size(),
+          "only the three driven bodies move during the selective tick");
+    harness.inspect_prepared();
+    const double expected = centre_x(repeated);
+    check(expected>previous,"asymmetric movement advances the whole-byte centre");
+    check(packet(shared[0])==shared_before[0] && packet(shared[1])==shared_before[1],
+          "both complete shared-nibble packets remain unchanged");
+    check(packet(whole)[0]==expected && packet(whole)[3]==4,
+          "selective tick republishes the scoped byte at its actual mass-weighted centre");
+    observations.push_back({{"tick",completed},{"byte_x",packet(whole)[0]},
+                            {"body_centre_x",expected},{"shared",shared_before}});
+    previous = expected;
+  }
+  set_motion(moving,std::array{0.,0.,0.});
+  const auto settled_tick = drain();
+  harness.inspect_prepared();
+  check(packet(character)[0]==previous,"ordinary polls propagate to the character comparison");
+  const double expected = centre_x(all);
+  check(std::abs(packet(endpoint)[0]-expected)<1e-12 && packet(endpoint)[3]==10 &&
+        packet(endpoint)[0]!=endpoint_before[0],"ordinary polls republish the moved endpoint centre");
+  check(packet(shared[0])==shared_before[0] && packet(shared[1])==shared_before[1],
+        "shared-nibble packets remain unchanged through endpoint propagation");
+  const auto settled_endpoint = packet(endpoint);
+  // Opposite movement within 61 cancels at its own comparison as well.
+  // Only the direct readers should visit, since no packet queues an ancestor.
+  set_motion(repeated,std::array{0.25,-0.25});
+  select(repeated);
+  const auto cancelled_tick = tick();
+  const auto &cancelled = harness.demand();
+  check(cancelled.particles_moved==repeated.size() &&
+        cancelled.centroids_recomputed==shared.size()+1,
+        "cancelled movement visits only the byte and its two shared nibble fields");
+  harness.inspect_prepared();
+  check(packet(whole)[0]==previous && packet(endpoint)==settled_endpoint,
+        "cancelled movement preserves the settled byte and endpoint positions");
+  return {{"quiet_tick",quiet_tick},{"motion",std::move(observations)},
+          {"settled_tick",settled_tick},{"endpoint_before_x",endpoint_before[0]},
+          {"endpoint_x",settled_endpoint[0]},{"body_centre_x",expected},
+          {"cancelled_tick",cancelled_tick},{"cancelled_field_visits",cancelled.centroids_recomputed}};
 }
 
 Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool project_only,
@@ -584,6 +719,11 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
   };
   in.trace["native"]={{"before",capture()}};
   field::Parameters64 parameters;parameters.gravity=1;parameters.contact_stiffness=parameters.reach_strength=0;parameters.dt=0.01;
+  const bool varied = in.trace.at("profile")=="varied";
+  if (varied) {
+    parameters.gravity = 0;
+    parameters.dt = 0.125;
+  }
   const auto tick = owner.tick(authorization,handle,parameters);
   if (tick.status!=field::TickStatus::Ok) {
     std::cerr<<"semantic_tick_refusal,profile="<<in.trace.at("profile")<<",status="<<int(tick.status)
@@ -604,6 +744,8 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
             "the rollup and all child field claims persist through the tick");
     check(before["body_sources"]==after["body_sources"],"both byte claims and source paths persist through the tick");
   }
+  if (varied)
+    in.trace["selective_movement"] = check_varied_movement(runtime,harness,owner,in,parameters);
   return in.trace;
 }
 
