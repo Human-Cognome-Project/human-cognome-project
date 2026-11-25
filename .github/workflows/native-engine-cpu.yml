@@ -259,10 +259,39 @@ jobs:
           name: ${{ needs.native-build.outputs.artifact }}
           path: ${{ runner.temp }}/native-build
       - name: Verify and unpack this run's CPU build
+        id: restore
         env:
           BUILD_SHA256: ${{ needs.native-build.outputs.digest }}
         run: bash engine/scripts/hosted_cpu_bundle.sh restore "$RUNNER_TEMP/native-build/native-build.tar.gz" "$BUILD_SHA256"
+      - name: Capture and audit both scoped compiler profiles
+        id: scoped
+        if: matrix.workers == 2 && matrix.source-path == 'direct'
+        run: |
+          . ./engine/build/engine-env.sh
+          evidence="$RUNNER_TEMP/scoped-compiler-ir"
+          mkdir -p "$evidence"
+          git rev-parse HEAD HEAD:engine/taichi > "$evidence/source.txt"
+          /usr/lib/llvm-15/bin/llc --version > "$evidence/toolchain.txt"
+          sha256sum engine/build/viewport/semantic_native_trace_test \
+            engine/build/taichi-runtime/runtime_x64.bc > "$evidence/binaries.sha256"
+          status=0
+          for profile in default no-unroll; do
+            mkdir -p "$evidence/$profile"
+            args=(--threads 2 --direct --case repeated-rollup)
+            if [[ "$profile" == no-unroll ]]; then args+=(--compiler-no-unroll); fi
+            HCP_SCOPED_IR_DIR="$evidence/$profile" engine/build/viewport/semantic_native_trace_test \
+              "${args[@]}" > "$evidence/$profile/result.log" 2>&1 || status=1
+            grep -E '^(scoped_compiler_|semantic_native_trace)' "$evidence/$profile/result.log" || true
+          done
+          exit "$status"
+      - uses: actions/upload-artifact@v4
+        if: always() && (steps.scoped.outcome == 'success' || steps.scoped.outcome == 'failure')
+        with:
+          name: native-scoped-compiler-ir-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/scoped-compiler-ir
+          if-no-files-found: error
       - name: Collect and audit modules, then exercise no-unroll modes
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
         env:
           HCP_WORKERS: ${{ matrix.workers }}
           HCP_SOURCE_PATH: ${{ matrix.source-path }}

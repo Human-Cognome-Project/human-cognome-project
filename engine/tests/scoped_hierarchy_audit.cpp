@@ -399,8 +399,8 @@ std::vector<const SelectInst *> responses(Analyzer &a,
       count |= 1 << next;
       paths.push_back(x);
     }
-    need(eligibility && count == (wake ? 3 : 1),
-         "missing scoped force or paired wake response");
+    need(eligibility, "missing scoped response eligibility");
+    need(count == (wake ? 3 : 1), "missing scoped force or paired wake response");
   }
   need(!paths.empty(), "missing scoped response operands");
   return paths;
@@ -468,22 +468,22 @@ void scoped_audit_no_unroll() {
 void audit_scoped_hierarchy(field::Harness &harness) {
   const auto c3 = field::testing::LiveHierarchyAccess::kernels(harness);
   const auto refresh = field::testing::LiveHierarchyAccess::refresh_kernels(harness);
-  const auto *directory = std::getenv("HCP_SCOPED_IR_DIR");
+  if (const auto *directory = std::getenv("HCP_SCOPED_IR_DIR")) {
+    const std::array kernels{c3[0], c3[1], refresh[0]};
+    const std::array names{"force", "poll", "seed"};
+    for (std::size_t i = 0; i < kernels.size(); ++i) {
+      std::error_code error;
+      llvm::raw_fd_ostream file(std::string(directory) + "/" + names[i] + ".ll",
+                                error, llvm::sys::fs::OF_Text);
+      if (error)
+        throw std::runtime_error("cannot retain scoped IR");
+      engine::testing::CompiledKernelAccess::module(*kernels[i]).print(file, nullptr);
+    }
+  }
   check_c3(engine::testing::CompiledKernelAccess::kernel(*c3[0]),
            engine::testing::CompiledKernelAccess::module(*c3[0]), false);
   check_c3(engine::testing::CompiledKernelAccess::kernel(*c3[1]),
            engine::testing::CompiledKernelAccess::module(*c3[1]), true);
   check_seed(engine::testing::CompiledKernelAccess::kernel(*refresh[0]),
              engine::testing::CompiledKernelAccess::module(*refresh[0]));
-  if (!directory) return;
-  const std::array kernels{c3[0], c3[1], refresh[0]};
-  const std::array names{"force", "poll", "seed"};
-  for (std::size_t i = 0; i < kernels.size(); ++i) {
-    std::error_code error;
-    llvm::raw_fd_ostream file(std::string(directory) + "/" + names[i] + ".ll",
-                              error, llvm::sys::fs::OF_Text);
-    if (error)
-      throw std::runtime_error("cannot retain scoped IR");
-    engine::testing::CompiledKernelAccess::module(*kernels[i]).print(file, nullptr);
-  }
 }
