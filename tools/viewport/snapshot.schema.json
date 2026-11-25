@@ -22,6 +22,35 @@
         {"properties": {"profile": {"const": "trial_f64"}, "storage_bits": {"const": 64}}}
       ]
     },
+    "response_trace": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "generation", "tick", "frame", "work_limit", "work_required", "work_used", "readback_bytes", "capacity", "count", "packets", "rows"],
+      "properties": {
+        "status": {"enum": ["ok", "budget_refused", "unavailable"]},
+        "generation": {"anyOf": [{"$ref": "#/$defs/decimal"}, {"type": "null"}]},
+        "tick": {"$ref": "#/$defs/decimal"}, "frame": {"$ref": "#/$defs/point"},
+        "work_limit": {"$ref": "#/$defs/decimal"}, "work_required": {"$ref": "#/$defs/decimal"},
+        "work_used": {"$ref": "#/$defs/decimal"}, "readback_bytes": {"$ref": "#/$defs/decimal"},
+        "capacity": {"$ref": "#/$defs/decimal"}, "count": {"$ref": "#/$defs/decimal"},
+        "packets": {"type": "array", "items": {
+          "type": "object", "additionalProperties": false, "required": ["slot", "comparison"],
+          "properties": {"slot": {"type": "integer", "minimum": 0}, "comparison": {"$ref": "#/$defs/decimal"}}
+        }},
+        "rows": {"type": "array", "items": {
+          "type": "object", "additionalProperties": false,
+          "required": ["body", "child", "parent", "kind", "numerator", "denominator", "delta", "recipient", "body_mass", "source_mass", "production_eligible", "extraction_valid"],
+          "properties": {
+            "body": {"$ref": "#/$defs/nativeRecord"},
+            "child": {"type": "integer", "minimum": 0}, "parent": {"type": "integer", "minimum": 0},
+            "kind": {"enum": ["local", "inherited"]},
+            "numerator": {"$ref": "#/$defs/decimal"}, "denominator": {"$ref": "#/$defs/decimal"},
+            "delta": {"$ref": "#/$defs/extractedPoint"}, "recipient": {"$ref": "#/$defs/extractedPoint"},
+            "body_mass": {"type": ["number", "null"]}, "source_mass": {"type": ["number", "null"]},
+            "production_eligible": {"type": "boolean"}, "extraction_valid": {"type": "boolean"}
+          }
+        }}
+      }
+    },
     "intent": {
       "type": "object", "additionalProperties": false,
       "required": ["status", "gravity", "generation", "tick", "frame", "work_limit", "work_required", "work_used", "readback_bytes", "rows"],
@@ -197,6 +226,7 @@
     "source": {"type": "object"}
   },
   "$defs": {
+    "extractedPoint": {"type": "array", "items": {"type": ["number", "null"]}, "minItems": 3, "maxItems": 3},
     "nativeRecord": {
       "type": "object",
       "additionalProperties": false,

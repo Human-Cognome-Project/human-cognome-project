@@ -37,6 +37,16 @@ double elapsed(Clock::time_point start) {
   return std::chrono::duration<double, std::milli>(Clock::now() - start)
       .count();
 }
+Json response_envelope(std::optional<std::uint64_t> generation, std::uint64_t tick,
+                       const std::array<double,3> &frame, ResponseRequest request) {
+  return {{"status", "unavailable"},
+          {"generation", generation ? Json(std::to_string(*generation)) : Json()},
+          {"tick", std::to_string(tick)}, {"frame", frame},
+          {"work_limit", std::to_string(request.work_limit)},
+          {"work_required", "0"}, {"work_used", "0"}, {"readback_bytes", "0"},
+          {"capacity", "0"}, {"count", "0"},
+          {"packets", Json::array()}, {"rows", Json::array()}};
+}
 }  // namespace
 HarnessBinding bind(field::Harness &h, assembly::ActiveReport mapping) {
   require(h.ready() && h.prepared(),
@@ -76,7 +86,8 @@ HarnessBinding bind(field::Harness &h, assembly::ActiveReport mapping) {
 namespace {
 template<class Binding>
 CompletedState observe_prepared(field::Harness &h, Binding &&binding,
-                                std::optional<IntentRequest> request) {
+                                std::optional<IntentRequest> request,
+                                std::optional<ResponseRequest> responses) {
   const auto start = Clock::now();
   if (request) require(std::isfinite(request->gravity) && request->gravity >= 0,
                        "viewport: invalid diagnostic gravity");
@@ -137,6 +148,9 @@ CompletedState observe_prepared(field::Harness &h, Binding &&binding,
       sizeof(s.inspection_counts) + 2 * (P + G) * sizeof(int) +
       (3 * P + 6 * G + 11 + (primary_bytes ? 1 : 0)) *
           r.numerical_profile.bytes();
+  // Copy packet-slot associations before the next synchronized operation ends
+  // the borrowed hierarchy inspection. Slots are sparse after refresh.
+  std::map<int,std::uint64_t> packets;
   if (binding.installed) {
     const auto &v = h.inspect_live_hierarchy();
     out.requested_readback_bytes +=
@@ -153,12 +167,64 @@ CompletedState observe_prepared(field::Harness &h, Binding &&binding,
       require(slot >= 0 && std::size_t(slot) < v.nodes.size(),
               "viewport: invalid live comparison slot");
       out.comparisons.push_back(v.nodes[slot]);
+      if (responses)
+        require(packets.emplace(slot,v.nodes[slot].comparison).second,
+                "viewport: duplicate live packet slot");
     }
     for (const auto &node : out.comparisons)
       require(node.field.record >= 0 &&
                   node.field.record < h.field_capacity() &&
                   same(node.field, s.field_headers[node.field.record]),
               "viewport: stale installed comparison identity");
+  }
+  if (responses) {
+    out.response_trace = response_envelope(s.generation,out.tick,r.frame_anchor,*responses);
+    auto &trace = out.response_trace;
+    if (binding.installed) {
+      const auto &v = h.inspect_live_responses(responses->work_limit);
+      trace["work_required"] = std::to_string(v.work_required);
+      trace["work_used"] = std::to_string(v.work_used);
+      trace["readback_bytes"] = std::to_string(v.readback_bytes);
+      if (v.status == field::CascadeStatus::CapacityExhausted) {
+        trace["status"] = "budget_refused";
+      } else {
+        require(v.status == field::CascadeStatus::Ok && v.generation == s.generation &&
+                    v.completed_ticks == out.tick && v.frame_anchor == r.frame_anchor &&
+                    v.responses <= v.capacity && v.values.size() == 10*v.capacity &&
+                    v.identities.size() == 4*v.capacity && v.fractions.size() == 2*v.capacity,
+                "viewport: inconsistent response observation");
+        trace["status"] = "ok";
+        trace["capacity"] = std::to_string(v.capacity);
+        trace["count"] = std::to_string(v.responses);
+        for (const auto &[slot,comparison] : packets)
+          trace["packets"].push_back({{"slot",slot},{"comparison",std::to_string(comparison)}});
+        std::map<int,const engine::RecordHandle *> bodies;
+        for (const auto &body : binding.bodies) bodies.emplace(body.record,&body);
+        for (std::size_t row=0; row<v.responses; ++row) {
+          const auto identity = [&](int col) { return v.identities[col*v.capacity+row]; };
+          const auto scalar = [&](int col) { return v.values[col*v.capacity+row]; };
+          const int body=identity(0), child=identity(1), parent=identity(2), kind=identity(3);
+          require(bodies.count(body) && packets.count(child) && packets.count(parent) &&
+                      (kind == 0 || kind == 1) &&
+                      (scalar(8) == 0 || scalar(8) == 1) && (scalar(9) == 0 || scalar(9) == 1),
+                  "viewport: invalid native response identity or flags");
+          // Nonfinite extraction operands remain explicitly unavailable. The
+          // native validity flag is retained, not upgraded into formula validity.
+          const auto number = [&](int col) { const auto x=scalar(col);
+            return std::isfinite(x) ? Json(x) : Json(); };
+          trace["rows"].push_back({{"body",record(*bodies.at(body))},
+              {"child",child}, {"parent",parent}, {"kind",kind == 0 ? "local" : "inherited"},
+              {"numerator",std::to_string(v.fractions[row])},
+              {"denominator",std::to_string(v.fractions[v.capacity+row])},
+              {"delta",{number(0),number(1),number(2)}},
+              {"recipient",{number(3),number(4),number(5)}},
+              {"body_mass",number(6)}, {"source_mass",number(7)},
+              {"production_eligible",scalar(8) == 1}, {"extraction_valid",scalar(9) == 1}});
+        }
+        out.numeric_copy_bytes += v.responses*8*sizeof(double);
+        out.requested_readback_bytes += v.readback_bytes;
+      }
+    }
   }
   if (request) {
     out.intent = {{"status", "unavailable"}, {"gravity", request->gravity},
@@ -209,12 +275,12 @@ CompletedState observe_prepared(field::Harness &h, Binding &&binding,
 }
 }  // namespace
 CompletedState observe(field::Harness &h, const HarnessBinding &binding,
-                       std::optional<IntentRequest> request) {
-  return observe_prepared(h,binding,request);
+                       std::optional<IntentRequest> request, std::optional<ResponseRequest> responses) {
+  return observe_prepared(h,binding,request,responses);
 }
 CompletedState observe(field::Harness &h, HarnessBinding &&binding,
-                       std::optional<IntentRequest> request) {
-  return observe_prepared(h,std::move(binding),request);
+                       std::optional<IntentRequest> request, std::optional<ResponseRequest> responses) {
+  return observe_prepared(h,std::move(binding),request,responses);
 }
 struct ActiveSessionAccess {
   static assembly::detail::PreparedStudyOwner *prepared(assembly::ActiveSession &session,
@@ -225,11 +291,11 @@ struct ActiveSessionAccess {
 CompletedState observe(assembly::ActiveSession &session,
                        const warm::Uuid &owner,
                        const assembly::ExecutionHandle &handle,
-                       std::optional<IntentRequest> request) {
+                       std::optional<IntentRequest> request, std::optional<ResponseRequest> responses) {
   if (request) require(std::isfinite(request->gravity) && request->gravity >= 0,
                        "viewport: invalid diagnostic gravity");
   if (auto *prepared = ActiveSessionAccess::prepared(session,handle,owner))
-    return viewport::observe(*prepared,owner,handle,request);
+    return viewport::observe(*prepared,owner,handle,request,responses);
   const auto start = Clock::now();
   const auto before = session.timings(handle).download_bytes;
   CompletedState out;
@@ -253,6 +319,8 @@ CompletedState observe(assembly::ActiveSession &session,
                   {"work_required", "0"}, {"work_used", "0"},
                   {"readback_bytes", "0"}, {"rows", Json::array()}};
   }
+  if (responses)
+    out.response_trace = response_envelope(std::nullopt,out.tick,r.frame_anchor,*responses);
   session.accept(out.report, owner);
   require(session.completed_ticks(handle) == out.tick,
           "viewport: concurrent native mutation during observation");
@@ -303,6 +371,21 @@ Json snapshot(const CompletedState &state, const CaptureContext &context) {
                 state.intent.at("frame") == Json(state.report.frame_anchor),
             "viewport: stale candidate capture metadata");
     value["intent"] = state.intent;
+  }
+  if (!state.response_trace.is_null()) {
+    const auto &q=state.response_trace;
+    require(q.at("generation") == (state.prepared_generation
+                    ? Json(std::to_string(*state.prepared_generation)) : Json()) &&
+                q.at("tick") == std::to_string(state.tick) &&
+                q.at("frame") == Json(state.report.frame_anchor),
+            "viewport: stale response capture metadata");
+    if (!state.prepared_generation)
+      require(state.comparisons.empty() && q.at("status") == "unavailable" &&
+                  q.at("rows").empty() && q.at("packets").empty() &&
+                  q.at("work_required") == "0" && q.at("work_used") == "0" &&
+                  q.at("readback_bytes") == "0" && q.at("capacity") == "0" && q.at("count") == "0",
+              "viewport: legacy execution cannot supply native responses");
+    value["response_trace"] = q;
   }
   return value;
 }

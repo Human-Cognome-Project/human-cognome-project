@@ -128,6 +128,19 @@ int main() {
     auto first = viewport::capture(session, logical.owner(), ctx);
     const auto plain = viewport::observe(session, logical.owner(), h);
     check(plain.intent.is_null(), "legacy intent defaults omitted");
+    check(plain.response_trace.is_null(),"legacy response trace defaults omitted");
+    for (const auto budget : {std::uint64_t(0),UINT64_MAX}) {
+      const auto traced=viewport::observe(session,logical.owner(),h,std::nullopt,viewport::ResponseRequest{budget});
+      auto value=viewport::snapshot(traced,ctx);
+      check(value.at("response_trace").at("status") == "unavailable" &&
+            value.at("response_trace").at("generation").is_null() &&
+            value.at("response_trace").at("rows").empty(),"legacy response request remains explicitly unavailable");
+      value.erase("response_trace");
+      check(value == viewport::snapshot(plain,ctx) && traced.requested_readback_bytes == plain.requested_readback_bytes,
+            "legacy response request leaves capture and readback unchanged");
+      auto invalid=traced; invalid.response_trace["status"]="budget_refused";
+      rejects([&] { viewport::snapshot(invalid,ctx); },"legacy cannot fabricate response budget refusal");
+    }
     for (const auto budget : {std::uint64_t(0), UINT64_MAX}) {
       const auto diagnostic = viewport::observe(session, logical.owner(), h, viewport::IntentRequest{parameters.gravity, budget});
       auto value = viewport::snapshot(diagnostic, ctx);

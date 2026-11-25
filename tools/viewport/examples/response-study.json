@@ -1,0 +1,325 @@
+{
+  "bindings": [
+    {
+      "id": 0,
+      "level": 0,
+      "parent": -1,
+      "role": "root",
+      "units": 1.0
+    }
+  ],
+  "capture": {
+    "generation": "2ca08851-cd92-4d76-828c-7e4e1f699a62",
+    "label": "Editable English-pair fixture",
+    "phase": "post_tick",
+    "session": "17bdcda3-37dc-4f5d-8bc6-c5de3440654d",
+    "study": "46790bb9-9246-46c6-8a1f-6a09785cf70b",
+    "tick": "3"
+  },
+  "execution": {
+    "backend": "native_cpu",
+    "body_records": [
+      {
+        "address": 40,
+        "context": "1",
+        "incarnation": "1",
+        "record": 0
+      },
+      {
+        "address": 41,
+        "context": "1",
+        "incarnation": "2",
+        "record": 1
+      }
+    ],
+    "comparisons": [
+      {
+        "calculation_bits": 64,
+        "comparison": "100",
+        "field": {
+          "address": 0,
+          "context": "2",
+          "incarnation": "1",
+          "record": 0
+        },
+        "fraction_bits": 52,
+        "level": 0,
+        "storage_bits": 64
+      },
+      {
+        "calculation_bits": 64,
+        "comparison": "101",
+        "field": {
+          "address": 1,
+          "context": "2",
+          "incarnation": "2",
+          "record": 1
+        },
+        "fraction_bits": 52,
+        "level": 1,
+        "storage_bits": 64
+      }
+    ],
+    "completed_tick": "3",
+    "mode": "installed_hierarchy",
+    "prepared_generation": "3"
+  },
+  "frame": {
+    "camera_target": [
+      -0.125,
+      0.0,
+      0.0
+    ],
+    "coordinates": "reference_local",
+    "focal_fields": [
+      {
+        "kind": "parent_value",
+        "mass": 4.0,
+        "position": [
+          -0.125,
+          0.0,
+          0.0
+        ],
+        "value": "00000000-0000-0000-0000-000000000000/00.00.00.00.1K"
+      }
+    ],
+    "reference": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_kind": "captured_focal_centroid",
+    "units": "operative_model_units"
+  },
+  "intent": {
+    "frame": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "generation": "3",
+    "gravity": 0.0771063443835106,
+    "readback_bytes": "416",
+    "rows": [
+      {
+        "position": [
+          -0.125,
+          0.0,
+          0.0
+        ],
+        "relative": [
+          18.417430928542665,
+          0.0,
+          0.0
+        ],
+        "slot": 0,
+        "status": 1
+      },
+      {
+        "position": [
+          -0.125,
+          0.0,
+          0.0
+        ],
+        "relative": [
+          -18.417430928542665,
+          0.0,
+          0.0
+        ],
+        "slot": 1,
+        "status": 1
+      }
+    ],
+    "status": "ok",
+    "tick": "3",
+    "work_limit": "1000000",
+    "work_required": "66",
+    "work_used": "66"
+  },
+  "numerics": {
+    "body_fraction_bits": 52,
+    "field_fraction_bits": 52,
+    "profile": "trial_f64",
+    "storage_bits": 64
+  },
+  "particles": [
+    {
+      "aggregate": "46790bb9-9246-46c6-8a1f-6a09785cf70b/2",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/02.00.00.00.03",
+      "exact_mass": "2",
+      "exposure": "aggregate",
+      "id": "46790bb9-9246-46c6-8a1f-6a09785cf70b/2",
+      "label": "A",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        -18.542430928542665,
+        0.0,
+        0.0
+      ],
+      "radius": 0.125,
+      "slot": 0
+    },
+    {
+      "aggregate": "46790bb9-9246-46c6-8a1f-6a09785cf70b/10",
+      "binding": 0,
+      "definition": "00000000-0000-0000-0000-000000000000/02.00.00.00.03",
+      "exact_mass": "2",
+      "exposure": "aggregate",
+      "id": "46790bb9-9246-46c6-8a1f-6a09785cf70b/10",
+      "label": "A",
+      "level": 0,
+      "mass": 2.0,
+      "position": [
+        18.292430928542665,
+        0.0,
+        0.0
+      ],
+      "radius": 0.125,
+      "slot": 1
+    }
+  ],
+  "response_trace": {
+    "capacity": "64",
+    "count": "4",
+    "frame": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "generation": "3",
+    "packets": [
+      {
+        "comparison": "100",
+        "slot": 0
+      },
+      {
+        "comparison": "101",
+        "slot": 1
+      }
+    ],
+    "readback_bytes": "7168",
+    "rows": [
+      {
+        "body": {
+          "address": 40,
+          "context": "1",
+          "incarnation": "1",
+          "record": 0
+        },
+        "body_mass": 2.0,
+        "child": 0,
+        "delta": [
+          18.417430928542665,
+          0.0,
+          0.0
+        ],
+        "denominator": "2",
+        "extraction_valid": true,
+        "kind": "local",
+        "numerator": "2",
+        "parent": 0,
+        "production_eligible": true,
+        "recipient": [
+          -18.542430928542665,
+          0.0,
+          0.0
+        ],
+        "source_mass": 4.0
+      },
+      {
+        "body": {
+          "address": 40,
+          "context": "1",
+          "incarnation": "1",
+          "record": 0
+        },
+        "body_mass": 2.0,
+        "child": 0,
+        "delta": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "denominator": "2",
+        "extraction_valid": true,
+        "kind": "inherited",
+        "numerator": "2",
+        "parent": 1,
+        "production_eligible": false,
+        "recipient": [
+          -18.542430928542665,
+          0.0,
+          0.0
+        ],
+        "source_mass": 4.0
+      },
+      {
+        "body": {
+          "address": 41,
+          "context": "1",
+          "incarnation": "2",
+          "record": 1
+        },
+        "body_mass": 2.0,
+        "child": 0,
+        "delta": [
+          -18.417430928542665,
+          0.0,
+          0.0
+        ],
+        "denominator": "2",
+        "extraction_valid": true,
+        "kind": "local",
+        "numerator": "2",
+        "parent": 0,
+        "production_eligible": true,
+        "recipient": [
+          18.292430928542665,
+          0.0,
+          0.0
+        ],
+        "source_mass": 4.0
+      },
+      {
+        "body": {
+          "address": 41,
+          "context": "1",
+          "incarnation": "2",
+          "record": 1
+        },
+        "body_mass": 2.0,
+        "child": 0,
+        "delta": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "denominator": "2",
+        "extraction_valid": true,
+        "kind": "inherited",
+        "numerator": "2",
+        "parent": 1,
+        "production_eligible": false,
+        "recipient": [
+          18.292430928542665,
+          0.0,
+          0.0
+        ],
+        "source_mass": 4.0
+      }
+    ],
+    "status": "ok",
+    "tick": "3",
+    "work_limit": "18446744073709551615",
+    "work_required": "1029",
+    "work_used": "1029"
+  },
+  "schema": "hcp-study-snapshot",
+  "source": {
+    "kind": "fixture_only",
+    "profile": "editable-english-pair"
+  },
+  "version": 1
+}

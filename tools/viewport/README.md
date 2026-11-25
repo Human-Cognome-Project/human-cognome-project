@@ -390,6 +390,15 @@ engine/build/live_hierarchy_test --backend cpu --threads 1 --case capture \
   --capture-output /tmp/hcp-current-hierarchy --ticks 1024 --every 16
 ```
 
+The prepared owner observer also accepts an independent `ResponseRequest` for
+exact native response operands, full recipient claims, packet/comparison paths
+and fractions. The live CLI selects this with `--response-work-limit N`; zero
+reports observation-budget refusal while physical commands continue. See the
+[contract, source-pinned qualification and native example](../../engine/docs/COMPLETED-RESPONSE-CAPTURE.md).
+The local/inherited path and production eligibility flags retain their native
+meanings; semantic structural/confounding labels and target derivation follow
+separately. The existing combined diagnostic keeps its recorded meaning.
+
 The C3 run owner can opt into candidate capture with `--intent-work-limit N`.
 Omitting it exports no `intent` payload; `N` is a strict unsigned decimal uint64
 (including zero). The request uses the run's own gravity at each completed

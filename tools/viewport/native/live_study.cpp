@@ -23,7 +23,7 @@ const char *status(field::UpdateStatus value) {
   return "unknown";
 }
 void help() {
-  std::cout << "viewport_live_study [--threads N] [--direct] [--whole-field] [--commands FILE]\n"
+  std::cout << "viewport_live_study [--threads N] [--direct] [--whole-field] [--response-work-limit N] [--commands FILE]\n"
       "Commands: observe; list; add ENTRY [TEMPLATE_ENTRY]; remove ENTRY; lod aggregate|parts; tick [N]; quit\n"
       "The fixture English-pair catalogue declares entries 2 and 10. Both start live.\n"
       "A new root entry copies a declared template (default 2) within capacity.\n";
@@ -35,11 +35,14 @@ int main(int argc, char **argv) {
     auto path=field::HostPath::BulkCopy;
     std::string command_file;
     bool whole_field=false;
+    std::optional<viewport::ResponseRequest> responses;
     for (int i=1; i<argc; ++i) {
       const std::string arg=argv[i];
       if (arg == "--help") { help(); return 0; }
       if (arg == "--direct") path=field::HostPath::CpuDirect;
       else if(arg == "--whole-field")whole_field=true;
+      else if (arg == "--response-work-limit" && i+1<argc)
+        responses=viewport::ResponseRequest{viewport::parse_count("--response-work-limit",argv[++i],0,UINT64_MAX)};
       else if (arg == "--threads" && i+1<argc)
         settings.cpu_threads=int(viewport::parse_count("--threads",argv[++i],1,1024));
       else if (arg == "--commands" && i+1<argc) command_file=argv[++i];
@@ -74,7 +77,7 @@ int main(int argc, char **argv) {
     const auto handle=*submitted.handle;
     field::Parameters64 parameters;
     const auto observe=[&] {
-      return viewport::observe(session,source->owner(),handle,viewport::IntentRequest{parameters.gravity,1000000});
+      return viewport::observe(session,source->owner(),handle,viewport::IntentRequest{parameters.gravity,1000000},responses);
     };
     const auto emit=[&](Json result) {
       const auto state=observe();
