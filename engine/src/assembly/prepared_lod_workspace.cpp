@@ -89,7 +89,7 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
   } else need(a.occurrences().size()==b.occurrences().size());
   const auto &limits=o.h_.prepared_storage().capacity.limits();
   const auto slots=limits[field::Budget::Particles],fields=limits[field::Budget::Fields];
-  need(slots && slots<=limits[field::Budget::Potential]/2);
+  need(slots && (fixed_character_ || slots<=limits[field::Budget::Potential]/2));
   need(o.source_->projection_.exposure(a.occurrences()[0].occurrence.entry)==warm::Exposure::Aggregate);
   for(std::size_t i=0;!fixed_character_ && i<a.occurrences().size();++i) {
     w.charge(1); const auto &old=a.occurrences()[i]; const auto &fresh=b.occurrences()[i];

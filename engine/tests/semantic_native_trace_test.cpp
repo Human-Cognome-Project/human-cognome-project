@@ -771,8 +771,10 @@ Json unicode_exchange(const engine::InstanceSettings &settings,
   AdmissionBindings coarse;
   coarse.source={source->owner(),source->study(),source->generation(),source->shared_recipe().ref};
   coarse.layout=fine.bindings.layout;
-  const AdmissionBody aggregate{{source->study(),{2,{}}},definition,1,3,80,4,{3,1,true}};
+  const AdmissionBody aggregate{{source->study(),{2,{}}},definition,1,3,0,4,{3,1,true}};
   coarse.bodies={aggregate};
+  for(std::size_t i=0;i<fine.bindings.bodies.size();++i)
+    fine.bindings.bodies[i].address=int(i)+1;
   coarse.fields={{sibling,5,int(fine.bindings.fields.size())},root};
   coarse.comparisons={{sibling,coarse_comparison,0,52,{}},{root.field,root_comparison,2,52,{0}}};
   coarse.focus={root.field};
@@ -781,6 +783,7 @@ Json unicode_exchange(const engine::InstanceSettings &settings,
   for (int index : fine.bindings.comparisons.back().children)
     branches[1].push_back(fine.bindings.comparisons.at(index).comparison);
   auto limits=prepared_owner_fixture::capacity().limits();
+  limits[field::Budget::Potential]=3;
   limits[field::Budget::Particles]=3;limits[field::Budget::Fields]=8;
   limits[field::Budget::Batch]=64;limits[field::Budget::Participation]=32;
   limits[field::Budget::CascadeNodes]=8;limits[field::Budget::CascadeLinks]=16;
@@ -812,10 +815,6 @@ Json unicode_exchange(const engine::InstanceSettings &settings,
   const auto initial=observe();
   const auto focal=root_claim(initial);
   const auto retained_bytes=domain->result().live_bytes;
-  const auto record=[](const engine::RecordHandle &r) {
-    return Json{{"context",std::to_string(r.context)},{"incarnation",std::to_string(r.incarnation)},
-                {"address",r.address},{"record",r.record}};
-  };
   const auto capture=[&](const viewport::CompletedState &s, bool parts) {
     const auto exposure=parts?warm::Exposure::Parts:warm::Exposure::Aggregate;
     const auto &report=s.report;
@@ -861,7 +860,7 @@ Json unicode_exchange(const engine::InstanceSettings &settings,
       int matches=0;
       for (const auto &r:s.response_trace.at("rows")) {
         if (r.at("kind")!="inherited" || r.at("child")!=child || r.at("parent")!=parent ||
-            r.at("body")!=record(body))continue;
+            r.at("body")!=claim(body))continue;
         check(r.at("numerator")==std::to_string(mass) && r.at("denominator")==std::to_string(mass),
               "published character coverage lost the whole ordered occurrence");
         ++matches;
@@ -869,11 +868,11 @@ Json unicode_exchange(const engine::InstanceSettings &settings,
       check(matches==1,"native character/root coverage is missing or duplicated");
       total+=mass;
       coverage.push_back({{"entry",input.occurrence.source.entry},{"path",input.occurrence.source.path},
-          {"definition",pin(input.definition)},{"count",mass},{"claim",record(body)}});
+          {"definition",pin(input.definition)},{"count",mass},{"claim",claim(body)}});
     }
     check(total==4 && domain->result().live_bytes==retained_bytes,
           "exchange changed total represented mass or retained owner bytes");
-    return Json{{"coverage",coverage},{"character_mass",4},{"focus",record(focal)},
+    return Json{{"coverage",coverage},{"character_mass",4},{"focus",claim(focal)},
                 {"snapshot",viewport::snapshot(s,context)}};
   };
   Json steps=Json::array({{{"phase","initial"},{"state",capture(initial,false)}}});
