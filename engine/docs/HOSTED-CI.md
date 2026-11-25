@@ -6,6 +6,24 @@ gate: the build, all four regression shards, all four compiler-mode jobs and
 the database job must succeed. Failed, cancelled or skipped jobs fail the gate.
 `projection-values` and the repository smoke checks remain separate checks.
 
+## Current placement qualification budget — #430 correction
+
+[The source-pinned investigation](PLACEMENT-QUALIFICATION-ID-BUDGET.md) preserves
+failed run 45493722124 and its cancelled regression shard's three recorded
+placement failures. The combined placement runner explicitly disables environment
+overrides and now reserves 4,096 cumulative SNode IDs at startup. Three complete
+local runs require 2,094 IDs, including 90 from the added grouped-exchange fixtures.
+The reservation is test-specific metadata; production defaults and model capacity
+are unchanged. Per-case accounting exposes future growth without resetting IDs.
+
+Regression consumer jobs now have a 180-minute allowance. They retain serial
+`-j 1` execution, the exact disjoint index-based inventory and 2,400-second
+placement-test limits. Compiler jobs retain 90 minutes. Original regression shard
+4 stopped near 90 minutes while its fourth placement invocation was running;
+the log reports cancellation. The replacement hosted run must still pass the
+complete inventory and aggregate gate. The #223 discussion below records its
+historical configuration, rather than the current job allowance.
+
 ## Reuse and provenance
 
 Only C/C++ compiler outputs use a cross-run `ccache` cache. Both builds still

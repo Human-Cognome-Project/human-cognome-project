@@ -160,6 +160,24 @@ void structural_inputs(letter_fixture::Fixture &f) {
   CHECK_TRUE(replaced.focal_fields.size() == 1 && replaced.focal_fields[0].value == focus.value &&
                  replaced.focal_fields[0].kind == focus.kind,
              "explicit structural focus replaces inherited focus");
+  const auto selected=source.focus({focus});
+  const auto all_parts=selected.expose_all(warm::Exposure::Parts);
+  const auto all_aggregate=all_parts.expose_all(warm::Exposure::Aggregate);
+  const auto parts=all_parts.bind_structure(nodes), aggregate=all_aggregate.bind_structure(nodes);
+  CHECK_TRUE(all_parts.study()==selected.study() && all_parts.owner()==selected.owner() &&
+                 all_parts.generation()!=selected.generation() &&
+                 &all_parts.shared_recipe()==&selected.shared_recipe() &&
+                 &all_aggregate.shared_recipe()==&selected.shared_recipe() &&
+                 all_aggregate.generation()!=all_parts.generation(),
+             "explicit exposure views share immutable recipe and logical owner with fresh generations");
+  CHECK_TRUE(parts.selections.size()==2 && aggregate.selections.size()==2 &&
+                 all_parts.exposure(0)==warm::Exposure::Parts && all_parts.exposure(1)==warm::Exposure::Parts &&
+                 all_aggregate.exposure(0)==warm::Exposure::Aggregate && all_aggregate.exposure(1)==warm::Exposure::Aggregate &&
+                 selected.exposure(0)==warm::Exposure::Aggregate && selected.exposure(1)==warm::Exposure::Parts &&
+                 parts.focal_fields.at(0).value==focus.value && aggregate.focal_fields.at(0).value==focus.value,
+             "whole-source exposure views preserve explicit focus and leave original selection unchanged");
+  CHECK_TRUE(cleared.expose_all(warm::Exposure::Parts).bind_structure(nodes).focal_fields.empty(),
+             "explicit empty focus survives exposure view selection");
   refuses<warm::Error>([&] { source.bind(nodes); }, "legacy numerical binding requires recipe v1");
   refuses<warm::Error>([&] { source.bind_structure({}); }, "native layout differs from normalized recipe");
   refuses<warm::Error>([&] {

@@ -92,6 +92,22 @@ ActiveAssembly ActiveAssembly::revise(std::optional<LocalInput> local) const {
   revised.focus_override_ = focus_override_;
   return revised;
 }
+ActiveAssembly ActiveAssembly::expose_all(warm::Exposure target) const {
+  require(!local_ && inputs_available() && shared_recipe().recipe_version == 2 &&
+      (target == warm::Exposure::Aggregate || target == warm::Exposure::Parts));
+  detail::PreparationWork work(UINT64_MAX);
+  auto current=LetterProjection(projection_,{},LetterProjection::OwnerSpare{});
+  auto next=LetterProjection(projection_,{},LetterProjection::OwnerSpare{});
+  current.reserve_exposure(work); next.reserve_exposure(work);
+  for(const auto &selection:shared_recipe().selections) {
+    if(current.exposure(selection.entry)==target) continue;
+    current.prepare_exposure(next,{study(),{selection.entry,{}}},target,work);
+    std::swap(current,next);
+  }
+  auto out=ActiveAssembly(std::move(current),owner_,requires_local_,{});
+  out.focal_fields_=focal_fields_;out.focus_override_=focus_override_;
+  return out;
+}
 ActiveAssembly ActiveAssembly::restart() const {
   auto rebuilt = assemble(projection_.recipe(), owner_, requires_local_, local_);
   rebuilt.focal_fields_ = focal_fields_;

@@ -1,5 +1,7 @@
 # NAPIER system guide
 
+Earlier “combined destination” language records the discussion at the time. For current work, distinguish the structural target from the confounded (all-fields) target and from the observed motion. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
+
 **Status (2026-10-04):** Integrated account of the architecture discussed with
 Patrick and the active repository. It explains intended behaviour; the status
 table below separates that intent from running code. The dated

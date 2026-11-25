@@ -8,7 +8,7 @@
 #include "warm/values.h"
 
 namespace assembly {
-namespace detail { class ExchangeOwner; class PreparationWork; struct ProjectionAccess; struct ProjectionOccurrence; }
+namespace detail { class ExchangeOwner; class PreparationWork; class PreparedLodWorkspace; struct ProjectionAccess; struct ProjectionOccurrence; }
 namespace testing { struct ExchangeOwnerAccess; struct ProjectionIndicesAccess; }
 
 struct InitialState {
@@ -148,13 +148,16 @@ class LetterProjection {
  private:
   LetterProjection() = default;
   LetterProjection(const LetterProjection &, const std::shared_ptr<detail::ReservationDomain> &);
-  // Only the private owner-spare path can share an immutable recipe.
+  // Explicit actor exposure views and the private owner spare can share the
+  // immutable recipe; ordinary value copies remain independently owning.
   struct OwnerSpare {};
   LetterProjection(const LetterProjection &, const std::shared_ptr<detail::ReservationDomain> &, OwnerSpare);
   LetterProjection(const LetterProjection &, const std::shared_ptr<detail::ReservationDomain> &,
                    std::shared_ptr<const warm::Bundle>);
   friend LetterProjection project_letters(const warm::Bundle &);
   friend class detail::ExchangeOwner;
+  friend class ActiveAssembly;
+  friend class detail::PreparedLodWorkspace;
   friend struct detail::ProjectionAccess;
   friend struct testing::ExchangeOwnerAccess;
   friend struct testing::ProjectionIndicesAccess;

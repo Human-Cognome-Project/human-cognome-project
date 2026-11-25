@@ -1,5 +1,7 @@
 # Engine responsibility map and first bounded extraction
 
+For a first read, follow a single request through the owners below. [Integrated walkthrough](../../docs/onboarding/INTEGRATED-PATH.md).
+
 ## Refactor exit reconciliation — 2026-11-23
 
 Disposition for review under [#343](https://github.com/Human-Cognome-Project/human-cognome-project/issues/343),

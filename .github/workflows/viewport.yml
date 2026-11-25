@@ -5,11 +5,17 @@ on:
     paths:
       - "tools/viewport/**"
       - ".github/workflows/viewport.yml"
+      - ".github/workflows/ci-prose-scope.yml"
+      - ".github/scripts/ci-prose-scope.sh"
       - "engine/scripts/*hosted_ubuntu_mirror.sh"
   workflow_dispatch:
 
 jobs:
+  scope:
+    uses: ./.github/workflows/ci-prose-scope.yml
   browser:
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.scope != 'prose' }}
     # Keep the runner within the pinned Playwright version's supported OS set.
     runs-on: ubuntu-24.04
     timeout-minutes: 10

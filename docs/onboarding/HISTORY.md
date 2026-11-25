@@ -1,10 +1,13 @@
 # Follow the development history
 
+The [refactor exit record](../../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23) connects the historical map to the integrated logical/native split. Dated queue entries describe their original source.
+
 This route is for understanding the journey: decisions, alternatives, failed attempts, corrections and the evidence available at each step. Historical records are part of the project, not disposable onboarding overhead.
 
 | Question | Start with |
 |---|---|
 | How did the repository and native engine arrive here? | [Reorganization and recovery](../../REORGANIZATION.md). |
+| Which earlier instructions have been superseded? | [Archived handoff ledger](STATUS-ARCHIVE-2026-11-24.md). Follow the dated source pins. |
 | What had been accepted at earlier milestones? | [Acceptance through #201](../history/acceptance-through-201.md) and [2026-11-05 snapshot](../history/agent-acceptance-2026-11-05.md). |
 | Why does a particular contract have its current shape? | The owning contract's linked issue/PR and dated decisions; then follow its predecessor and successor links. |
 | What actually happened in an experiment or CI run? | [Engine evidence](../../engine/tests/), with exact source/configuration pins, failures and contributor/hosted distinctions. |

@@ -203,6 +203,13 @@ struct PlacementAccess {
                                      inputs, bodies, hierarchy, UINT64_MAX,
                                      UINT64_MAX, work, commit);
   }
+  static UpdateResult grouped_exchange(Harness &h,std::uint64_t generation,
+      const std::vector<UpdateCommand> &commands,const std::vector<PlacementIntrinsic> &inputs,
+      const LiveRefreshSpec &hierarchy,const std::vector<engine::RecordHandle> &outgoing,
+      const std::vector<PlacementExchangeGroup> &groups,std::uint64_t work=UINT64_MAX) {
+    return h.stage_current_admission(generation,commands.data(),commands.size(),inputs.data(),inputs.size(),hierarchy,
+        work,UINT64_MAX,UINT64_MAX,true,false,nullptr,0,outgoing.data(),outgoing.size(),groups.data(),groups.size());
+  }
   static std::vector<double> derived(Harness &h) {
     std::vector<double> values(h.prepared_->derived_array->get_nelement());
     engine::readback(*h.prepared_->derived_array, values.data(),

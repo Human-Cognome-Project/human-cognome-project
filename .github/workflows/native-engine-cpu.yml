@@ -10,6 +10,8 @@ on:
       - "tools/viewport/native/**"
       - ".gitmodules"
       - ".github/workflows/native-engine-cpu.yml"
+      - ".github/workflows/ci-prose-scope.yml"
+      - ".github/scripts/ci-prose-scope.sh"
   push:
     branches:
       - "main"
@@ -21,6 +23,8 @@ on:
       - "tools/viewport/native/**"
       - ".gitmodules"
       - ".github/workflows/native-engine-cpu.yml"
+      - ".github/workflows/ci-prose-scope.yml"
+      - ".github/scripts/ci-prose-scope.sh"
   workflow_dispatch:
     inputs:
       cold_build:
@@ -36,7 +40,11 @@ defaults:
     shell: bash
 
 jobs:
+  scope:
+    uses: ./.github/workflows/ci-prose-scope.yml
   projection-values:
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.scope != 'prose' }}
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -46,6 +54,8 @@ jobs:
           cmake --build /tmp/hcp-projection -j 2
           ctest --test-dir /tmp/hcp-projection --output-on-failure
   native-build:
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.scope != 'prose' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     outputs:
@@ -195,7 +205,7 @@ jobs:
   native-regression:
     needs: native-build
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
@@ -329,14 +339,18 @@ jobs:
             engine/build/acceptance-*/retained-probe/**
           if-no-files-found: error
 
-  # Keep the existing required-check name. Skips/failures never count as success.
+  # Accept an intentional prose skip only after successful scope validation.
   native-cpu:
     if: always()
-    needs: [native-build, native-regression, native-compiler, native-database]
+    needs: [scope, native-build, native-regression, native-compiler, native-database]
     runs-on: ubuntu-24.04
     steps:
       - name: Require every CPU gate
         env:
           RESULTS: ${{ toJSON(needs) }}
         run: |
-          printf '%s\n' "$RESULTS" | jq -e 'all(.[]; .result == "success")'
+          printf '%s\n' "$RESULTS" | jq -e '
+            .scope.result == "success" and
+            (if .scope.outputs.scope == "prose" then
+               (del(.scope) | all(.[]; .result == "skipped"))
+             else all(.[]; .result == "success") end)'
