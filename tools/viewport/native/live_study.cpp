@@ -9,6 +9,7 @@
 
 namespace {
 using viewport::Json;
+enum class Preset { EditableEnglish, WholeFieldEnglish, UnicodeI };
 const char *status(field::UpdateStatus value) {
   switch (value) {
     case field::UpdateStatus::Ok: return "ok";
@@ -23,10 +24,12 @@ const char *status(field::UpdateStatus value) {
   return "unknown";
 }
 void help() {
-  std::cout << "viewport_live_study [--threads N] [--direct] [--whole-field] [--response-work-limit N] [--commands FILE]\n"
+  std::cout << "viewport_live_study [--threads N] [--direct] [--whole-field | --unicode-i] [--response-work-limit N] [--commands FILE]\n"
       "Commands: observe; list; add ENTRY [TEMPLATE_ENTRY]; remove ENTRY; lod aggregate|parts; tick [N]; quit\n"
       "The fixture English-pair catalogue declares entries 2 and 10. Both start live.\n"
-      "A new root entry copies a declared template (default 2) within capacity.\n";
+      "A new root entry copies a declared template (default 2) within capacity.\n"
+      "--unicode-i selects the fixed í cohort. Use lod parts and lod aggregate to exchange C3 AD and í.\n"
+      "The fixed cohort reports unsupported for add and remove.\n";
 }
 }
 int main(int argc, char **argv) {
@@ -34,13 +37,18 @@ int main(int argc, char **argv) {
     engine::InstanceSettings settings; settings.read_environment=false; settings.cpu_threads=1;
     auto path=field::HostPath::BulkCopy;
     std::string command_file;
-    bool whole_field=false;
+    Preset preset=Preset::EditableEnglish;
     std::optional<viewport::ResponseRequest> responses;
     for (int i=1; i<argc; ++i) {
       const std::string arg=argv[i];
       if (arg == "--help") { help(); return 0; }
       if (arg == "--direct") path=field::HostPath::CpuDirect;
-      else if(arg == "--whole-field")whole_field=true;
+      else if (arg == "--whole-field" || arg == "--unicode-i") {
+        const auto selected=arg=="--whole-field" ? Preset::WholeFieldEnglish : Preset::UnicodeI;
+        if (preset!=Preset::EditableEnglish && preset!=selected)
+          throw std::invalid_argument("select --whole-field or --unicode-i");
+        preset=selected;
+      }
       else if (arg == "--response-work-limit" && i+1<argc)
         responses=viewport::ResponseRequest{viewport::parse_count("--response-work-limit",argv[++i],0,UINT64_MAX)};
       else if (arg == "--threads" && i+1<argc)
@@ -55,19 +63,30 @@ int main(int argc, char **argv) {
     }
     std::istream &input=command_file.empty() ? std::cin : file;
     letter_fixture::Fixture fixture;
-    const auto english=fixture.ref(fixture.english);
-    std::optional<warm::ToolRef> membership;
-    if(whole_field) {
-      membership=fixture.add(letter_fixture::object("02.00.00.00.00"),"English",0);
-      fixture.base.tools.at(fixture.tools.at(fixture.english)).member_of={*membership};
-    }
-    auto assembled=assembly::ActiveAssembly::assemble(whole_field
-        ? viewport::whole_english_pair(fixture.base,english,*membership)
-        : viewport::prepared_english_pair(fixture.base,english),warm::new_uuid(),false);
-    const auto source=std::make_shared<const assembly::ActiveAssembly>(whole_field
-        ? assembled.expose_all(warm::Exposure::Aggregate) : std::move(assembled));
-    auto request=whole_field ? viewport::whole_english_pair_submission(source,english,*membership,path)
-        : viewport::editable_english_pair_submission(source,english,path);
+    const bool unicode=preset==Preset::UnicodeI;
+    const bool whole_field=preset==Preset::WholeFieldEnglish;
+    const char *profile=unicode ? "live-unicode-exchange" :
+        whole_field ? "whole-field-english-pair" : "editable-english-pair";
+    const char *label=unicode ? "Fixed Unicode í fixture" : "Editable English-pair fixture";
+    auto request=[&] {
+      if (unicode) {
+        const auto endpoint=fixture.ref(fixture.accented);
+        return viewport::unicode_i_submission(std::move(fixture.base),endpoint,warm::new_uuid(),path);
+      }
+      const auto english=fixture.ref(fixture.english);
+      if (whole_field) {
+        const auto membership=fixture.add(letter_fixture::object("02.00.00.00.00"),"English",0);
+        fixture.base.tools.at(fixture.tools.at(fixture.english)).member_of={membership};
+        const auto assembled=assembly::ActiveAssembly::assemble(
+            viewport::whole_english_pair(std::move(fixture.base),english,membership),warm::new_uuid(),false);
+        auto source=std::make_shared<const assembly::ActiveAssembly>(assembled.expose_all(warm::Exposure::Aggregate));
+        return viewport::whole_english_pair_submission(std::move(source),english,membership,path);
+      }
+      auto source=std::make_shared<const assembly::ActiveAssembly>(assembly::ActiveAssembly::assemble(
+          viewport::prepared_english_pair(std::move(fixture.base),english),warm::new_uuid(),false));
+      return viewport::editable_english_pair_submission(std::move(source),english,path);
+    }();
+    const auto source=request.source;
     const auto catalogue=request.bindings.bodies;
     const auto limits=request.capacity.limits();
     const auto resources=request.resources;
@@ -81,7 +100,7 @@ int main(int argc, char **argv) {
     };
     const auto emit=[&](Json result) {
       const auto state=observe();
-      auto context=viewport::context(*source,handle,state.tick,"Editable English-pair fixture");
+      auto context=viewport::context(*source,handle,state.tick,label);
       const auto declared=context.occurrences;
       context.occurrences.clear();
       for (const auto &body : state.report.prepared.particles) {
@@ -99,8 +118,8 @@ int main(int argc, char **argv) {
           const assembly::Origin *origin=nullptr;
           for (const auto &item : state.report.origins)
             if (assembly::occurrence_text(item.occurrence) == id) origin=&item;
-          if (!origin || !origin->shared || (origin->occurrence.source.path.size()!=0 &&
-              (origin->occurrence.source.path.size()!=2 || origin->occurrence.source.path[0]!=0 || origin->occurrence.source.path[1]!=0)))
+          if (!origin || !origin->shared || (!origin->occurrence.source.path.empty() &&
+              origin->occurrence.source.path.size()!=2))
             throw std::runtime_error("unsupported live display provenance");
           std::string label;
           for (const auto &tool : source->shared_recipe().tools)
@@ -110,7 +129,7 @@ int main(int argc, char **argv) {
               assembly::occurrence_text(aggregate),std::move(label)});
         }
       }
-      context.source={{"kind","fixture_only"},{"profile",whole_field?"whole-field-english-pair":"editable-english-pair"}};
+      context.source={{"kind","fixture_only"},{"profile",profile}};
       if(state.report.prepared_exposure)result["exposure"]=*state.report.prepared_exposure==warm::Exposure::Parts?"parts":"aggregate";
       result["completed_tick"]=state.tick;
       result["generation"]=*state.prepared_generation;
@@ -137,7 +156,7 @@ int main(int argc, char **argv) {
       {"capacities",{{"particles",limits[field::Budget::Particles]},{"fields",limits[field::Budget::Fields]},
         {"participation",limits[field::Budget::Participation]},{"contacts",limits[field::Budget::Contacts]},
         {"batch",limits[field::Budget::Batch]},{"scratch_bytes",limits[field::Budget::ScratchBytes]}}},
-      {"physical_mass_per_occurrence",2.},{"exact_source_mass_per_occurrence",2},
+      {"physical_mass_per_occurrence",unicode?4.:2.},{"exact_source_mass_per_occurrence",unicode?4:2},
       {"mass_policy","baseline_source_mass"}});
     bool rejected=false;
     std::string line;

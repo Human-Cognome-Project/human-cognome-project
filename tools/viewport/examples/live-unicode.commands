@@ -1,0 +1,8 @@
+observe
+lod parts
+tick 3
+observe
+lod aggregate
+tick 2
+observe
+quit

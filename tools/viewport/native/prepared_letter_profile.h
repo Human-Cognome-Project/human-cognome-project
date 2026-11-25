@@ -6,6 +6,10 @@ warm::Bundle whole_english_pair(warm::Bundle, const warm::ToolRef &, const warm:
 assembly::PreparedStudySubmission whole_english_pair_submission(
     std::shared_ptr<const assembly::ActiveAssembly>, const warm::ToolRef &, const warm::ToolRef &membership_focus,
     field::HostPath = field::HostPath::BulkCopy);
+// Fixed disjoint í cohort with a prepared C3 AD alternate and retained focus.
+assembly::PreparedStudySubmission unicode_i_submission(
+    warm::Bundle definitions, const warm::ToolRef &endpoint, warm::Uuid owner,
+    field::HostPath path = field::HostPath::BulkCopy);
 struct PreparedLetterProfileError : warm::Error { using warm::Error::Error; };
 // Explicit, bounded demonstration profile, selected by --study. Source pins
 // supply exact construction; these functions supply the documented model and

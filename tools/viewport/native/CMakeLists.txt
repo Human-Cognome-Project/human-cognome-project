@@ -55,6 +55,14 @@ foreach(workers 1 2)
       ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 600)
   endforeach()
 endforeach()
+foreach(path bulk direct)
+  add_test(NAME viewport_unicode_i_${path}
+    COMMAND "${CMAKE_COMMAND}" "-DSTUDY=$<TARGET_FILE:viewport_live_study>" "-DHOST_PATH=${path}"
+      "-DCOMMANDS=${CMAKE_CURRENT_SOURCE_DIR}/../examples/live-unicode.commands"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/check_live_unicode.cmake")
+  set_tests_properties(viewport_unicode_i_${path} PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+endforeach()
 add_executable(viewport_options_test options_test.cpp)
 target_include_directories(viewport_options_test PRIVATE .)
 target_compile_options(viewport_options_test PRIVATE -Wall -Wextra -Wpedantic)

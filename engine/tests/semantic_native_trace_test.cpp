@@ -5,7 +5,7 @@
 #include "prepared_owner_fixture.h"
 #include "field/cascade_source.h"
 #include "assembly/prepared_occurrence_edit.h"
-#include "assembly/prepared_submission.h"
+#include "prepared_letter_profile.h"
 #include "scoped_hierarchy_audit.h"
 #include <algorithm>
 #include <array>
@@ -38,7 +38,7 @@ struct Input {
   AdmissionBindings bindings;
   Json trace=Json::object();
   bool pair,parts,context;
-  Input(engine::Runtime *runtime,const letter_fixture::Fixture &fixture,
+  Input(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,
         const std::string &profile,bool fine,bool imposed,
         const warm::ObjectKey *rollup_endpoint = nullptr, bool repeated_rollup = false):
       pair(profile=="ascii"),parts(fine),context(imposed) {
@@ -145,14 +145,13 @@ struct Input {
     }
     if (repeated_rollup)
       bindings.endpoint_rollup = AdmissionEndpointRollup{{source->study(),{requests[0].entry,{}}},first};
-    std::unique_ptr<taichi::lang::SNode> root;
-    if (runtime) root=std::make_unique<taichi::lang::SNode>(0,taichi::lang::SNodeType::root);
+    auto root=std::make_unique<taichi::lang::SNode>(0,taichi::lang::SNodeType::root);
     auto *leaf=root.get();bindings.layout.push_back({{leaf,-1,ScaleRole::Root},1});
     if(parts) {
-      if(leaf)leaf=&root->dense(taichi::lang::Axis(0),1);
+      leaf=&root->dense(taichi::lang::Axis(0),1);
       bindings.layout.push_back({{leaf,0,ScaleRole::PrimaryStep},64});
     }
-    if(leaf)leaf->insert_children(taichi::lang::SNodeType::place).dt=taichi::lang::PrimitiveType::i32;
+    leaf->insert_children(taichi::lang::SNodeType::place).dt=taichi::lang::PrimitiveType::i32;
     trace={{"schema","hcp-semantic-native-trace"},{"version",1},{"profile",profile},
       {"exposure",parts?"parts":"aggregate"},{"imposed_context",context},
       {"definitions",Json::array()},{"occurrences",Json::array()},{"parents",Json::array()},
@@ -212,11 +211,8 @@ struct Input {
             "multibyte scalar preserves the exact ordered UTF-8 byte construction");
     }
     for(std::size_t i=0;i<bindings.layout.size();++i) {const auto &b=bindings.layout[i];
-      trace["layouts"].push_back({{"index",i},{"parent",b.node.parent},{"role",int(b.node.role)},{"units",b.units}});
-      if(b.node.layout) {
-        trace["layouts"].back()["native_snode_id"]=b.node.layout->id;
-        trace["layouts"].back()["native_snode_type"]=int(b.node.layout->type);
-      }
+      trace["layouts"].push_back({{"index",i},{"parent",b.node.parent},{"role",int(b.node.role)},
+        {"units",b.units},{"native_snode_id",b.node.layout->id},{"native_snode_type",int(b.node.layout->type)}});
     }
     for(std::size_t i=0;i<bindings.fields.size();++i) {const auto &f=bindings.comparisons[i];
       trace["fields"].push_back({{"index",i},{"source",key(f.field)},
@@ -252,7 +248,7 @@ struct Input {
     if (repeated_rollup)
       check(roots.size()==1 && full_fields==roots,"repeated byte topology has a complete endpoint root");
     if(parts && profile=="repeated")check(!shared_children.empty(),"repeated-byte literal tree exposes a shared parent-value field across branches");
-    if (runtime) runtime->program().add_snode_tree(std::move(root),false);
+    runtime.program().add_snode_tree(std::move(root),false);
   }
 };
 
@@ -584,7 +580,7 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
 Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const std::string &profile,
          bool parts,bool context,field::HostPath path,bool project_only,bool rollup=false,
          std::initializer_list<Input *> refused={}) {
-  return run_input(runtime,Input(&runtime,fixture,profile,parts,context,rollup ? &fixture.accented : nullptr),
+  return run_input(runtime,Input(runtime,fixture,profile,parts,context,rollup ? &fixture.accented : nullptr),
       path,project_only,profile=="ascii" || !parts || rollup,refused);
 }
 
@@ -637,8 +633,8 @@ warm::ObjectKey add_scalar_overlap(letter_fixture::Fixture &fixture) {
 Json repeated_parent_overlap(engine::Runtime &runtime, letter_fixture::Fixture &fixture, field::HostPath path) {
   const auto endpoint = add_scalar_overlap(fixture);
 
-  Input repeated(&runtime,fixture,"repeated",true,false);
-  Input overlap(&runtime,fixture,"scalar-overlap",true,false,&endpoint);
+  Input repeated(runtime,fixture,"repeated",true,false);
+  Input overlap(runtime,fixture,"scalar-overlap",true,false,&endpoint);
   check(repeated.bindings.bodies[0].definition==repeated.bindings.bodies[1].definition,
         "the two a paths share the exact byte definition pin");
   const auto repeated_nibble = shared_nibble(repeated,"1");
@@ -679,7 +675,7 @@ Json repeated_parent_overlap(engine::Runtime &runtime, letter_fixture::Fixture &
 
 Json scoped_nibble_rollup(engine::Runtime &runtime, letter_fixture::Fixture &fixture, field::HostPath path) {
   const auto endpoint = add_scalar_overlap(fixture);
-  Input overlap(&runtime,fixture,"scalar-overlap",true,false,&endpoint);
+  Input overlap(runtime,fixture,"scalar-overlap",true,false,&endpoint);
   const auto &root = overlap.bindings.comparisons.back();
   for (std::size_t i=0; i<root.children.size(); ++i)
     overlap.bindings.nibble_scopes.push_back({overlap.bindings.comparisons[root.children[i]].comparison,
@@ -692,7 +688,7 @@ Json scoped_nibble_rollup(engine::Runtime &runtime, letter_fixture::Fixture &fix
 
 Json repeated_endpoint_rollup(engine::Runtime &runtime, const letter_fixture::Fixture &fixture,
                              field::HostPath path) {
-  Input input(&runtime,fixture,"repeated",true,false,nullptr,true);
+  Input input(runtime,fixture,"repeated",true,false,nullptr,true);
   const auto shared = shared_nibble(input,"1");
   for (const auto &body : input.bindings.bodies) {
     const auto matching = std::find_if(shared.at("rows").begin(),shared.at("rows").end(),
@@ -760,42 +756,25 @@ Json repeated_endpoint_rollup(engine::Runtime &runtime, const letter_fixture::Fi
 
 Json unicode_exchange(const engine::InstanceSettings &settings,
                       const letter_fixture::Fixture &fixture, field::HostPath path) {
-  Input fine(nullptr,fixture,"accented",true,false,&fixture.accented);
-  auto source=std::make_shared<const ActiveAssembly>(
-      fine.source->expose_all(warm::Exposure::Aggregate));
   const auto definition=fixture.ref(fixture.accented);
-  const auto &root=fine.bindings.fields.back();
-  const auto root_comparison=fine.bindings.comparisons.back().comparison;
-  constexpr std::uint64_t coarse_comparison=200;
-  const FieldKey sibling{GroupKind::SiblingDefinition,definition.object};
-  AdmissionBindings coarse;
-  coarse.source={source->owner(),source->study(),source->generation(),source->shared_recipe().ref};
-  coarse.layout=fine.bindings.layout;
-  const AdmissionBody aggregate{{source->study(),{2,{}}},definition,1,3,0,4,{3,1,true}};
-  coarse.bodies={aggregate};
-  for(std::size_t i=0;i<fine.bindings.bodies.size();++i)
-    fine.bindings.bodies[i].address=int(i)+1;
-  coarse.fields={{sibling,5,int(fine.bindings.fields.size())},root};
-  coarse.comparisons={{sibling,coarse_comparison,0,52,{}},{root.field,root_comparison,2,52,{0}}};
-  coarse.focus={root.field};
-  std::array<std::vector<AdmissionBody>,2> expected{{coarse.bodies,fine.bindings.bodies}};
-  std::array<std::vector<std::uint64_t>,2> branches{{{coarse_comparison},{}}};
-  for (int index : fine.bindings.comparisons.back().children)
-    branches[1].push_back(fine.bindings.comparisons.at(index).comparison);
-  auto limits=prepared_owner_fixture::capacity().limits();
-  limits[field::Budget::Potential]=3;
-  limits[field::Budget::Particles]=3;limits[field::Budget::Fields]=8;
-  limits[field::Budget::Batch]=64;limits[field::Budget::Participation]=32;
-  limits[field::Budget::CascadeNodes]=8;limits[field::Budget::CascadeLinks]=16;
-  limits[field::Budget::CascadeReferences]=limits[field::Budget::CascadeCoverage]=64;
-  limits[field::Budget::LiveResponses]=128;
-  limits[field::Budget::ScratchBytes]=field::detail::PreparedStorage::required_scratch(
-      limits,false,field::NumericalProfile::trial())+256*1024*1024;
-  const auto domain=prepared_owner_fixture::domain();
-  PreparedStudySubmission request{source,std::move(coarse),
-      field::PreparedCapacity(limits,field::NumericalProfile::trial()),domain};
-  request.path=path;
-  request.lod_alternative=PreparedLodAlternative{fine.source,std::move(fine.bindings)};
+  auto request=viewport::unicode_i_submission(fixture.base,definition,warm::new_uuid(),path);
+  const auto source=request.source;
+  const auto domain=request.resources;
+  const auto &coarse=request.bindings;
+  const auto &fine=request.lod_alternative->bindings;
+  const auto aggregate=coarse.bodies.at(0);
+  const auto root_comparison=fine.comparisons.back().comparison;
+  std::array<std::vector<AdmissionBody>,2> expected{{coarse.bodies,fine.bodies}};
+  std::array<std::vector<std::uint64_t>,2> branches{{{coarse.comparisons.front().comparison},{}}};
+  for (int index : fine.comparisons.back().children)
+    branches[1].push_back(fine.comparisons.at(index).comparison);
+  check(expected[0].size()==1 && aggregate.occurrence.source.path.empty() &&
+        expected[1].size()==2 && branches[1].size()==2 &&
+        expected[1][0].occurrence.source.path==warm::OccurrencePath({0,0}) &&
+        expected[1][1].occurrence.source.path==warm::OccurrencePath({0,1}) &&
+        tool(source->shared_recipe(),expected[1][0].definition).notation=="C3" &&
+        tool(source->shared_recipe(),expected[1][1].definition).notation=="AD",
+        "shared Unicode profile declares the exact aggregate and ordered C3 AD paths");
   ActiveSession session(settings);
   const auto submitted=session.submit_prepared(std::move(request),source->owner());
   if (!submitted.handle)
