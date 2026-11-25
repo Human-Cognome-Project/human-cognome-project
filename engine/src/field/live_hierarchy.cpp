@@ -273,6 +273,7 @@ struct LiveHierarchy::Impl {
   Harness &h;
   const int H, S, U, R, P, G, L;
   bool bound{};
+  bool scoped_nibble_rows{};
   // Local qualification only; normal builds continue to refuse CUDA C3.
   bool cuda_qualification_device{};
   std::uint64_t generation{}, nodes{}, responses{}, references{};
@@ -300,6 +301,7 @@ struct LiveHierarchy::Impl {
     engine::CompiledKernel candidate, commit;
     std::size_t count{}, responses{};
     std::uint64_t reference_peak{};
+    bool scoped_nibble_rows{};
     explicit Refresh(Impl &a)
         : cfg(Columns * a.H),
           children(a.L),
@@ -641,6 +643,7 @@ std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
   std::array<engine::CompiledKernel, 3> kernels;
   const auto suffix = std::to_string(centroid_selection.cells->id);
   const int threads = h.runtime_->cpu_threads();
+  const bool scoped_rows = h.prepared_->capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedNibbleBootstrap;
   {
     IRBuilder b;
     Args a(b);
@@ -754,24 +757,45 @@ std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
       auto member = b.get_loop_guard(members);
       auto *index = b.get_loop_index(members);
       auto *ref = b.create_add(begin, index);
-      std::array<Stmt *, 4> value{};
-      if (parent) {
-        value = packet(b, a, read(b, a.children, {ref}));
-        count(b, a.stats, ChildReads);
-        count(b, a.activity, ReducedEdges);
-      } else {
-        auto *body = read(b, a.sources, cell(b, 0, ref));
+      const auto from_body = [&](Stmt *source) {
+        std::array<Stmt *, 4> value{};
+        auto *body = read(b, a.sources, cell(b, 0, source));
         for (int k = 0; k < 3; ++k)
           value[k] = read(b, a.bodies, cell(b, kPosX + k, body));
         value[3] = b.create_mul(
             read(b, a.bodies, cell(b, kMass, body)),
-            b.create_div(b.create_cast(read(b, a.ratios, cell(b, 0, ref)),
+            b.create_div(b.create_cast(read(b, a.ratios, cell(b, 0, source)),
                                        PrimitiveType::f64),
-                         b.create_cast(read(b, a.ratios, cell(b, 1, ref)),
+                         b.create_cast(read(b, a.ratios, cell(b, 1, source)),
                                        PrimitiveType::f64)));
         count(b, a.stats, SourceReads);
-        count(b, a.activity, ReducedEdges);
+        return value;
+      };
+      std::array<Stmt *, 4> value{};
+      if (parent && !scoped_rows) {
+        value = packet(b, a, read(b, a.children, {ref}));
+        count(b, a.stats, ChildReads);
+      } else if (parent) {
+        auto *child = read(b, a.children, {ref});
+        std::array<AllocaStmt *,4> term{};
+        for (auto &v : term) v = b.create_local_var(PrimitiveType::f64);
+        auto *whole = b.create_if(b.create_cmp_ge(child,b.get_int32(0)));
+        {
+          auto packet_scope = b.get_if_guard(whole,true);
+          const auto v = packet(b,a,child);
+          for (int k=0; k<4; ++k) b.create_local_store(term[k],v[k]);
+          count(b,a.stats,ChildReads);
+        }
+        {
+          auto scoped = b.get_if_guard(whole,false);
+          const auto v = from_body(b.create_sub(b.get_int32(-1),child));
+          for (int k=0; k<4; ++k) b.create_local_store(term[k],v[k]);
+        }
+        for (int k=0; k<4; ++k) value[k] = b.create_local_load(term[k]);
+      } else {
+        value = from_body(ref);
       }
+      count(b, a.activity, ReducedEdges);
       for (auto *v : value)
         mark_nonfinite(b, a.stats, v, Errors);
       {
@@ -1115,6 +1139,7 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     return out;
   }
   if (a.bound || !h.profile_.wide() ||
+      s.capacity.hierarchy_mode()!=PreparedHierarchyMode::ExpressedTree ||
       (h.runtime_->arch() != taichi::Arch::x64 && !a.cuda_qualification_device))
     return out;
   if (expected != s.generation) {

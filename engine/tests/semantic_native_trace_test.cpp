@@ -3,6 +3,7 @@
 #include "snapshot.h"
 #include "capture_options.h"
 #include "prepared_owner_fixture.h"
+#include "field/cascade_source.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -224,7 +225,8 @@ struct Input {
   }
 };
 
-Json refuse_on_empty_owner(field::Harness &harness, const Input &input) {
+Json refuse_on_empty_owner(field::Harness &harness, const Input &input,
+                           const AdmissionBindings &bindings) {
   const auto &storage = harness.prepared_storage();
   const auto state = [&] {
     return Json{{"generation",storage.generation},{"tick",storage.completed_ticks},
@@ -235,7 +237,7 @@ Json refuse_on_empty_owner(field::Harness &harness, const Input &input) {
   check(!storage.populated && storage.live.references()==0 && !harness.live_hierarchy_installed(),
         "overlap refusal control starts with an empty prepared Harness");
   auto domain = prepared_owner_fixture::domain();
-  const auto refused = PreparedStudyOwner::prepare(harness,input.source,warm::new_uuid(),input.bindings,
+  const auto refused = PreparedStudyOwner::prepare(harness,input.source,warm::new_uuid(),bindings,
       domain,UINT64_MAX,UINT64_MAX);
   check(refused.status==AdmissionPlanStatus::InvalidInput && !refused.owner &&
         refused.reservation.live_bytes==0 && state()==before,
@@ -244,10 +246,10 @@ Json refuse_on_empty_owner(field::Harness &harness, const Input &input) {
       {"retained_bytes",refused.reservation.live_bytes},{"before",before},{"after",state()}};
 }
 
-Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const std::string &profile,
-         bool parts,bool context,field::HostPath path,bool project_only,bool rollup=false,
-         std::initializer_list<Input *> refused={}) {
-  Input in(runtime,fixture,profile,parts,context,rollup ? &fixture.accented : nullptr);
+Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool project_only,
+               bool supported,std::initializer_list<Input *> refused={}) {
+  const bool rollup = bool(in.bindings.character_rollup);
+  const bool scoped = !in.bindings.nibble_scopes.empty();
   auto limits=prepared_owner_fixture::capacity().limits();
   limits[field::Budget::Particles]=8;limits[field::Budget::Fields]=16;
   limits[field::Budget::CascadeNodes]=limits[field::Budget::CascadeLevels]=16;
@@ -255,12 +257,13 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
   limits[field::Budget::BootstrapCommands]=128;limits[field::Budget::CascadeReferences]=128;
   limits[field::Budget::CascadeCoverage]=128;limits[field::Budget::LiveResponses]=256;
   limits[field::Budget::ScratchBytes]=field::detail::PreparedStorage::required_scratch(limits,false,field::NumericalProfile::trial())+256*1024*1024;
-  const field::PreparedCapacity capacity(limits,field::NumericalProfile::trial());
+  const auto mode = scoped ? field::PreparedHierarchyMode::ScopedNibbleBootstrap
+                           : field::PreparedHierarchyMode::ExpressedTree;
+  const field::PreparedCapacity capacity(limits,field::NumericalProfile::trial(),mode);
   auto domain=prepared_owner_fixture::domain();
   const auto plan=StructuralAdmissionPlan::build(*in.source,in.bindings,capacity,domain,UINT64_MAX);
-  const bool supported=profile=="ascii" || !parts || rollup;
   if(plan.status!=(supported?AdmissionPlanStatus::Ok:AdmissionPlanStatus::InvalidInput))
-    std::cerr<<"plan_result,profile="<<profile<<",parts="<<parts<<",context="<<context
+    std::cerr<<"plan_result,profile="<<in.trace.at("profile")<<",parts="<<in.parts<<",context="<<in.context
       <<",status="<<int(plan.status)<<",work="<<plan.work.charged<<'\n';
   check(plan.status==(supported?AdmissionPlanStatus::Ok:AdmissionPlanStatus::InvalidInput),"unexpected semantic plan admission result");
   in.trace["plan_status"]=supported?"ok":"invalid_input";
@@ -317,8 +320,54 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
   }
   check(parent_rows==in.trace["parents"].size(),"plan neither drops nor duplicates parent participation rows");
   if (rollup) check(rollup_ordinals.size()==2,"both exact byte contributions reach the rollup");
+  std::optional<FieldKey> shared_nibble_field;
+  if (scoped) {
+    const auto spec = plan.plan->hierarchy();
+    check(spec.scoped_nibble_rows,"the native hierarchy receives explicit scoped links");
+    in.trace["scoped_child_rows"] = Json::array();
+    const auto leaf = in.trace.at("tree_witness").at("shared_children").at(0).get<int>();
+    shared_nibble_field = in.bindings.comparisons[leaf].field;
+    const auto &publisher = spec.nodes[leaf];
+    check(publisher.cohort_count==2,"one nibble publisher retains both global rows");
+    std::set<int> used;
+    for (std::size_t i=0; i<spec.node_count; ++i) {
+      const auto &node = spec.nodes[i];
+      for (std::size_t j=node.child_begin; j<node.child_begin+node.child_count; ++j) {
+        const int child = spec.children[j];
+        if (child>=0) continue;
+        const auto index = std::size_t(-1-child);
+        check(index>=publisher.cohort_begin && index<publisher.cohort_begin+publisher.cohort_count,
+              "scoped child selects a row in the same publisher's cohort");
+        const auto &source = spec.contributions[index];
+        check(used.insert(source.source_command).second,"a global source command is scoped once");
+        const auto &edge = plan.plan->commands().at(source.source_command);
+        const auto &body = plan.plan->occurrences().at(edge.first.command);
+        check(edge.exact_count==1 && edge.ordinal==1 && body.occurrence.path.size()==2 &&
+              plan.plan->commands().at(edge.first.command).exact_mass==2,
+              "scoped child retains the actual exact numerator, denominator and ordinal");
+        in.trace["scoped_child_rows"].push_back({{"branch",std::to_string(node.comparison)},
+            {"publisher",std::to_string(publisher.comparison)},{"path",body.occurrence.path},
+            {"ordinal",edge.ordinal},{"count",*edge.exact_count},{"denominator",2}});
+      }
+    }
+    check(used.size()==publisher.cohort_count,"scoped rows partition the global nibble ledger");
+  }
   field::Harness harness(runtime,capacity,path);
-  for (auto *input : refused) input->trace["owner_refusal"] = refuse_on_empty_owner(harness,*input);
+  for (auto *input : refused) input->trace["owner_refusal"] = refuse_on_empty_owner(harness,*input,input->bindings);
+  if (scoped) {
+    auto invalid = in.bindings;
+    invalid.nibble_scopes.pop_back();
+    in.trace["scope_refusals"]["missing"] = refuse_on_empty_owner(harness,in,invalid);
+    invalid = in.bindings;
+    invalid.nibble_scopes[1] = invalid.nibble_scopes[0];
+    in.trace["scope_refusals"]["duplicate"] = refuse_on_empty_owner(harness,in,invalid);
+    invalid = in.bindings;
+    std::swap(invalid.nibble_scopes[0].byte,invalid.nibble_scopes[1].byte);
+    in.trace["scope_refusals"]["foreign_branch"] = refuse_on_empty_owner(harness,in,invalid);
+    invalid = in.bindings;
+    invalid.nibble_scopes[0].ordinal = 2;
+    in.trace["scope_refusals"]["wrong_ordinal"] = refuse_on_empty_owner(harness,in,invalid);
+  }
   if (rollup) {
     auto rejected_domain = prepared_owner_fixture::domain();
     const auto editable = PreparedStudyOwner::prepare(harness,in.source,warm::new_uuid(),in.bindings,
@@ -379,6 +428,33 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
       }
       check(root_fields==1 && whole_fields==2,"one native character field and both byte child fields publish");
     }
+    if (scoped) {
+      const auto &storage = harness.prepared_storage();
+      int shared_fields = 0;
+      for (std::size_t i=0; i<rows.fields.size(); ++i) {
+        const auto f = rows.field(i);
+        if (key(f.source.field)!=key(*shared_nibble_field)) continue;
+        ++shared_fields;
+        check(result["field_sources"][i]["mass"]==2,"the shared nibble's global mass is two");
+        result["global_nibble"] = {{"field",key(f.source.field)},{"claim",claim(f.claim)},
+            {"rows",Json::array()}};
+        for (std::size_t j=0; j<storage.live.edges; ++j) {
+          const auto &edge = storage.edges[j];
+          if (edge.second.record!=f.claim.record) continue;
+          check(field::detail::same_handle(edge.second,f.claim),"global nibble row retains the complete field handle");
+          const auto body = std::find_if(rows.bodies.begin(),rows.bodies.end(),
+              [&](const auto &h) { return field::detail::same_handle(h,edge.first); });
+          check(body!=rows.bodies.end() && edge.ordinal==1 && storage.source_counts[j]==1,
+                "native global nibble retains each original exact row once");
+          result["global_nibble"]["rows"].push_back({{"path",rows.occurrences[body-rows.bodies.begin()].occurrence.path},
+               {"ordinal",edge.ordinal},{"count",storage.source_counts[j]}});
+        }
+        check(result["global_nibble"]["rows"].size()==2,"global nibble publishes both original body rows");
+      }
+      check(shared_fields==1 && storage.live.particles==2 && storage.live.fields==in.bindings.fields.size() &&
+            storage.live.edges==in.trace["participation_commands"].size(),
+            "scoping adds no body, field or physical participation row");
+    }
     // Independent scalar reference for the recorded diagnostic only. Contact
     // and integration are outside this comparison; native state is never fed
     // from this host calculation.
@@ -435,6 +511,13 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
   return in.trace;
 }
 
+Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const std::string &profile,
+         bool parts,bool context,field::HostPath path,bool project_only,bool rollup=false,
+         std::initializer_list<Input *> refused={}) {
+  return run_input(runtime,Input(runtime,fixture,profile,parts,context,rollup ? &fixture.accented : nullptr),
+      path,project_only,profile=="ascii" || !parts || rollup,refused);
+}
+
 Json shared_nibble(const Input &input, const char *notation) {
   const auto &trace = input.trace;
   const auto &shared = trace.at("tree_witness").at("shared_children");
@@ -470,7 +553,7 @@ Json shared_nibble(const Input &input, const char *notation) {
   return {{"definition",found->at("pin")},{"notation",notation},{"rows",rows},{"branches",branches}};
 }
 
-Json repeated_parent_overlap(engine::Runtime &runtime, letter_fixture::Fixture &fixture, field::HostPath path) {
+warm::ObjectKey add_scalar_overlap(letter_fixture::Fixture &fixture) {
   // Fixture additions keep the first byte C3, replacing AD with B3 to isolate
   // a shared nibble under the same single-scalar rollup contract.
   const auto scalar = fixture.character(letter_fixture::object("00.00.00.01.1m"),u8"ó");
@@ -478,9 +561,14 @@ Json repeated_parent_overlap(engine::Runtime &runtime, letter_fixture::Fixture &
   const auto &definition = tool(fixture.base,scalar);
   fixture.base.geometry.push_back({definition.parents.at(1).target.object,{},{{{},0.5}}});
   fixture.base.geometry.push_back({endpoint.object,{},{{{},0.5}}});
+  return endpoint.object;
+}
+
+Json repeated_parent_overlap(engine::Runtime &runtime, letter_fixture::Fixture &fixture, field::HostPath path) {
+  const auto endpoint = add_scalar_overlap(fixture);
 
   Input repeated(runtime,fixture,"repeated",true,false);
-  Input overlap(runtime,fixture,"scalar-overlap",true,false,&endpoint.object);
+  Input overlap(runtime,fixture,"scalar-overlap",true,false,&endpoint);
   check(repeated.bindings.bodies[0].definition==repeated.bindings.bodies[1].definition,
         "the two a paths share the exact byte definition pin");
   const auto repeated_nibble = shared_nibble(repeated,"1");
@@ -517,6 +605,19 @@ Json repeated_parent_overlap(engine::Runtime &runtime, letter_fixture::Fixture &
   return {{"schema","hcp-repeated-parent-overlap"},{"version",1},{"repeated_aggregate",std::move(aggregate)},
       {"repeated_bytes",std::move(repeated.trace)},{"single_scalar_overlap",std::move(overlap.trace)},
       {"same_harness_retry",std::move(retry)}};
+}
+
+Json scoped_nibble_rollup(engine::Runtime &runtime, letter_fixture::Fixture &fixture, field::HostPath path) {
+  const auto endpoint = add_scalar_overlap(fixture);
+  Input overlap(runtime,fixture,"scalar-overlap",true,false,&endpoint);
+  const auto &root = overlap.bindings.comparisons.back();
+  for (std::size_t i=0; i<root.children.size(); ++i)
+    overlap.bindings.nibble_scopes.push_back({overlap.bindings.comparisons[root.children[i]].comparison,
+        overlap.bindings.bodies[i].occurrence,1});
+  auto experiment = run_input(runtime,std::move(overlap),path,false,true);
+  auto control = run(runtime,fixture,"accented",true,false,path,false,true);
+  return {{"schema","hcp-scoped-nibble-rollup"},{"version",1},
+      {"overlap",std::move(experiment)},{"disjoint",std::move(control)}};
 }
 
 Json signature(const Json &trace) {
@@ -577,14 +678,16 @@ int main(int argc,char **argv) {
       else if(arg=="--direct")path=field::HostPath::CpuDirect;
       else if(arg=="--projection-only")project_only=true;
       else if(arg=="--case" && i+1<argc)selected=argv[++i];
-      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode|character-rollup|parent-overlap]");
+      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode|character-rollup|parent-overlap|scoped-nibble]");
     }
     check(selected=="all" || selected=="ascii" || selected=="unicode" ||
-          selected=="character-rollup" || selected=="parent-overlap","unknown trace case");
+          selected=="character-rollup" || selected=="parent-overlap" || selected=="scoped-nibble","unknown trace case");
     engine::Runtime runtime(settings);letter_fixture::Fixture fixture;
-    if (selected=="parent-overlap") {
-      check(!project_only,"parent-overlap includes a native refusal and retry");
-      std::cout<<repeated_parent_overlap(runtime,fixture,path).dump()<<'\n';
+    if (selected=="parent-overlap" || selected=="scoped-nibble") {
+      check(!project_only,"the overlap controls include native publication and refusal");
+      const auto result = selected=="parent-overlap" ? repeated_parent_overlap(runtime,fixture,path)
+                                                       : scoped_nibble_rollup(runtime,fixture,path);
+      std::cout<<result.dump()<<'\n';
       std::cerr<<"semantic_native_trace,checks="<<checks<<" PASS\n";
       return 0;
     }
