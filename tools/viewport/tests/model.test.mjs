@@ -33,6 +33,9 @@ test('native response paths preserve sparse identities and exact ratios without 
   invalid.response_trace.rows[0].extraction_valid=false;validateSnapshot(invalid);
   const local=structuredClone(f);local.response_trace.rows[0].kind='local';
   local.response_trace.rows[0].parent=3;validateSnapshot(local);
+  const scoped=structuredClone(f);scoped.response_trace.rows[0].kind='scoped_inherited';
+  validateSnapshot(scoped);
+  scoped.response_trace.rows[0].parent=3;assert.throws(() => validateSnapshot(scoped));
   const refused=structuredClone(f);Object.assign(refused.response_trace,{status:'budget_refused',
     work_limit:'33',work_used:'0',readback_bytes:'0',capacity:'0',count:'0',packets:[],rows:[]});
   validateSnapshot(refused);

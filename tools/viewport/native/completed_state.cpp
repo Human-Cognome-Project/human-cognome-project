@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "field/prepared_storage.h"
+#include "field/live_hierarchy.h"
 
 namespace viewport {
 namespace {
@@ -204,8 +205,10 @@ CompletedState observe_prepared(field::Harness &h, Binding &&binding,
           const auto identity = [&](int col) { return v.identities[col*v.capacity+row]; };
           const auto scalar = [&](int col) { return v.values[col*v.capacity+row]; };
           const int body=identity(0), child=identity(1), parent=identity(2), kind=identity(3);
+          const auto response = static_cast<field::LiveResponseKind>(kind);
           require(bodies.count(body) && packets.count(child) && packets.count(parent) &&
-                      (kind == 0 || kind == 1) &&
+                      (response==field::LiveResponseKind::Local || response==field::LiveResponseKind::Inherited ||
+                       response==field::LiveResponseKind::ScopedInherited) &&
                       (scalar(8) == 0 || scalar(8) == 1) && (scalar(9) == 0 || scalar(9) == 1),
                   "viewport: invalid native response identity or flags");
           // Nonfinite extraction operands remain explicitly unavailable. The
@@ -213,7 +216,7 @@ CompletedState observe_prepared(field::Harness &h, Binding &&binding,
           const auto number = [&](int col) { const auto x=scalar(col);
             return std::isfinite(x) ? Json(x) : Json(); };
           trace["rows"].push_back({{"body",record(*bodies.at(body))},
-              {"child",child}, {"parent",parent}, {"kind",kind == 0 ? "local" : "inherited"},
+              {"child",child}, {"parent",parent}, {"kind",kind==0 ? "local" : kind==1 ? "inherited" : "scoped_inherited"},
               {"numerator",std::to_string(v.fractions[row])},
               {"denominator",std::to_string(v.fractions[v.capacity+row])},
               {"delta",{number(0),number(1),number(2)}},

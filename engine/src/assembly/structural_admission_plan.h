@@ -36,6 +36,10 @@ struct AdmissionCharacterRollup {
   OccurrenceKey owner; // Inactive aggregate for this study's single scalar.
   warm::ToolRef character;
 };
+struct AdmissionEndpointRollup {
+  OccurrenceKey owner;
+  warm::ToolRef endpoint;
+};
 struct AdmissionNibbleScope {
   std::uint64_t branch_comparison{};
   OccurrenceKey byte;
@@ -52,6 +56,8 @@ struct AdmissionBindings {
   // Explicit byte-exposure root at ParentValue(character). The plan derives
   // its full per-byte counts and ordinals from the sealed projection.
   std::optional<AdmissionCharacterRollup> character_rollup;
+  // Fixed four-byte study: two uses of one single-byte character and one two-byte character.
+  std::optional<AdmissionEndpointRollup> endpoint_rollup;
   std::vector<AdmissionNibbleScope> nibble_scopes;
 };
 struct AdmissionOccurrenceCommand {

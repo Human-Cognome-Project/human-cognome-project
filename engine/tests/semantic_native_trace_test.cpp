@@ -37,7 +37,7 @@ struct Input {
   bool pair,parts,context;
   Input(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,
         const std::string &profile,bool fine,bool imposed,
-        const warm::ObjectKey *rollup_endpoint = nullptr):
+        const warm::ObjectKey *rollup_endpoint = nullptr, bool repeated_rollup = false):
       pair(profile=="ascii"),parts(fine),context(imposed) {
     auto base=fixture.base;
     const bool rollup = rollup_endpoint != nullptr;
@@ -84,7 +84,9 @@ struct Input {
       for(std::size_t i=0;i<projection.occurrence_count();++i) {
         const auto o=projection.occurrence(i);if(!o.active) continue;
         const int whole=add({GroupKind::SiblingDefinition,o.definition.object});
-        if (rollup) byte_fields.push_back(whole);
+        if ((rollup || repeated_rollup) &&
+            std::find(byte_fields.begin(),byte_fields.end(),whole)==byte_fields.end())
+          byte_fields.push_back(whole);
         std::set<int> children;
         for(const auto &p:tool(recipe,o.definition).parents) children.insert(add({GroupKind::ParentValue,p.target.object}));
         bindings.comparisons[whole].children.assign(children.begin(),children.end());
@@ -113,19 +115,33 @@ struct Input {
       bindings.comparisons[root].children = byte_fields;
       bindings.comparisons[root].level = 2;
     }
+    if (repeated_rollup) {
+      check(byte_fields.size()==3 && endpoint.parents.size()==3,"repeated endpoint has three distinct byte fields");
+      const int a = add({GroupKind::ParentValue,endpoint.parents[0].target.object});
+      bindings.comparisons[a].children={byte_fields[0]};
+      bindings.comparisons[a].level=2;
+      const int accent = add({GroupKind::ParentValue,endpoint.parents[2].target.object});
+      bindings.comparisons[accent].children={byte_fields[1],byte_fields[2]};
+      bindings.comparisons[accent].level=2;
+      const int endpoint_root = add({GroupKind::SiblingDefinition,first.object});
+      bindings.comparisons[endpoint_root].children={a,accent};
+      bindings.comparisons[endpoint_root].level=3;
+    }
     const auto focus=bindings.fields[context?bindings.fields.size()-2:bindings.fields.size()-1].field;
     // The warm recipe selects an existing byte field. The optional character
     // field belongs to prepared admission, so select it through active focus.
-    const auto &recipe_focus = rollup ? bindings.fields[byte_fields.front()].field : focus;
+    const auto &recipe_focus = (rollup || repeated_rollup) ? bindings.fields[byte_fields.front()].field : focus;
     recipe.focal_fields={{static_cast<warm::FieldKind>(recipe_focus.kind),recipe_focus.object}};
     auto selection = ActiveAssembly::assemble(recipe,warm::new_uuid(),false);
-    if (rollup) selection = selection.focus({{focus.kind,InputText(warm::key(focus.object))}});
+    if (rollup || repeated_rollup) selection = selection.focus({{focus.kind,InputText(warm::key(focus.object))}});
     source=std::make_shared<const ActiveAssembly>(std::move(selection));
     bindings.source={source->owner(),source->study(),source->generation(),recipe.ref};bindings.focus={focus};
     if (rollup) {
       bindings.character_rollup = AdmissionCharacterRollup{
           {source->study(),{requests[0].entry,{}}},tool(recipe,first).parents[0].target};
     }
+    if (repeated_rollup)
+      bindings.endpoint_rollup = AdmissionEndpointRollup{{source->study(),{requests[0].entry,{}}},first};
     auto root=std::make_unique<taichi::lang::SNode>(0,taichi::lang::SNodeType::root);
     auto *leaf=root.get();bindings.layout.push_back({{leaf,-1,ScaleRole::Root},1});
     if(parts) {leaf=&root->dense(taichi::lang::Axis(0),1);bindings.layout.push_back({{leaf,0,ScaleRole::PrimaryStep},64});}
@@ -136,6 +152,7 @@ struct Input {
       {"layouts",Json::array()},{"fields",Json::array()}};
     if (rollup) trace["character_rollup"] = {{"character",pin(bindings.character_rollup->character)},
         {"owner_entry",requests[0].entry},{"byte_paths",Json::array({{0,0},{0,1}})}};
+    if (repeated_rollup) trace["endpoint_rollup"] = pin(first);
     std::set<std::string> reached;
     const auto describe=[&](const auto &self,const warm::ToolRef &r)->void {
       if(!reached.insert(warm::key(r.object)).second) return;
@@ -202,7 +219,8 @@ struct Input {
       const auto &f=bindings.fields[i].field;bool full=true;
       for(const auto &body:bindings.bodies) {
         const auto mass=*tool(recipe,body.definition).mass;std::uint64_t count=0;
-        if(f.kind==GroupKind::SiblingDefinition)count=f.object==body.definition.object?mass:0;
+        if(f.kind==GroupKind::SiblingDefinition)
+          count=(f.object==body.definition.object || (repeated_rollup && f.object==first.object))?mass:0;
         else if(f.kind==GroupKind::Membership)count=mass;
         else if (rollup && f.object == bindings.character_rollup->character.object) count=mass;
         else for(const auto &p:trace["parents"])if(p.at("entry")==body.occurrence.source.entry &&
@@ -213,13 +231,15 @@ struct Input {
       if(full)full_fields.push_back(i);
     }
     trace["tree_witness"]={{"roots",roots},{"shared_children",shared_children},{"full_coverage_fields",full_fields}};
-    if(parts && !pair && !rollup)check(full_fields.empty(),"multibyte/repeated byte ledger has no field able to serve as a complete rooted rollup");
+    if(parts && !pair && !rollup && !repeated_rollup)check(full_fields.empty(),"multibyte/repeated byte ledger has no field able to serve as a complete rooted rollup");
     if (rollup) {
       check(roots.size()==1 && full_fields==roots,
             "whole-byte branches have one complete character root");
       check(shared_children.empty()==(profile!="scalar-overlap"),
             "the single-scalar overlap control shares one leaf across branches");
     }
+    if (repeated_rollup)
+      check(roots.size()==1 && full_fields==roots,"repeated byte topology has a complete endpoint root");
     if(parts && profile=="repeated")check(!shared_children.empty(),"repeated-byte literal tree exposes a shared parent-value field across branches");
     runtime.program().add_snode_tree(std::move(root),false);
   }
@@ -249,15 +269,22 @@ Json refuse_on_empty_owner(field::Harness &harness, const Input &input,
 Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool project_only,
                bool supported,std::initializer_list<Input *> refused={}) {
   const bool rollup = bool(in.bindings.character_rollup);
+  const bool repeated = bool(in.bindings.endpoint_rollup);
   const bool scoped = !in.bindings.nibble_scopes.empty();
   auto limits=prepared_owner_fixture::capacity().limits();
   limits[field::Budget::Particles]=8;limits[field::Budget::Fields]=16;
+  if (repeated) {
+    const auto bodies = in.bindings.bodies.size();
+    // This fixture can encounter all unordered pairs during the candidate tick.
+    limits[field::Budget::Contacts]=bodies*(bodies-1)/2;
+  }
   limits[field::Budget::CascadeNodes]=limits[field::Budget::CascadeLevels]=16;
   limits[field::Budget::CascadeLinks]=32;limits[field::Budget::Participation]=64;
   limits[field::Budget::BootstrapCommands]=128;limits[field::Budget::CascadeReferences]=128;
   limits[field::Budget::CascadeCoverage]=128;limits[field::Budget::LiveResponses]=256;
   limits[field::Budget::ScratchBytes]=field::detail::PreparedStorage::required_scratch(limits,false,field::NumericalProfile::trial())+256*1024*1024;
-  const auto mode = scoped ? field::PreparedHierarchyMode::ScopedNibbleBootstrap
+  const auto mode = repeated ? field::PreparedHierarchyMode::ScopedEndpointBootstrap
+                   : scoped ? field::PreparedHierarchyMode::ScopedNibbleBootstrap
                            : field::PreparedHierarchyMode::ExpressedTree;
   const field::PreparedCapacity capacity(limits,field::NumericalProfile::trial(),mode);
   auto domain=prepared_owner_fixture::domain();
@@ -297,6 +324,8 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
   }
   if(!supported || project_only) return in.trace;
   in.trace["participation_commands"]=Json::array();
+  if (repeated) in.trace["endpoint_rows"] = Json::array();
+  const auto repeated_root = in.bindings.comparisons.back().field;
   std::size_t parent_rows=0;
   std::set<std::uint64_t> rollup_ordinals;
   for(const auto &c:plan.plan->commands()) if(c.operation==field::UpdateOp::InsertParticipation) {
@@ -306,7 +335,17 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
     check(f && o && c.exact_count,"source command resolves to actual plan occurrence/field");
     in.trace["participation_commands"].push_back({{"entry",o->occurrence.entry},{"path",o->occurrence.path},
       {"field",key(f->field)},{"ordinal",std::to_string(c.ordinal)},{"count",std::to_string(*c.exact_count)}});
-    if (rollup_field && key(f->field)==key(*rollup_field)) {
+    const auto declared = repeated ? std::find_if(in.trace["occurrences"].begin(),in.trace["occurrences"].end(),
+        [&](const Json &row) { return row.at("active")==true && row.at("entry")==o->occurrence.entry &&
+            row.at("path")==Json(o->occurrence.path); }) : in.trace["occurrences"].end();
+    const bool endpoint_row = repeated && key(f->field)==key(repeated_root);
+    const bool literal_row = repeated && declared!=in.trace["occurrences"].end() &&
+        f->field.kind==GroupKind::ParentValue && key(f->field).at("object")==declared->at("byte").at("character").at("object");
+    if (endpoint_row || literal_row) {
+      check(declared!=in.trace["occurrences"].end() && c.ordinal==declared->at("byte").at("character_ordinal") &&
+            *c.exact_count==2 && c.share==1,"endpoint and character rows retain literal ordinal and full byte count");
+      if (endpoint_row) in.trace["endpoint_rows"].push_back(in.trace["participation_commands"].back());
+    } else if (rollup_field && key(f->field)==key(*rollup_field)) {
       check(o->occurrence.entry==in.bindings.character_rollup->owner.source.entry &&
             c.ordinal<2 && o->occurrence.path==warm::OccurrencePath{0,std::uint32_t(c.ordinal)} &&
             *c.exact_count==2 && c.share==1 && rollup_ordinals.insert(c.ordinal).second,
@@ -328,7 +367,7 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
     const auto leaf = in.trace.at("tree_witness").at("shared_children").at(0).get<int>();
     shared_nibble_field = in.bindings.comparisons[leaf].field;
     const auto &publisher = spec.nodes[leaf];
-    check(publisher.cohort_count==2,"one nibble publisher retains both global rows");
+    check(publisher.cohort_count==(repeated ? 3u : 2u),"one nibble publisher retains its complete global ledger");
     std::set<int> used;
     for (std::size_t i=0; i<spec.node_count; ++i) {
       const auto &node = spec.nodes[i];
@@ -362,13 +401,21 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
     invalid.nibble_scopes[1] = invalid.nibble_scopes[0];
     in.trace["scope_refusals"]["duplicate"] = refuse_on_empty_owner(harness,in,invalid);
     invalid = in.bindings;
-    std::swap(invalid.nibble_scopes[0].byte,invalid.nibble_scopes[1].byte);
+    std::swap(invalid.nibble_scopes.front().byte,invalid.nibble_scopes.back().byte);
     in.trace["scope_refusals"]["foreign_branch"] = refuse_on_empty_owner(harness,in,invalid);
     invalid = in.bindings;
     invalid.nibble_scopes[0].ordinal = 2;
     in.trace["scope_refusals"]["wrong_ordinal"] = refuse_on_empty_owner(harness,in,invalid);
+    if (repeated) {
+      invalid = in.bindings;
+      invalid.comparisons.back().children.pop_back();
+      in.trace["scope_refusals"]["incomplete_endpoint"] = refuse_on_empty_owner(harness,in,invalid);
+      invalid = in.bindings;
+      invalid.endpoint_rollup->endpoint.revision = warm::new_uuid();
+      in.trace["scope_refusals"]["stale_endpoint"] = refuse_on_empty_owner(harness,in,invalid);
+    }
   }
-  if (rollup) {
+  if (rollup || repeated) {
     auto rejected_domain = prepared_owner_fixture::domain();
     const auto editable = PreparedStudyOwner::prepare(harness,in.source,warm::new_uuid(),in.bindings,
         rejected_domain,UINT64_MAX,UINT64_MAX,true);
@@ -395,38 +442,40 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
           state.report.groups64.at(2*capacity.limits()[field::Budget::Fields]+slot)}},
         {"mass",state.report.groups64.at(3*capacity.limits()[field::Budget::Fields]+slot)}});
     }
-    if (rollup) {
+    if (rollup || repeated) {
       const auto &particles = result["snapshot"].at("particles");
       result["body_sources"] = Json::array();
+      std::set<int> slots;
       for (std::size_t i=0; i<rows.bodies.size(); ++i) {
         const auto body = rows.body(i);
         check(body.source.occurrence.entry==2 &&
-              body.source.occurrence.path==warm::OccurrencePath{0,std::uint32_t(i)} &&
-              body.exact_mass==2,"native exact ledger preserves each byte occurrence");
+              body.source.occurrence.path==in.bindings.bodies.at(i).occurrence.source.path &&
+              body.source.definition==in.bindings.bodies.at(i).definition &&
+              body.exact_mass==2 && slots.insert(body.claim.record).second,
+              "native exact ledger preserves each byte occurrence and distinct claim");
         result["body_sources"].push_back({{"path",body.source.occurrence.path},
             {"definition",pin(body.source.definition)},{"claim",claim(body.claim)}});
       }
-      check(particles.size()==2 && particles[0].at("exact_mass")=="2" &&
-            particles[1].at("exact_mass")=="2" && particles[0].at("mass")==2 &&
-            particles[1].at("mass")==2,"publication retains just the two independently claimed byte bodies");
-      const auto &first = particles[0].at("id").get_ref<const std::string &>();
-      const auto &second = particles[1].at("id").get_ref<const std::string &>();
-      check(first.substr(first.find('/'))=="/2/0/0" && second.substr(second.find('/'))=="/2/0/1" &&
-            particles[0].at("slot")!=particles[1].at("slot"),
-            "native byte slots resolve to the two exact ordered occurrence paths");
+      check(particles.size()==in.bindings.bodies.size(),"publication retains one body per byte occurrence");
+      for (const auto &particle : particles)
+        check(particle.at("exact_mass")=="2" && particle.at("mass")==2 &&
+              slots.erase(particle.at("slot").get<int>())==1,"published byte retains its mass and distinct slot");
       int whole_fields = 0;
       int root_fields = 0;
+      const auto expected_root = repeated ? repeated_root : *rollup_field;
       for (const auto &f : result["field_sources"]) {
-        if (f.at("source")==key(*rollup_field)) {
-          check(f.at("mass")==4,"the native character root counts both byte masses once");
+        if (f.at("source")==key(expected_root)) {
+          check(f.at("mass")== (repeated ? 8 : 4),"the native root counts byte masses once");
           ++root_fields;
-        }
-        if (f.at("source").at("kind")==int(GroupKind::SiblingDefinition)) {
-          check(f.at("mass")==2,"each native whole-byte child carries its own mass");
+        } else if (f.at("source").at("kind")==int(GroupKind::SiblingDefinition)) {
+          std::size_t cohort = 0;
+          for (const auto &body : in.bindings.bodies)
+            cohort += f.at("source").at("object")==warm::key(body.definition.object);
+          check(f.at("mass")==2*cohort,"each native whole-byte child carries its occurrence mass");
           ++whole_fields;
         }
       }
-      check(root_fields==1 && whole_fields==2,"one native character field and both byte child fields publish");
+      check(root_fields==1 && whole_fields==(repeated ? 3 : 2),"the root and all whole-byte fields publish");
     }
     if (scoped) {
       const auto &storage = harness.prepared_storage();
@@ -435,7 +484,7 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
         const auto f = rows.field(i);
         if (key(f.source.field)!=key(*shared_nibble_field)) continue;
         ++shared_fields;
-        check(result["field_sources"][i]["mass"]==2,"the shared nibble's global mass is two");
+        check(result["field_sources"][i]["mass"]==(repeated ? 3 : 2),"the shared nibble publishes its full mass");
         result["global_nibble"] = {{"field",key(f.source.field)},{"claim",claim(f.claim)},
             {"rows",Json::array()}};
         for (std::size_t j=0; j<storage.live.edges; ++j) {
@@ -449,9 +498,10 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
           result["global_nibble"]["rows"].push_back({{"path",rows.occurrences[body-rows.bodies.begin()].occurrence.path},
                {"ordinal",edge.ordinal},{"count",storage.source_counts[j]}});
         }
-        check(result["global_nibble"]["rows"].size()==2,"global nibble publishes both original body rows");
+        check(result["global_nibble"]["rows"].size()==in.bindings.nibble_scopes.size(),
+              "global nibble publishes all original body rows");
       }
-      check(shared_fields==1 && storage.live.particles==2 && storage.live.fields==in.bindings.fields.size() &&
+      check(shared_fields==1 && storage.live.particles==in.bindings.bodies.size() && storage.live.fields==in.bindings.fields.size() &&
             storage.live.edges==in.trace["participation_commands"].size(),
             "scoping adds no body, field or physical participation row");
     }
@@ -496,9 +546,17 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
   };
   in.trace["native"]={{"before",capture()}};
   field::Parameters64 parameters;parameters.gravity=1;parameters.contact_stiffness=parameters.reach_strength=0;parameters.dt=0.01;
-  check(owner.tick(authorization,handle,parameters).status==field::TickStatus::Ok,"following native tick failed");
+  const auto tick = owner.tick(authorization,handle,parameters);
+  if (tick.status!=field::TickStatus::Ok) {
+    std::cerr<<"semantic_tick_refusal,profile="<<in.trace.at("profile")<<",status="<<int(tick.status)
+        <<",budget="<<field::budget_name(tick.failure.budget)<<",required="<<tick.failure.required
+        <<",capacity="<<tick.failure.capacity<<",current="<<int(tick.current.status)
+        <<",candidate="<<int(tick.candidate.status)<<'\n';
+    std::cout<<in.trace.dump()<<'\n';
+  }
+  check(tick.status==field::TickStatus::Ok,"following native tick failed");
   in.trace["native"]["after"]=capture();
-  if (rollup) {
+  if (rollup || repeated) {
     const auto &before=in.trace["native"]["before"], &after=in.trace["native"]["after"];
     check(before["snapshot"]["capture"]["tick"]=="0" && after["snapshot"]["capture"]["tick"]=="1" &&
           before["snapshot"]["capture"]["generation"]==after["snapshot"]["capture"]["generation"],
@@ -620,6 +678,74 @@ Json scoped_nibble_rollup(engine::Runtime &runtime, letter_fixture::Fixture &fix
       {"overlap",std::move(experiment)},{"disjoint",std::move(control)}};
 }
 
+Json repeated_endpoint_rollup(engine::Runtime &runtime, const letter_fixture::Fixture &fixture,
+                             field::HostPath path) {
+  Input input(runtime,fixture,"repeated",true,false,nullptr,true);
+  const auto shared = shared_nibble(input,"1");
+  for (const auto &body : input.bindings.bodies) {
+    const auto matching = std::find_if(shared.at("rows").begin(),shared.at("rows").end(),
+        [&](const Json &row) { return row.at("path")==Json(body.occurrence.source.path); });
+    if (matching==shared.at("rows").end()) continue;
+    const auto branch = std::find_if(input.bindings.comparisons.begin(),input.bindings.comparisons.end(),
+        [&](const AdmissionComparison &comparison) { return comparison.field.kind==GroupKind::SiblingDefinition &&
+            comparison.field.object==body.definition.object; });
+    check(branch!=input.bindings.comparisons.end(),"scoped nibble input resolves its declared byte branch");
+    input.bindings.nibble_scopes.push_back({branch->comparison,body.occurrence,1});
+  }
+  auto aggregate = run(runtime,fixture,"repeated",false,false,path,false);
+  auto fine = run_input(runtime,std::move(input),path,false,true);
+  std::array<unsigned long long,3> coarse_counts{}, fine_counts{};
+  for (const auto &row : aggregate.at("participation_commands"))
+    if (row.at("field").at("kind")==int(GroupKind::ParentValue))
+      coarse_counts.at(std::stoull(row.at("ordinal").get<std::string>())) +=
+          std::stoull(row.at("count").get<std::string>());
+  for (const auto &row : fine.at("endpoint_rows"))
+    fine_counts.at(std::stoull(row.at("ordinal").get<std::string>())) +=
+        std::stoull(row.at("count").get<std::string>());
+  check(coarse_counts==std::array<unsigned long long,3>{2,2,4} && fine_counts==coarse_counts,
+        "aggregate and byte endpoints agree by ordered character contribution");
+  for (const auto &observation : fine.at("native")) {
+    const auto &q = observation.at("snapshot").at("response_trace");
+    const auto packet = [&](const Json &comparison) {
+      for (const auto &entry : q.at("packets"))
+        if (entry.at("comparison")==comparison) return entry.at("slot").get<int>();
+      throw std::runtime_error("missing scoped response packet");
+    };
+    std::size_t matched = 0;
+    for (const auto &link : fine.at("scoped_child_rows")) {
+      const auto &bodies = observation.at("body_sources");
+      const auto body = std::find_if(bodies.begin(),bodies.end(),
+          [&](const Json &entry) { return entry.at("path")==link.at("path"); });
+      check(body!=bodies.end(),"scoped response resolves to an actual byte claim");
+      const int parent = packet(link.at("branch")), child = packet(link.at("publisher"));
+      const auto &fields = fine.at("fields");
+      const auto field = std::find_if(fields.begin(),fields.end(),
+          [&](const Json &f) { return f.at("comparison")==link.at("branch"); });
+      check(field!=fields.end(),"scoped response owns a declared branch field");
+      const auto &actual = observation.at("field_sources");
+      const auto branch = std::find_if(actual.begin(),actual.end(),
+          [&](const Json &f) { return f.at("source")==field->at("source"); });
+      check(branch!=actual.end(),"scoped response owns a published branch field");
+      for (const auto &row : q.at("rows")) {
+        if (row.at("kind")!="scoped_inherited" || row.at("body")!=body->at("claim")) continue;
+        const bool eligible = link.at("path")!=Json::array({2,1});
+        check(row.at("child")==child && row.at("parent")==parent && row.at("numerator")=="1" &&
+              row.at("denominator")=="2" && row.at("source_mass")==branch->at("mass") &&
+              row.at("production_eligible")==eligible,"scope drives only its owning byte comparison");
+        for (int axis=0; axis<3; ++axis)
+          check(row.at("delta").at(axis).get<double>()==branch->at("position").at(axis).get<double>()-
+                  row.at("recipient").at(axis).get<double>(),
+                "scoped inherited displacement starts at the singleton byte centroid");
+        ++matched;
+      }
+    }
+    check(matched==3,"exactly three scoped inherited rows resolve through their branch and byte claim");
+  }
+  return {{"schema","hcp-repeated-endpoint-rollup"},{"version",1},
+      {"aggregate_counts",coarse_counts},{"fine_counts",fine_counts},
+      {"aggregate",std::move(aggregate)},{"parts",std::move(fine)}};
+}
+
 Json signature(const Json &trace) {
   const auto &before=trace.at("native").at("before"), &s=before.at("snapshot");
   Json bodies=Json::array(),fields=Json::array(),definitions=Json::array();
@@ -678,11 +804,18 @@ int main(int argc,char **argv) {
       else if(arg=="--direct")path=field::HostPath::CpuDirect;
       else if(arg=="--projection-only")project_only=true;
       else if(arg=="--case" && i+1<argc)selected=argv[++i];
-      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode|character-rollup|parent-overlap|scoped-nibble]");
+      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode|character-rollup|parent-overlap|scoped-nibble|repeated-rollup]");
     }
     check(selected=="all" || selected=="ascii" || selected=="unicode" ||
-          selected=="character-rollup" || selected=="parent-overlap" || selected=="scoped-nibble","unknown trace case");
+          selected=="character-rollup" || selected=="parent-overlap" || selected=="scoped-nibble" ||
+          selected=="repeated-rollup","unknown trace case");
     engine::Runtime runtime(settings);letter_fixture::Fixture fixture;
+    if (selected=="repeated-rollup") {
+      check(!project_only,"repeated-rollup includes native publication and refusal");
+      std::cout<<repeated_endpoint_rollup(runtime,fixture,path).dump()<<'\n';
+      std::cerr<<"semantic_native_trace,checks="<<checks<<" PASS\n";
+      return 0;
+    }
     if (selected=="parent-overlap" || selected=="scoped-nibble") {
       check(!project_only,"the overlap controls include native publication and refusal");
       const auto result = selected=="parent-overlap" ? repeated_parent_overlap(runtime,fixture,path)

@@ -25,6 +25,7 @@ struct LiveHierarchyInspection {
   std::vector<int> order;
   std::size_t node_count{};
 };
+enum class LiveResponseKind { Local, Inherited, ScopedInherited };
 // Synchronized extraction, not combined intent or a motion decision. Values
 // are borrowed until the next synchronized operation on this Harness.
 struct LiveResponseInspection {
@@ -36,7 +37,8 @@ struct LiveResponseInspection {
   // Column-major: delta XYZ, recipient XYZ, body mass, source field mass,
   // structural eligibility, normal-or-zero validity. Only responses rows live.
   std::vector<double> values;
-  // Actual native response rows: body, child packet slot, parent slot, kind.
+  // Body, child publisher slot, parent slot, kind. A scoped inherited row
+  // uses the selected singleton occurrence as its child centroid.
   std::vector<int> identities;
   // Exact participating numerator and denominator, not rounded float shares.
   std::vector<std::uint64_t> fractions;

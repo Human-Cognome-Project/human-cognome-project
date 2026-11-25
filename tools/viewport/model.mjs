@@ -91,7 +91,8 @@ export function validateSnapshot(value) {
         decimal(row.body.context); decimal(row.body.incarnation);
         requireValue(e.body_records.some(b => Object.keys(b).every(k => b[k] === row.body[k])) &&
           packets.has(row.child) && packets.has(row.parent) &&
-          (row.kind !== 'local' || row.child === row.parent), 'Invalid response recipient/path mapping.');
+          (row.kind !== 'local' || row.child === row.parent) &&
+          (row.kind !== 'scoped_inherited' || row.child !== row.parent), 'Invalid response recipient/path mapping.');
         const values=[...row.delta,...row.recipient,row.body_mass,row.source_mass];
         requireValue(values.every(x => x === null || Number.isFinite(x)) &&
           (!row.extraction_valid || values.every(Number.isFinite)), 'Invalid response extraction values.');
