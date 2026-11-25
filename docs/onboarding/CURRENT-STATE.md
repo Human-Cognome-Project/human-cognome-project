@@ -15,6 +15,9 @@ and scoped nibble coverage from the pinned composition. The changed `abá`
 recipe publishes five byte occurrences at mass 10. The correction awaits
 maintainer review and hosted qualification. [Correction and evidence](../../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#data-driven-admission-correction)
 
+The selective polling follow-up on #438 covers byte and endpoint updates
+when the shared nibble packets stay unchanged. [Multi-tick evidence](../../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#selective-polling-correction)
+
 ## Prior decisions
 
 The [archived handoff ledger](STATUS-ARCHIVE-2026-11-24.md) preserves the earlier decisions, failures and source pins. Its “next” and “pending” entries describe the date of each record.

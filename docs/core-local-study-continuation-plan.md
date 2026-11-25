@@ -24,6 +24,11 @@ declaration refuses without publishing on the Harness used for the valid retry.
 Integration and the downstream carry remain subject to maintainer review.
 [Correction and local evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#data-driven-admission-correction)
 
+The follow-up routes accepted movement to scoped byte comparisons during
+ordinary selective ticks. In the multi-tick `abá` witness, both shared
+nibble packets stay fixed while the byte centre moves and the endpoint
+republishes. [Selective polling evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#selective-polling-correction)
+
 ## November 25, 2026 — scoped nibble experiment
 
 The residual witness in #436 is provisionally accepted at `e5744bc0`.

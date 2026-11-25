@@ -73,6 +73,60 @@ and captures, ordinary and scoped LLVM modules, source and binary pins,
 and the local carry patch. The evidence covers the listed CPU cases.
 Full hosted regression and database qualification remain authoritative.
 
+### Selective polling correction
+
+The two `61` occurrences in `abá` contribute to shared nibble fields for
+`6` and `1`. Their byte comparison reads scoped body rows from both
+publishers. Native refresh validates which comparisons read members directly
+and includes those comparisons in the existing movement mask. When a body
+moves, its participation edges activate the direct readers in the centroid
+NativeSet. Packet changes propagate to ordinary ancestors using the existing
+parent notification. [Maintainer finding](https://github.com/Human-Cognome-Project/human-cognome-project/pull/438#issuecomment-7172938571) · [Native phase and publication contract](LIVE-HIERARCHY.md#publication-history-and-recipient-checks)
+
+The motion test waits for a selective tick with zero particle evaluations
+and centroid visits. It then drives one `61` body and applies an opposite
+displacement to `62` and `81`. Both shared nibble packets stay unchanged.
+The test computes the expected byte centre from completed body positions
+on each of three ticks and checks that ordinary polls carry the result to
+the endpoint. A second pulse moves the two `61` bodies in opposite directions
+and checks that exactly three fields visit even though their published
+centres stay fixed.
+
+The integration kernel constructs its conditional IR guard in place. In the
+old path, a temporary guard restored the insertion point before the
+activation was emitted. The old kernel fails the cancellation visit check.
+With only the guard corrected, the asymmetric motion test detects a stale
+byte centroid. Together these checks exercise both selective filtering and
+the scoped movement dependency.
+
+The direct CPU preview records an idle tick at 2. The byte centre at ticks
+3, 4 and 5 is −0.234375, −0.21875 and −0.203125. By tick 7 the endpoint
+centre moves from −0.5 to −0.51875, matching the independently summed
+body positions. At tick 8 the cancellation pulse visits only the byte and
+its two shared nibbles. Both compiler modes produce the same observations.
+
+The tested code is local `5f258b8523c4de1bb2e9fcb2850f20478bdbe10b` and
+GitHub `2bb4e639d1bd4284555ddfa89ebb7fc5446a4660` with tree
+`1dc6e2a3ee4767702769aef776c084b86bceed24`. The local run uses
+Clang/LLVM 15.0.7 on native x64 CPU with the fork and runtime pins below.
+Twenty-six scoped CTests pass, including both varied-recipe host paths,
+ordinary activity and refresh, and native selection. Thirty native
+captures pass viewport validation. The ordinary LLVM packet audit passes
+in default and no-unroll modes.
+
+The isolated downstream preview uses `c42f7fd3`, tree
+`6d31c3cee8b317042c0085fcbc869eb6b3353412`. Its eight CTests pass for the
+existing compiler, exchange and CLI profiles. The varied recipe passes
+396 assertions in both compiler modes, including the shifted-source and
+omitted-response controls. The published descendants remain under the
+maintainer's integration hold.
+
+The machine-local evidence archive `/tmp/hcp-scoped-wake-5f258b85-evidence.tar.gz`
+has SHA256 `4c1f2d813ef494eb1c4c244c254991f303d50a8f4d0665d3b4f2fa55e4f8bf09`.
+It retains the two failing controls, source and binary pins, complete test
+logs, LLVM modules and the downstream preview diff. Its checksums pass
+after fresh extraction. Hosted CI remains authoritative.
+
 ## Original fixed-study evidence
 
 The fixed CPU study publishes the repeated endpoint at both aggregate and byte
