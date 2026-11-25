@@ -1,5 +1,134 @@
 # Fixed `aá` endpoint rollup
 
+## Data-driven admission correction
+
+The #438 correction derives the active byte contribution to each ordered
+parent of a pinned endpoint. It checks the represented counts per ordinal
+and the exact endpoint total before building a native plan. Explicit
+comparison fields retain a child order based on the first represented
+occurrence of each definition. Repeated source ordinals and byte paths
+continue to identify separate contributions. [Current assignment](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7172285940)
+
+For a nibble field used by multiple byte comparisons, admission traces each
+source row to its pinned byte parent and selects the branch for that whole
+byte. An optional selector list checks the derived selections by path and
+ordinal. Native refresh independently checks the source claims, exact ratios
+and coverage of every branch. Each shared leaf publishes its complete
+ledger once. Its unique source rows supply the signed links to the common
+reducer. The CPU bootstrap and its existing response modes still govern
+execution.
+
+The same test executable admits disjoint `í`, shared-parent `ó`, repeated
+`aá` and the changed `abá` recipe. The changed input has four ordered
+parent contributions of 2, 2, 2 and 4. It publishes mass 10 through five
+distinct byte paths and three character comparisons. The caller supplies
+the comparison fields and omits the optional selector list. Two nibble
+publishers each retain three rows at bootstrap and the following tick.
+
+| Shared nibble | Byte occurrence paths contributing one count each |
+| --- | --- |
+| 1 | `[0,0]`, `[2,0]`, `[3,1]` |
+| 6 | `[0,0]`, `[1,0]`, `[2,0]` |
+
+Omitting a required nibble link, dropping an endpoint branch or supplying
+a stale endpoint revision refuses before publication and releases the
+preparation allocations. The same empty Harness then publishes the valid
+recipe. This slice covers explicit endpoint and character comparisons over
+whole-byte branches with scoped nibble leaves. Selection and editing of
+data-driven objects in the existing live CLI is the next milestone.
+
+### Local qualification
+
+The tested executable source is local `cfab62742314862203d046087f813ea8b50c8dc7`
+and GitHub `e9a42b64f4ac6064fded92e90026bf2105b3a3eb`, tree
+`90be955623b30ecf0a1e3370ef92163e0b5ecbe0`. Main at
+`49e3d8dc` includes the #443 guidance. Tests used Clang/LLVM 15.0.7,
+native x64 CPU, the Taichi tree and runtime bitcode pinned below.
+
+Nineteen scoped CTests passed, including disjoint and shared-character
+controls, both varied-recipe host paths, repeated rollup, ordinary refresh,
+capacity and owner submission. The viewport validator passed 30 native
+captures. The ordinary LLVM packet audit passed both default and no-unroll
+modes. Replay the varied recipe with the existing trace executable.
+
+```sh
+cmake --build engine/build --target semantic_native_trace_test -j 4
+ctest --test-dir engine/build --output-on-failure -R '^semantic_varied_rollup_(bulk|direct)$'
+```
+
+An isolated local carry preview on #442 uses `35860b3f`, tree
+`4672e90e708cf9201672541abbb7c20b43bf43f8`. It resolves the shared test
+runner and CTest registration conflicts while preserving both sets of
+checks. Eight CTests passed there, including the original scoped default
+and no-unroll checks, live Unicode exchange, and both CLI host paths.
+In that preview the varied recipe passed 371 assertions in each compiler
+mode. Each compiler mode rejected the shifted source row and omitted
+response controls. The published descendant heads await the maintainer's
+review of the #438 correction.
+
+The machine-local archive `/tmp/hcp-data-driven-admission-cfab6274-evidence.tar.gz`
+has SHA256 `274de56ca7aaf01c51c151819e545b1d70433b54381ce784ef9cfe27a5db7229`.
+Its manifest verifies after fresh extraction. It includes the test output
+and captures, ordinary and scoped LLVM modules, source and binary pins,
+and the local carry patch. The evidence covers the listed CPU cases.
+Full hosted regression and database qualification remain authoritative.
+
+### Selective polling correction
+
+The two `61` occurrences in `abá` contribute to shared nibble fields for
+`6` and `1`. Their byte comparison reads scoped body rows from both
+publishers. Native refresh validates which comparisons read members directly
+and includes those comparisons in the existing movement mask. When a body
+moves, its participation edges activate the direct readers in the centroid
+NativeSet. Packet changes propagate to ordinary ancestors using the existing
+parent notification. [Maintainer finding](https://github.com/Human-Cognome-Project/human-cognome-project/pull/438#issuecomment-7172938571) · [Native phase and publication contract](LIVE-HIERARCHY.md#publication-history-and-recipient-checks)
+
+The motion test waits for a selective tick with zero particle evaluations
+and centroid visits. It then drives one `61` body and applies an opposite
+displacement to `62` and `81`. Both shared nibble packets stay unchanged.
+The test computes the expected byte centre from completed body positions
+on each of three ticks and checks that ordinary polls carry the result to
+the endpoint. A second pulse moves the two `61` bodies in opposite directions
+and checks that exactly three fields visit even though their published
+centres stay fixed.
+
+The integration kernel constructs its conditional IR guard in place. In the
+old path, a temporary guard restored the insertion point before the
+activation was emitted. The old kernel fails the cancellation visit check.
+With only the guard corrected, the asymmetric motion test detects a stale
+byte centroid. Together these checks exercise both selective filtering and
+the scoped movement dependency.
+
+The direct CPU preview records an idle tick at 2. The byte centre at ticks
+3, 4 and 5 is −0.234375, −0.21875 and −0.203125. By tick 7 the endpoint
+centre moves from −0.5 to −0.51875, matching the independently summed
+body positions. At tick 8 the cancellation pulse visits only the byte and
+its two shared nibbles. Both compiler modes produce the same observations.
+
+The tested code is local `5f258b8523c4de1bb2e9fcb2850f20478bdbe10b` and
+GitHub `2bb4e639d1bd4284555ddfa89ebb7fc5446a4660` with tree
+`1dc6e2a3ee4767702769aef776c084b86bceed24`. The local run uses
+Clang/LLVM 15.0.7 on native x64 CPU with the fork and runtime pins below.
+Twenty-six scoped CTests pass, including both varied-recipe host paths,
+ordinary activity and refresh, and native selection. Thirty native
+captures pass viewport validation. The ordinary LLVM packet audit passes
+in default and no-unroll modes.
+
+The isolated downstream preview uses `c42f7fd3`, tree
+`6d31c3cee8b317042c0085fcbc869eb6b3353412`. Its eight CTests pass for the
+existing compiler, exchange and CLI profiles. The varied recipe passes
+396 assertions in both compiler modes, including the shifted-source and
+omitted-response controls. The published descendants remain under the
+maintainer's integration hold.
+
+The machine-local evidence archive `/tmp/hcp-scoped-wake-5f258b85-evidence.tar.gz`
+has SHA256 `4c1f2d813ef494eb1c4c244c254991f303d50a8f4d0665d3b4f2fa55e4f8bf09`.
+It retains the two failing controls, source and binary pins, complete test
+logs, LLVM modules and the downstream preview diff. Its checksums pass
+after fresh extraction. Hosted CI remains authoritative.
+
+## Original fixed-study evidence
+
 The fixed CPU study publishes the repeated endpoint at both aggregate and byte
 exposure in separate native executions. The aggregate's three ordered counts
 are 2, 2 and 4. The byte exposure reproduces those counts with four distinct
