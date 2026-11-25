@@ -95,3 +95,42 @@ three-address `í` exchange passes in bulk and direct mode with 76
 assertions each. The machine-local CTest bundle
 `/tmp/hcp-440-lane-audit-evidence.tar.gz` has SHA256 `8ae6f5860da6fec9ca394b483a12923fe0fb648582b00b8d725caaf883c2c048`.
 Hosted CI and parent-first integration are pending.
+
+## Live CLI qualification
+
+`viewport_live_study --unicode-i` selects the fixed disjoint cohort in the
+existing operator session. The CLI and the native round-trip test call the
+same prepared submission builder. The operator uses the existing CLI tick
+parameters and completed-state capture. Both directions keep the same
+session, study, logical generation and character field claim. The CLI
+test observes both exposures and their response traces, refuses `add 20`
+and `remove 2` while expanded, and completes ticks at 3 and 5.
+[Operator commands](../../docs/onboarding/OPERATOR.md#change-the-live-í-studys-level-of-detail)
+
+The executable source is local `c566fd7d2232ff59768c15b13e7d2415aa6555ca`
+and GitHub `84f2258bc95abc8e232712079089ae4797209262` with matching
+tree `6c5d22df71f531bfb10bf8941ac5bed8091c96ca`, based on #440
+`307511a8726e915c05287c4de4942433aba82465`. The run uses Clang/LLVM 15.0.7
+on x64 CPU and the Taichi tree and runtime bitcode pinned above.
+
+```sh
+ctest --test-dir engine/build --output-on-failure -R '^viewport_unicode_i_(bulk|direct)$'
+```
+
+This runs the new CLI profiles with one worker in bulk and two workers in
+direct mode. Twenty selected local CTests passed, including both new CLI
+profiles, both native exchange profiles (73 assertions each), the editable
+English and whole-field CLI cases, character and scoped rollups, native
+trace and projection, snapshot and CPU smoke. The viewport model test
+passed and the validator accepted all 28 CLI snapshots from bulk, direct
+and standard input runs.
+
+The machine-local archive `/tmp/hcp-live-unicode-cli-c566fd7d-evidence.tar.gz`
+has SHA256 `8fa8fa292462dbe79cef52144c2b68c74be0815826d3a56374b32ac6119e345d`.
+It contains the commands, configuration, CTest and capture validation
+results, binary hashes and complete JSONL records. Its checksums pass
+after fresh extraction.
+
+The full regression suite, no-unroll compiler matrix, PostgreSQL,
+CUDA and browser runs fall outside this local scope. Hosted CI remains
+authoritative.
