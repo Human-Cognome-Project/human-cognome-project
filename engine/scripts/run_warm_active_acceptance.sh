@@ -7,6 +7,7 @@ hcp_active_container=${2:?Pass owned PostgreSQL container}
 hcp_active_core=${3:?Pass retained core DB}
 hcp_active_ling=${4:?Pass retained Linguistics DB}
 hcp_active_mode=${5:-legacy}
+hcp_active_live_exit=${6:-quit}
 hcp_active_program=warm_active_integration
 hcp_active_program_path="$hcp_active_build/$hcp_active_program"
 case "$hcp_active_mode" in
@@ -107,6 +108,7 @@ docker exec --user postgres \
   --env "HCP_WARM_TEST_CONNINFO=dbname=$hcp_active_db" \
   --env "HCP_CORE_TEST_CONNINFO=dbname=$hcp_active_core" \
   --env "HCP_LING_TEST_CONNINFO=dbname=$hcp_active_ling" \
+  --env "HCP_RETAINED_LIVE_EXIT=$hcp_active_live_exit" \
   --env "LD_LIBRARY_PATH=" \
   --env "TI_LIB_DIR=/tmp/$hcp_active_db/runtime" \
   --env "XDG_CACHE_HOME=/tmp/$hcp_active_db-cache" \

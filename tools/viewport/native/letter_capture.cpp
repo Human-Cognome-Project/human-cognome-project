@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
+#include <exception>
 #include <filesystem>
 #include <functional>
 #include <iostream>
@@ -40,7 +41,7 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
     // From here (argument parsing is over) a first SIGINT/SIGTERM is only noted, with no masking,
     // so a hung start-up or stalled acquire still ends on a second signal. Setup and the current
     // tick finish, then the final capture, release and exit 0.
-    viewport::install_stop_handlers();
+    if (!live) viewport::install_stop_handlers();
     if (!live) std::filesystem::create_directories(options.output);
     engine::InstanceSettings settings;
     settings.cuda = options.cuda;
@@ -149,11 +150,11 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
     const auto ticket = manager.publish(recipe);
     if (live) {
       const auto &ref = ticket.ref();
-      live->output << viewport::Json{{"command","recipe_available"},
-          {"selection",ref.selection.str()},{"revision",ref.revision.str()}}.dump() << '\n' << std::flush;
+      viewport::write_live_event(live->output,{{"command","recipe_available"},
+          {"selection",ref.selection.str()},{"revision",ref.revision.str()}});
       std::string line;
       bool selected = false;
-      while (!viewport::stop_requested() && std::getline(live->commands,line)) {
+      while (live->commands.read_line(line)) {
         std::istringstream words(line);
         std::string command, selection, revision, trailing;
         if (!(words >> command) || command[0] == '#') continue;
@@ -166,10 +167,10 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
             status = selected ? "ok" : "unavailable";
           } catch (const warm::Error &) {}
         }
-        live->output << viewport::Json{{"command","open"},{"status",status}}.dump() << '\n' << std::flush;
+        viewport::write_live_event(live->output,{{"command","open"},{"status",status}});
         if (selected) break;
       }
-      if (!selected) return live->commands.bad() ? 1 : 0;
+      if (!selected || live->commands.stopped()) return 0;
     }
     const auto consumer = new_uuid();
     // acquire commits the persistent lease before it returns. The handlers are already installed,
@@ -186,16 +187,25 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
     }());
     const auto &logical = *logical_pin;
     if (live) {
-      auto request = viewport::prepared_retained_english_pair_submission(logical_pin,english,live->path);
-      const auto code = viewport::run_live_study(*live,std::move(request),
-          "Retained English pair",{{"kind","retained_cold_to_warm_to_active"},
-          {"profile","prepared-retained-english-pair"},
-          {"selection",ticket.ref().selection.str()},{"revision",ticket.ref().revision.str()}},
-          1.5,2,true);
+      int code = 0;
+      std::exception_ptr failure;
+      try {
+        if (!live->commands.stopped()) {
+          auto request = viewport::prepared_retained_english_pair_submission(logical_pin,english,live->path);
+          code = viewport::run_live_study(*live,std::move(request),
+              "Retained English pair",{{"kind","retained_cold_to_warm_to_active"},
+              {"profile","prepared-retained-english-pair"},
+              {"selection",ticket.ref().selection.str()},{"revision",ticket.ref().revision.str()}},
+              1.5,2);
+        }
+      } catch (...) {
+        // The runner's native session has unwound before the checked release.
+        failure = std::current_exception();
+      }
       pin.release();
-      live->output << viewport::Json{{"command","recipe_release"},
-          {"acquisitions",manager.activity().acquisitions},{"releases",manager.activity().releases}}
-          .dump() << '\n' << std::flush;
+      if (failure) std::rethrow_exception(failure);
+      viewport::write_live_event(live->output,{{"command","recipe_release"},
+          {"acquisitions",manager.activity().acquisitions},{"releases",manager.activity().releases}});
       return code;
     }
     ActiveSession &session = *started;
@@ -311,6 +321,9 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
     viewport::write((std::filesystem::path(options.output) / "native-evidence.json").string(), evidence);
     std::cout << evidence.dump(2) << '\n';
     return 0;
+  } catch (const viewport::LiveOutputError &e) {
+    std::cerr << e.what() << '\n';
+    return 1;
   } catch (const viewport::PreparedLetterProfileError &e) {
     // This type contains only fixed profile diagnostics, never source/SQL text.
     std::cerr << e.what() << '\n';

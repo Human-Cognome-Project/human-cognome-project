@@ -1,10 +1,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
+#include "live_study_io.h"
 #include "signal_guard.h"
 
 namespace {
@@ -74,6 +77,41 @@ int main() {
       return 11;
     });
     check(WIFSIGNALED(second) && WTERMSIG(second) == SIGINT, "a second signal ends the process");
+    check(in_child([] {
+      int commands[2];
+      if (pipe(commands) < 0 || dup2(commands[0], STDIN_FILENO) < 0) return 10;
+      close(commands[0]);
+      const char input[] = "observe\npartial";
+      if (write(commands[1], input, sizeof(input)-1) != ssize_t(sizeof(input)-1)) return 11;
+      const auto flags = fcntl(STDIN_FILENO, F_GETFL);
+      {
+        LiveCommandInput reader("", true);
+        std::string line;
+        if (!reader.read_line(line) || line != "observe") return 12;
+        std::thread worker([] {
+          std::this_thread::sleep_for(std::chrono::milliseconds(20));
+          raise(SIGTERM);
+        });
+        const bool read_more = reader.read_line(line);
+        worker.join();
+        if (read_more || !reader.stopped()) return 13;
+      }
+      close(commands[1]);
+      return fcntl(STDIN_FILENO, F_GETFL) == flags ? 0 : 14;
+    }) == 0, "worker signal wakes a partial command wait on an open pipe and restores input flags");
+    check(in_child([] {
+      int output[2];
+      if (pipe(output) < 0 || dup2(output[1], STDOUT_FILENO) < 0) return 10;
+      close(output[0]);
+      close(output[1]);
+      ignore_live_sigpipe();
+      try {
+        write_live_output(std::cout,"completed observation");
+      } catch (const LiveOutputError &) {
+        return 0;
+      }
+      return 11;
+    }) == 0, "a failed flush on a broken output pipe reaches the CLI error path");
     // A failing acquire guards nothing.
     check(in_child([] {
       install_stop_handlers();

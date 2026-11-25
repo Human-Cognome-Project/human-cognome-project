@@ -49,6 +49,11 @@ completed records identify the same study and the selected recipe. A wrong
 pin is refused before acquisition. The `recipe_release` record confirms that
 the owner released the lease after the command loop finished.
 
+The first SIGINT or SIGTERM wakes an idle command wait or stops a batch at a
+completed tick. The tick record reports how many ticks ran. A disconnected
+output reader ends the session and the owner releases the lease. A malformed
+command produces `invalid_input` and the next command can use the same study.
+
 This mode qualifies startup on a recipe published by the same process.
 Pinned catalogue selection across sessions and mixed-object edits remain in
 the [recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432).

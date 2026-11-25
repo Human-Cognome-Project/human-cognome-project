@@ -1,8 +1,10 @@
 #pragma once
 
 #include <signal.h>
+#include <unistd.h>
 
 #include <atomic>
+#include <cerrno>
 #include <csignal>
 #include <functional>
 #include <utility>
@@ -10,12 +12,22 @@
 // Stop-signal handling of viewport_letter_capture, kept free of the engine and database so the
 // committed-lease boundary can be unit tested deterministically.
 namespace viewport {
-// Signals only set this flag (async-signal-safe); the capture loop acts on it between ticks.
+// Capture observes the flag between ticks. The live CLI can also wake an input wait.
 // A lock-free atomic: a handler may run on any thread the engine started, and relaxed stores and
 // loads are async-signal-safe for a lock-free type.
 inline std::atomic<int> stop_flag{0};
+inline std::atomic<int> stop_wake_fd{-1};
 static_assert(std::atomic<int>::is_always_lock_free, "stop flag must be lock-free");
-inline void on_signal(int) { stop_flag.store(1, std::memory_order_relaxed); }
+inline void on_signal(int) {
+  const int saved_errno = errno;
+  stop_flag.store(1, std::memory_order_relaxed);
+  const int fd = stop_wake_fd.load(std::memory_order_relaxed);
+  if (fd >= 0) {
+    const char wake = 0;
+    while (write(fd, &wake, 1) < 0 && errno == EINTR) {}
+  }
+  errno = saved_errno;
+}
 inline bool stop_requested() { return stop_flag.load(std::memory_order_relaxed) != 0; }
 // Installed before the engine starts or anything is acquired, with no masking, so a stuck
 // start-up or a stalled acquire stays interruptible: the first signal is noted, and

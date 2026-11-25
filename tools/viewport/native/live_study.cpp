@@ -2,7 +2,6 @@
 #include "live_study.h"
 #include "capture_options.h"
 #include "letter_projection_fixture.h"
-#include <fstream>
 #include <iostream>
 
 namespace {
@@ -43,12 +42,8 @@ int main(int argc, char **argv) {
       else if (arg == "--commands" && i+1<argc) command_file=argv[++i];
       else throw std::invalid_argument("unknown or incomplete option");
     }
-    std::ifstream file;
-    if (!command_file.empty()) {
-      file.open(command_file);
-      if (!file) throw std::invalid_argument("cannot open command file");
-    }
-    std::istream &input=command_file.empty() ? std::cin : file;
+    viewport::ignore_live_sigpipe();
+    viewport::LiveCommandInput input(command_file,preset==Preset::Retained);
     const viewport::LiveStudyInput run{input,std::cout,settings,path,responses};
     if (preset==Preset::Retained) {
 #ifdef HCP_HAS_RETAINED_LIVE_STUDY

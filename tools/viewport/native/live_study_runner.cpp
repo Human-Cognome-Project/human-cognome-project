@@ -1,6 +1,5 @@
 #include "live_study.h"
 #include "capture_options.h"
-#include "signal_guard.h"
 #include "assembly/prepared_occurrence_edit.h"
 #include <iostream>
 #include <sstream>
@@ -22,9 +21,13 @@ const char *status(field::UpdateStatus value) {
 }
 }
 
+void write_live_event(std::ostream &output, const Json &event) {
+  write_live_output(output,event.dump());
+}
+
 int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmission request,
                    const std::string &label, const Json &source_metadata,
-                   double physical_mass, std::uint64_t source_mass, bool stop_on_signal) {
+                   double physical_mass, std::uint64_t source_mass) {
   const auto source=request.source;
   const auto catalogue=request.bindings.bodies;
   const auto limits=request.capacity.limits();
@@ -84,7 +87,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
         {"velocity",{velocity(0),velocity(1),velocity(2)}}});
     }
     result["observation"]=viewport::snapshot(state,context);
-    input.output << result.dump() << '\n' << std::flush;
+    write_live_event(input.output,result);
   };
   Json available=Json::array();
   for (const auto &entry : catalogue)
@@ -99,16 +102,16 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
     {"mass_policy",source_metadata.at("kind")=="fixture_only" ? "baseline_source_mass" : "retained_profile_mass"}});
   bool rejected=false;
   std::string line;
-  while ((!stop_on_signal || !stop_requested()) && std::getline(input.commands,line)) {
+  while (input.commands.read_line(line)) {
     std::istringstream words(line);
     std::string command, argument, extra;
     if (!(words>>command) || command[0] == '#') continue;
     words>>argument; words>>extra;
     try {
       if (command == "quit" && argument.empty()) break;
-      if (!extra.empty() && command != "add") throw std::invalid_argument("too many command arguments");
+      if (!extra.empty() && command != "add") throw UsageError("too many command arguments");
       std::string trailing;
-      if (words>>trailing) throw std::invalid_argument("too many command arguments");
+      if (words>>trailing) throw UsageError("too many command arguments");
       if ((command == "observe" || command == "list") && argument.empty()) {
         emit({{"command",command},{"status","ok"},{"catalogue",available}});
       } else if(command == "lod" && (argument=="aggregate" || argument=="parts")) {
@@ -128,14 +131,16 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
           {"failure",{{"budget",field::budget_name(p.failure.budget)},{"required",p.failure.required},{"capacity",p.failure.capacity}}}});
       } else if (command == "tick") {
         const auto ticks=argument.empty() ? 1 : viewport::parse_count("tick",argument,1,1000000);
-        for (std::uint64_t i=0; i<ticks; ++i) {
+        std::uint64_t completed=0;
+        for (; completed<ticks && !input.commands.stopped(); ++completed) {
           const auto result=session.tick_prepared(handle,source->owner(),parameters,1000000000,1000000);
           if (result.status != field::TickStatus::Ok) throw std::runtime_error("native tick refused");
         }
-        emit({{"command",command},{"status","ok"},{"ticks",ticks}});
+        emit({{"command",command},{"status",completed==ticks ? "ok" : "stopped"},
+              {"ticks",completed}});
       } else if ((command == "add" || command == "remove") && !argument.empty()) {
         const auto entry=viewport::parse_count("entry",argument,0,UINT64_MAX);
-        assembly::PreparedOccurrenceEdit edit{{source->study(),{entry,{}}},command == "add",*observe().prepared_generation};
+        std::optional<assembly::OccurrenceKey> clone_from;
         if (command == "add") {
           bool declared_entry=false;
           for (const auto &item : catalogue) declared_entry |= item.occurrence.source.entry == entry;
@@ -143,9 +148,11 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
               : viewport::parse_count("template",extra,0,UINT64_MAX);
           for (const auto &item : catalogue)
             if (item.occurrence.source.entry == template_entry && item.occurrence.source.path.empty())
-              edit.clone_from=item.occurrence;
-          if (!edit.clone_from) throw std::invalid_argument("template is not in the declared source catalogue");
+              clone_from=item.occurrence;
+          if (!clone_from) throw UsageError("template is not in the declared source catalogue");
         }
+        assembly::PreparedOccurrenceEdit edit{{source->study(),{entry,{}}},command == "add",*observe().prepared_generation};
+        edit.clone_from=std::move(clone_from);
         edit.preparation_work=10000000; edit.placement_work=100000000;
         edit.placement_cells=65536; edit.hierarchy_work=1000000;
         const auto result=session.edit_prepared(handle,source->owner(),edit);
@@ -161,12 +168,11 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
           {"native_claims",std::move(claims)},
           {"preparation_status",int(result.preparation.status)},
           {"preparation_work",result.preparation.charged}});
-      } else throw std::invalid_argument("expected observe, list, add ENTRY, remove ENTRY, lod aggregate|parts, tick [N] or quit");
-    } catch (const std::invalid_argument &error) {
+      } else throw UsageError("expected observe, list, add ENTRY, remove ENTRY, lod aggregate|parts, tick [N] or quit");
+    } catch (const UsageError &error) {
       rejected=true; emit({{"command",command},{"status","invalid_input"},{"message",error.what()}});
     }
   }
-  if (input.commands.bad()) throw std::runtime_error("command input failed");
   return rejected ? 1 : 0;
 }
 }  // namespace viewport
