@@ -1060,6 +1060,12 @@ void audit_compiler_ir(engine::Runtime &r,
 
 using Packet = std::array<double, 4>;
 using Vector = std::array<long double, 3>;
+std::uint64_t binary64_bits(double value) {
+  std::uint64_t bits;
+  static_assert(sizeof(bits) == sizeof(value));
+  std::memcpy(&bits, &value, sizeof(bits));
+  return bits;
+}
 double quantize(double value, int bits) {
   if (value == 0)
     return value;
@@ -1077,7 +1083,7 @@ Packet selected(const LiveHierarchyInspection &v, int n) {
     p[k] = v.slots[(v.selectors[n] * 4 + k) * h + n];
   return p;
 }
-Packet fold(const std::vector<Packet> &inputs, int bits) {
+Packet wider_fold(const std::vector<Packet> &inputs, int bits) {
   require(!inputs.empty(), "empty reference fold");
   std::array<long double, 4> sum{};
   for (auto p : inputs) {
@@ -1091,31 +1097,54 @@ Packet fold(const std::vector<Packet> &inputs, int bits) {
     p[k] = quantize(double(sum[k] / sum[3]), bits);
   return p;
 }
-bool packet_near(const Packet &a, const Packet &b, int bits) {
-  for (int k = 0; k < 4; ++k) {
-    if (k < 3 && bits < 52 && a[k] != b[k])
-      return false;
-    if (std::abs(a[k] - b[k]) > 4e-12 * std::max(1., std::abs(b[k])))
-      return false;
-  }
-  return true;
+double publication_quantize(double value, int bits) {
+  // Clear the discarded storage bits, including for subnormal values.
+  const auto discarded = (std::uint64_t{1} << (52 - bits)) - 1;
+  const auto kept = binary64_bits(value) & ~discarded;
+  std::memcpy(&value, &kept, sizeof(value));
+  return value;
 }
-Packet leaf_reference(Fixture &f, int n) {
+Packet publication_reference(const std::vector<Packet> &inputs, int bits) {
+  require(!inputs.empty(), "empty publication reference");
+  const auto &anchor = inputs.front();
+  Packet result{};
+  for (const auto &p : inputs) {
+    for (int k = 0; k < 3; ++k) {
+      // Store the product in binary64 before adding it. The native contract
+      // rounds these operations separately, regardless of host FMA support.
+      const volatile double weighted_offset = p[3] * (p[k] - anchor[k]);
+      result[k] += weighted_offset;
+    }
+    result[3] += p[3];
+  }
+  for (int k = 0; k < 3; ++k)
+    result[k] = publication_quantize(anchor[k] + result[k] / result[3], bits);
+  return result;
+}
+enum class LeafReference { Publication, Wider };
+Packet leaf_reference(Fixture &f, int n,
+                      LeafReference kind = LeafReference::Publication) {
   std::vector<Packet> inputs;
   const auto &node = f.nodes[n];
   const auto &s = f.h.prepared_storage();
   for (std::size_t j = node.cohort_begin;
        j < node.cohort_begin + node.cohort_count; ++j) {
     const auto &ref = f.refs[j];
-    int body = ref.occurrence.record;
+    const int body = ref.occurrence.record;
     Packet p{};
     for (int k = 0; k < 3; ++k)
       p[k] = f.h.particle64(kPosX + k, body);
-    p[3] = double(static_cast<long double>(f.h.particle64(kMass, body)) *
-                  s.source_counts[ref.source.row] / s.source_masses[body]);
+    const auto mass = f.h.particle64(kMass, body);
+    const auto count = s.source_counts[ref.source.row];
+    const auto denominator = s.source_masses[body];
+    p[3] = kind == LeafReference::Wider
+        ? double(static_cast<long double>(mass) * count / denominator)
+        : mass * (double(count) / double(denominator));
     inputs.push_back(p);
   }
-  return fold(inputs, node.retained_fraction_bits);
+  return kind == LeafReference::Wider
+      ? wider_fold(inputs, node.retained_fraction_bits)
+      : publication_reference(inputs, node.retained_fraction_bits);
 }
 void hierarchy_reference(Fixture &f) {
   const auto &v = f.h.inspect_live_hierarchy();
@@ -1127,11 +1156,10 @@ void hierarchy_reference(Fixture &f) {
       std::vector<Packet> inputs;
       for (int c : f.adjacency[n])
         inputs.push_back(expected[c]);
-      expected.push_back(fold(inputs, f.nodes[n].retained_fraction_bits));
+      expected.push_back(publication_reference(inputs, f.nodes[n].retained_fraction_bits));
     }
     require(
-        packet_near(selected(v, int(n)), expected[n],
-                    f.nodes[n].retained_fraction_bits),
+        selected(v, int(n)) == expected[n],
         "settled hierarchy differs from independent published-child reference");
     for (int k = 0; k < 4; ++k)
       near(f.h.group64(k, f.nodes[n].field.record), selected(v, int(n))[k],
@@ -1144,12 +1172,6 @@ struct LeafFailureContext {
   const std::vector<double> *before_bodies{nullptr};
   std::FILE *output{stdout};
 };
-std::uint64_t leaf_failure_bits(double value) {
-  std::uint64_t bits;
-  static_assert(sizeof(bits) == sizeof(value));
-  std::memcpy(&bits, &value, sizeof(bits));
-  return bits;
-}
 void dump_leaf_failure(Fixture &f, int n,
                        const LiveHierarchyInspection &before,
                        const LiveHierarchyInspection &after,
@@ -1176,12 +1198,16 @@ void dump_leaf_failure(Fixture &f, int n,
       static_cast<long long>(after.visits[n] - before.visits[n]),
       static_cast<long long>(after.visits[H+n] - before.visits[H+n]));
   const auto old = selected(before,n);
+  const auto wider = leaf_reference(f,n,LeafReference::Wider);
   for (int k = 0; k < 4; ++k)
     std::fprintf(out, "leaf_failure_packet,word=%d,before_bits=0x%016llx,"
-        "selected_bits=0x%016llx,reference_bits=0x%016llx,before=%a,selected=%a,reference=%a\n",
-        k, static_cast<unsigned long long>(leaf_failure_bits(old[k])),
-        static_cast<unsigned long long>(leaf_failure_bits(actual[k])),
-        static_cast<unsigned long long>(leaf_failure_bits(reference[k])), old[k], actual[k], reference[k]);
+        "selected_bits=0x%016llx,reference_bits=0x%016llx,wider_reference_bits=0x%016llx,"
+        "before=%a,selected=%a,reference=%a,wider_reference=%a\n",
+        k, static_cast<unsigned long long>(binary64_bits(old[k])),
+        static_cast<unsigned long long>(binary64_bits(actual[k])),
+        static_cast<unsigned long long>(binary64_bits(reference[k])),
+        static_cast<unsigned long long>(binary64_bits(wider[k])),
+        old[k], actual[k], reference[k], wider[k]);
   for (std::size_t j = source.cohort_begin; j < source.cohort_begin + source.cohort_count; ++j) {
     const auto &ref = f.refs[j];
     const int body = ref.occurrence.record;
@@ -1200,23 +1226,34 @@ void dump_leaf_failure(Fixture &f, int n,
         static_cast<unsigned long long>(ref.source.generation),
         static_cast<unsigned long long>(ref.source.row), static_cast<unsigned long long>(ref.source.ordinal),
         static_cast<unsigned long long>(count), static_cast<unsigned long long>(denominator),
-        static_cast<unsigned long long>(leaf_failure_bits(mass)),
-        static_cast<unsigned long long>(leaf_failure_bits(native_weight)),
-        static_cast<unsigned long long>(leaf_failure_bits(reference_weight)));
+        static_cast<unsigned long long>(binary64_bits(mass)),
+        static_cast<unsigned long long>(binary64_bits(native_weight)),
+        static_cast<unsigned long long>(binary64_bits(reference_weight)));
     for (int k = 0; k < 3; ++k) {
       const auto position = f.h.particle64(kPosX+k,body);
       std::fprintf(out, "leaf_failure_position,ordinal=%llu,axis=%d,current_bits=0x%016llx,current=%a,"
           "before_available=%d", static_cast<unsigned long long>(j-source.cohort_begin), k,
-          static_cast<unsigned long long>(leaf_failure_bits(position)), position, context.before_bodies != nullptr);
+          static_cast<unsigned long long>(binary64_bits(position)), position, context.before_bodies != nullptr);
       if (context.before_bodies) {
         const auto previous = (*context.before_bodies)[(kPosX+k)*f.h.particle_capacity()+body];
         std::fprintf(out, ",before_bits=0x%016llx,before=%a",
-            static_cast<unsigned long long>(leaf_failure_bits(previous)), previous);
+            static_cast<unsigned long long>(binary64_bits(previous)), previous);
       }
       std::fputc('\n',out);
     }
   }
   std::fflush(out);
+}
+void check_leaf_packet(Fixture &f, int n,
+                       const LiveHierarchyInspection &before,
+                       const LiveHierarchyInspection &after,
+                       const Packet &actual,
+                       const LeafFailureContext &context) {
+  const auto reference = leaf_reference(f,n);
+  if (actual != reference) {
+    dump_leaf_failure(f,n,before,after,actual,reference,context);
+    throw std::runtime_error("live leaf reduction/reference mismatch");
+  }
 }
 void poll_lifetime(Fixture &f, const LiveHierarchyInspection &before,
                    const LeafFailureContext &context = {}) {
@@ -1249,10 +1286,7 @@ void poll_lifetime(Fixture &f, const LiveHierarchyInspection &before,
         "last-evaluation flags do not match installed publication");
     const auto actual = selected(after, int(n));
     if (f.adjacency[n].empty()) {
-      const auto reference = leaf_reference(f, int(n));
-      const bool matched = packet_near(actual, reference, f.nodes[n].retained_fraction_bits);
-      if (!matched) dump_leaf_failure(f,int(n),before,after,actual,reference,context);
-      require(matched, "live leaf reduction/reference mismatch");
+      check_leaf_packet(f,int(n),before,after,actual,context);
     } else {
       require(f.adjacency[n].size() <= 8, "reference combination bound");
       bool complete = false;
@@ -1261,9 +1295,7 @@ void poll_lifetime(Fixture &f, const LiveHierarchyInspection &before,
         int k = 0;
         for (int c : f.adjacency[n])
           inputs.push_back(selected(mask & (1u << k++) ? after : before, c));
-        complete |=
-            packet_near(actual, fold(inputs, f.nodes[n].retained_fraction_bits),
-                        f.nodes[n].retained_fraction_bits);
+        complete |= actual == publication_reference(inputs, f.nodes[n].retained_fraction_bits);
       }
       require(complete,
               "parent did not use complete pre/post-poll child packets");
@@ -1606,29 +1638,51 @@ std::uint64_t state_hash(Fixture &f) {
   }
   return hash;
 }
-void leaf_failure_diagnostics(engine::Runtime &r, HostPath path) {
-  Fixture f(r,path,{{},{},{0,1}},{{1,1},{1,0},{0,0}},
-            {2,1},{2,1},{-0x1.8p-49,58.5},8,6);
+void leaf_boundary_case(engine::Runtime &r, HostPath path, const char *name,
+                        double initial_x, double final_x, double second_x,
+                        double expected_x, double wider_x) {
+  Fixture f(r, path, {{},{},{0,1}}, {{1,1},{1,0},{0,0}},
+            {2,1}, {2,1}, {initial_x,second_x}, 8, 6);
   f.install();
-  const auto body_before = f.h.particles64();
+  const auto bodies_before = f.h.particles64();
   const auto before = f.h.inspect_live_hierarchy();
+  if (initial_x != final_x) {
+    f.h.particle64(kPosX,f.in.particle_rows[0].record) = final_x;
+    no_new([&] { PreparedFixtureAccess::upload_body_fixture64(f.h); });
+  }
   f.control->set(1,f.nodes[0].field.record);
   no_new([&] { LiveHierarchyAccess::poll(f.h,0.,0); f.h.inspect_prepared(); });
-  const auto actual = selected(f.h.inspect_live_hierarchy(),0);
-  const auto reference = leaf_reference(f,0);
-  require(actual[0] == 29 && reference[0] == 29.25 && actual[3] == 2 && reference[3] == 2,
+  const auto after = f.h.inspect_live_hierarchy();
+  const Packet expected{expected_x,0.,0.,2.};
+  const Packet wider{wider_x,0.,0.,2.};
+  const bool publishes = initial_x != final_x;
+  require(selected(before,0) == (publishes ? wider : expected) &&
+              selected(after,0) == expected && leaf_reference(f,0) == expected &&
+              leaf_reference(f,0,LeafReference::Wider) == wider,
           "leaf diagnostic boundary changed");
+  const auto H = after.selectors.size();
+  require(after.visits[0] - before.visits[0] == 1 &&
+              after.visits[H] - before.visits[H] == publishes,
+          "leaf boundary did not use the intended publication path");
+
   std::unique_ptr<std::FILE,decltype(&std::fclose)> capture(std::tmpfile(),&std::fclose);
   require(bool(capture),"leaf diagnostic capture unavailable");
-  const LeafFailureContext context{"leaf_reference_boundary","boundary_witness",0,0,
-                                   &body_before,capture.get()};
+  const LeafFailureContext context{name,"boundary_witness",0,0,
+                                   &bodies_before,capture.get()};
   const auto baseline = state_hash(f);
+  poll_lifetime(f,before,context);
+  require(std::ftell(capture.get()) == 0 && state_hash(f) == baseline,
+          "successful leaf comparison emitted diagnostics or changed state");
+
+  // For the hosted inputs this is the actual preceding packet. Substitute it
+  // only at the assertion, leaving native packets and histories untouched.
+  const auto wrong = publishes ? selected(before,0) : wider;
   bool rejected = false;
-  try { poll_lifetime(f,before,context); }
+  try { check_leaf_packet(f,0,before,after,wrong,context); }
   catch (const std::runtime_error &e) {
     rejected = std::string(e.what()) == "live leaf reduction/reference mismatch";
   }
-  require(rejected,"leaf diagnostics changed the original rejection");
+  require(rejected,"leaf reference accepted a wrong Q6 packet");
   require(state_hash(f) == baseline,"leaf diagnostics mutated completed state");
   std::rewind(capture.get());
   std::string text;
@@ -1636,7 +1690,8 @@ void leaf_failure_diagnostics(engine::Runtime &r, HostPath path) {
   while (std::fgets(line,sizeof(line),capture.get())) text += line;
   require(!std::ferror(capture.get()),"leaf diagnostic capture read failed");
   const auto has = [&](const std::string &value) { return text.find(value) != std::string::npos; };
-  require(has("fixture=leaf_reference_boundary,phase=boundary_witness,round=0,tick=0,leaf=0,precision=6"),
+  require(has(std::string("fixture=") + name +
+              ",phase=boundary_witness,round=0,tick=0,leaf=0,precision=6"),
           "leaf diagnostics lost caller context or precision");
   const auto &node = f.nodes[0];
   require(has("comparison=" + std::to_string(node.comparison) +
@@ -1645,12 +1700,24 @@ void leaf_failure_diagnostics(engine::Runtime &r, HostPath path) {
               ",field_record=" + std::to_string(node.field.record) +
               ",field_incarnation=" + std::to_string(node.field.incarnation)),
           "leaf diagnostics lost comparison/field identity");
-  require(has("selector_before=0,selector_after=0,visits=1,publications=0") &&
-              has("word=0,before_bits=0x403d000000000000,selected_bits=0x403d000000000000,reference_bits=0x403d400000000000") &&
-              has("word=1,before_bits=0x0000000000000000,selected_bits=0x0000000000000000,reference_bits=0x0000000000000000") &&
-              has("word=2,before_bits=0x0000000000000000,selected_bits=0x0000000000000000,reference_bits=0x0000000000000000") &&
-              has("word=3,before_bits=0x4000000000000000,selected_bits=0x4000000000000000,reference_bits=0x4000000000000000"),
-          "leaf diagnostics lost selectors, work or complete packet bits");
+  require(has("selector_before=" + std::to_string(before.selectors[0]) +
+              ",selector_after=" + std::to_string(after.selectors[0]) +
+              ",visits=1,publications=" + std::to_string(publishes)),
+          "leaf diagnostics lost selectors or work");
+  const auto hex_bits = [](double value) {
+    char hex[19];
+    std::snprintf(hex,sizeof(hex),"0x%016llx",
+                  static_cast<unsigned long long>(binary64_bits(value)));
+    return std::string(hex);
+  };
+  const auto prior = selected(before,0);
+  for (int k = 0; k < 4; ++k)
+    require(has("word=" + std::to_string(k) + ",before_bits=" + hex_bits(prior[k]) +
+                ",selected_bits=" + hex_bits(wrong[k]) +
+                ",reference_bits=" + hex_bits(expected[k]) +
+                ",wider_reference_bits=" + hex_bits(wider[k])),
+            "leaf diagnostics lost complete packet bits");
+
   std::size_t previous_source = 0;
   for (int ordinal = 0; ordinal < 2; ++ordinal) {
     const auto &ref = f.refs[ordinal];
@@ -1664,32 +1731,30 @@ void leaf_failure_diagnostics(engine::Runtime &r, HostPath path) {
     require(at != std::string::npos && (!ordinal || previous_source < at),
             "leaf diagnostics lost ordered source handles");
     previous_source = at;
+
+    const auto current_x = ordinal ? second_x : final_x;
+    const auto previous_x = ordinal ? second_x : initial_x;
+    const auto position = text.find("leaf_failure_position,ordinal=" +
+        std::to_string(ordinal) + ",axis=0,current_bits=" + hex_bits(current_x));
+    require(position != std::string::npos &&
+                text.substr(position,text.find('\n',position)-position).find(
+                    ",before_available=1,before_bits=" + hex_bits(previous_x)) != std::string::npos,
+            "leaf diagnostics lost completed body inputs");
   }
   require(has("count=1,denominator=2,mass_bits=0x4000000000000000,native_weight_expression_bits=0x3ff0000000000000,reference_weight_bits=0x3ff0000000000000") &&
-              has("count=1,denominator=1,mass_bits=0x3ff0000000000000,native_weight_expression_bits=0x3ff0000000000000,reference_weight_bits=0x3ff0000000000000") &&
-              has("ordinal=0,axis=0,current_bits=0xbce8000000000000,current=-0x1.8p-49,before_available=1,before_bits=0xbce8000000000000") &&
-              has("ordinal=1,axis=0,current_bits=0x404d400000000000,current=0x1.d4p+5,before_available=1,before_bits=0x404d400000000000"),
-          "leaf diagnostics lost weights or completed body inputs");
+              has("count=1,denominator=1,mass_bits=0x3ff0000000000000,native_weight_expression_bits=0x3ff0000000000000,reference_weight_bits=0x3ff0000000000000"),
+          "leaf diagnostics lost physical masses or weights");
   std::cout << "leaf_failure_control_begin,expected_rejection=1\n" << text
-            << "leaf_failure_control_end,expected_rejection=1\n";
-  // A new declared input is a success control, not repair of the rejected observation.
-  f.h.particle64(kPosX,f.in.particle_rows[0].record) = 0;
-  no_new([&] { PreparedFixtureAccess::upload_body_fixture64(f.h); });
-  const auto success_before = f.h.inspect_live_hierarchy();
-  f.control->set(1,f.nodes[0].field.record);
-  no_new([&] { LiveHierarchyAccess::poll(f.h,0.,0); f.h.inspect_prepared(); });
-  require(selected(f.h.inspect_live_hierarchy(),0) == leaf_reference(f,0),
-          "leaf diagnostic success control differs");
-  require(std::fseek(capture.get(),0,SEEK_END) == 0,"leaf capture seek failed");
-  const auto bytes = std::ftell(capture.get());
-  const auto success_hash = state_hash(f);
-  const auto success_bodies = f.h.particles64();
-  poll_lifetime(f,success_before,{"leaf_reference_boundary","success_control",0,1,
-                                  &success_bodies,capture.get()});
-  require(std::ftell(capture.get()) == bytes && state_hash(f) == success_hash,
-          "successful leaf comparison emitted diagnostics or changed state");
-  std::cout << "leaf_failure_diagnostics,original_rejection=1,context=1,packet_words=4,"
+            << "leaf_failure_control_end,expected_rejection=1\n"
+            << "leaf_failure_diagnostics,fixture=" << name << ",native_x=" << expected_x
+            << ",wider_x=" << wider_x << ",wrong_packet_rejected=1,context=1,packet_words=4,"
                "ordered_sources=2,weights=1,positions=1,state_unchanged=1,success_silent=1 PASS\n";
+}
+void leaf_failure_diagnostics(engine::Runtime &r, HostPath path) {
+  leaf_boundary_case(r,path,"leaf_reference_boundary",-0x1.8p-49,-0x1.8p-49,
+                     0x1.d4p+5,29.,29.25);
+  leaf_boundary_case(r,path,"hosted_leaf_boundary",0.,0x1.07p-47,
+                     -0x1.08p+7,-65.,-66.);
 }
 void preinstall_rejections(Fixture &f) {
   const auto baseline = state_hash(f);
