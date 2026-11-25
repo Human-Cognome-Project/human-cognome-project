@@ -14,17 +14,7 @@ Use the [onboarding paths](docs/onboarding/README.md) for your purpose. Understa
 
 ## Current system shape
 
-```text
-Taichi runtime
-    ↓
-physics engine
-    ↑
-engine harness
-    ↑
-future analyst functions
-```
-
-The **physics engine** implements the field dynamics. The **engine harness** is its control interface: the surface used to add, remove and adjust elements, control runs, and inspect engine state for analysis.
+On the supported CPU path, the caller selects a recipe and focus, ActiveAssembly binds logical values, and ActiveSession publishes a prepared owner. The native Harness advances the study. The viewport reads a completed observation. Follow the [source and data-flow map](docs/onboarding/INTEGRATED-PATH.md) for the contracts, failure paths and examples.
 
 Analyst functions are conceptually designed within the overall architecture. Their concrete implementation structure must be engineered and calibrated against engine results on real data structures; see the [architecture clarification](engine/ARCHITECTURE.md#analyst-design-and-engineering-status).
 

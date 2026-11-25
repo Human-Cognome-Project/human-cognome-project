@@ -2,6 +2,10 @@
 #include "assembly/structural_admission_plan.h"
 
 namespace assembly {
+struct PreparedLodAlternative {
+  std::shared_ptr<const ActiveAssembly> source;
+  detail::AdmissionBindings bindings;
+};
 // Explicit setup operation for the existing shared v2/f64 subset. Layout roles,
 // units and all model/resource choices are supplied; native layout pointers must
 // be null and are materialized by the session. No viewport values or starts.
@@ -16,6 +20,9 @@ struct PreparedStudySubmission {
   // declared definitions stay immutable; declared presence and bounded root
   // copies of those definitions can change in the live study.
   bool editable_occurrences{false};
+  // Explicit setup of the other whole-field exposure on the same immutable
+  // recipe/study. Native roles/geometry/fields are validated before readiness.
+  std::optional<PreparedLodAlternative> lod_alternative{};
   std::uint64_t plan_work{UINT64_MAX}, metadata_work{UINT64_MAX};
   std::uint64_t placement_work{UINT64_MAX}, placement_cells{UINT64_MAX}, hierarchy_work{UINT64_MAX};
 };

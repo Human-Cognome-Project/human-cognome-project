@@ -2,6 +2,10 @@
 #include "assembly/prepared_submission.h"
 
 namespace viewport {
+warm::Bundle whole_english_pair(warm::Bundle, const warm::ToolRef &, const warm::ToolRef &membership_focus);
+assembly::PreparedStudySubmission whole_english_pair_submission(
+    std::shared_ptr<const assembly::ActiveAssembly>, const warm::ToolRef &, const warm::ToolRef &membership_focus,
+    field::HostPath = field::HostPath::BulkCopy);
 struct PreparedLetterProfileError : warm::Error { using warm::Error::Error; };
 // Explicit, bounded demonstration profile, selected by --study. Source pins
 // supply exact construction; these functions supply the documented model and

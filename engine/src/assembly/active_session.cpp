@@ -162,10 +162,20 @@ PreparedSubmissionResult ActiveSession::submit_prepared(PreparedStudySubmission 
   e.authorization = authorization;
   using namespace taichi::lang;
   auto root = make_prepared_source_layout(b);
+  if(request.lod_alternative) {
+    auto &other=request.lod_alternative->bindings;
+    if(other.layout.size()!=b.layout.size())return out;
+    for(std::size_t i=0;i<b.layout.size();++i) {
+      if(other.layout[i].node.layout || other.layout[i].node.parent!=b.layout[i].node.parent ||
+         other.layout[i].node.role!=b.layout[i].node.role || other.layout[i].units!=b.layout[i].units) return out;
+      other.layout[i].node.layout=b.layout[i].node.layout;
+    }
+  }
   e.layout.node = runtime_->program().add_snode_tree(std::move(root),false);
   e.harness = std::make_unique<field::Harness>(*runtime_,request.capacity,request.path);
   auto prepared = detail::PreparedStudyOwner::prepare(*e.harness,source,session_,b,
-      request.resources,request.plan_work,request.metadata_work,request.editable_occurrences);
+      request.resources,request.plan_work,request.metadata_work,request.editable_occurrences,
+      request.lod_alternative ? &*request.lod_alternative : nullptr);
   out.preparation_status = prepared.status;
   out.plan_work = prepared.plan_work;
   out.metadata_work = prepared.metadata_work;
@@ -245,6 +255,11 @@ field::TickResult ActiveSession::tick_prepared(const ExecutionHandle &h,
   auto *owner = prepared_owner(h,authorization);
   require(owner != nullptr);
   return owner->tick(authorization,h,parameters,tick_work,geometry_work);
+}
+PreparedOccurrenceEditResult ActiveSession::lod_prepared(const ExecutionHandle &h,
+    const warm::Uuid &authorization,const PreparedLodEdit &request) {
+  auto *owner=prepared_owner(h,authorization);require(owner!=nullptr);
+  return owner->lod(authorization,h,request);
 }
 detail::PreparedStudyOwner *ActiveSession::prepared_owner(const ExecutionHandle &h,
     const warm::Uuid &authorization) const {

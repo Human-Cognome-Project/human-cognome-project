@@ -1,5 +1,7 @@
 # Engine architecture boundary
 
+Trace the implemented shared, active-owner, native and observation interfaces. [Integrated walkthrough](../docs/onboarding/INTEGRATED-PATH.md).
+
 This file records the current HCP engine boundary after recovery of the native
 C++ workspace that had remained local during the September 2026 repository
 reconciliation.

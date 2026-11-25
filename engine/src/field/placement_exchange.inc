@@ -22,7 +22,8 @@ void Placement::build_exchange_balance() {
     v = b.create_local_var(PrimitiveType::f64);
     b.create_local_store(v, m.f(0));
   }
-  auto *loop = b.create_range_for(b.get_int32(0), number, false, 1, 0, true);
+  auto *begin = b.create_arg_load({6}, PrimitiveType::i32, false, 0);
+  auto *loop = b.create_range_for(begin, b.create_add(begin, number), false, 1, 0, true);
   {
     auto guard = b.get_loop_guard(loop);
     auto *rank = b.get_loop_index(loop);
@@ -78,11 +79,12 @@ void Placement::build_exchange_balance() {
   exchange_balance_kernel_ = engine::CompiledKernel(*h_.runtime_, "placement_exchange_balance",
       b.extract_ir(), {Param::array(PrimitiveType::f64, 2), Param::array(PrimitiveType::f64, 2),
                        Param::array(PrimitiveType::f64), Param::array(PrimitiveType::f64),
-                       Param::scalar(PrimitiveType::i32), Param::scalar(PrimitiveType::i32)},
+                       Param::scalar(PrimitiveType::i32), Param::scalar(PrimitiveType::i32),
+                       Param::scalar(PrimitiveType::i32)},
       engine::MathMode::Strict);
 }
 
-void Placement::balance_exchange(int bodies) {
+void Placement::balance_exchange(int bodies, int begin) {
   auto call = exchange_balance_kernel_.invocation(true);
   auto &c = call.get();
   if (!c.prepared) {
@@ -93,6 +95,7 @@ void Placement::balance_exchange(int bodies) {
   }
   engine::argument_int(c, 4, bodies);
   engine::argument_int(c, 5, h_.particles_);
+  engine::argument_int(c, 6, begin);
   exchange_balance_kernel_.launch(c);
 }
 
@@ -173,18 +176,32 @@ void Placement::build_exchange() {
     target.create_global_store(target.create_external_ptr(focal, {target.get_int32(k)}),
         target.create_global_load(target.create_external_ptr(state,
             {target.get_int32(k == 3 ? 6 : k)})));
+  auto *requests = target.create_ndarray_arg_load({2}, PrimitiveType::f64, 2, 0);
+  auto *copy_loop = target.create_range_for(target.create_arg_load({3}, PrimitiveType::i32, false, 0),
+      target.create_arg_load({4}, PrimitiveType::i32, false, 0), false, h_.runtime_->cpu_threads());
+  {
+    auto guard = target.get_loop_guard(copy_loop);
+    for (int k = 0; k < 6; ++k)
+      target.create_global_store(target.create_external_ptr(requests,
+          {target.get_int32(3+k),target.get_loop_index(copy_loop)}),
+          target.create_global_load(target.create_external_ptr(state,{target.get_int32(k)})));
+  }
   exchange_target_ = engine::CompiledKernel(*h_.runtime_, "placement_exchange_target",
-      target.extract_ir(), {Param::array(PrimitiveType::f64), Param::array(PrimitiveType::f64)},
+      target.extract_ir(), {Param::array(PrimitiveType::f64), Param::array(PrimitiveType::f64),
+        Param::array(PrimitiveType::f64,2),Param::scalar(PrimitiveType::i32),Param::scalar(PrimitiveType::i32)},
       engine::MathMode::Strict);
 }
 
-void Placement::target_exchange() {
+void Placement::target_exchange(int begin, int end) {
   auto call = exchange_target_.invocation(true);
   auto &c = call.get();
   if (!c.prepared) {
     c.set_arg_ndarray({0}, *exchange_state_);
     c.set_arg_ndarray({1}, *focal_);
+    c.set_arg_ndarray({2}, *requests_);
   }
+  engine::argument_int(c, 3, begin);
+  engine::argument_int(c, 4, end);
   exchange_target_.launch(c);
 }
 
@@ -192,7 +209,8 @@ PlacementResult Placement::stage_exchange(std::uint64_t expected,
     const UpdateCommand *commands, std::size_t command_count,
     const PlacementIntrinsic *inputs, std::size_t body_count,
     const engine::RecordHandle *outgoing, std::size_t outgoing_count,
-    std::uint64_t work, std::uint64_t cells) {
+    std::uint64_t work, std::uint64_t cells,
+    const PlacementExchangeGroup *groups, std::size_t group_count) {
   if (!outgoing || !outgoing_count) {
     PlacementResult result;
     result.status = PlacementStatus::InvalidInput;
@@ -200,7 +218,7 @@ PlacementResult Placement::stage_exchange(std::uint64_t expected,
     return result;
   }
   return attempt(expected, commands, command_count, inputs, body_count, work, cells,
-                 false, false, nullptr, 0, outgoing, outgoing_count);
+                 false, false, nullptr, 0, outgoing, outgoing_count, groups, group_count);
 }
 
 void Placement::reduce_exchange(bool reconcile) {

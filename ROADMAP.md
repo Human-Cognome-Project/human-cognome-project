@@ -1,14 +1,6 @@
 # Roadmap
 
-**Current work map (2026-11-01):** The dated roadmap below retains the September
-sequence. Use [AGENTS](AGENTS.md#current-state) for current status: bounded A–D
-(#139) and prepared storage/updates (#162) are complete; #156/#170 own remaining
-operational integration, #172 the revised math-core precision path, #115 view
-scaling, #173 the concept recipe catalogue, and #145 actual GPU qualification.
-C3-1/C3-2 and CPU B1 are accepted through #201; B2 is in draft #202.
-Follow the [current continuation](docs/core-local-study-continuation-plan.md)
-and [fresh-instance brief](docs/onboarding/AGENT-START.md). The September
-sequence below is architectural history, not a second priority queue.
+The September sequence below is historical. For current scope and work ownership, use [current state](docs/onboarding/CURRENT-STATE.md). For a first contribution or study, [choose a path](docs/onboarding/README.md).
 
 This roadmap reflects the repository and implementation state after the September 2026 development split. It replaces the August roadmap that still described the field engine as future work.
 

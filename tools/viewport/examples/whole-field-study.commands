@@ -1,0 +1,17 @@
+# One live study; inherited English membership focus survives both exposures.
+observe
+tick
+lod parts
+tick
+add 20 2
+tick
+remove 20
+tick
+lod aggregate
+tick
+lod parts
+tick
+lod aggregate
+tick
+list
+quit

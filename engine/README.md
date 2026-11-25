@@ -1,5 +1,7 @@
 # Engine
 
+Locate the contract and test for a specific stage of execution. [Integrated walkthrough](../docs/onboarding/INTEGRATED-PATH.md).
+
 HCP's engine path is native C++.
 
 It links directly against the project's modified Taichi fork rather than using
@@ -18,14 +20,18 @@ The [leaf-reference investigation](docs/LEAF-REFERENCE-INSPECTION.md) records th
 The [live editable CPU study](docs/LIVE-EDITABLE-STUDY.md) adds an operator CLI
 through the prepared session/owner: add a declared-template occurrence, tick,
 remove it and tick the same study. Commands, a captured run, identity/survivor
-controls and scoped local qualification are included for review. Whole-field LoD
-exchange follows separately.
+controls and scoped local qualification are included for review. The first
+[whole-field LoD subset](docs/WHOLE-FIELD-LOD.md) now switches all live English A
+occurrences between aggregate and byte exposure in one native generation, using
+each occurrence's own outgoing state and an inherited membership focus.
 
 The [native claim-overlap observation](docs/EXCHANGE-CLAIM-OBSERVATION.md)
 records actual particle/field occupancy before claims, before retirement and
 after retirement. Real expansion/compression and peak-refusal controls support
 the whole-field LoD preparation review in #428. The operator exposes the same
-observation for ordinary edits; whole-field LoD remains the next integration.
+observation for ordinary edits and the explicit whole-field profile. The bounded
+operator and its source-pinned captured evidence are submitted separately for
+review and authoritative CI.
 
 ## Layout
 
@@ -33,7 +39,7 @@ observation for ordinary edits; whole-field LoD remains the next integration.
 |---|---|
 | `src/engine/` | Thin native wrapper around the Taichi runtime: instance lifetime, kernel compile/launch, devices, transfers. |
 | `src/field/` | Native C++ field/tick implementation. |
-| `src/assembly/` | Fixed-study host preparation, identity/scale mapping and publication. |
+| `src/assembly/` | Logical projection and assembly, native session ownership, admission and publication. |
 | `apps/` | Device/runtime inspection utilities. |
 | `tests/` | Native smoke, field, preparation, assembly and >2^31 dense-index regressions. |
 | `cmake/` | Locates the matching Taichi source/build/runtime set. |
@@ -46,7 +52,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) before changing boundaries.
 The [refactor exit reconciliation](docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23)
 maps the integrated ownership/build boundaries and native-reuse decisions to
 #343's exit criteria, with source-pinned evidence and separate capability limits.
-Its completion disposition is for review; #324 mathematics remains separate.
+The maintainer accepted Passes 1–3 for the supported CPU path. Pass 4 mathematics remains under #324.
 
 The active workbench keeps logical `ActiveAssembly` implementation in
 `src/assembly/active_workbench.cpp` and native `ActiveSession` lifetime/reporting
@@ -157,15 +163,13 @@ The [private source-layout helper](docs/PREPARED-SOURCE-LAYOUT-HELPER.md)
 implements that approved extraction. It constructs the unchanged unregistered
 graph and fills existing binding pointers; the session keeps native registration
 and the candidate's existing guard. Source reconstruction and CPU before/after
-controls qualify the bounded move. #418 source-accepts the helper; authoritative
-native CPU CI remains pending after smoke success.
+controls qualify the bounded move. #418 subsequently passed hosted smoke and native CPU CI and merged.
 
 The [responsibility reconciliation](docs/RESPONSIBILITY-MAP.md#current-prepared-path-reconciliation--2026-11-23)
 finds a sufficient prepared transaction boundary. #419 source-accepts that
 disposition and authorizes the logical caller's header/geometry separation
 implemented above. Its original source-pinned dependency probes remain historical.
-The current handoff records the existing #417 hosted compiler failure; new local
-qualification does not clear that failure or pending authoritative CI.
+#417 passed on its same-head retry. The first mismatch remains undiagnosed. The integrated [leaf diagnostic](docs/LEAF-FAILURE-DIAGNOSTICS.md) records operands on future failures.
 
 The [exchange parent ownership inspection](docs/EXCHANGE-PARENT-OWNERSHIP.md)
 measures declaration copies against the owner's existing pinned recipe, with

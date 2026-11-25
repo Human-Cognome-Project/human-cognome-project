@@ -21,4 +21,10 @@ struct PreparedOccurrenceEditResult {
   field::UpdateResult publication;
   detail::PreparationResult preparation;
 };
+struct PreparedLodEdit {
+  warm::Exposure exposure{warm::Exposure::Aggregate};
+  std::uint64_t expected_generation{};
+  std::uint64_t preparation_work{UINT64_MAX}, placement_work{UINT64_MAX},
+      placement_cells{UINT64_MAX}, hierarchy_work{UINT64_MAX};
+};
 }  // namespace assembly

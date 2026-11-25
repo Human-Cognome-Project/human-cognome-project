@@ -1,5 +1,15 @@
 # Offline study viewport
 
+For the shortest route to the supplied captures, or the status of live operator controls, see [Examine a study](../../docs/onboarding/OPERATOR.md).
+
+The fixture-only native `viewport_live_study --whole-field` command adds live
+`lod parts` / `lod aggregate` exchange for the first English A profile. It keeps
+one prepared study, transfers each logical occurrence's own native motion and
+retains its inherited membership focus. [Commands, raw captures, bounds and
+qualification](../../engine/docs/WHOLE-FIELD-LOD.md) cover ordinary fine edits,
+whole-field exchange and healthy capacity refusal. This operator uses in-memory
+fixture definitions and requires no warm-store acquisition.
+
 Capture v1 now accepts optional `numerics` metadata. Absent metadata retains
 legacy f32 validation; explicitly tagged `trial_f64` report values preserve
 double precision through native JSON and browser validation, including sub-f32

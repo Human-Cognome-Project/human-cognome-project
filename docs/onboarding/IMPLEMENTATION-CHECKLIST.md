@@ -1,5 +1,7 @@
 # Cross-component implementation checklist
 
+For the implemented subset and its tests, use the [integrated path](INTEGRATED-PATH.md) alongside the design requirements below.
+
 Use when a change spans numerical, data and operation boundaries, or as a review cross-check. For a bounded task, start with its specific contracts instead. This preserves the earlier onboarding specification without making every contributor load it.
 
 ## Non-negotiable implementation specification

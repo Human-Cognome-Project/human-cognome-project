@@ -38,11 +38,12 @@ class Placement {
   void build_exchange();
   void build_exchange_balance();
   void reduce_exchange(bool reconcile = false);
-  void balance_exchange(int bodies);
-  void target_exchange();
+  void balance_exchange(int bodies, int begin = 0);
+  void target_exchange(int begin = 0, int end = 0);
   PlacementResult stage_exchange(std::uint64_t, const UpdateCommand *, std::size_t,
       const PlacementIntrinsic *, std::size_t, const engine::RecordHandle *,
-      std::size_t, std::uint64_t, std::uint64_t);
+      std::size_t, std::uint64_t, std::uint64_t,
+      const PlacementExchangeGroup * = nullptr, std::size_t = 0);
   // Attempt-local D7 prerequisite, not an exchange or reusable candidate token.
   UpdateResult stage_exchange_state(std::uint64_t, const engine::RecordHandle *,
                                     std::size_t, std::uint64_t, bool reconcile = false);
@@ -63,9 +64,9 @@ class Placement {
   void build();
   void collect();
   void capture();
-  void solve(int, std::uint64_t, std::uint64_t, int, bool bootstrap = false);
+  void solve(int, std::uint64_t, std::uint64_t, int, bool bootstrap = false, bool grouped = false);
   void publish(bool enabled);
-  void initialize(int bodies, bool exchange = false);
+  void initialize(int bodies, int exchange = 0);
   // Private admission preparation: native generated rows only, no record claims
   // or public candidate publication. Full admission owns subsequent validation.
   PlacementResult stage(std::uint64_t, const UpdateCommand *, std::size_t,
@@ -78,6 +79,7 @@ class Placement {
                           bool bootstrap = false, const UpdateRef *focus = nullptr,
                           std::size_t focus_count = 0,
                           const engine::RecordHandle *outgoing = nullptr,
-                          std::size_t outgoing_count = 0);
+                          std::size_t outgoing_count = 0,
+                          const PlacementExchangeGroup * = nullptr, std::size_t = 0);
 };
 }  // namespace field::detail

@@ -45,6 +45,7 @@ class Search {
   int bits;
   A *contributions{};
   V *contribution_count{};
+  V *grouped{};
   L *focal_mass{};
   std::array<L *, 3> focal_weighted{};
 
@@ -61,7 +62,7 @@ class Search {
          V *prefix,
          V *cells,
          int fraction_bits, A *bootstrap_contributions = nullptr,
-         V *bootstrap_count = nullptr)
+         V *bootstrap_count = nullptr, V *grouped_targets = nullptr)
       : b(builder),
         status(b.create_local_var(taichi::lang::PrimitiveType::i32)),
         m(b, status),
@@ -76,7 +77,7 @@ class Search {
         cell_limit(cells),
         base_work(prefix),
         bits(fraction_bits), contributions(bootstrap_contributions),
-        contribution_count(bootstrap_count) {
+        contribution_count(bootstrap_count), grouped(grouped_targets) {
     using namespace taichi::lang;
     b.create_local_store(status, b.get_int32(0));
     const auto u = [&](V *x) {
@@ -680,6 +681,14 @@ class Search {
         }
       }
       radius = at(requests, 1, rank);
+      if(grouped) for(int k=0;k<3;++k) {
+        auto *target=real_local(focus[k]);
+        {
+          auto group=b.get_if_guard(b.create_if(grouped),true);
+          set(target,m.checked(at(requests,3+k,rank),-256,128));
+        }
+        focus[k]=v(target);
+      }
       set(heap_size, m.i(0));
       set(have_best, m.i(0));
       set(best_upper, m.f(0));
