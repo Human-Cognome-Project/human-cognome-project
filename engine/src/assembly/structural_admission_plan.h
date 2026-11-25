@@ -36,6 +36,11 @@ struct AdmissionCharacterRollup {
   OccurrenceKey owner; // Inactive aggregate for this study's single scalar.
   warm::ToolRef character;
 };
+struct AdmissionNibbleScope {
+  std::uint64_t branch_comparison{};
+  OccurrenceKey byte;
+  std::uint32_t ordinal{};
+};
 struct AdmissionBindings {
   AdmissionSource source;
   field::FrameAnchor frame_anchor{}; // Initial supported subset: root frame zero.
@@ -47,6 +52,7 @@ struct AdmissionBindings {
   // Explicit byte-exposure root at ParentValue(character). The plan derives
   // its full per-byte counts and ordinals from the sealed projection.
   std::optional<AdmissionCharacterRollup> character_rollup;
+  std::vector<AdmissionNibbleScope> nibble_scopes;
 };
 struct AdmissionOccurrenceCommand {
   // The enclosing immutable plan owns the common study in source().study.
@@ -85,7 +91,7 @@ class StructuralAdmissionPlan {
   const auto &focus() const { return focus_; }
   field::LiveRefreshSpec hierarchy() const {
     return {nodes_.data(), nodes_.size(), children_.data(), children_.size(),
-            contributions_.data(), contributions_.size()};
+            contributions_.data(), contributions_.size(), scoped_nibble_rows_};
   }
  private:
   // Only the exclusive preparing owner may consume its own plan after native
@@ -104,6 +110,7 @@ class StructuralAdmissionPlan {
   ReservedVector<field::LiveRefreshNode> nodes_;
   ReservedVector<int> children_;
   ReservedVector<field::LiveRefreshContribution> contributions_;
+  bool scoped_nibble_rows_{};
 };
 struct AdmissionPlanResult {
   AdmissionPlanStatus status{AdmissionPlanStatus::InvalidInput};

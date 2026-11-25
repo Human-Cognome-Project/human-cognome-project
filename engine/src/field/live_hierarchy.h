@@ -74,6 +74,9 @@ struct LiveRefreshSpec {
   std::size_t child_count{};
   const LiveRefreshContribution *contributions{};
   std::size_t contribution_count{};
+  // Fixed CPU bootstrap experiment. A negative child encodes a singleton
+  // contribution index as -1-index. The publishing field still owns all rows.
+  bool scoped_nibble_rows{};
 };
 class Harness;
 namespace testing {
