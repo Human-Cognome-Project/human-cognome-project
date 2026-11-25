@@ -1,5 +1,18 @@
 # Core continuation after local CUDA corrections
 
+## November 25, 2026 — single-character acceptance and repeated-parent evidence
+
+The maintainer provisionally accepted #435 at `16e4ffb4` for fixed-study `í`
+rollup. The PR remains open, with integration gated by hosted CI and parent
+order. [Maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/435#issuecomment-7164198854)
+
+The #432 follow-up preserves both `a` ordinals in the published aggregate.
+Its byte paths identify a shared nibble whose full cohort adds coverage
+outside two whole-byte branches. A single-scalar control reproduces the
+refusal with a complete character root, then disjoint `í` publishes and ticks
+on the same prepared Harness. The evidence is submitted for review of how
+branch coverage should be represented. [Repeated-parent evidence](../engine/docs/REPEATED-PARENT-OVERLAP.md)
+
 ## November 25, 2026 — hosted qualification and integration
 
 The onboarding rebuild (#424) and structural/confounded target guidance (#425) are integrated. The editable CPU operator and native claim observations are available on main. [Operator guide](onboarding/OPERATOR.md).
