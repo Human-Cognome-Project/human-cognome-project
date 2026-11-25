@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <initializer_list>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -34,10 +35,13 @@ struct Input {
   Json trace=Json::object();
   bool pair,parts,context;
   Input(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,
-        const std::string &profile,bool fine,bool imposed,bool rollup):
+        const std::string &profile,bool fine,bool imposed,
+        const warm::ObjectKey *rollup_endpoint = nullptr):
       pair(profile=="ascii"),parts(fine),context(imposed) {
     auto base=fixture.base;
-    const auto object=pair?fixture.english:profile=="accented"?fixture.accented:fixture.repeated;
+    const bool rollup = rollup_endpoint != nullptr;
+    const auto &object = rollup ? *rollup_endpoint :
+        pair ? fixture.english : profile=="accented" ? fixture.accented : fixture.repeated;
     const auto first=fixture.ref(object);
     const auto &endpoint=tool(base,first);
     auto initial_focus=first;
@@ -158,7 +162,7 @@ struct Input {
     for(std::size_t i=0;i<projection.parent_count();++i) {const auto p=projection.parent(i);
       trace["parents"].push_back({{"entry",p.occurrence.source.entry},{"path",p.occurrence.source.path},
         {"field",key(p.field)},{"ordinal",p.ordinal},{"count",std::to_string(p.count)}});}
-    check(bindings.bodies.size()==(parts?(pair?2:profile=="accented"?2:4):(pair?2:1)),
+    check(bindings.bodies.size()==(parts?(profile=="repeated"?4:2):(pair?2:1)),
           "active exposure has the exact source-derived occurrence count");
     if(pair) {
       const auto &en=tool(recipe,ref(fixture.english)), &fr=tool(recipe,ref(fixture.french));
@@ -178,7 +182,8 @@ struct Input {
       const auto &t=tool(recipe,tool(recipe,first).parents[0].target);
       check(t.parents.size()==2 && t.parents[0].ordinal==0 && t.parents[1].ordinal==1 &&
             tool(recipe,t.parents[0].target).notation==warm::RecipeText("C3") &&
-            tool(recipe,t.parents[1].target).notation==warm::RecipeText("AD"),
+            tool(recipe,t.parents[1].target).notation==
+                warm::RecipeText(profile=="scalar-overlap" ? "B3" : "AD"),
             "multibyte scalar preserves the exact ordered UTF-8 byte construction");
     }
     for(std::size_t i=0;i<bindings.layout.size();++i) {const auto &b=bindings.layout[i];
@@ -209,16 +214,40 @@ struct Input {
     trace["tree_witness"]={{"roots",roots},{"shared_children",shared_children},{"full_coverage_fields",full_fields}};
     if(parts && !pair && !rollup)check(full_fields.empty(),"multibyte/repeated byte ledger has no field able to serve as a complete rooted rollup");
     if (rollup) {
-      check(roots.size()==1 && full_fields==roots && shared_children.empty(),
+      check(roots.size()==1 && full_fields==roots,
             "whole-byte branches have one complete character root");
+      check(shared_children.empty()==(profile!="scalar-overlap"),
+            "the single-scalar overlap control shares one leaf across branches");
     }
     if(parts && profile=="repeated")check(!shared_children.empty(),"repeated-byte literal tree exposes a shared parent-value field across branches");
     runtime.program().add_snode_tree(std::move(root),false);
   }
 };
+
+Json refuse_on_empty_owner(field::Harness &harness, const Input &input) {
+  const auto &storage = harness.prepared_storage();
+  const auto state = [&] {
+    return Json{{"generation",storage.generation},{"tick",storage.completed_ticks},
+        {"references",storage.live.references()},{"populated",storage.populated},
+        {"hierarchy",harness.live_hierarchy_installed()},{"ready",harness.ready()}};
+  };
+  const auto before = state();
+  check(!storage.populated && storage.live.references()==0 && !harness.live_hierarchy_installed(),
+        "overlap refusal control starts with an empty prepared Harness");
+  auto domain = prepared_owner_fixture::domain();
+  const auto refused = PreparedStudyOwner::prepare(harness,input.source,warm::new_uuid(),input.bindings,
+      domain,UINT64_MAX,UINT64_MAX);
+  check(refused.status==AdmissionPlanStatus::InvalidInput && !refused.owner &&
+        refused.reservation.live_bytes==0 && state()==before,
+        "overlap refuses without publishing or retaining owner allocations");
+  return {{"status","invalid_input"},{"preparation_work",refused.plan_work.charged},
+      {"retained_bytes",refused.reservation.live_bytes},{"before",before},{"after",state()}};
+}
+
 Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const std::string &profile,
-         bool parts,bool context,field::HostPath path,bool project_only,bool rollup=false) {
-  Input in(runtime,fixture,profile,parts,context,rollup);
+         bool parts,bool context,field::HostPath path,bool project_only,bool rollup=false,
+         std::initializer_list<Input *> refused={}) {
+  Input in(runtime,fixture,profile,parts,context,rollup ? &fixture.accented : nullptr);
   auto limits=prepared_owner_fixture::capacity().limits();
   limits[field::Budget::Particles]=8;limits[field::Budget::Fields]=16;
   limits[field::Budget::CascadeNodes]=limits[field::Budget::CascadeLevels]=16;
@@ -289,6 +318,7 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
   check(parent_rows==in.trace["parents"].size(),"plan neither drops nor duplicates parent participation rows");
   if (rollup) check(rollup_ordinals.size()==2,"both exact byte contributions reach the rollup");
   field::Harness harness(runtime,capacity,path);
+  for (auto *input : refused) input->trace["owner_refusal"] = refuse_on_empty_owner(harness,*input);
   if (rollup) {
     auto rejected_domain = prepared_owner_fixture::domain();
     const auto editable = PreparedStudyOwner::prepare(harness,in.source,warm::new_uuid(),in.bindings,
@@ -404,6 +434,91 @@ Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const s
   }
   return in.trace;
 }
+
+Json shared_nibble(const Input &input, const char *notation) {
+  const auto &trace = input.trace;
+  const auto &shared = trace.at("tree_witness").at("shared_children");
+  check(shared.size()==1,"expected one shared nibble field across byte branches");
+  const auto leaf = shared.at(0).get<int>();
+  const auto &field = trace.at("fields").at(leaf).at("source");
+  const auto found = std::find_if(trace.at("definitions").begin(),trace.at("definitions").end(),
+      [&](const Json &d) { return d.at("pin").at("object")==field.at("object"); });
+  check(found!=trace.at("definitions").end() && found->at("notation")==notation,
+        "shared field resolves to the pinned nibble definition");
+  Json rows = Json::array(), branches = Json::array();
+  for (const auto &row : trace.at("parents")) {
+    if (row.at("field")!=field) continue;
+    check(row.at("ordinal")==1 && row.at("count")=="1",
+          "each shared low nibble retains its byte ordinal and one exact count");
+    rows.push_back(row);
+  }
+  for (const auto &comparison : input.bindings.comparisons) {
+    if (std::find(comparison.children.begin(),comparison.children.end(),leaf)==comparison.children.end()) continue;
+    check(comparison.field.kind==GroupKind::SiblingDefinition,"shared nibble is used by whole-byte branches");
+    Json included = Json::array(), foreign = Json::array();
+    for (const auto &row : rows) {
+      const auto body = std::find_if(input.bindings.bodies.begin(),input.bindings.bodies.end(),
+          [&](const AdmissionBody &b) { return row.at("entry")==b.occurrence.source.entry &&
+              row.at("path")==Json(b.occurrence.source.path); });
+      check(body!=input.bindings.bodies.end(),"shared nibble row resolves to one active byte path");
+      (body->definition.object==comparison.field.object ? included : foreign).push_back(row.at("path"));
+    }
+    check(!included.empty() && !foreign.empty(),"global nibble cohort spills outside each whole-byte branch");
+    branches.push_back({{"byte",key(comparison.field)},{"included_paths",included},{"outside_paths",foreign}});
+  }
+  check(branches.size()==2,"one global nibble comparison has two prospective parents");
+  return {{"definition",found->at("pin")},{"notation",notation},{"rows",rows},{"branches",branches}};
+}
+
+Json repeated_parent_overlap(engine::Runtime &runtime, letter_fixture::Fixture &fixture, field::HostPath path) {
+  // Fixture additions keep the first byte C3, replacing AD with B3 to isolate
+  // a shared nibble under the same single-scalar rollup contract.
+  const auto scalar = fixture.character(letter_fixture::object("00.00.00.01.1m"),u8"ó");
+  const auto endpoint = fixture.add(letter_fixture::object("02.00.20.00.1Z"),u8"ó",4,{scalar});
+  const auto &definition = tool(fixture.base,scalar);
+  fixture.base.geometry.push_back({definition.parents.at(1).target.object,{},{{{},0.5}}});
+  fixture.base.geometry.push_back({endpoint.object,{},{{{},0.5}}});
+
+  Input repeated(runtime,fixture,"repeated",true,false);
+  Input overlap(runtime,fixture,"scalar-overlap",true,false,&endpoint.object);
+  check(repeated.bindings.bodies[0].definition==repeated.bindings.bodies[1].definition,
+        "the two a paths share the exact byte definition pin");
+  const auto repeated_nibble = shared_nibble(repeated,"1");
+  const auto overlap_nibble = shared_nibble(overlap,"3");
+  const auto paths = [](const Json &nibble) {
+    Json out = Json::array();
+    for (const auto &row : nibble.at("rows")) out.push_back(row.at("path"));
+    return out;
+  };
+  check(paths(repeated_nibble)==Json::array({{0,0},{1,0},{2,1}}) &&
+        paths(overlap_nibble)==Json::array({{0,0},{0,1}}),
+        "each shared nibble retains the exact source paths across the two branches");
+  repeated.trace["shared_nibble"] = repeated_nibble;
+  overlap.trace["shared_nibble"] = overlap_nibble;
+
+  // The first source admits at aggregate exposure in its own native study.
+  // Both fine refusals then precede a successful disjoint rollup on one Harness.
+  auto aggregate = run(runtime,fixture,"repeated",false,false,path,false);
+  const auto &commands = aggregate.at("participation_commands");
+  const auto &a = commands.at(1), &again = commands.at(2);
+  check(a.at("field")==again.at("field") && a.at("ordinal")=="0" && again.at("ordinal")=="1" &&
+        a.at("count")=="2" && again.at("count")=="2" && a.at("path").empty() && again.at("path").empty(),
+        "aggregate admission retains both a contributions in the same definition field");
+  for (const auto &observation : aggregate.at("native")) {
+    const auto &particles = observation.at("snapshot").at("particles");
+    const auto &fields = observation.at("field_sources");
+    const auto shared = std::find_if(fields.begin(),fields.end(),
+        [&](const Json &field) { return field.at("source")==a.at("field"); });
+    check(particles.size()==1 && particles.at(0).at("mass")==8 &&
+          shared!=fields.end() && shared->at("mass")==4,
+          "both a contributions publish through one field while aggregate body mass stays eight");
+  }
+  auto retry = run(runtime,fixture,"accented",true,false,path,false,true,{&repeated,&overlap});
+  return {{"schema","hcp-repeated-parent-overlap"},{"version",1},{"repeated_aggregate",std::move(aggregate)},
+      {"repeated_bytes",std::move(repeated.trace)},{"single_scalar_overlap",std::move(overlap.trace)},
+      {"same_harness_retry",std::move(retry)}};
+}
+
 Json signature(const Json &trace) {
   const auto &before=trace.at("native").at("before"), &s=before.at("snapshot");
   Json bodies=Json::array(),fields=Json::array(),definitions=Json::array();
@@ -462,11 +577,17 @@ int main(int argc,char **argv) {
       else if(arg=="--direct")path=field::HostPath::CpuDirect;
       else if(arg=="--projection-only")project_only=true;
       else if(arg=="--case" && i+1<argc)selected=argv[++i];
-      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode|character-rollup]");
+      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode|character-rollup|parent-overlap]");
     }
     check(selected=="all" || selected=="ascii" || selected=="unicode" ||
-          selected=="character-rollup","unknown trace case");
+          selected=="character-rollup" || selected=="parent-overlap","unknown trace case");
     engine::Runtime runtime(settings);letter_fixture::Fixture fixture;
+    if (selected=="parent-overlap") {
+      check(!project_only,"parent-overlap includes a native refusal and retry");
+      std::cout<<repeated_parent_overlap(runtime,fixture,path).dump()<<'\n';
+      std::cerr<<"semantic_native_trace,checks="<<checks<<" PASS\n";
+      return 0;
+    }
     if (selected=="character-rollup") {
       std::cout<<run(runtime,fixture,"accented",true,false,path,project_only,true).dump()<<'\n';
       std::cerr<<"semantic_native_trace,checks="<<checks<<" PASS\n";
