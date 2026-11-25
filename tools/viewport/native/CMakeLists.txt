@@ -8,7 +8,10 @@ target_link_libraries(semantic_native_trace_test PRIVATE viewport_snapshot)
 target_compile_options(semantic_native_trace_test PRIVATE -Wall -Wextra -Werror)
 add_test(NAME semantic_native_projection COMMAND semantic_native_trace_test --projection-only)
 add_test(NAME semantic_native_trace COMMAND semantic_native_trace_test)
-set_tests_properties(semantic_native_projection semantic_native_trace PROPERTIES
+add_test(NAME semantic_character_rollup_bulk COMMAND semantic_native_trace_test --case character-rollup)
+add_test(NAME semantic_character_rollup_direct COMMAND semantic_native_trace_test --case character-rollup --threads 2 --direct)
+set_tests_properties(semantic_native_projection semantic_native_trace
+  semantic_character_rollup_bulk semantic_character_rollup_direct PROPERTIES
   ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 add_executable(viewport_live_study live_study.cpp)
 target_include_directories(viewport_live_study PRIVATE ../../../engine/tests)

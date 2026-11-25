@@ -210,6 +210,35 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     edges = sum(edges,sum(1,definition->parents.size()));
   }
   need(ordered.size() == b.bodies.size());
+  if (b.character_rollup) {
+    w.charge(1);
+    const auto &rollup = *b.character_rollup;
+    const auto owner_index = ProjectionAccess::find(p,rollup.owner,w);
+    need(owner_index < p.occurrence_count());
+    const auto &owner = ProjectionAccess::row(p,owner_index);
+    const auto *endpoint = ProjectionAccess::resolve(p,owner_index,&w);
+    need(endpoint && !owner.active && !owner.byte && owner.complete_character &&
+         w.equal(*owner.complete_character,rollup.character) && endpoint->parents.size() == 1);
+    const auto &character = tool(rollup.character);
+    need(character.mass && *character.mass == *endpoint->mass &&
+         character.parents.size() >= 2 && character.parents.size() == ordered.size());
+    // The existing projection checks each byte's complete source relationship.
+    // Match the whole active cohort to the ordered scalar construction here.
+    std::uint64_t total = 0;
+    for (std::size_t i=0; i<ordered.size(); ++i) {
+      w.charge(1);
+      const auto &part = ProjectionAccess::row(p,ordered[i]);
+      const auto *definition = ProjectionAccess::resolve(p,ordered[i],&w);
+      const auto &edge = character.parents[i];
+      need(definition && part.byte && part.byte->owner_index == owner_index &&
+           part.byte->character_ordinal == 0 && part.byte->byte_ordinal == i &&
+           edge.ordinal == i && w.equal(definition->ref,edge.target) &&
+           *definition->mass == edge.contribution);
+      total = sum(total,edge.contribution);
+    }
+    need(total == *character.mass);
+    edges = sum(edges,ordered.size());
+  }
   edges = sum(edges,assembly.memberships_.contributions_.size());
   cap(Budget::Participation,edges); cap(Budget::Contacts,recipe.contacts.size());
   const auto commands = sum(sum(ordered.size(),b.fields.size()),sum(edges,recipe.contacts.size()));
@@ -320,6 +349,10 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
       edge(GroupKind::ParentValue,parent.target.object,parent.contribution,parent.ordinal);
     }
     need(t.parents.empty() || parent_mass == *t.mass);
+    if (b.character_rollup) {
+      w.charge(1);
+      edge(GroupKind::ParentValue,b.character_rollup->character.object,*t.mass,o.byte->byte_ordinal);
+    }
     for (const auto &m : assembly.memberships_.contributions_) {
       w.charge(1);
       w.charge(1);
@@ -366,6 +399,21 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   // Every declared field owns all and only its emitted source rows. The caller
   // chooses the tree, while cohort order comes from this one canonical ledger.
   need(b.comparisons.size() == fields_.size());
+  if (b.character_rollup) {
+    w.charge(1);
+    const auto &root = b.comparisons.back();
+    need(root.field.kind == GroupKind::ParentValue &&
+         w.equal(root.field.object,b.character_rollup->character.object) &&
+         root.children.size() == occurrences_.size());
+    for (std::size_t i=0; i<root.children.size(); ++i) {
+      w.charge(1);
+      const int child = root.children[i];
+      need(child >= 0 && std::size_t(child) < b.comparisons.size()-1);
+      const auto &field = b.comparisons[child].field;
+      need(field.kind == GroupKind::SiblingDefinition &&
+           w.equal(field.object,occurrences_[i].definition.object));
+    }
+  }
   std::uint64_t links = 0;
   for (const auto &node : b.comparisons) { w.charge(1); links = sum(links,node.children.size()); }
   cap(Budget::CascadeLinks,links); cap(Budget::CascadeReferences,edges);
