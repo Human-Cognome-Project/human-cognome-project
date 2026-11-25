@@ -1,5 +1,72 @@
 # Core continuation after local CUDA corrections
 
+## November 25, 2026 — hosted qualification and integration
+
+The onboarding rebuild (#424) and structural/confounded target guidance (#425) are integrated. The editable CPU operator and native claim observations are available on main. [Operator guide](onboarding/OPERATOR.md).
+
+The corrected placement run passed all four compiler profiles and all four regression shards. The combined test uses 2,094 cumulative SNode IDs, including 90 from the three grouped-exchange fixtures. Its test-only reservation is 4,096. Production capacity policy remains open. [Failed run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45493722124) · [Passing run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45518394895).
+
+The response observer (#431) and seven-profile worked trace (#433) also passed their overnight checks on their submitted heads. Integrate in order, preserving whole-field mode and response capture together. Qualify a combined exchange with response capture. The next representation task is the single Unicode parent í, followed by the repeated-parent overlap case. [#432 scope](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432).
+
+## November 24, 2026 — hosted #430 hold and active reviewed work
+
+Main `0945f548` integrates #426's prose-CI scoping; #427/#429 were already
+integrated. Chat acceptance is reconciled with the following actual dispositions.
+
+- #430 at `8dbe7ec7` is on integration hold: [native run 45493722124](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45493722124)
+  failed all four compiler jobs at the explicit 2,048 SNode-ID test budget.
+  Cancelled regression shard 4 also records three placement test failures at
+  that limit, then stops during the fourth after about 90 minutes. Native build,
+  projection, database and regression shards 1–3 passed; the overall native
+  gate failed. The earlier preparation-probe hold is resolved.
+- #431 at `164708c5` remains provisionally accepted for raw response observation
+  under [review 7146490937](https://github.com/Human-Cognome-Project/human-cognome-project/pull/431#issuecomment-7146490937).
+- #433 at `145c7b2d` remains provisionally accepted as the seven-profile worked
+  trace on #431 under [review 7147550063](https://github.com/Human-Cognome-Project/human-cognome-project/pull/433#issuecomment-7147550063).
+  Its fixed-input and Unicode/refusal observations retain their narrow meanings.
+  [#432](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
+  tracks literal-character rollup and overlapping-path representation.
+
+#431's [native CPU gate](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45502438771),
+smoke and viewport checks passed. #433's smoke and viewport checks passed;
+its [native CPU gate](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45507401577)
+is still running at this handoff.
+None of these three contributions is integrated. Maintainer-owned #424/#425
+and deliberately held #75/#111/#123 remain separate.
+
+The corrected #430 head is `124e7e08752a4506ac24bcfc953c7ed4932403aa`.
+The [investigation, commands and evidence](https://github.com/Human-Cognome-Project/human-cognome-project/blob/124e7e08752a4506ac24bcfc953c7ed4932403aa/engine/docs/PLACEMENT-QUALIFICATION-ID-BUDGET.md)
+confirm the runner disables environment reads and fixes the placement test's
+startup reservation explicitly. It needs 2,094 cumulative SNode IDs (highest
+2,093), including 90 from the three new grouped-exchange fixtures. This is
+Program-lifetime metadata, including released layouts. The placement-only
+reservation is now 4,096 with per-case ID accounting. Production defaults,
+native tree ownership, model capacity and allocation policy are unchanged.
+Regression jobs receive 180 minutes for the same serial inventory; compiler-job
+and per-test limits remain unchanged. Cancellation near the old 90-minute
+allowance is consistent with budget exhaustion, but the raw log only reports
+cancellation; its three test failures remain explicit.
+
+Fresh local CPU evidence at executable source `49997818` passes three complete
+placement invocations (75 named case passes, identical census), three quick
+CTests, placement arithmetic/capacity controls and build/backend checks.
+Orchestration controls and ShellCheck pass. The final documentation/workflow
+head leaves that executable source unchanged; the retained evidence archive
+verifies after fresh extraction. This is scoped local evidence, not a complete
+hosted matrix. Fresh automatic [native CI 45518394895](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45518394895)
+is running at the corrected head. The original failed run remains failed, and
+the integration hold remains pending maintainer re-review and authoritative CI.
+GitHub's generated merge `a40bb122` has current main `0945f548` and the
+corrected head as parents. Its executable sources match the qualified head;
+the differences are #426's integrated workflow scoping. No agent integration
+merge or existing-run rerun was performed.
+
+The maintainer integrates all merges. After #430/#431 integration, preserve both
+CLI options and qualify a whole-field exchange with response capture enabled.
+General structural/confounded targets, fixed-input brake comparison, literal/
+aspect rollup and live Unicode exchange remain separate from this CI correction;
+peripheral rollup and formal pattern/PoC checks follow later.
+
 ## Integrated operator baseline
 
 #427 and #429 provide live occurrence edits and native claim counts. Continue with whole-field exposure and per-level observation.
