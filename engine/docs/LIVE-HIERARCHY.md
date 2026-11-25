@@ -107,8 +107,13 @@ Ordinary phases are:
 1. Focal controls read the completed mirror. Active bodies gather current complete
    publications, add contacts, integrate, and publish Q once after the unchanged
    brake/damping. Final speed is written before quiet-body consumption.
-2. Accepted movement activates its leaf fields. Existing two-sided contact
-   propagation follows body calculation.
+2. Accepted movement activates fields that read the moved body directly.
+   These include leaf fields and scoped byte comparisons. Native refresh
+   validates that every member of such a comparison has a direct source row,
+   then publishes its movement flag with the existing field descriptor.
+   The integration kernel follows the body's participation edges into the
+   same centroid NativeSet. Existing two-sided contact propagation follows
+   body calculation.
 3. One traversal of the existing centroid NativeSet consumes each entered bit
    before acquiring inputs. Leaves include sleeping bodies; parents use published
    children. Each expressed destination combines before its Q and retains

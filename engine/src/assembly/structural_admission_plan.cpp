@@ -210,6 +210,41 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     edges = sum(edges,sum(1,definition->parents.size()));
   }
   need(ordered.size() == b.bodies.size());
+  const warm::Tool *endpoint_rollup = nullptr;
+  if (b.endpoint_rollup) {
+    w.charge(1);
+    need(!b.character_rollup);
+    const auto owner_index = ProjectionAccess::find(p,b.endpoint_rollup->owner,w);
+    need(owner_index<p.occurrence_count());
+    const auto &owner = ProjectionAccess::row(p,owner_index);
+    endpoint_rollup = ProjectionAccess::resolve(p,owner_index,&w);
+    need(endpoint_rollup && !owner.active && !owner.byte &&
+         w.equal(endpoint_rollup->ref,b.endpoint_rollup->endpoint));
+    const auto &parents = endpoint_rollup->parents;
+    need(!parents.empty() && parents.size() <= ordered.size());
+    ReservedVector<std::uint64_t> counts{ReservationAllocator<std::uint64_t>(domain_.get())};
+    reserve(counts,parents.size(),w);
+    counts.resize(parents.size());
+    for (const auto index : ordered) {
+      w.charge(1);
+      const auto &part = ProjectionAccess::row(p,index);
+      const auto *definition = ProjectionAccess::resolve(p,index,&w);
+      // The sealed projection binds each byte to the full parent pin and both
+      // source ordinals. Check the active cohort's exact counts per parent.
+      need(definition && part.byte && part.byte->owner_index == owner_index &&
+           part.byte->character_ordinal < counts.size());
+      auto &count = counts[part.byte->character_ordinal];
+      count = sum(count,*definition->mass);
+    }
+    std::uint64_t total = 0;
+    for (std::size_t i=0; i<counts.size(); ++i) {
+      w.charge(1);
+      need(counts[i] && counts[i] == parents[i].contribution);
+      total = sum(total,counts[i]);
+    }
+    need(total == *endpoint_rollup->mass);
+    edges = sum(edges,sum(ordered.size(),ordered.size()));
+  }
   if (b.character_rollup) {
     w.charge(1);
     const auto &rollup = *b.character_rollup;
@@ -353,6 +388,11 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
       w.charge(1);
       edge(GroupKind::ParentValue,b.character_rollup->character.object,*t.mass,o.byte->byte_ordinal);
     }
+    if (endpoint_rollup) {
+      w.charge(1);
+      edge(GroupKind::ParentValue,o.byte->character.object,*t.mass,o.byte->character_ordinal);
+      edge(GroupKind::SiblingDefinition,endpoint_rollup->ref.object,*t.mass,o.byte->character_ordinal);
+    }
     for (const auto &m : assembly.memberships_.contributions_) {
       w.charge(1);
       w.charge(1);
@@ -399,89 +439,151 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   // Every declared field owns all and only its emitted source rows. The caller
   // chooses the tree, while cohort order comes from this one canonical ledger.
   need(b.comparisons.size() == fields_.size());
+  const auto rollup_children = [&](std::size_t node, GroupKind kind,
+                                   const warm::ObjectKey *character) {
+    const auto &children = b.comparisons[node].children;
+    std::size_t next = 0;
+    for (std::size_t i=0; i<ordered.size(); ++i) {
+      w.charge(1);
+      const auto &pin = ProjectionAccess::row(p,ordered[i]).byte->character.object;
+      if (character && !w.equal(*character,pin)) continue;
+      const auto &object = kind == GroupKind::ParentValue ? pin : occurrences_[i].definition.object;
+      bool seen = false;
+      for (std::size_t j=0; j<next; ++j) {
+        w.charge(1);
+        if (w.equal(b.comparisons[children[j]].field.object,object)) {
+          seen = true;
+          break;
+        }
+      }
+      if (seen) continue;
+      need(next < children.size());
+      const auto child = children[next++];
+      need(child >= 0 && std::size_t(child) < node);
+      const auto &field = b.comparisons[child].field;
+      need(field.kind == kind && w.equal(field.object,object));
+    }
+    need(next && next == children.size());
+  };
   if (b.character_rollup) {
     w.charge(1);
     const auto &root = b.comparisons.back();
     need(root.field.kind == GroupKind::ParentValue &&
-         w.equal(root.field.object,b.character_rollup->character.object) &&
-         root.children.size() == occurrences_.size());
-    for (std::size_t i=0; i<root.children.size(); ++i) {
+         w.equal(root.field.object,b.character_rollup->character.object));
+    rollup_children(b.comparisons.size()-1,GroupKind::SiblingDefinition,nullptr);
+  }
+  if (endpoint_rollup) {
+    w.charge(1);
+    const auto &root = b.comparisons.back();
+    need(root.field.kind==GroupKind::SiblingDefinition &&
+         w.equal(root.field.object,endpoint_rollup->ref.object));
+    rollup_children(b.comparisons.size()-1,GroupKind::ParentValue,nullptr);
+    for (const int child : root.children) {
       w.charge(1);
-      const int child = root.children[i];
-      need(child >= 0 && std::size_t(child) < b.comparisons.size()-1);
-      const auto &field = b.comparisons[child].field;
-      need(field.kind == GroupKind::SiblingDefinition &&
-           w.equal(field.object,occurrences_[i].definition.object));
+      rollup_children(child,GroupKind::SiblingDefinition,&b.comparisons[child].field.object);
     }
   }
   std::uint64_t links = 0;
-  for (const auto &node : b.comparisons) { w.charge(1); links = sum(links,node.children.size()); }
-  cap(Budget::CascadeLinks,links); cap(Budget::CascadeReferences,edges);
-  reserve(children_,links,w);
   struct Coverage { std::size_t node, body; field::CascadeCoverage value; };
   ReservedVector<Coverage> coverage{ReservationAllocator<Coverage>(domain_.get())};
   // At most one coverage entry per participation; this bounds temporary space.
   reserve(coverage,edges,w);
-  ReservedVector<int> parents{ReservationAllocator<int>(domain_.get())}, ranks{ReservationAllocator<int>(domain_.get())};
+  ReservedVector<int> parents{ReservationAllocator<int>(domain_.get())},
+      ranks{ReservationAllocator<int>(domain_.get())},
+      child_uses{ReservationAllocator<int>(domain_.get())};
   reserve(parents,b.comparisons.size(),w); reserve(ranks,b.comparisons.size(),w);
-  w.elements(b.comparisons.size(),2*sizeof(int));
+  reserve(child_uses,b.comparisons.size(),w);
+  w.elements(b.comparisons.size(),3*sizeof(int));
   parents.assign(b.comparisons.size(),-1); ranks.assign(b.comparisons.size(),0);
+  child_uses.assign(b.comparisons.size(),0);
   const auto coverage_at = [&](std::size_t node, std::size_t body) -> const field::CascadeCoverage * {
     for (const auto &v : coverage) { w.charge(1); if (v.node == node && v.body == body) return &v.value; }
     return nullptr;
   };
-  const auto edge_begin = occurrences_.size()+fields_.size();
-  struct ScopedLink { int branch{-1}, body{-1}, child{-1}, command{-1}; };
-  std::array<ScopedLink,2> scoped{};
-  int scoped_publisher = -1;
-  if (!b.nibble_scopes.empty()) {
+  for (std::size_t i=0; i<b.comparisons.size(); ++i) {
     w.charge(1);
-    need(capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedNibbleBootstrap,
-         AdmissionPlanStatus::Unsupported);
-    need(b.character_rollup && ordered.size()==scoped.size() &&
-         b.nibble_scopes.size()==scoped.size());
-    const auto &root = b.comparisons.back();
-    for (const auto &scope : b.nibble_scopes) {
+    for (int child : b.comparisons[i].children) {
       w.charge(1);
-      int body = -1;
-      for (std::size_t i=0; i<ordered.size(); ++i)
-        if (ProjectionAccess::matches(p,ordered[i],scope.byte,w)) body = int(i);
-      need(body>=0 && scoped[body].body<0);
-      const int branch = root.children[body];
-      const auto &parent = b.comparisons[branch];
-      need(parent.comparison==scope.branch_comparison && parent.children.size()==2);
-      const auto *byte = ProjectionAccess::resolve(p,ordered[body],&w);
-      need(byte && scope.ordinal<byte->parents.size());
-      const auto &nibble = byte->parents[scope.ordinal];
-      need(nibble.ordinal==scope.ordinal && nibble.contribution==1);
-      const auto field = field_index(GroupKind::ParentValue,nibble.target.object);
-      int child = -1;
-      for (int index : parent.children) {
-        w.charge(1);
-        need(index>=0 && index<branch);
-        if (same_field(b.comparisons[index].field,fields_[field].field,w)) {
-          need(child<0);
-          child = index;
-        }
-      }
-      need(child>=0 && b.comparisons[child].children.empty() &&
-           (scoped_publisher<0 || scoped_publisher==child));
-      scoped_publisher = child;
-      int command = -1;
-      for (std::size_t j=edge_begin; j<edge_begin+edges; ++j) {
-        w.charge(1);
-        const auto &edge = commands_[j];
-        if (edge.first.command==body && edge.second.command==fields_[field].command &&
-            edge.ordinal==scope.ordinal) {
-          need(command<0 && edge.exact_count==1);
-          command = int(j);
-        }
-      }
-      need(command>=0);
-      scoped[body] = {branch,body,child,command};
+      need(child >= 0 && std::size_t(child) < i && parents[child] != int(i));
+      parents[child] = int(i);
+      ++child_uses[child];
+      links = sum(links,1);
     }
+  }
+  cap(Budget::CascadeLinks,links);
+  const auto edge_begin = occurrences_.size()+fields_.size();
+  struct ScopedLink { int branch, child, command; bool confirmed{}; };
+  ReservedVector<ScopedLink> scoped{ReservationAllocator<ScopedLink>(domain_.get())};
+  for (std::size_t child=0; child<b.comparisons.size(); ++child) {
+    w.charge(1);
+    if (child_uses[child] < 2) continue;
+    need((b.character_rollup && capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedNibbleBootstrap) ||
+         (endpoint_rollup && capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedEndpointBootstrap));
+    const auto &publisher = b.comparisons[child];
+    need(publisher.field.kind == GroupKind::ParentValue && publisher.children.empty() &&
+         publisher.retained_fraction_bits == 52);
+    if (scoped.capacity() == 0)
+      reserve(scoped,std::min(edges,limits[Budget::CascadeLinks]),w);
+    const auto field = fields_[field_index(publisher.field.kind,publisher.field.object)].command;
+    const auto begin = scoped.size();
+    for (std::size_t j=edge_begin; j<edge_begin+edges; ++j) {
+      w.charge(1);
+      const auto &edge = commands_[j];
+      if (edge.second.command != field) continue;
+      const auto body = edge.first.command;
+      const auto &part = ProjectionAccess::row(p,ordered[body]);
+      const auto *definition = ProjectionAccess::resolve(p,ordered[body],&w);
+      need(part.byte && definition && edge.ordinal < definition->parents.size());
+      const auto &parent = definition->parents[edge.ordinal];
+      need(parent.ordinal == edge.ordinal && parent.contribution == *edge.exact_count &&
+           w.equal(parent.target.object,publisher.field.object));
+      int branch = -1;
+      for (std::size_t i=child+1; i<b.comparisons.size(); ++i) {
+        w.charge(1);
+        const auto &candidate = b.comparisons[i];
+        if (candidate.field.kind != GroupKind::SiblingDefinition ||
+            !w.equal(candidate.field.object,definition->ref.object)) continue;
+        for (int link : candidate.children) {
+          w.charge(1);
+          if (link != int(child)) continue;
+          need(branch < 0 && candidate.retained_fraction_bits == 52);
+          branch = int(i);
+        }
+      }
+      need(branch >= 0);
+      cap(Budget::CascadeLinks,sum(scoped.size(),1));
+      w.charge(sizeof(ScopedLink));
+      scoped.push_back({branch,int(child),int(j)});
+    }
+    const auto count = scoped.size()-begin;
+    need(count >= std::size_t(child_uses[child]));
+    links = sum(links,count-child_uses[child]);
     scoped_nibble_rows_ = true;
   }
+  need(scoped_nibble_rows_ == capacity.scoped_rows());
+  // A caller may additionally assert every derived selection by full byte key
+  // and ordinal. The immutable ledger above determines the selections.
+  if (!b.nibble_scopes.empty()) {
+    need(b.nibble_scopes.size() == scoped.size());
+    for (const auto &assertion : b.nibble_scopes) {
+      w.charge(1);
+      bool found = false;
+      for (auto &link : scoped) {
+        w.charge(1);
+        const auto &edge = commands_[link.command];
+        if (b.comparisons[link.branch].comparison != assertion.branch_comparison ||
+            edge.ordinal != assertion.ordinal ||
+            !ProjectionAccess::matches(p,ordered[edge.first.command],assertion.byte,w)) continue;
+        need(!link.confirmed);
+        link.confirmed = found = true;
+      }
+      need(found);
+    }
+  }
+  w.elements(parents.size(),sizeof(int));
+  std::fill(parents.begin(),parents.end(),-1);
+  cap(Budget::CascadeLinks,links); cap(Budget::CascadeReferences,edges);
+  reserve(children_,links,w);
   for (std::size_t i=0; i<b.comparisons.size(); ++i) {
     w.charge(1); const auto &input = b.comparisons[i];
     need(input.comparison && input.level >= 0);
@@ -520,24 +622,28 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
       w.charge(1);
       need(child >= 0 && std::size_t(child) < i && parents[child] < 0 &&
            b.comparisons[child].level <= input.level);
-      int link = child;
-      if (child==scoped_publisher) {
+      if (child_uses[child]>1) {
         w.charge(1);
-        const auto scope = std::find_if(scoped.begin(),scoped.end(),
-            [&](const auto &row) { w.charge(1); return row.branch==int(i); });
-        need(scope!=scoped.end());
-        need(nodes_[child].cohort_count==scoped.size());
-        for (std::size_t j=nodes_[child].cohort_begin;
-             j<nodes_[child].cohort_begin+nodes_[child].cohort_count; ++j) {
+        const auto begin = children_.size();
+        for (const auto &scope : scoped) {
           w.charge(1);
-          if (contributions_[j].source_command==scope->command) link = -1-int(j);
+          if (scope.branch!=int(i) || scope.child!=child) continue;
+          int link = child;
+          for (std::size_t j=nodes_[child].cohort_begin;
+               j<nodes_[child].cohort_begin+nodes_[child].cohort_count; ++j) {
+            w.charge(1);
+            if (contributions_[j].source_command==scope.command) link = -1-int(j);
+          }
+          need(link<0 && children_.size()<links);
+          w.charge(sizeof(int)); children_.push_back(link);
         }
-        need(link<0);
+        need(children_.size()>begin);
       } else {
         parents[child] = int(i);
+        need(children_.size()<links);
+        w.charge(sizeof(int)); children_.push_back(child);
       }
       ranks[i] = std::max(ranks[i],ranks[child]+1);
-      w.charge(sizeof(int)); children_.push_back(link);
     }
     node.child_count = children_.size()-node.child_begin;
     if (node.child_count) for (std::size_t body=0; body<occurrences_.size(); ++body) {
@@ -562,8 +668,9 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     cap(Budget::CascadeLevels,std::uint64_t(ranks[i])+1);
     w.charge(sizeof(node)); nodes_.push_back(node);
   }
+  need(children_.size()==links);
   for (std::size_t i=0; i<parents.size(); ++i) {
-    w.charge(1); need((parents[i] < 0) == (i+1 == parents.size() || int(i)==scoped_publisher));
+    w.charge(1); need((parents[i] < 0) == (i+1 == parents.size() || child_uses[i]>1));
   }
   for (std::size_t body=0; body<occurrences_.size(); ++body) {
     bool leaf = false;

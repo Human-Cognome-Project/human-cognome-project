@@ -42,7 +42,7 @@
           "properties": {
             "body": {"$ref": "#/$defs/nativeRecord"},
             "child": {"type": "integer", "minimum": 0}, "parent": {"type": "integer", "minimum": 0},
-            "kind": {"enum": ["local", "inherited"]},
+            "kind": {"enum": ["local", "inherited", "scoped_inherited"]},
             "numerator": {"$ref": "#/$defs/decimal"}, "denominator": {"$ref": "#/$defs/decimal"},
             "delta": {"$ref": "#/$defs/extractedPoint"}, "recipient": {"$ref": "#/$defs/extractedPoint"},
             "body_mass": {"type": ["number", "null"]}, "source_mass": {"type": ["number", "null"]},

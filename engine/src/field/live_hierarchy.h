@@ -25,6 +25,7 @@ struct LiveHierarchyInspection {
   std::vector<int> order;
   std::size_t node_count{};
 };
+enum class LiveResponseKind { Local, Inherited, ScopedInherited };
 // Synchronized extraction, not combined intent or a motion decision. Values
 // are borrowed until the next synchronized operation on this Harness.
 struct LiveResponseInspection {
@@ -36,7 +37,8 @@ struct LiveResponseInspection {
   // Column-major: delta XYZ, recipient XYZ, body mass, source field mass,
   // structural eligibility, normal-or-zero validity. Only responses rows live.
   std::vector<double> values;
-  // Actual native response rows: body, child packet slot, parent slot, kind.
+  // Body, child publisher slot, parent slot, kind. A scoped inherited row
+  // uses the selected singleton occurrence as its child centroid.
   std::vector<int> identities;
   // Exact participating numerator and denominator, not rounded float shares.
   std::vector<std::uint64_t> fractions;
@@ -74,7 +76,7 @@ struct LiveRefreshSpec {
   std::size_t child_count{};
   const LiveRefreshContribution *contributions{};
   std::size_t contribution_count{};
-  // Fixed CPU bootstrap experiment. A negative child encodes a singleton
+  // CPU bootstrap with branch-local coverage. A negative child encodes a singleton
   // contribution index as -1-index. The publishing field still owns all rows.
   bool scoped_nibble_rows{};
 };
@@ -103,7 +105,7 @@ class LiveHierarchy {
   const LiveResponseInspection &inspect_responses(std::uint64_t work_limit);
   const LiveIntentInspection &inspect_intent(double gravity, std::uint64_t work_limit);
   std::size_t binding_bytes() const;
-  const taichi::lang::Ndarray &leaf_fields() const;
+  const taichi::lang::Ndarray &movement_fields() const;
   UpdateStatus prepare_refresh(const LiveRefreshSpec &,
                                const PreparedCounts &,
                                std::size_t commands,

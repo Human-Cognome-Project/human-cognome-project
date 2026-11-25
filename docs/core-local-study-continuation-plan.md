@@ -16,6 +16,35 @@ Use the existing letter definitions first. A letter is an ordinary composed obje
 
 ## Dated handoffs
 
+## November 25, 2026 — fixed repeated endpoint rollup
+
+The maintainer provisionally accepted #437 at `72bf6fc9` for the fixed `ó`
+experiment. The #432 follow-up now publishes the complete `aá` endpoint.
+[Maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/437#issuecomment-7166806156) · [#432 direction](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7166806643)
+
+Four native byte claims preserve paths and exact parent contributions 2 + 2 + 4.
+Nibble 1 retains one global field with three exact rows. Each selected row
+reaches its own branch, and the endpoint publishes mass 8 through the next tick.
+The proposed scoped inherited response uses the singleton byte position and the
+owning byte comparison. It is flagged for review alongside the source and CI.
+The scoped compiler-shape audit and live Unicode exposure remain separate.
+[Implementation and evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md)
+
+### Data-driven admission correction
+
+The #438 follow-up takes the implementation assignment from #443. It derives
+endpoint and branch coverage from pinned parent contributions and occurrence
+paths. The same executable admits the changed `abá` recipe, publishes mass
+10 through five byte paths and follows a native tick. An inconsistent branch
+declaration refuses without publishing on the Harness used for the valid retry.
+Integration and the downstream carry remain subject to maintainer review.
+[Correction and local evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#data-driven-admission-correction)
+
+The follow-up routes accepted movement to scoped byte comparisons during
+ordinary selective ticks. In the multi-tick `abá` witness, both shared
+nibble packets stay fixed while the byte centre moves and the endpoint
+republishes. [Selective polling evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#selective-polling-correction)
+
 ## November 25, 2026 — scoped nibble experiment
 
 The residual witness in #436 is provisionally accepted at `e5744bc0`.

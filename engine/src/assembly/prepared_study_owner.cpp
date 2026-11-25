@@ -37,7 +37,8 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
       return out;
     }
     if ((editable_occurrences || alternative) &&
-        (bindings.character_rollup || (alternative && alternative->bindings.character_rollup))) {
+        (bindings.character_rollup || bindings.endpoint_rollup ||
+         (alternative && (alternative->bindings.character_rollup || alternative->bindings.endpoint_rollup)))) {
       out.status = AdmissionPlanStatus::Unsupported;
       out.metadata_work = work.result();
       out.reservation = domain->result();

@@ -366,7 +366,7 @@ std::array<engine::CompiledKernel, 7> Harness::build_numerical_kernels(
         profile_.wide() ? array_param(b, 12, real_type(), 1) : nullptr;
     const bool live_capacity =
         prepared_ && prepared_->capacity.limits()[Budget::LiveResponses];
-    auto *leaf_fields =
+    auto *movement_fields =
         live_capacity ? array_param(b, 13, PrimitiveType::i32, 1) : nullptr;
     auto *live_installed =
         live_capacity ? scalar_param(b, 14, PrimitiveType::i32) : nullptr;
@@ -577,11 +577,10 @@ std::array<engine::CompiledKernel, 7> Harness::build_numerical_kernels(
           auto *field = load(b, edges, at(b, kEdgeGroup, edge));
           std::optional<IRBuilder::IfGuard> selected;
           if (live_capacity)
-            selected.emplace(
-                b.get_if_guard(b.create_if(b.create_logical_or(
-                                   b.create_logical_not(live_installed),
-                                   load(b, leaf_fields, {field}))),
-                               true));
+            selected.emplace(b, b.create_if(b.create_logical_or(
+                                    b.create_logical_not(live_installed),
+                                    load(b, movement_fields, {field}))),
+                             true);
           centroid_selection.activate(b, field);
           count_work(b, counters, detail::AdjacencyVisits);
         }

@@ -66,7 +66,7 @@ void count(IRBuilder &b, ArgLoadStmt *a, int c) {
 struct Args {
   ArgLoadStmt *values, *selector, *cfg, *children, *sources, *ratios, *masks,
       *bodies, *groups, *coverage, *influences, *weights, *offsets, *old,
-      *stats, *activity, *group_delta, *leaf, *owners, *pairs, *a_offsets,
+      *stats, *activity, *group_delta, *movement, *owners, *pairs, *a_offsets,
       *a_order, *b_offsets, *b_order;
   Stmt *nodes, *gravity, *op, *stiffness;
   ArgLoadStmt *visits, *group_flags;
@@ -90,7 +90,7 @@ struct Args {
     stats = array(b, 14, PrimitiveType::i64);
     activity = array(b, 15, PrimitiveType::i64);
     group_delta = array(b, 16, d, 2);
-    leaf = array(b, 17, i);
+    movement = array(b, 17, i);
     owners = array(b, 18, i);
     pairs = array(b, 19, i, 2);
     a_offsets = array(b, 20, i, 2);
@@ -150,20 +150,28 @@ std::array<Stmt *, 3> contribution(IRBuilder &b,
                                    Stmt *ref,
                                    const std::array<Stmt *, 4> &child,
                                    const std::array<Stmt *, 4> &parent,
-                                   bool physical_work = false) {
+                                   bool physical_work = false,
+                                   bool scoped_responses = false) {
   std::array<AllocaStmt *, 3> result{};
   for (auto &v : result) {
     v = b.create_local_var(PrimitiveType::f64);
     b.create_local_store(v, b.get_float64(0));
   }
   auto *kind = read(b, a.influences, cell(b, 3, ref));
+  auto *inherited = scoped_responses ? b.create_cmp_ne(kind,b.get_int32(0)) : kind;
   auto *node = read(b, a.influences, cell(b, 1, ref));
   auto *pnode = read(b, a.influences, cell(b, 2, ref));
-  auto *source_node = b.create_select(kind, pnode, node);
-  auto *eligible = b.create_logical_and(
+  auto *source_node = b.create_select(inherited, pnode, node);
+  Stmt *eligible = b.create_logical_and(
       read(b, a.cfg, cell(b, MultipleBodies, source_node)),
       b.create_logical_or(b.create_cmp_eq(kind, b.get_int32(0)),
                           read(b, a.cfg, cell(b, Complement, node))));
+  auto *scoped = scoped_responses
+      ? b.create_cmp_eq(kind,b.get_int32(int(LiveResponseKind::ScopedInherited))) : nullptr;
+  if (scoped)
+    eligible = b.create_select(scoped,
+        b.create_logical_and(read(b,a.cfg,cell(b,MultipleBodies,pnode)),
+            b.create_cmp_gt(read(b,a.cfg,cell(b,ChildCount,pnode)),b.get_int32(1))),eligible);
   {
     auto nonzero = b.get_if_guard(
         b.create_if(b.create_logical_and(
@@ -175,8 +183,11 @@ std::array<Stmt *, 3> contribution(IRBuilder &b,
     Stmt *d2 = b.get_float64(0);
     for (int k = 0; k < 3; ++k) {
       delta[k] = b.create_select(
-          kind, b.create_sub(parent[k], child[k]),
+          inherited, b.create_sub(parent[k], child[k]),
           b.create_sub(child[k], read(b, a.bodies, cell(b, kPosX + k, body))));
+      if (scoped)
+        delta[k] = b.create_select(scoped,
+            b.create_sub(parent[k],read(b,a.bodies,cell(b,kPosX+k,body))),delta[k]);
       d2 = b.create_add(d2, b.create_mul(delta[k], delta[k]));
     }
     auto live = b.get_if_guard(
@@ -188,7 +199,7 @@ std::array<Stmt *, 3> contribution(IRBuilder &b,
                                    PrimitiveType::f64),
                      b.create_cast(read(b, a.weights, cell(b, 1, ref)),
                                    PrimitiveType::f64)));
-    auto *mass = b.create_select(kind, parent[3], child[3]);
+    auto *mass = b.create_select(inherited, parent[3], child[3]);
     auto *scale = b.create_mul(
         b.create_mul(a.gravity, weight),
         b.create_mul(mass, b.create_mul(inv, b.create_mul(inv, inv))));
@@ -235,7 +246,7 @@ void LiveHierarchy::append_layout(const BudgetDemand &l,
   add("live-response-controls", 4 * r, 4);
   add("live-response-ratios", 2 * r, 8);
   add("live-response-offsets", 2 * p, 4);
-  add("live-leaf-fields", g, 4);
+  add("live-movement-fields", g, 4);
   add("live-field-owners", g, 4);
   add("live-field-inspection", h, 4, 1);
   add("live-response-observation", 10 * r, sizeof(double));
@@ -265,7 +276,7 @@ void LiveHierarchy::append_layout(const BudgetDemand &l,
   add("refresh-response-controls", 4 * r, sizeof(int), 1);
   add("refresh-response-ratios", 2 * r, sizeof(std::uint64_t), 1);
   add("refresh-response-offsets", 2 * p, sizeof(int), 1);
-  add("refresh-leaf-fields", g, sizeof(int), 1);
+  add("refresh-movement-fields", g, sizeof(int), 1);
   add("refresh-owners", g, sizeof(int), 1);
 }
 
@@ -284,7 +295,7 @@ struct LiveHierarchy::Impl {
   LiveIntentInspection intent_inspection;
   std::unique_ptr<Ndarray> intent_observation;
   engine::CompiledKernel intent_kernel;
-  std::vector<int> cfg, children, sources, coverage, influences, offsets, leaf,
+  std::vector<int> cfg, children, sources, coverage, influences, offsets, movement,
       owners;
   std::vector<std::uint64_t> ratios, masks, weights;
   std::vector<CascadeSourceRow> source_headers;
@@ -292,7 +303,7 @@ struct LiveHierarchy::Impl {
   std::array<Ndarray *, 19> arrays{};
   struct Refresh {
     std::vector<int> cfg, children, sources, coverage, influences, offsets,
-        leaf, owners, plan, rank;
+        movement, owners, plan, rank;
     std::vector<std::uint64_t> ratios, masks, weights, coverage_sum;
     std::vector<CascadeNode> nodes, proposed;
     std::vector<CascadeSourceRow> source_headers;
@@ -309,7 +320,7 @@ struct LiveHierarchy::Impl {
           coverage(a.U),
           influences(4 * a.R),
           offsets(2 * std::max(a.P, 1)),
-          leaf(std::max(a.G, 1)),
+          movement(std::max(a.G, 1)),
           owners(std::max(a.G, 1), -1),
           plan(5 * a.H),
           rank(a.H),
@@ -342,7 +353,7 @@ struct LiveHierarchy::Impl {
         coverage(U),
         influences(4 * R),
         offsets(2 * std::max(P, 1)),
-        leaf(std::max(G, 1)),
+        movement(std::max(G, 1)),
         owners(std::max(G, 1), -1),
         ratios(2 * S),
         masks(H),
@@ -590,6 +601,7 @@ void LiveHierarchy::Impl::prepare_intent_observation() {
 }
 void LiveHierarchy::Impl::prepare_response_observation() {
   IRBuilder b;
+  const bool scoped_responses = h.prepared_->capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedEndpointBootstrap;
   Args a(b);
   auto *out = array(b, 30, PrimitiveType::f64, 2);
   auto *n = b.create_arg_load({31}, PrimitiveType::i32, false, 0);
@@ -601,14 +613,18 @@ void LiveHierarchy::Impl::prepare_response_observation() {
     auto *node = read(b, a.influences, cell(b, 1, ref));
     auto *parent = read(b, a.influences, cell(b, 2, ref));
     auto *kind = read(b, a.influences, cell(b, 3, ref));
+    auto *inherited = scoped_responses ? b.create_cmp_ne(kind,b.get_int32(0)) : kind;
+    auto *scoped = scoped_responses
+        ? b.create_cmp_eq(kind,b.get_int32(int(LiveResponseKind::ScopedInherited))) : nullptr;
     auto child = packet(b, a, node), ancestor = packet(b, a, parent);
     Stmt *valid = b.get_int32(1);
     for (auto *v : child) valid = b.create_logical_and(valid, supported_real(b, v));
     for (auto *v : ancestor) valid = b.create_logical_and(valid, supported_real(b, v));
     for (int k = 0; k < 3; ++k) {
       auto *position = read(b, a.bodies, cell(b, kPosX + k, body));
-      auto *left = b.create_select(kind, ancestor[k], child[k]);
-      auto *right = b.create_select(kind, child[k], position);
+      auto *left = b.create_select(inherited, ancestor[k], child[k]);
+      auto *right = b.create_select(inherited, child[k], position);
+      if (scoped) right = b.create_select(scoped,position,right);
       auto *d = b.create_sub(left, right);
       valid = b.create_logical_and(valid, supported_real(b, position));
       valid = b.create_logical_and(valid, supported_real(b, d));
@@ -621,11 +637,15 @@ void LiveHierarchy::Impl::prepare_response_observation() {
     auto *mass = read(b, a.bodies, cell(b, kMass, body));
     valid = b.create_logical_and(valid, supported_real(b, mass));
     write(b, out, cell(b, 6, ref), mass);
-    write(b, out, cell(b, 7, ref), b.create_select(kind, ancestor[3], child[3]));
-    auto *source_node = b.create_select(kind, parent, node);
-    auto *eligible = b.create_logical_and(read(b, a.cfg, cell(b, MultipleBodies, source_node)),
+    write(b, out, cell(b, 7, ref), b.create_select(inherited, ancestor[3], child[3]));
+    auto *source_node = b.create_select(inherited, parent, node);
+    Stmt *eligible = b.create_logical_and(read(b, a.cfg, cell(b, MultipleBodies, source_node)),
         b.create_logical_or(b.create_cmp_eq(kind, b.get_int32(0)),
                             read(b, a.cfg, cell(b, Complement, node))));
+    if (scoped)
+      eligible = b.create_select(scoped,
+          b.create_logical_and(read(b,a.cfg,cell(b,MultipleBodies,parent)),
+              b.create_cmp_gt(read(b,a.cfg,cell(b,ChildCount,parent)),b.get_int32(1))),eligible);
     write(b, out, cell(b, 8, ref), b.create_select(eligible, b.get_float64(1), b.get_float64(0)));
     write(b, out, cell(b, 9, ref), b.create_select(valid, b.get_float64(1), b.get_float64(0)));
   }
@@ -643,7 +663,8 @@ std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
   std::array<engine::CompiledKernel, 3> kernels;
   const auto suffix = std::to_string(centroid_selection.cells->id);
   const int threads = h.runtime_->cpu_threads();
-  const bool scoped_rows = h.prepared_->capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedNibbleBootstrap;
+  const bool scoped_rows = h.prepared_->capacity.scoped_rows();
+  const bool scoped_responses = h.prepared_->capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedEndpointBootstrap;
   {
     IRBuilder b;
     Args a(b);
@@ -693,7 +714,7 @@ std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
     // A local row uses its own node as the harmless second packet. This keeps
     // the reader path uniform and never indexes a negative root parent.
     auto parent = packet(b, a, read(b, a.influences, cell(b, 2, ref)));
-    auto f = contribution(b, a, body, ref, child, parent, true);
+    auto f = contribution(b, a, body, ref, child, parent, true, scoped_responses);
     count(b, a.stats, ForceReads);
     count(b, a.activity, ForceRequests);
     for (int k = 0; k < 3; ++k)
@@ -888,9 +909,9 @@ std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
            *pn = read(b, a.influences, cell(b, 2, ref));
       auto c = packet(b, a, cn), p = packet(b, a, pn);
       auto f0 = contribution(b, a, body, ref, substitute(b, cn, node, c, old),
-                             substitute(b, pn, node, p, old));
+                             substitute(b, pn, node, p, old), false, scoped_responses);
       auto f1 = contribution(b, a, body, ref, substitute(b, cn, node, c, next),
-                             substitute(b, pn, node, p, next));
+                             substitute(b, pn, node, p, next), false, scoped_responses);
       for (int k = 0; k < 3; ++k) {
         b.create_local_store(
             before[k], b.create_add(b.create_local_load(before[k]), f0[k]));
@@ -1008,7 +1029,7 @@ void LiveHierarchy::poll_target(double gravity, int target, double stiffness) {
   validate();
   impl_->launch(impl_->poll_kernel, gravity, target, stiffness);
 }
-const Ndarray &LiveHierarchy::leaf_fields() const {
+const Ndarray &LiveHierarchy::movement_fields() const {
   return *impl_->arrays[17];
 }
 std::uint64_t LiveHierarchy::node_count() const {
@@ -1180,7 +1201,7 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
   out.preparation_visits += query.required_work;
   const auto &v = h.centroid_cascade_->inspect_descriptors(query);
   std::fill(a.owners.begin(), a.owners.end(), -1);
-  std::fill(a.leaf.begin(), a.leaf.end(), 0);
+  std::fill(a.movement.begin(), a.movement.end(), 0);
   std::fill(a.cfg.begin(), a.cfg.end(), 0);
   std::fill_n(a.cfg.begin(), a.H, -1);
   const auto charge = [&]() {
@@ -1221,7 +1242,7 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     a.config(CoverBegin, n) = v.coverage_offsets[n];
     a.config(CoverCount, n) = v.coverage_offsets[n + 1] - v.coverage_offsets[n];
     a.config(MultipleBodies, n) = a.config(CoverCount, n) > 1;
-    a.leaf[f] = node.child_count == 0;
+    a.movement[f] = node.child_count == 0;
     a.masks[n] = engine::numeric::Precision(node.calculation, node.storage,
                                             node.retained_fraction_bits)
                      .fraction_mask();
@@ -1330,7 +1351,7 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     upload(10, a.influences);
     upload(11, a.weights);
     upload(12, a.offsets);
-    upload(17, a.leaf);
+    upload(17, a.movement);
     upload(18, a.owners);
     a.inspection.node_count = spec.node_count;
     for (std::size_t i = 0; i < spec.node_count; ++i)
