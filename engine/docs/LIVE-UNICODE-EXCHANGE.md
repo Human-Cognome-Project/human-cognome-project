@@ -84,3 +84,14 @@ This scope covers the explicit disjoint two-byte character profile on LLVM
 CPU. Live exchange of the repeated `aá` endpoint and general Unicode cohorts
 remain open. Hosted CI remains authoritative and integration follows the
 reviewed parent order.
+
+## Scoped audit carry-forward
+
+#440 includes the [#439 lane-aware compiler correction](SCOPED-HIERARCHY-COMPILER-AUDIT.md#hosted-default-audit-correction).
+Six focused native CTests pass on local `95c30e00` and GitHub `5007bd2b`,
+tree `c0b387aac5fa7d11feb0858f46f3f8d95714d16a`. The `aá` and `ó`
+checks pass under default and no-unroll with their negative controls. The
+three-address `í` exchange passes in bulk and direct mode with 76
+assertions each. The machine-local CTest bundle
+`/tmp/hcp-440-lane-audit-evidence.tar.gz` has SHA256 `8ae6f5860da6fec9ca394b483a12923fe0fb648582b00b8d725caaf883c2c048`.
+Hosted CI and parent-first integration are pending.
