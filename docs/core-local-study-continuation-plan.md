@@ -1,5 +1,24 @@
 # Core continuation after local CUDA corrections
 
+## November 25, 2026 — scoped hierarchy compiler audit
+
+Main includes #430 at `6e290f5b`. The maintainer provisionally accepted
+the fixed `aá` study in #438 at `39523794` and requested the scoped
+compiler check before the live Unicode exchange.
+[Maintainer direction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/438#issuecomment-7167787666)
+
+The scoped reduction, force and paired wake operands pass on LLVM CPU
+in default and no-unroll modes. Both modes reject an incorrect scoped
+source and an omitted response operand. Ordinary packet and refresh
+transport checks pass with both settings. The parent hosted database
+job stopped on an HTTP 502 fetching LFS fixtures before acceptance ran.
+[Audit evidence and hosted status](../engine/docs/SCOPED-HIERARCHY-COMPILER-AUDIT.md)
+
+After review, return to changing Unicode levels of detail in the same running
+prepared study. Preserve ordered occurrence paths and compare exact coverage
+and mass through the exchange and a following native tick. Hosted CI and
+parent-first integration still apply.
+
 ## November 25, 2026 — fixed repeated endpoint rollup
 
 The maintainer provisionally accepted #437 at `72bf6fc9` for the fixed `ó`
