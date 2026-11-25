@@ -423,8 +423,7 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
   auto &r = *a.refresh;
   auto &s = *a.h.prepared_;
   const auto &limits = s.capacity.limits();
-  const bool repeated = s.capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedEndpointBootstrap;
-  const std::size_t expected_scopes = repeated ? 3 : 2;
+  const bool scoped_responses = s.capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedEndpointBootstrap;
   const auto cap = limits[Budget::CascadeWork];
   const auto budget = work_limit == UINT64_MAX ? cap : work_limit;
   const auto reject = [&](UpdateStatus status) -> void {
@@ -448,7 +447,7 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
     if (spec.scoped_nibble_rows != s.capacity.scoped_rows())
       reject(UpdateStatus::Unsupported);
     if (a.scoped_nibble_rows || (spec.scoped_nibble_rows &&
-        (a.bound || a.h.actual_arch()!=taichi::Arch::x64 || candidate.particles!=(repeated ? 4u : 2u))))
+        (a.bound || a.h.actual_arch()!=taichi::Arch::x64)))
       reject(UpdateStatus::Unsupported);
     for (auto item :
          {std::pair{Budget::CascadeNodes, std::uint64_t(spec.node_count)},
@@ -543,8 +542,6 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
         s.prospective_edges, s.prospective_source_counts,
         s.prospective_source_masses, candidate.edges, s.generation};
     std::size_t ns = 0, nl = 0, nc = 0;
-    int scoped_publisher = -1;
-    std::array<int,3> scoped_sources{-1,-1,-1}, scoped_branches{-1,-1,-1};
     std::size_t scoped_count = 0;
     const auto config = [&](int column, int node) -> int & {
       return r.cfg[column * a.H + node];
@@ -629,15 +626,11 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
       if (full != ns - source_begin)
         reject(UpdateStatus::Unsupported);
       const auto child_begin = nl;
-      int regular_child = -1;
-      std::size_t branch_scopes = 0, regular_children = 0;
       for (std::size_t j = 0; j < node.child_count; ++j) {
         charge();
         int input = spec.children[node.child_begin + j];
         if (input < 0) {
-          if (!spec.scoped_nibble_rows || scoped_count==expected_scopes ||
-              node.child_count!=nc-cover_begin+1 || nc-cover_begin>(repeated ? 2u : 1u) ||
-              node.retained_fraction_bits!=52)
+          if (!spec.scoped_nibble_rows || node.retained_fraction_bits!=52)
             reject(UpdateStatus::InvalidInput);
           const auto selected = std::uint64_t(-1-input);
           int source = -1, publisher = -1;
@@ -648,34 +641,31 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
               continue;
             const int owner = r.plan[LogicalOrder*a.H+k];
             if (publisher>=0 || config(ChildCount,owner) ||
-                std::size_t(config(SourceCount,owner))!=expected_scopes ||
-                origin.cohort_count!=expected_scopes || origin.retained_fraction_bits!=52 || origin.level>node.level)
+                std::size_t(config(SourceCount,owner))!=origin.cohort_count ||
+                origin.retained_fraction_bits!=52 || origin.level>node.level)
               reject(UpdateStatus::InvalidInput);
             publisher = owner;
             source = config(SourceBegin,owner)+int(selected-origin.cohort_begin);
           }
-          if (source<0 || (scoped_publisher>=0 && scoped_publisher!=publisher) ||
-              r.ratios[source]!=1 || r.ratios[a.S+source]!=2)
+          if (source<0)
             reject(UpdateStatus::InvalidInput);
-          for (std::size_t k=0; k<scoped_count; ++k) {
+          const int link = -1-source;
+          for (std::size_t k=0; k<nl; ++k) {
             charge();
-            if (r.sources[scoped_sources[k]]==r.sources[source]) reject(UpdateStatus::InvalidInput);
+            if (r.children[k]==link) reject(UpdateStatus::InvalidInput);
           }
           auto k = cover_begin;
           for (; k<nc; ++k) {
             charge();
             if (r.sources[source]==r.exact[k].occurrence.record) break;
           }
-          if (k==nc || r.exact[k].count!=2 || r.exact[k].denominator!=2)
+          if (k==nc)
             reject(UpdateStatus::InvalidInput);
-          scoped_publisher = publisher;
-          scoped_sources[scoped_count] = source;
-          scoped_branches[scoped_count++] = slot;
-          ++branch_scopes;
-          r.children[nl++] = -1-source;
-          const CascadeCoverage row{r.exact[k].occurrence,1,2};
+          const CascadeCoverage row{r.exact[k].occurrence,r.ratios[source],r.ratios[a.S+source]};
           if (!account_child(r.exact[k],row,r.coverage_sum[k]))
             reject(UpdateStatus::InvalidInput);
+          ++scoped_count;
+          r.children[nl++] = link;
           r.rank[slot] = std::max(r.rank[slot],r.rank[publisher]+1);
           continue;
         }
@@ -689,8 +679,6 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
         if (duplicate)
           continue;
         int child = r.plan[LogicalOrder * a.H + input];
-        regular_child = child;
-        ++regular_children;
         if (r.proposed[input].level > node.level || config(Parent, child) >= 0)
           reject(UpdateStatus::InvalidInput);
         config(Parent, child) = slot;
@@ -715,21 +703,6 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
           if (r.coverage_sum[k] != r.exact[k].count)
             reject(UpdateStatus::InvalidInput);
         }
-      // The ordinary leaf covers exactly the same bodies with the other half
-      // of each byte's count. Both halves share this activity dependency.
-      if (branch_scopes) {
-        if (regular_children!=1 || regular_child<0 || config(ChildCount,regular_child) ||
-            branch_scopes!=nc-cover_begin ||
-            std::size_t(config(CoverCount,regular_child))!=branch_scopes ||
-            std::size_t(config(SourceCount,regular_child))!=branch_scopes ||
-            r.nodes[regular_child].retained_fraction_bits!=52)
-          reject(UpdateStatus::InvalidInput);
-        for (int j=config(SourceBegin,regular_child);
-             j<config(SourceBegin,regular_child)+config(SourceCount,regular_child); ++j) {
-          charge();
-          if (r.ratios[j]!=1 || r.ratios[a.S+j]!=2) reject(UpdateStatus::InvalidInput);
-        }
-      }
       if (std::uint64_t(r.rank[slot] + 1) > limits[Budget::CascadeLevels])
         exhaust(Budget::CascadeLevels, r.rank[slot] + 1,
                 limits[Budget::CascadeLevels]);
@@ -781,24 +754,36 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
       charge();
       int slot = r.plan[LogicalOrder * a.H + logical],
           parent = config(Parent, slot);
-      if ((parent < 0) != (logical + 1 == spec.node_count || slot==scoped_publisher))
+      bool scoped_leaf = false;
+      if (scoped_count && !config(ChildCount,slot)) {
+        const int begin = config(SourceBegin,slot), count = config(SourceCount,slot);
+        int selected = 0, branches = 0;
+        for (std::size_t branch=0; branch<spec.node_count; ++branch) {
+          charge();
+          const int owner = r.plan[LogicalOrder*a.H+branch];
+          const auto &node = r.nodes[owner];
+          const int previous = selected;
+          for (std::size_t j=node.child_begin; j<node.child_begin+node.child_count; ++j) {
+            charge();
+            const int link = r.children[j];
+            if (link < 0 && -1-link >= begin && -1-link-begin < count)
+              ++selected;
+          }
+          branches += selected != previous;
+        }
+        scoped_leaf = selected != 0;
+        if (scoped_leaf && (selected != count || branches < 2))
+          reject(UpdateStatus::InvalidInput);
+      }
+      if ((parent < 0) != (logical + 1 == spec.node_count || scoped_leaf))
         reject(UpdateStatus::InvalidInput);
       config(Complement, slot) = parent >= 0 && config(ChildCount, parent) > 1;
       if (r.plan[PriorSlot * a.H + slot] >= 0)
         changed |= a.config(Parent, slot) != parent ||
                    a.config(Complement, slot) != config(Complement, slot);
     }
-    if (spec.scoped_nibble_rows) {
-      const int root = r.plan[LogicalOrder*a.H+spec.node_count-1];
-      if (scoped_count!=expected_scopes || config(ChildCount,root)!=2)
-        reject(UpdateStatus::InvalidInput);
-      for (std::size_t k=0; k<scoped_count; ++k) {
-        charge();
-        const auto branch_parent = config(Parent,scoped_branches[k]);
-        if (branch_parent<0 || (repeated ? config(Parent,branch_parent)!=root : branch_parent!=root))
-          reject(UpdateStatus::InvalidInput);
-      }
-    }
+    if (spec.scoped_nibble_rows && !scoped_count)
+      reject(UpdateStatus::InvalidInput);
     for (int field = 0; field < a.G; ++field) {
       charge();
       if (s.prospective_fields[field].record >= 0 && r.owners[field] < 0)
@@ -846,13 +831,26 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
                   r.exact[j].denominator);
           }
       }
-      if (repeated)
-        for (std::size_t k=0; k<scoped_count; ++k) {
+      if (scoped_responses)
+        for (std::size_t logical=0; logical<spec.node_count; ++logical) {
           charge();
-          const int source = scoped_sources[k];
-          if (r.sources[source]==body)
-            add(int(LiveResponseKind::ScopedInherited),scoped_publisher,scoped_branches[k],
-                r.ratios[source],r.ratios[a.S+source]);
+          const int branch = r.plan[LogicalOrder*a.H+logical];
+          const auto &node = r.nodes[branch];
+          for (std::size_t j=node.child_begin; j<node.child_begin+node.child_count; ++j) {
+            charge();
+            const int link = r.children[j];
+            if (link >= 0 || r.sources[-1-link] != body) continue;
+            const int source = -1-link;
+            for (std::size_t k=0; k<logical; ++k) {
+              charge();
+              const int publisher = r.plan[LogicalOrder*a.H+k];
+              const int begin = config(SourceBegin,publisher);
+              if (source < begin || source-begin >= config(SourceCount,publisher)) continue;
+              add(int(LiveResponseKind::ScopedInherited),publisher,branch,
+                  r.ratios[source],r.ratios[a.S+source]);
+              break;
+            }
+          }
         }
       r.offsets[a.P + body] = int(nr);
       if (s.prospective_particles[body].record >= 0 && !local)
