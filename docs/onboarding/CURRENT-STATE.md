@@ -6,13 +6,19 @@ The executable baseline through #422 includes standalone logical assembly, nativ
 
 ## Active and deferred work
 
+The maintainer provisionally accepted #438 at `5a9900ed` for data-driven admission and selective CPU polling and independently replayed the varied `abá` witness. The byte and endpoint centres update while shared nibble packets stay fixed. The corrected source is carried through #439–#442 in parent order. Hosted qualification and integration remain pending. [#438 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/438#issuecomment-7174122638) · [Selective polling evidence](../../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#selective-polling-correction)
+
+#441 stays on integration hold for its hosted Q6 leaf-reference mismatch. The reviewed operands reproduce the native packet of −65 and the long-double reference packet of −66. [Hosted finding](https://github.com/Human-Cognome-Project/human-cognome-project/pull/441#issuecomment-7174211961)
+
+Main through #444 records the intended multilingual workload. Recipe-selected live insertion, removal and whole-field exposure remain active under #432. The GPU binary trial is independent. Peripheral rollup, resource accounting, mixed-revision updates, GPU/concurrency qualification, the concrete Analyst and target/brake work remain separate. Held #75, #111 and #123 keep their prior dispositions. [Current assignment](https://github.com/Human-Cognome-Project/human-cognome-project/blob/88115fcf52f3350085f52af34444a4ec5dbf29e0/docs/core-local-study-continuation-plan.md#current-assignment-for-the-coding-agent)
+
+## Earlier fixed-study handoffs
+
+These entries describe the fixed-profile work at its recorded stage. The current assignment above governs implementation.
+
 The native CPU CLI now supports adding and removing occurrences in a running study. #427 and #429 integrated the editable English pair and native claim counts. For the assigned implementation and current PRs, use the [coding route](AGENT-START.md#1-establish-the-source-and-avoid-duplicate-work). For what you can examine today, use the [operator route](OPERATOR.md).
 
-Main integrates the English whole-field exchange and response capture (#430, #431, #433), along with the fixed character and nibble studies (#435–#437). The fixed repeated endpoint is in #438. The maintainer provisionally accepted the corrected #439 audit and the #440 disjoint `í` exchange. Their hosted runs are pending. [Fixed repeated endpoint](../../engine/docs/REPEATED-ENDPOINT-ROLLUP.md) · [#439 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/439#issuecomment-7170688784) · [#440 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/440#issuecomment-7170691456)
-
-The CLI operator slice on #440 adds `--unicode-i` for the fixed `í` cohort. It expands to `C3 AD`, ticks and compresses on the same handle. Hosted CI and maintainer integration follow the reviewed parent order. Repeated and overlapping live exchanges remain deferred. [Operator commands](OPERATOR.md#change-the-live-í-studys-level-of-detail) · [Continuation plan](../core-local-study-continuation-plan.md)
-
-Peripheral rollup and pattern-based PoC criteria come later. Target/brake work is tracked in [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324). Full resource accounting, general mixed-revision updates, GPU/concurrency qualification and the concrete Analyst remain separate. Held #75, #111 and #123 retain their prior dispositions.
+The corrected whole-field CPU suite passed overnight. The [continuation plan](../core-local-study-continuation-plan.md) records the integration sequence. The single-character fixed-study rollup is provisionally accepted in #435. The [repeated-parent witness](../../engine/docs/REPEATED-PARENT-OVERLAP.md) is provisionally accepted in #436. The [scoped `ó` experiment](../../engine/docs/SCOPED-NIBBLE-ROLLUP.md) is submitted for review ahead of the complete repeated endpoint rollup. Peripheral rollup and pattern-based PoC criteria come later. Target/brake work is tracked in [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324). Full resource accounting, general mixed-revision updates, GPU/concurrency qualification and the concrete Analyst remain separate. Held #75, #111 and #123 retain their prior dispositions.
 
 ## Prior decisions
 

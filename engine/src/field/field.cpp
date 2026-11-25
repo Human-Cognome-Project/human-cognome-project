@@ -665,7 +665,7 @@ void Harness::launch_integrate(const Parameters64 &p,
          {std::max(particles_, 1)});
   if (live_hierarchy_) {
     if (!ctx.prepared)
-      ctx.set_arg_ndarray({13}, live_hierarchy_->leaf_fields());
+      ctx.set_arg_ndarray({13}, live_hierarchy_->movement_fields());
     engine::argument_int(ctx, 14, live_hierarchy_->installed());
   }
   if (target && !ctx.prepared)

@@ -66,7 +66,7 @@ void count(IRBuilder &b, ArgLoadStmt *a, int c) {
 struct Args {
   ArgLoadStmt *values, *selector, *cfg, *children, *sources, *ratios, *masks,
       *bodies, *groups, *coverage, *influences, *weights, *offsets, *old,
-      *stats, *activity, *group_delta, *leaf, *owners, *pairs, *a_offsets,
+      *stats, *activity, *group_delta, *movement, *owners, *pairs, *a_offsets,
       *a_order, *b_offsets, *b_order;
   Stmt *nodes, *gravity, *op, *stiffness;
   ArgLoadStmt *visits, *group_flags;
@@ -90,7 +90,7 @@ struct Args {
     stats = array(b, 14, PrimitiveType::i64);
     activity = array(b, 15, PrimitiveType::i64);
     group_delta = array(b, 16, d, 2);
-    leaf = array(b, 17, i);
+    movement = array(b, 17, i);
     owners = array(b, 18, i);
     pairs = array(b, 19, i, 2);
     a_offsets = array(b, 20, i, 2);
@@ -246,7 +246,7 @@ void LiveHierarchy::append_layout(const BudgetDemand &l,
   add("live-response-controls", 4 * r, 4);
   add("live-response-ratios", 2 * r, 8);
   add("live-response-offsets", 2 * p, 4);
-  add("live-leaf-fields", g, 4);
+  add("live-movement-fields", g, 4);
   add("live-field-owners", g, 4);
   add("live-field-inspection", h, 4, 1);
   add("live-response-observation", 10 * r, sizeof(double));
@@ -276,7 +276,7 @@ void LiveHierarchy::append_layout(const BudgetDemand &l,
   add("refresh-response-controls", 4 * r, sizeof(int), 1);
   add("refresh-response-ratios", 2 * r, sizeof(std::uint64_t), 1);
   add("refresh-response-offsets", 2 * p, sizeof(int), 1);
-  add("refresh-leaf-fields", g, sizeof(int), 1);
+  add("refresh-movement-fields", g, sizeof(int), 1);
   add("refresh-owners", g, sizeof(int), 1);
 }
 
@@ -295,7 +295,7 @@ struct LiveHierarchy::Impl {
   LiveIntentInspection intent_inspection;
   std::unique_ptr<Ndarray> intent_observation;
   engine::CompiledKernel intent_kernel;
-  std::vector<int> cfg, children, sources, coverage, influences, offsets, leaf,
+  std::vector<int> cfg, children, sources, coverage, influences, offsets, movement,
       owners;
   std::vector<std::uint64_t> ratios, masks, weights;
   std::vector<CascadeSourceRow> source_headers;
@@ -303,7 +303,7 @@ struct LiveHierarchy::Impl {
   std::array<Ndarray *, 19> arrays{};
   struct Refresh {
     std::vector<int> cfg, children, sources, coverage, influences, offsets,
-        leaf, owners, plan, rank;
+        movement, owners, plan, rank;
     std::vector<std::uint64_t> ratios, masks, weights, coverage_sum;
     std::vector<CascadeNode> nodes, proposed;
     std::vector<CascadeSourceRow> source_headers;
@@ -320,7 +320,7 @@ struct LiveHierarchy::Impl {
           coverage(a.U),
           influences(4 * a.R),
           offsets(2 * std::max(a.P, 1)),
-          leaf(std::max(a.G, 1)),
+          movement(std::max(a.G, 1)),
           owners(std::max(a.G, 1), -1),
           plan(5 * a.H),
           rank(a.H),
@@ -353,7 +353,7 @@ struct LiveHierarchy::Impl {
         coverage(U),
         influences(4 * R),
         offsets(2 * std::max(P, 1)),
-        leaf(std::max(G, 1)),
+        movement(std::max(G, 1)),
         owners(std::max(G, 1), -1),
         ratios(2 * S),
         masks(H),
@@ -1029,7 +1029,7 @@ void LiveHierarchy::poll_target(double gravity, int target, double stiffness) {
   validate();
   impl_->launch(impl_->poll_kernel, gravity, target, stiffness);
 }
-const Ndarray &LiveHierarchy::leaf_fields() const {
+const Ndarray &LiveHierarchy::movement_fields() const {
   return *impl_->arrays[17];
 }
 std::uint64_t LiveHierarchy::node_count() const {
@@ -1201,7 +1201,7 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
   out.preparation_visits += query.required_work;
   const auto &v = h.centroid_cascade_->inspect_descriptors(query);
   std::fill(a.owners.begin(), a.owners.end(), -1);
-  std::fill(a.leaf.begin(), a.leaf.end(), 0);
+  std::fill(a.movement.begin(), a.movement.end(), 0);
   std::fill(a.cfg.begin(), a.cfg.end(), 0);
   std::fill_n(a.cfg.begin(), a.H, -1);
   const auto charge = [&]() {
@@ -1242,7 +1242,7 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     a.config(CoverBegin, n) = v.coverage_offsets[n];
     a.config(CoverCount, n) = v.coverage_offsets[n + 1] - v.coverage_offsets[n];
     a.config(MultipleBodies, n) = a.config(CoverCount, n) > 1;
-    a.leaf[f] = node.child_count == 0;
+    a.movement[f] = node.child_count == 0;
     a.masks[n] = engine::numeric::Precision(node.calculation, node.storage,
                                             node.retained_fraction_bits)
                      .fraction_mask();
@@ -1351,7 +1351,7 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     upload(10, a.influences);
     upload(11, a.weights);
     upload(12, a.offsets);
-    upload(17, a.leaf);
+    upload(17, a.movement);
     upload(18, a.owners);
     a.inspection.node_count = spec.node_count;
     for (std::size_t i = 0; i < spec.node_count; ++i)

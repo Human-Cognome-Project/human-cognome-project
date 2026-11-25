@@ -76,7 +76,7 @@ struct LiveRefreshSpec {
   std::size_t child_count{};
   const LiveRefreshContribution *contributions{};
   std::size_t contribution_count{};
-  // Fixed CPU bootstrap experiment. A negative child encodes a singleton
+  // CPU bootstrap with branch-local coverage. A negative child encodes a singleton
   // contribution index as -1-index. The publishing field still owns all rows.
   bool scoped_nibble_rows{};
 };
@@ -105,7 +105,7 @@ class LiveHierarchy {
   const LiveResponseInspection &inspect_responses(std::uint64_t work_limit);
   const LiveIntentInspection &inspect_intent(double gravity, std::uint64_t work_limit);
   std::size_t binding_bytes() const;
-  const taichi::lang::Ndarray &leaf_fields() const;
+  const taichi::lang::Ndarray &movement_fields() const;
   UpdateStatus prepare_refresh(const LiveRefreshSpec &,
                                const PreparedCounts &,
                                std::size_t commands,
