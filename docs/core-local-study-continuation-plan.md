@@ -1,5 +1,13 @@
 # Core continuation after local CUDA corrections
 
+## November 25, 2026 — hosted qualification and integration
+
+The onboarding rebuild (#424) and structural/confounded target guidance (#425) are integrated. The editable CPU operator and native claim observations are available on main. [Operator guide](onboarding/OPERATOR.md).
+
+The corrected placement run passed all four compiler profiles and all four regression shards. The combined test uses 2,094 cumulative SNode IDs, including 90 from the three grouped-exchange fixtures. Its test-only reservation is 4,096. Production capacity policy remains open. [Failed run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45493722124) · [Passing run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45518394895).
+
+The response observer (#431) and seven-profile worked trace (#433) also passed their overnight checks on their submitted heads. Integrate in order, preserving whole-field mode and response capture together. Qualify a combined exchange with response capture. The next representation task is the single Unicode parent í, followed by the repeated-parent overlap case. [#432 scope](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432).
+
 ## November 24, 2026 — hosted #430 hold and active reviewed work
 
 Main `0945f548` integrates #426's prose-CI scoping; #427/#429 were already
@@ -58,6 +66,21 @@ CLI options and qualify a whole-field exchange with response capture enabled.
 General structural/confounded targets, fixed-input brake comparison, literal/
 aspect rollup and live Unicode exchange remain separate from this CI correction;
 peripheral rollup and formal pattern/PoC checks follow later.
+
+## Integrated operator baseline
+
+#427 and #429 provide live occurrence edits and native claim counts. Continue with whole-field exposure and per-level observation.
+
+## November 24 — operator study objectives
+
+The research aim is to establish whether field mathematics can serve as a computational basis for data analysis. The immediate deliverable is an explorable engine. Provide a temporary command-line interface usable by a human or an agent driving the study for Patrick. Create a composition, add/remove live occurrences, advance ticks, change whole-field LoD in place, and inspect completed observations through the same session. “Remove” withdraws an occurrence from the active model; its reusable definition remains available. A visible LoD change loads the selected representation by adding/removing active particles across the whole field. Defer peripheral rollup.
+
+Review preallocation against this workload: record configured particle/field/participation/contact capacities, active counts, and scratch or staging reserved for the transition. Establish what must coexist for a coherent exchange, which reservations are actually used, and what the existing refusal preserves when the requested exposure exceeds capacity. Use this evidence to decide which reservations to retain or revise.
+
+Give the operator one running study in which to create nested SNode-backed objects, insert or remove live occurrences at will, and follow the survivors across ticks. Build and expose the same composition explicitly down to nibbles or rolled up at a selected LoD. Surface the confounding contributions at that exposure and the structural value they supply one level up. The operator examines the traces before choosing patterns, PoC claims or formal pattern checks.
+
+The original handoff began with the [existing prepared update](../engine/docs/PREPARED-UPDATES.md), [representation exchange](../engine/docs/ATOMIC-EXCHANGE.md), [session](../engine/src/assembly/active_workbench.h) and [completed observation](../tools/viewport/native/completed_state.cpp). Trace one operator add and one removal through session authorization, native commit, handle retirement and the next completed observation. Connect existing operations where supported and identify the smallest missing owner operation. Keep successful edits observable between completed ticks, preserve surviving motion and keep shared definitions reusable. Then expose the multi-level trace described in [Pass 4](engine-refactoring-plan.md#pass-4-inspect-and-implement-the-mathematical-distinction-separately).
+
 
 ## November 24, 2026 — live study accepted; LoD claim observation for review
 
@@ -1081,6 +1104,8 @@ Next authorized slice: a separate test-boundary correction for #342's unresolved
 **Current handoff — 2026-11-15, coding-agent transition (supersedes prior status):** main contains #341 plus documentation updates. Runtime merge `64fd23d02eb33fa00129ce78bd20fc5ad225f8e5` passed smoke 43713977016 and all 12 native jobs in 43713977014. Current pre-handoff main `1a5843e2e20f07477323351e2841eb1358b1c8d2` only adds review documentation. No history rewrite or source reset is needed. Fetch current main and inspect local status/uncommitted work before switching the replacement coding environment; this remote reconciliation does not inspect or certify the local/WSL checkout.
 
 #342 remains open at `0d0adec5b1beda5db55aa8d54358b6f7d2c0bb1b`, with current main's #341 source incorporated and no source conflict. Smoke and the corrected standalone projection job passed. The moved ActiveAssembly checks passed in native active_workbench_test. However, native run 43715143149 failed: live_intent_activity_2_bulk in job 132815906747 reported `equal-force publication control changed force`. This is a distinct unresolved regression, not the repaired header dependency. All other regression tests passed (168/169 total); database and four compiler profiles passed. The aggregate gate failed. Preserve this evidence and inspect/reproduce the two-worker bulk publication case before integration; do not assume a flake, weaken checks or change mathematics to mask it. No duplicate CI or merge requested. Held #75/#111/#123 unchanged; no other new PR is open.
+
+**Terminology update (November 24):** “centroid of intent” in the dated note below refers to the proposed structural target. The confounded target includes all participating fields. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
 
 **Mathematical direction for inspection:** Patrick proposes deriving the centroid of intent from the study's structural composition path, using the native Taichi operations on its SNode representation, while treating attached nonstructural elements as confounding fields. Record structural intent, nonstructural influence and actual endpoint/trajectory separately. Trace explicit composition roles rather than equating all storage nesting or attached membership/comparison edges with composition. Determine weighting/frame/publication semantics before choosing a formula. The existing combined candidate diagnostic must not be silently relabelled as this structural quantity. See #324's 2026-11-15 clarification, which supersedes older all-influence assumptions. No new braking/activity/stability law is selected. Preserve participating-force/whole-body-inertia accounting and reuse Taichi machinery.
 

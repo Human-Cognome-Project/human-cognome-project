@@ -1,5 +1,7 @@
 # Live response observation
 
+The combined candidate described here has its own calculation and validity rules. In current #324 terminology, the structural target follows the composition path and the confounded target incorporates all participating fields. Their relationship to this candidate requires derivation. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
+
 Experimental extraction following #328 review 5897445910, for #324. This adds
 `Harness::inspect_live_responses(work_limit)` to the existing live hierarchy owner.
 It does not compute combined intent or change force, braking, activity or sleep.

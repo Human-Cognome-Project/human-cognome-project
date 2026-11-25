@@ -1,5 +1,7 @@
 # Validation and evidence
 
+The [standalone route](FIRST-RUN.md#optional-check-logical-assembly-without-the-native-runtime) checks logical behavior. The hosted native workflow separately exercises CPU profiles, admission, tick and observation. Match the tested path to the claim in your review.
+
 Read when building, testing or reviewing a contribution. [Choose another path](README.md).
 
 ## Build, recovery and evidence discipline

@@ -1,5 +1,7 @@
 # Understand HCP
 
+To see how composition works on two occurrences of a letter, follow the [retained English-pair example](INTEGRATED-PATH.md#three-examples).
+
 This path explains the model and component relationships. It does not require a build, the live PR queue or the detailed implementation stage. [Choose another path](README.md).
 
 Think of composition in Minecraft: relatively few primitive building elements support a great variety of structures. HCP's intended model extends that reuse through successive levels: stable compositions are recorded as reusable definitions, which can themselves become elements of larger compositions. Complexity emerges from how elements combine, so every complex object need not be introduced as a new primitive. The comparison concerns composition and reuse; HCP's field mechanics determine how its live objects interact.

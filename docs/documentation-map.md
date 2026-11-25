@@ -1,8 +1,12 @@
 # Documentation map and authority
 
+Find the maintained source and data-flow map for the integrated CPU path. [Integrated walkthrough](onboarding/INTEGRATED-PATH.md).
+
 Choose an [onboarding path](onboarding/README.md) for bounded work, understanding, review, first run or history.
 This catalog locates project-maintained documentation; it is not a requirement
 to read every research record before a first build.
+
+For running or watching studies, begin with the [operator route](onboarding/OPERATOR.md). Earlier decisions and retired instructions are indexed on the [history route](onboarding/HISTORY.md).
 
 ## How to use the documentation
 
@@ -74,17 +78,26 @@ establish current authority; check their status/provenance and accepted successo
 
 ### Project contracts, plans and model references
 
+**Active work sequence:** [Core continuation plan](core-local-study-continuation-plan.md). Read its latest handoff and the owning issue for the assigned slice.
+
+**Completed stage plans.** These retain the original scope and acceptance criteria for implemented stages. Consult them when changing the corresponding contract.
+
+- [docs/engine-object-implementation-plan.md](engine-object-implementation-plan.md)
+- [docs/cumulative-publication-integration-plan.md](cumulative-publication-integration-plan.md)
+- [docs/prepared-capacity-foundation-plan.md](prepared-capacity-foundation-plan.md)
+- [docs/prepared-execution-backing-plan.md](prepared-execution-backing-plan.md)
+- [docs/prepared-coherent-update-plan.md](prepared-coherent-update-plan.md)
+
+**Topic references.** Select by the component or model question under review.
+
 - [docs/README.md](README.md)
 - [docs/address-encoding-transition.md](address-encoding-transition.md)
 - [docs/architecture.md](architecture.md)
 - [docs/bonding-notes.md](bonding-notes.md)
 - [docs/c3-cpu-capture-handoff.md](c3-cpu-capture-handoff.md)
 - [docs/coherent-dynamics-gpu-snapshots.md](coherent-dynamics-gpu-snapshots.md)
-- [docs/core-local-study-continuation-plan.md](core-local-study-continuation-plan.md)
 - [docs/core-operation-readiness-plan.md](core-operation-readiness-plan.md)
-- [docs/cumulative-publication-integration-plan.md](cumulative-publication-integration-plan.md)
 - [docs/data-protocol.md](data-protocol.md)
-- [docs/engine-object-implementation-plan.md](engine-object-implementation-plan.md)
 - [docs/engine-object-support-corrections.md](engine-object-support-corrections.md)
 - [docs/field-physics-and-tick-notes.md](field-physics-and-tick-notes.md)
 - [docs/first-stage-data-object-model.md](first-stage-data-object-model.md)
@@ -106,9 +119,6 @@ establish current authority; check their status/provenance and accepted successo
 - [docs/pooled-space-live-insertion-plan.md](pooled-space-live-insertion-plan.md)
 - [docs/pre-d-hot-workbench-design.md](pre-d-hot-workbench-design.md)
 - [docs/precision-exposure-and-concept-catalogue.md](precision-exposure-and-concept-catalogue.md)
-- [docs/prepared-capacity-foundation-plan.md](prepared-capacity-foundation-plan.md)
-- [docs/prepared-coherent-update-plan.md](prepared-coherent-update-plan.md)
-- [docs/prepared-execution-backing-plan.md](prepared-execution-backing-plan.md)
 - [docs/production-hierarchy-response-plan.md](production-hierarchy-response-plan.md)
 - [docs/storage-and-working-split.md](storage-and-working-split.md)
 - [docs/upward-centroid-integration-plan.md](upward-centroid-integration-plan.md)

@@ -1,5 +1,7 @@
 # Review a contribution
 
+For ownership changes, use the [source and evidence table](../../engine/docs/RESPONSIBILITY-MAP.md#refactor-exit-reconciliation--2026-11-23) and trace one accepted or refused request across the changed boundary.
+
 Use this route to judge a bounded change. You do not need to reconstruct the whole project first.
 
 1. Read root [AGENTS](../../AGENTS.md), [work discipline](WORK-DISCIPLINE.md) and [evidence rules](VALIDATION.md).

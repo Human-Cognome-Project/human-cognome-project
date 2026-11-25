@@ -1,5 +1,7 @@
 # Local study and release intent
 
+The [positive retained CPU preset](../../engine/docs/RETAINED-POSITIVE-CAPTURE.md) is an executable example for a release manifest. Record source pins, backend, chosen comparisons and store identities for that run.
+
 Read for study design, observation or packaging work. [Choose another path](README.md).
 
 ## Intended local study and release
