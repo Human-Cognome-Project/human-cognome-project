@@ -6,6 +6,14 @@ The executable baseline through #422 includes standalone logical assembly, nativ
 
 ## Active and deferred work
 
+Main through #437 supports native ticking, editable English occurrences, whole-field English exchange, and bounded character and shared-nibble studies. The #438–#442 stack demonstrates repeated-parent coverage and a fixed `í` CLI exchange. Its passing replay establishes the behavior of that preset. Choosing differently composed objects by data and adding or removing them in one live study remains outstanding. [Present assignment and acceptance check](../core-local-study-continuation-plan.md#current-assignment-for-the-coding-agent) · [Operator route](OPERATOR.md)
+
+The first correction belongs on #438 before integration. The same-input GPU trial is independent of CPU experimentation. Peripheral rollup, resource accounting, mixed-revision updates, GPU/concurrency qualification, the concrete Analyst and target/brake work remain separate. PoC criteria follow observation. Held #75, #111 and #123 keep their prior dispositions. [#432](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432) · [#70](https://github.com/Human-Cognome-Project/human-cognome-project/issues/70) · [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324)
+
+## Earlier fixed-study handoffs
+
+These entries describe the fixed-profile work at its recorded stage. The current assignment above governs implementation.
+
 The native CPU CLI now supports adding and removing occurrences in a running study. #427 and #429 integrated the editable English pair and native claim counts. For the assigned implementation and current PRs, use the [coding route](AGENT-START.md#1-establish-the-source-and-avoid-duplicate-work). For what you can examine today, use the [operator route](OPERATOR.md).
 
 The corrected whole-field CPU suite passed overnight. The [continuation plan](../core-local-study-continuation-plan.md) records the integration sequence. The single-character fixed-study rollup is provisionally accepted in #435. The [repeated-parent witness](../../engine/docs/REPEATED-PARENT-OVERLAP.md) is provisionally accepted in #436. The [scoped `ó` experiment](../../engine/docs/SCOPED-NIBBLE-ROLLUP.md) is submitted for review ahead of the complete repeated endpoint rollup. Peripheral rollup and pattern-based PoC criteria come later. Target/brake work is tracked in [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324). Full resource accounting, general mixed-revision updates, GPU/concurrency qualification and the concrete Analyst remain separate. Held #75, #111 and #123 retain their prior dispositions.
