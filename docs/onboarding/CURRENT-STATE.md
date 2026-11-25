@@ -10,6 +10,11 @@ The native CPU CLI now supports adding and removing occurrences in a running stu
 
 The corrected whole-field CPU suite passed overnight. The [continuation plan](../core-local-study-continuation-plan.md) records the integration sequence. The single-character fixed-study rollup is provisionally accepted in #435. The [repeated-parent witness](../../engine/docs/REPEATED-PARENT-OVERLAP.md) is provisionally accepted in #436. The [scoped `ó` experiment](../../engine/docs/SCOPED-NIBBLE-ROLLUP.md) is provisionally accepted in #437. The [fixed `aá` endpoint rollup](../../engine/docs/REPEATED-ENDPOINT-ROLLUP.md) is submitted with its proposed scoped inherited response for review. Peripheral rollup and pattern-based PoC criteria come later. Target/brake work is tracked in [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324). Full resource accounting, general mixed-revision updates, GPU/concurrency qualification and the concrete Analyst remain separate. Held #75, #111 and #123 retain their prior dispositions.
 
+The data-driven admission correction on #438 derives the complete endpoint
+and scoped nibble coverage from the pinned composition. The changed `abá`
+recipe publishes five byte occurrences at mass 10. The correction awaits
+maintainer review and hosted qualification. [Correction and evidence](../../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#data-driven-admission-correction)
+
 ## Prior decisions
 
 The [archived handoff ledger](STATUS-ARCHIVE-2026-11-24.md) preserves the earlier decisions, failures and source pins. Its “next” and “pending” entries describe the date of each record.

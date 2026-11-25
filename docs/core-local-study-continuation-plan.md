@@ -14,6 +14,16 @@ owning byte comparison. It is flagged for review alongside the source and CI.
 The scoped compiler-shape audit and live Unicode exposure remain separate.
 [Implementation and evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md)
 
+### Data-driven admission correction
+
+The #438 follow-up takes the implementation assignment from #443. It derives
+endpoint and branch coverage from pinned parent contributions and occurrence
+paths. The same executable admits the changed `abá` recipe, publishes mass
+10 through five byte paths and follows a native tick. An inconsistent branch
+declaration refuses without publishing on the Harness used for the valid retry.
+Integration and the downstream carry remain subject to maintainer review.
+[Correction and local evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#data-driven-admission-correction)
+
 ## November 25, 2026 — scoped nibble experiment
 
 The residual witness in #436 is provisionally accepted at `e5744bc0`.
