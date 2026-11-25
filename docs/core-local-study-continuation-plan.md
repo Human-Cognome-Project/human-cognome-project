@@ -1,60 +1,86 @@
 # Core continuation after local CUDA corrections
 
-## November 24, 2026 — #430 preparation-budget correction for re-review
+## November 25, 2026 — hosted qualification and integration
 
-Main `b528d494` integrates #427 and #429; #430 now targets main. [Maintainer
-review 7144539532](https://github.com/Human-Cognome-Project/human-cognome-project/pull/430#issuecomment-7144539532)
-checks the positive/refusal captures and holds `de9057b5` for uncharged live-slot
-and reserved-address probes. The [correction and evidence](../engine/docs/WHOLE-FIELD-LOD.md#preparation-budget-correction--awaiting-re-review)
-at `b8185fe9` meter all four searches before each actual comparison.
+The onboarding rebuild (#424) and structural/confounded target guidance (#425) are integrated. The editable CPU operator and native claim observations are available on main. [Operator guide](onboarding/OPERATOR.md).
 
-The actual full four-slot catalogue needs 168 work units rather than the outer
-158; the late-free search/activity prefix charges 170 and refuses the next
-171st unit unchanged. Sufficient work admits the new identity and a following
-tick succeeds. Setup metadata work becomes 28,625 from 28,541; storage and plan
-work are unchanged. Red full-slot/setup controls fail on reviewed production
-code; corrected no-new, full-claim/generation/state and retry witnesses pass.
+The corrected placement run passed all four compiler profiles and all four regression shards. The combined test uses 2,094 cumulative SNode IDs, including 90 from the three grouped-exchange fixtures. Its test-only reservation is 4,096. Production capacity policy remains open. [Failed run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45493722124) · [Passing run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45518394895).
 
-Nine fresh local CTests, a current-source operator capture/audit and minimal
-owner-library compilation qualify this correction. The original numerical/IR
-evidence is retained at its original pins with unchanged-source proof and fresh
-archive verification. No numerical/placement physics, interfaces, capacity or
-allocation-policy change is included. Existing hosted work was left running.
-Return #430 for maintainer re-review and authoritative CI at the corrected head;
-the hold is not treated as acceptance. The subsequent fine confounding/structural
-trace remains the next capability continuation after review. All merges stay
-maintainer-only.
+The response observer (#431) and seven-profile worked trace (#433) also passed their overnight checks on their submitted heads. Integrate in order, preserving whole-field mode and response capture together. Qualify a combined exchange with response capture. The next representation task is the single Unicode parent í, followed by the repeated-parent overlap case. [#432 scope](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432).
 
-## November 24, 2026 — whole-field LoD CPU subset for review
+## November 24, 2026 — hosted #430 hold and active reviewed work
 
-[#429 review 7141016819](https://github.com/Human-Cognome-Project/human-cognome-project/pull/429#issuecomment-7141016819)
-provisionally accepts the claim measurement at `b2c516bf`. [#428 direction 7141017357](https://github.com/Human-Cognome-Project/human-cognome-project/issues/428#issuecomment-7141017357)
-selects an inherited membership focus for the first whole-field study and requires
-per-occurrence native state staging in one whole-field transaction. Main was
-`98cdbe03` at source selection; #427/#429 remain separate reviewed dependencies.
+Main `0945f548` integrates #426's prose-CI scoping; #427/#429 were already
+integrated. Chat acceptance is reconciled with the following actual dispositions.
 
-The [implementation and captured evidence](../engine/docs/WHOLE-FIELD-LOD.md) at `6a94343b` add opt-in
-`--whole-field`, `lod parts` and `lod aggregate` to the live English A study.
-Every live occurrence transfers its own outgoing native centre/velocity into
-one unticked generation; the same membership field claim survives both exposures.
-The initial supported owner has one aggregate/one declared byte per logical
-occurrence. Actual record peaks are particles 2→4→2 and fields 3→6→4 on expansion,
-4→6→3 on compression. Ordinary fine add/remove and continued ticking stay live.
+- #430 at `8dbe7ec7` is on integration hold: [native run 45493722124](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45493722124)
+  failed all four compiler jobs at the explicit 2,048 SNode-ID test budget.
+  Cancelled regression shard 4 also records three placement test failures at
+  that limit, then stops during the fourth after about 90 minutes. Native build,
+  projection, database and regression shards 1–3 passed; the overall native
+  gate failed. The earlier preparation-probe hold is resolved.
+- #431 at `164708c5` remains provisionally accepted for raw response observation
+  under [review 7146490937](https://github.com/Human-Cognome-Project/human-cognome-project/pull/431#issuecomment-7146490937).
+- #433 at `145c7b2d` remains provisionally accepted as the seven-profile worked
+  trace on #431 under [review 7147550063](https://github.com/Human-Cognome-Project/human-cognome-project/pull/433#issuecomment-7147550063).
+  Its fixed-input and Unicode/refusal observations retain their narrow meanings.
+  [#432](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
+  tracks literal-character rollup and overlapping-path representation.
 
-Forty scoped local CTests, native grouping/legacy exchange/preflight/compiler
-controls and three raw capture audits pass with source-pinned evidence. Exact/
-one-short resource controls, unready failures, unchanged survivor/refusal state,
-no recurring C++ new and native backing/compiler stability are retained. The
-report records scratch, owner metadata, the original failed audit build and the
-corrected pin. A crowded restored occurrence can exhaust the configured 65,536
-placement cells; that refusal remains healthy and permits following ticks.
+#431's [native CPU gate](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45502438771),
+smoke and viewport checks passed. #433's smoke and viewport checks passed;
+its [native CPU gate](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45507401577)
+is still running at this handoff.
+None of these three contributions is integrated. Maintainer-owned #424/#425
+and deliberately held #75/#111/#123 remain separate.
 
-Return this dependent contribution for maintainer review and authoritative
-GitHub CI. Local success does not integrate it or qualify general multibyte
-owner adaptation, GPU/concurrency, full B or allocation-policy changes. Next is
-the fine confounding/next-level structural trace alongside targets and motion;
-peripheral rollup/pattern/PoC acceptance follows separately. All merges remain
-maintainer-only.
+The corrected #430 head is `124e7e08752a4506ac24bcfc953c7ed4932403aa`.
+The [investigation, commands and evidence](https://github.com/Human-Cognome-Project/human-cognome-project/blob/124e7e08752a4506ac24bcfc953c7ed4932403aa/engine/docs/PLACEMENT-QUALIFICATION-ID-BUDGET.md)
+confirm the runner disables environment reads and fixes the placement test's
+startup reservation explicitly. It needs 2,094 cumulative SNode IDs (highest
+2,093), including 90 from the three new grouped-exchange fixtures. This is
+Program-lifetime metadata, including released layouts. The placement-only
+reservation is now 4,096 with per-case ID accounting. Production defaults,
+native tree ownership, model capacity and allocation policy are unchanged.
+Regression jobs receive 180 minutes for the same serial inventory; compiler-job
+and per-test limits remain unchanged. Cancellation near the old 90-minute
+allowance is consistent with budget exhaustion, but the raw log only reports
+cancellation; its three test failures remain explicit.
+
+Fresh local CPU evidence at executable source `49997818` passes three complete
+placement invocations (75 named case passes, identical census), three quick
+CTests, placement arithmetic/capacity controls and build/backend checks.
+Orchestration controls and ShellCheck pass. The final documentation/workflow
+head leaves that executable source unchanged; the retained evidence archive
+verifies after fresh extraction. This is scoped local evidence, not a complete
+hosted matrix. Fresh automatic [native CI 45518394895](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45518394895)
+is running at the corrected head. The original failed run remains failed, and
+the integration hold remains pending maintainer re-review and authoritative CI.
+GitHub's generated merge `a40bb122` has current main `0945f548` and the
+corrected head as parents. Its executable sources match the qualified head;
+the differences are #426's integrated workflow scoping. No agent integration
+merge or existing-run rerun was performed.
+
+The maintainer integrates all merges. After #430/#431 integration, preserve both
+CLI options and qualify a whole-field exchange with response capture enabled.
+General structural/confounded targets, fixed-input brake comparison, literal/
+aspect rollup and live Unicode exchange remain separate from this CI correction;
+peripheral rollup and formal pattern/PoC checks follow later.
+
+## Integrated operator baseline
+
+#427 and #429 provide live occurrence edits and native claim counts. Continue with whole-field exposure and per-level observation.
+
+## November 24 — operator study objectives
+
+The research aim is to establish whether field mathematics can serve as a computational basis for data analysis. The immediate deliverable is an explorable engine. Provide a temporary command-line interface usable by a human or an agent driving the study for Patrick. Create a composition, add/remove live occurrences, advance ticks, change whole-field LoD in place, and inspect completed observations through the same session. “Remove” withdraws an occurrence from the active model; its reusable definition remains available. A visible LoD change loads the selected representation by adding/removing active particles across the whole field. Defer peripheral rollup.
+
+Review preallocation against this workload: record configured particle/field/participation/contact capacities, active counts, and scratch or staging reserved for the transition. Establish what must coexist for a coherent exchange, which reservations are actually used, and what the existing refusal preserves when the requested exposure exceeds capacity. Use this evidence to decide which reservations to retain or revise.
+
+Give the operator one running study in which to create nested SNode-backed objects, insert or remove live occurrences at will, and follow the survivors across ticks. Build and expose the same composition explicitly down to nibbles or rolled up at a selected LoD. Surface the confounding contributions at that exposure and the structural value they supply one level up. The operator examines the traces before choosing patterns, PoC claims or formal pattern checks.
+
+The original handoff began with the [existing prepared update](../engine/docs/PREPARED-UPDATES.md), [representation exchange](../engine/docs/ATOMIC-EXCHANGE.md), [session](../engine/src/assembly/active_workbench.h) and [completed observation](../tools/viewport/native/completed_state.cpp). Trace one operator add and one removal through session authorization, native commit, handle retirement and the next completed observation. Connect existing operations where supported and identify the smallest missing owner operation. Keep successful edits observable between completed ticks, preserve surviving motion and keep shared definitions reusable. Then expose the multi-level trace described in [Pass 4](engine-refactoring-plan.md#pass-4-inspect-and-implement-the-mathematical-distinction-separately).
+
 
 ## November 24, 2026 — live study accepted; LoD claim observation for review
 
@@ -1078,6 +1104,8 @@ Next authorized slice: a separate test-boundary correction for #342's unresolved
 **Current handoff — 2026-11-15, coding-agent transition (supersedes prior status):** main contains #341 plus documentation updates. Runtime merge `64fd23d02eb33fa00129ce78bd20fc5ad225f8e5` passed smoke 43713977016 and all 12 native jobs in 43713977014. Current pre-handoff main `1a5843e2e20f07477323351e2841eb1358b1c8d2` only adds review documentation. No history rewrite or source reset is needed. Fetch current main and inspect local status/uncommitted work before switching the replacement coding environment; this remote reconciliation does not inspect or certify the local/WSL checkout.
 
 #342 remains open at `0d0adec5b1beda5db55aa8d54358b6f7d2c0bb1b`, with current main's #341 source incorporated and no source conflict. Smoke and the corrected standalone projection job passed. The moved ActiveAssembly checks passed in native active_workbench_test. However, native run 43715143149 failed: live_intent_activity_2_bulk in job 132815906747 reported `equal-force publication control changed force`. This is a distinct unresolved regression, not the repaired header dependency. All other regression tests passed (168/169 total); database and four compiler profiles passed. The aggregate gate failed. Preserve this evidence and inspect/reproduce the two-worker bulk publication case before integration; do not assume a flake, weaken checks or change mathematics to mask it. No duplicate CI or merge requested. Held #75/#111/#123 unchanged; no other new PR is open.
+
+**Terminology update (November 24):** “centroid of intent” in the dated note below refers to the proposed structural target. The confounded target includes all participating fields. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
 
 **Mathematical direction for inspection:** Patrick proposes deriving the centroid of intent from the study's structural composition path, using the native Taichi operations on its SNode representation, while treating attached nonstructural elements as confounding fields. Record structural intent, nonstructural influence and actual endpoint/trajectory separately. Trace explicit composition roles rather than equating all storage nesting or attached membership/comparison edges with composition. Determine weighting/frame/publication semantics before choosing a formula. The existing combined candidate diagnostic must not be silently relabelled as this structural quantity. See #324's 2026-11-15 clarification, which supersedes older all-influence assumptions. No new braking/activity/stability law is selected. Preserve participating-force/whole-body-inertia accounting and reuse Taichi machinery.
 

@@ -1,5 +1,7 @@
 # NAPIER system discussion — working record
 
+Earlier “combined destination” language records the discussion at the time. For current work, distinguish the structural target from the confounded (all-fields) target and from the observed motion. [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
+
 For a shorter integrated explanation and links to component-level notes, read
 the [NAPIER system guide](napier-system-guide.md). This record retains the
 step-by-step clarification, historical alternatives, and open derivations.

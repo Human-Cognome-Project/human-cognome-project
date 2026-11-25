@@ -1,8 +1,20 @@
 # numerics
 
+For a numerical rejection on the supported CPU hierarchy, begin with the [leaf diagnostic](../../engine/docs/LEAF-FAILURE-DIAGNOSTICS.md). It preserves the exact predicate and records the operands at failure.
+
 Read before changing field/tick calculations, activity, focus or their tests. This is the accepted direction summary; follow its owning numerical contracts for exact predicates.
 
 [Choose another path](README.md) · [Bounded work](AGENT-START.md)
+
+## Target terminology for #324
+
+At the working LoD, structural composition is settled for the calculation. The parent fields exposed by the immediately coarser level carry their subtree contributions down to a common base. Inspect a finer level to observe how its confounding contributions become part of the coarser object’s structure. Use the retained masses for initial observations. Record any temporary mass adjustment with the original value, override and exposure.
+
+The **structural target** is derived from parent/object classification forces along the composition path. Parent values aggregate upward and establish the coherence frame. The **confounded target** incorporates all participating fields, including the structural contributions. Contextual fields act within the degrees of freedom supplied by that structure. Either target can move, and the two may coincide.
+
+At the working level, parent fields and core whole-particle fields are structural. Effects across these structures are confounding or transitive. For letters, each endpoint binds its ordered Unicode character parent or parents. Each character in turn has its own construction. Sharing a core definition supplies a possible path between endpoints. The imposed cross-language comparison determines whether an effect along that path participates. [Language-to-core construction](../language-component-unicode-plan.md).
+
+Use *centroid* for an actual geometric or mass-weighted centre. Keep the proposed endpoint and accepted tick position distinct from both targets. The existing combined diagnostic retains its source-defined meaning. The confounded target is the final all-fields target calculation for the tick. The brake acts only on motion relative to that target. For fixed pre-tick inputs, braking preserves both calculated targets. [Brake clarification](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7135937435). [November 24 terminology decision](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324#issuecomment-7131582941).
 
 ## Latest model direction — 2026-10-23
 

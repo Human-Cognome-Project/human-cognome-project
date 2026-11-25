@@ -1,5 +1,7 @@
 # Offline study viewport
 
+For the shortest route to the supplied captures, or the status of live operator controls, see [Examine a study](../../docs/onboarding/OPERATOR.md).
+
 The fixture-only native `viewport_live_study --whole-field` command adds live
 `lod parts` / `lod aggregate` exchange for the first English A profile. It keeps
 one prepared study, transfers each logical occurrence's own native motion and

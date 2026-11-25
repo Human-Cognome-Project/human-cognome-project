@@ -1,5 +1,7 @@
 # operations
 
+For prepared submission, trace preflight, candidate ownership, combined publication and retirement in the [transaction map](INTEGRATED-PATH.md).
+
 Read before changing admission, placement, capacity, exchange or preservation of live execution. Follow the owning operation contract and its acceptance subset.
 
 [Choose another path](README.md) · [Bounded work](AGENT-START.md)

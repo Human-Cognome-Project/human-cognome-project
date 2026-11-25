@@ -1,0 +1,33 @@
+name: Check PR documentation scope
+on:
+  workflow_call:
+    outputs:
+      scope:
+        description: Prose only when every changed path is recognized
+        value: ${{ jobs.classify.outputs.scope }}
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    outputs:
+      scope: ${{ steps.route.outputs.scope }}
+    steps:
+      - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
+        with:
+          fetch-depth: 2
+      - id: route
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          scope=full
+          if [[ "$EVENT" == pull_request && "$(git rev-parse HEAD^1)" == "$BASE" ]]; then
+            scope=$(bash .github/scripts/ci-prose-scope.sh "$BASE" HEAD)
+            if [[ "$scope" == prose ]]; then
+              git diff --check "$BASE" HEAD
+            fi
+          fi
+          echo "scope=$scope" >> "$GITHUB_OUTPUT"
+          echo "Selected scope: $scope" >> "$GITHUB_STEP_SUMMARY"

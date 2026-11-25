@@ -1,5 +1,7 @@
 # work discipline
 
+The [owner map](INTEGRATED-PATH.md) identifies the smallest source and test context for changes spanning logical and native execution.
+
 Read before changing repository files. These rules apply to code, data and documentation contributions; detailed model rationale is on separate paths.
 
 [Choose another path](README.md) · [Bounded work](AGENT-START.md)
