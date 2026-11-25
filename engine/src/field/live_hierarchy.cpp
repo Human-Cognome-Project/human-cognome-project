@@ -643,6 +643,7 @@ std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
   std::array<engine::CompiledKernel, 3> kernels;
   const auto suffix = std::to_string(centroid_selection.cells->id);
   const int threads = h.runtime_->cpu_threads();
+  const bool scoped_rows = h.prepared_->capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedNibbleBootstrap;
   {
     IRBuilder b;
     Args a(b);
@@ -771,7 +772,10 @@ std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
         return value;
       };
       std::array<Stmt *, 4> value{};
-      if (parent) {
+      if (parent && !scoped_rows) {
+        value = packet(b, a, read(b, a.children, {ref}));
+        count(b, a.stats, ChildReads);
+      } else if (parent) {
         auto *child = read(b, a.children, {ref});
         std::array<AllocaStmt *,4> term{};
         for (auto &v : term) v = b.create_local_var(PrimitiveType::f64);
@@ -1135,6 +1139,7 @@ LiveHierarchyResult LiveHierarchy::install(std::uint64_t expected,
     return out;
   }
   if (a.bound || !h.profile_.wide() ||
+      s.capacity.hierarchy_mode()!=PreparedHierarchyMode::ExpressedTree ||
       (h.runtime_->arch() != taichi::Arch::x64 && !a.cuda_qualification_device))
     return out;
   if (expected != s.generation) {

@@ -81,6 +81,7 @@ void refresh_finite(IRBuilder &b, const RefreshArgs &a, Stmt *v) {
 void LiveHierarchy::Impl::prepare_refresh_execution() {
   refresh = std::make_unique<Refresh>(*this);
   auto &r = *refresh;
+  const bool scoped_rows = h.prepared_->capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedNibbleBootstrap;
   const std::array<DataType, 9> types{
       PrimitiveType::f64, PrimitiveType::i32, PrimitiveType::f64,
       PrimitiveType::i32, PrimitiveType::i32, PrimitiveType::i32,
@@ -192,7 +193,15 @@ void LiveHierarchy::Impl::prepare_refresh_execution() {
           return value;
         };
         std::array<Stmt *, 4> value{};
-        if (parent) {
+        if (parent && !scoped_rows) {
+          auto *child = read(b, a.children, {ref});
+          auto *slot = read(b, a.selected, {child});
+          for (int k = 0; k < 4; ++k)
+            value[k] = read(b, a.values,
+                            {b.create_add(b.create_mul(slot, b.get_int32(4)),
+                                          b.get_int32(k)),
+                             child});
+        } else if (parent) {
           auto *child = read(b, a.children, {ref});
           std::array<AllocaStmt *,4> term{};
           for (auto &v : term) v = b.create_local_var(PrimitiveType::f64);
@@ -434,6 +443,9 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
     if (budget > cap)
       exhaust(Budget::CascadeWork, budget, cap);
     charge(0);
+    if (spec.scoped_nibble_rows !=
+        (s.capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedNibbleBootstrap))
+      reject(UpdateStatus::Unsupported);
     if (a.scoped_nibble_rows || (spec.scoped_nibble_rows &&
         (a.bound || a.h.actual_arch()!=taichi::Arch::x64 || candidate.particles!=2)))
       reject(UpdateStatus::Unsupported);

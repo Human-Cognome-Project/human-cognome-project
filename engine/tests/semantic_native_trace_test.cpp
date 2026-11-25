@@ -257,7 +257,9 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
   limits[field::Budget::BootstrapCommands]=128;limits[field::Budget::CascadeReferences]=128;
   limits[field::Budget::CascadeCoverage]=128;limits[field::Budget::LiveResponses]=256;
   limits[field::Budget::ScratchBytes]=field::detail::PreparedStorage::required_scratch(limits,false,field::NumericalProfile::trial())+256*1024*1024;
-  const field::PreparedCapacity capacity(limits,field::NumericalProfile::trial());
+  const auto mode = scoped ? field::PreparedHierarchyMode::ScopedNibbleBootstrap
+                           : field::PreparedHierarchyMode::ExpressedTree;
+  const field::PreparedCapacity capacity(limits,field::NumericalProfile::trial(),mode);
   auto domain=prepared_owner_fixture::domain();
   const auto plan=StructuralAdmissionPlan::build(*in.source,in.bindings,capacity,domain,UINT64_MAX);
   if(plan.status!=(supported?AdmissionPlanStatus::Ok:AdmissionPlanStatus::InvalidInput))

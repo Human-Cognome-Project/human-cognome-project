@@ -23,9 +23,13 @@ DenseShape shape(const char *name,
 }
 }  // namespace
 PreparedCapacity::PreparedCapacity(BudgetDemand limits,
-                                   NumericalProfile profile)
-    : limits_(limits), profile_(profile) {
+                                   NumericalProfile profile,
+                                   PreparedHierarchyMode hierarchy)
+    : limits_(limits), profile_(profile), hierarchy_(hierarchy) {
   profile_.validate();
+  if (hierarchy_==PreparedHierarchyMode::ScopedNibbleBootstrap &&
+      (!profile_.wide() || !limits_[Budget::LiveResponses]))
+    throw std::invalid_argument("scoped nibble bootstrap requires a prepared f64 live hierarchy");
   if (limits[Budget::BootstrapCommands] > (std::uint64_t{1} << 20))
     throw std::invalid_argument("bootstrap commands exceed native reservation");
   if (profile_.wide() &&

@@ -436,6 +436,8 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   int scoped_publisher = -1;
   if (!b.nibble_scopes.empty()) {
     w.charge(1);
+    need(capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedNibbleBootstrap,
+         AdmissionPlanStatus::Unsupported);
     need(b.character_rollup && ordered.size()==scoped.size() &&
          b.nibble_scopes.size()==scoped.size());
     const auto &root = b.comparisons.back();
