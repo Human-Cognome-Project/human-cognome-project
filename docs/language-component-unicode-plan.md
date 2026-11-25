@@ -89,6 +89,8 @@ ASCII character endpoint = existing byte code -> ordered nibbles
 language-letter/punctuation endpoint -> ordered Unicode character endpoint(s)
 ```
 
+At letter-level exposure the language endpoint binds the appropriate Unicode character object as its direct structural parent. The character is itself a composed object. Its ordered byte constituents, and the nibbles composing those bytes, become relevant at finer exposure. A rolled-up character carries its structural effect at the current level. Count that effect once when changing exposure. English `A` and French `A` can therefore bind the same core definition while retaining distinct endpoint identities. An imposed comparison between those endpoints is a separate field relationship.
+
 ASCII character endpoints reuse the existing byte-code tokens. A multibyte
 character is one existing endpoint even though several bytes construct it.
 For example, the ellipsis `…` is `U+2026`, encoded as `E2 80 A6`: a language's
