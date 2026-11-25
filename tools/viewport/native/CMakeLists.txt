@@ -14,12 +14,18 @@ add_test(NAME semantic_character_rollup_bulk COMMAND semantic_native_trace_test 
 add_test(NAME semantic_character_rollup_direct COMMAND semantic_native_trace_test --case character-rollup --threads 2 --direct)
 add_test(NAME semantic_parent_overlap COMMAND semantic_native_trace_test --case parent-overlap --threads 2 --direct)
 add_test(NAME semantic_scoped_nibble COMMAND semantic_native_trace_test --case scoped-nibble --threads 2 --direct)
+add_test(NAME semantic_scoped_nibble_no_unroll COMMAND semantic_native_trace_test
+  --case scoped-nibble --threads 2 --direct --compiler-no-unroll)
 add_test(NAME semantic_repeated_rollup COMMAND semantic_native_trace_test --case repeated-rollup --threads 2 --direct)
 add_test(NAME semantic_repeated_rollup_no_unroll COMMAND semantic_native_trace_test
   --case repeated-rollup --threads 2 --direct --compiler-no-unroll)
+add_test(NAME semantic_unicode_exchange_bulk COMMAND semantic_native_trace_test --case unicode-exchange)
+add_test(NAME semantic_unicode_exchange_direct COMMAND semantic_native_trace_test --case unicode-exchange --threads 2 --direct)
 set_tests_properties(semantic_native_projection semantic_native_trace
   semantic_character_rollup_bulk semantic_character_rollup_direct semantic_parent_overlap semantic_scoped_nibble
-  semantic_repeated_rollup semantic_repeated_rollup_no_unroll PROPERTIES
+  semantic_scoped_nibble_no_unroll
+  semantic_repeated_rollup semantic_repeated_rollup_no_unroll
+  semantic_unicode_exchange_bulk semantic_unicode_exchange_direct PROPERTIES
   ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 add_executable(viewport_live_study live_study.cpp)
 target_include_directories(viewport_live_study PRIVATE ../../../engine/tests)

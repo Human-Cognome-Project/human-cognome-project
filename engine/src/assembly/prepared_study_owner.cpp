@@ -36,7 +36,14 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
       if (domain) out.reservation = domain->result();
       return out;
     }
-    if ((editable_occurrences || alternative) &&
+    // The disjoint single-character rollup has a fixed alternate. It can
+    // exchange the complete cohort with presence edits disabled.
+    const bool fixed_character = alternative && !editable_occurrences &&
+        !bindings.character_rollup && !bindings.endpoint_rollup &&
+        bindings.nibble_scopes.empty() && alternative->bindings.character_rollup &&
+        !alternative->bindings.endpoint_rollup && alternative->bindings.nibble_scopes.empty() &&
+        h.prepared_storage().capacity.hierarchy_mode()==field::PreparedHierarchyMode::ExpressedTree;
+    if ((editable_occurrences || alternative) && !fixed_character &&
         (bindings.character_rollup || bindings.endpoint_rollup ||
          (alternative && (alternative->bindings.character_rollup || alternative->bindings.endpoint_rollup)))) {
       out.status = AdmissionPlanStatus::Unsupported;
@@ -55,7 +62,7 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
     });
     owner->reserve_metadata(session,bindings,work);
     if (alternative) {
-      if(!editable_occurrences || !alternative->source || prepared.work.charged>plan_allowance) {
+      if((!editable_occurrences && !fixed_character) || !alternative->source || prepared.work.charged>plan_allowance) {
         owner.reset();out.status=AdmissionPlanStatus::InvalidInput;out.metadata_work=work.result();out.reservation=domain->result();return out;
       }
       auto other=StructuralAdmissionPlan::build(*alternative->source,alternative->bindings,
@@ -74,7 +81,8 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
       }
       try {
         owner->lod_=reserve_unique<PreparedLodWorkspace>(domain,[&](auto *p){
-          ::new(static_cast<void*>(p))PreparedLodWorkspace(*owner,*alternative->source,std::move(other.plan),work);
+          ::new(static_cast<void*>(p))PreparedLodWorkspace(*owner,*alternative->source,
+              std::move(other.plan),fixed_character,work);
         });
       } catch(const warm::Error &) {
         owner.reset();out.status=AdmissionPlanStatus::Unsupported;out.metadata_work=work.result();out.reservation=domain->result();return out;
@@ -150,7 +158,9 @@ void PreparedStudyOwner::authorize(const warm::Uuid &owner, const ExecutionHandl
 bool PreparedStudyOwner::ready() const {
   if (phase_ != PreparedOwnerPhase::Published || !h_.ready()) return false;
   const auto &s = h_.prepared_storage();
-  if (plan_ || (lod_ ? lod_->live_.size() : edits_ ? edits_->live_.size() : occurrences_.size()) != bodies_.size() ||
+  const auto *selection = lod_ ? lod_->body_selection() : edits_ ? &edits_->live_ : nullptr;
+  if (plan_ || (selection ? selection->size() : lod_ ? lod_->body_sources().size()
+                                                     : occurrences_.size()) != bodies_.size() ||
       (lod_ ? lod_->field_sources().size() : field_sources_.size()) != fields_.size() ||
       s.generation != generation_ || s.particles.context() != context_ ||
       s.live.particles != bodies_.size() || s.live.fields != fields_.size()) return false;
@@ -194,8 +204,8 @@ PreparedStudyOwner::AssociationRows PreparedStudyOwner::AssociationView::read() 
   if (generation_ != owner_->generation_ || !owner_->ready() ||
       tick_ != owner_->h_.prepared_storage().completed_ticks)
     throw warm::Stale("prepared owner: stale association view");
-  return {*owner_->source_,{owner_->lod_ ? owner_->lod_->catalogue_ : owner_->edits_ ? owner_->edits_->catalogue_ : owner_->occurrences_,
-                          owner_->lod_ ? &owner_->lod_->live_ : owner_->edits_ ? &owner_->edits_->live_ : nullptr},
+  return {*owner_->source_,{owner_->lod_ ? owner_->lod_->body_sources() : owner_->edits_ ? owner_->edits_->catalogue_ : owner_->occurrences_,
+                          owner_->lod_ ? owner_->lod_->body_selection() : owner_->edits_ ? &owner_->edits_->live_ : nullptr},
           owner_->lod_ ? owner_->lod_->field_sources() : owner_->field_sources_,owner_->bodies_,owner_->fields_,
           owner_->scales_,owner_->h_.prepared_storage().source_masses};
 }

@@ -4,6 +4,8 @@
 #include "capture_options.h"
 #include "prepared_owner_fixture.h"
 #include "field/cascade_source.h"
+#include "assembly/prepared_occurrence_edit.h"
+#include "assembly/prepared_submission.h"
 #include "scoped_hierarchy_audit.h"
 #include <algorithm>
 #include <array>
@@ -36,7 +38,7 @@ struct Input {
   AdmissionBindings bindings;
   Json trace=Json::object();
   bool pair,parts,context;
-  Input(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,
+  Input(engine::Runtime *runtime,const letter_fixture::Fixture &fixture,
         const std::string &profile,bool fine,bool imposed,
         const warm::ObjectKey *rollup_endpoint = nullptr, bool repeated_rollup = false):
       pair(profile=="ascii"),parts(fine),context(imposed) {
@@ -143,10 +145,14 @@ struct Input {
     }
     if (repeated_rollup)
       bindings.endpoint_rollup = AdmissionEndpointRollup{{source->study(),{requests[0].entry,{}}},first};
-    auto root=std::make_unique<taichi::lang::SNode>(0,taichi::lang::SNodeType::root);
+    std::unique_ptr<taichi::lang::SNode> root;
+    if (runtime) root=std::make_unique<taichi::lang::SNode>(0,taichi::lang::SNodeType::root);
     auto *leaf=root.get();bindings.layout.push_back({{leaf,-1,ScaleRole::Root},1});
-    if(parts) {leaf=&root->dense(taichi::lang::Axis(0),1);bindings.layout.push_back({{leaf,0,ScaleRole::PrimaryStep},64});}
-    leaf->insert_children(taichi::lang::SNodeType::place).dt=taichi::lang::PrimitiveType::i32;
+    if(parts) {
+      if(leaf)leaf=&root->dense(taichi::lang::Axis(0),1);
+      bindings.layout.push_back({{leaf,0,ScaleRole::PrimaryStep},64});
+    }
+    if(leaf)leaf->insert_children(taichi::lang::SNodeType::place).dt=taichi::lang::PrimitiveType::i32;
     trace={{"schema","hcp-semantic-native-trace"},{"version",1},{"profile",profile},
       {"exposure",parts?"parts":"aggregate"},{"imposed_context",context},
       {"definitions",Json::array()},{"occurrences",Json::array()},{"parents",Json::array()},
@@ -206,8 +212,12 @@ struct Input {
             "multibyte scalar preserves the exact ordered UTF-8 byte construction");
     }
     for(std::size_t i=0;i<bindings.layout.size();++i) {const auto &b=bindings.layout[i];
-      trace["layouts"].push_back({{"index",i},{"parent",b.node.parent},{"role",int(b.node.role)},
-        {"units",b.units},{"native_snode_id",b.node.layout->id},{"native_snode_type",int(b.node.layout->type)}});}
+      trace["layouts"].push_back({{"index",i},{"parent",b.node.parent},{"role",int(b.node.role)},{"units",b.units}});
+      if(b.node.layout) {
+        trace["layouts"].back()["native_snode_id"]=b.node.layout->id;
+        trace["layouts"].back()["native_snode_type"]=int(b.node.layout->type);
+      }
+    }
     for(std::size_t i=0;i<bindings.fields.size();++i) {const auto &f=bindings.comparisons[i];
       trace["fields"].push_back({{"index",i},{"source",key(f.field)},
         {"comparison",std::to_string(f.comparison)},{"level",f.level},{"children",f.children}});}
@@ -242,7 +252,7 @@ struct Input {
     if (repeated_rollup)
       check(roots.size()==1 && full_fields==roots,"repeated byte topology has a complete endpoint root");
     if(parts && profile=="repeated")check(!shared_children.empty(),"repeated-byte literal tree exposes a shared parent-value field across branches");
-    runtime.program().add_snode_tree(std::move(root),false);
+    if (runtime) runtime->program().add_snode_tree(std::move(root),false);
   }
 };
 
@@ -428,7 +438,7 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
   check(prepared.status==AdmissionPlanStatus::Ok,"native owner preparation failed");
   auto &owner=*prepared.owner;const auto handle=owner.handle();const auto authorization=in.source->owner();
   check(owner.bootstrap(authorization,handle,UINT64_MAX,UINT64_MAX,UINT64_MAX).status==field::UpdateStatus::Ok,"native bootstrap failed");
-  if (repeated) audit_scoped_hierarchy(harness);
+  if (scoped) audit_scoped_hierarchy(harness,repeated);
   const auto capture=[&] {
     auto state=viewport::observe(owner,authorization,handle,viewport::IntentRequest{1,UINT64_MAX},viewport::ResponseRequest{UINT64_MAX});
     auto context=viewport::context(*in.source,handle,state.tick,"Semantic native fixture trace");
@@ -574,7 +584,7 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
 Json run(engine::Runtime &runtime,const letter_fixture::Fixture &fixture,const std::string &profile,
          bool parts,bool context,field::HostPath path,bool project_only,bool rollup=false,
          std::initializer_list<Input *> refused={}) {
-  return run_input(runtime,Input(runtime,fixture,profile,parts,context,rollup ? &fixture.accented : nullptr),
+  return run_input(runtime,Input(&runtime,fixture,profile,parts,context,rollup ? &fixture.accented : nullptr),
       path,project_only,profile=="ascii" || !parts || rollup,refused);
 }
 
@@ -627,8 +637,8 @@ warm::ObjectKey add_scalar_overlap(letter_fixture::Fixture &fixture) {
 Json repeated_parent_overlap(engine::Runtime &runtime, letter_fixture::Fixture &fixture, field::HostPath path) {
   const auto endpoint = add_scalar_overlap(fixture);
 
-  Input repeated(runtime,fixture,"repeated",true,false);
-  Input overlap(runtime,fixture,"scalar-overlap",true,false,&endpoint);
+  Input repeated(&runtime,fixture,"repeated",true,false);
+  Input overlap(&runtime,fixture,"scalar-overlap",true,false,&endpoint);
   check(repeated.bindings.bodies[0].definition==repeated.bindings.bodies[1].definition,
         "the two a paths share the exact byte definition pin");
   const auto repeated_nibble = shared_nibble(repeated,"1");
@@ -669,7 +679,7 @@ Json repeated_parent_overlap(engine::Runtime &runtime, letter_fixture::Fixture &
 
 Json scoped_nibble_rollup(engine::Runtime &runtime, letter_fixture::Fixture &fixture, field::HostPath path) {
   const auto endpoint = add_scalar_overlap(fixture);
-  Input overlap(runtime,fixture,"scalar-overlap",true,false,&endpoint);
+  Input overlap(&runtime,fixture,"scalar-overlap",true,false,&endpoint);
   const auto &root = overlap.bindings.comparisons.back();
   for (std::size_t i=0; i<root.children.size(); ++i)
     overlap.bindings.nibble_scopes.push_back({overlap.bindings.comparisons[root.children[i]].comparison,
@@ -682,7 +692,7 @@ Json scoped_nibble_rollup(engine::Runtime &runtime, letter_fixture::Fixture &fix
 
 Json repeated_endpoint_rollup(engine::Runtime &runtime, const letter_fixture::Fixture &fixture,
                              field::HostPath path) {
-  Input input(runtime,fixture,"repeated",true,false,nullptr,true);
+  Input input(&runtime,fixture,"repeated",true,false,nullptr,true);
   const auto shared = shared_nibble(input,"1");
   for (const auto &body : input.bindings.bodies) {
     const auto matching = std::find_if(shared.at("rows").begin(),shared.at("rows").end(),
@@ -748,6 +758,186 @@ Json repeated_endpoint_rollup(engine::Runtime &runtime, const letter_fixture::Fi
       {"aggregate",std::move(aggregate)},{"parts",std::move(fine)}};
 }
 
+Json unicode_exchange(const engine::InstanceSettings &settings,
+                      const letter_fixture::Fixture &fixture, field::HostPath path) {
+  Input fine(nullptr,fixture,"accented",true,false,&fixture.accented);
+  auto source=std::make_shared<const ActiveAssembly>(
+      fine.source->expose_all(warm::Exposure::Aggregate));
+  const auto definition=fixture.ref(fixture.accented);
+  const auto &root=fine.bindings.fields.back();
+  const auto root_comparison=fine.bindings.comparisons.back().comparison;
+  constexpr std::uint64_t coarse_comparison=200;
+  const FieldKey sibling{GroupKind::SiblingDefinition,definition.object};
+  AdmissionBindings coarse;
+  coarse.source={source->owner(),source->study(),source->generation(),source->shared_recipe().ref};
+  coarse.layout=fine.bindings.layout;
+  const AdmissionBody aggregate{{source->study(),{2,{}}},definition,1,3,80,4,{3,1,true}};
+  coarse.bodies={aggregate};
+  coarse.fields={{sibling,5,int(fine.bindings.fields.size())},root};
+  coarse.comparisons={{sibling,coarse_comparison,0,52,{}},{root.field,root_comparison,2,52,{0}}};
+  coarse.focus={root.field};
+  std::array<std::vector<AdmissionBody>,2> expected{{coarse.bodies,fine.bindings.bodies}};
+  std::array<std::vector<std::uint64_t>,2> branches{{{coarse_comparison},{}}};
+  for (int index : fine.bindings.comparisons.back().children)
+    branches[1].push_back(fine.bindings.comparisons.at(index).comparison);
+  auto limits=prepared_owner_fixture::capacity().limits();
+  limits[field::Budget::Particles]=3;limits[field::Budget::Fields]=8;
+  limits[field::Budget::Batch]=64;limits[field::Budget::Participation]=32;
+  limits[field::Budget::CascadeNodes]=8;limits[field::Budget::CascadeLinks]=16;
+  limits[field::Budget::CascadeReferences]=limits[field::Budget::CascadeCoverage]=64;
+  limits[field::Budget::LiveResponses]=128;
+  limits[field::Budget::ScratchBytes]=field::detail::PreparedStorage::required_scratch(
+      limits,false,field::NumericalProfile::trial())+256*1024*1024;
+  const auto domain=prepared_owner_fixture::domain();
+  PreparedStudySubmission request{source,std::move(coarse),
+      field::PreparedCapacity(limits,field::NumericalProfile::trial()),domain};
+  request.path=path;
+  request.lod_alternative=PreparedLodAlternative{fine.source,std::move(fine.bindings)};
+  ActiveSession session(settings);
+  const auto submitted=session.submit_prepared(std::move(request),source->owner());
+  if (!submitted.handle)
+    std::cerr<<"unicode_exchange,prepare="<<int(submitted.preparation_status)
+             <<",native="<<int(submitted.publication.status)
+             <<",budget="<<field::budget_name(submitted.publication.failure.budget)<<'\n';
+  check(submitted.handle.has_value() && !session.on_cuda(),"Unicode prepared study bootstrap failed");
+  const auto h=*submitted.handle;
+  const auto observe=[&] {
+    return viewport::observe(session,source->owner(),h,std::nullopt,viewport::ResponseRequest{UINT64_MAX});
+  };
+  const auto root_claim=[&](const viewport::CompletedState &s) -> engine::RecordHandle {
+    for(const auto &node:s.comparisons)
+      if(node.comparison==root_comparison)return node.field;
+    throw std::runtime_error("missing retained character comparison");
+  };
+  const auto initial=observe();
+  const auto focal=root_claim(initial);
+  const auto retained_bytes=domain->result().live_bytes;
+  const auto record=[](const engine::RecordHandle &r) {
+    return Json{{"context",std::to_string(r.context)},{"incarnation",std::to_string(r.incarnation)},
+                {"address",r.address},{"record",r.record}};
+  };
+  const auto capture=[&](const viewport::CompletedState &s, bool parts) {
+    const auto exposure=parts?warm::Exposure::Parts:warm::Exposure::Aggregate;
+    const auto &report=s.report;
+    const auto &mapped=report.prepared.particles;
+    const auto P=report.prepared.capacity;
+    const auto G=report.prepared.groups.size();
+    check(report.prepared_exposure==exposure && report.handle.study==h.study &&
+          report.handle.generation==h.generation && report.handle.session==h.session,
+          "exchange changed the running study identity or exposure map");
+    check(field::detail::same_handle(focal,root_claim(s)) &&
+          report.prepared.focal_groups.size()==1 && report.prepared.focal_groups.front()==focal.record &&
+          report.groups64.at(3*G+focal.record)==4,
+          "the same character field publishes mass four and remains focused");
+    check(mapped.size()==expected[parts].size() && mapped.size()==s.body_records.size(),
+          "native body map cardinality disagrees with the exposure");
+    viewport::CaptureContext context{h,s.tick,"Live Unicode character exchange",{},Json::object()};
+    context.source={{"kind","fixture_only"},{"profile","live-unicode-exchange"}};
+    const auto packet=[&](std::uint64_t comparison) {
+      for(const auto &p:s.response_trace.at("packets"))
+        if(p.at("comparison")==std::to_string(comparison))return p.at("slot").get<int>();
+      throw std::runtime_error("missing live response packet");
+    };
+    const auto parent=packet(root_comparison);
+    Json coverage=Json::array();
+    int total=0;
+    for (std::size_t i=0;i<mapped.size();++i) {
+      const auto &input=expected[parts][i];
+      const auto id=occurrence_text(input.occurrence);
+      const auto &body=s.body_records[i];
+      const auto &p=mapped[i];
+      const int mass=parts?2:4;
+      const auto declared=std::find_if(report.origins.begin(),report.origins.end(),
+          [&](const Origin &origin) {return origin.occurrence==input.occurrence;});
+      check(p.occurrence.id==InputText(id) &&
+            p.occurrence.definition==InputText(warm::key(input.definition.object)) &&
+            p.occurrence.study_node==input.node &&
+            declared!=report.origins.end() && declared->shared==input.definition &&
+            p.exact_mass==std::uint64_t(mass) && s.report.particles64.at(field::kMass*P+body.record)==mass,
+            "ordered occurrence, pinned byte or exact native mass changed");
+      context.occurrences.emplace(id,viewport::DisplayContext{parts?"parts":"aggregate",
+          occurrence_text(aggregate.occurrence),parts?(i==0?"C3":"AD"):u8"í"});
+      const auto child=packet(branches[parts][i]);
+      int matches=0;
+      for (const auto &r:s.response_trace.at("rows")) {
+        if (r.at("kind")!="inherited" || r.at("child")!=child || r.at("parent")!=parent ||
+            r.at("body")!=record(body))continue;
+        check(r.at("numerator")==std::to_string(mass) && r.at("denominator")==std::to_string(mass),
+              "published character coverage lost the whole ordered occurrence");
+        ++matches;
+      }
+      check(matches==1,"native character/root coverage is missing or duplicated");
+      total+=mass;
+      coverage.push_back({{"entry",input.occurrence.source.entry},{"path",input.occurrence.source.path},
+          {"definition",pin(input.definition)},{"count",mass},{"claim",record(body)}});
+    }
+    check(total==4 && domain->result().live_bytes==retained_bytes,
+          "exchange changed total represented mass or retained owner bytes");
+    return Json{{"coverage",coverage},{"character_mass",4},{"focus",record(focal)},
+                {"snapshot",viewport::snapshot(s,context)}};
+  };
+  Json steps=Json::array({{{"phase","initial"},{"state",capture(initial,false)}}});
+  PreparedLodEdit edit{warm::Exposure::Parts,*initial.prepared_generation};
+  auto short_work=edit;short_work.preparation_work=0;
+  const auto refused=session.lod_prepared(h,source->owner(),short_work);
+  check(refused.preparation.status==PreparationStatus::WorkExhausted &&
+        !refused.publication.claims.sampled,"short preparation unexpectedly sampled native claims");
+  const auto unchanged=observe();
+  check(unchanged.prepared_generation==initial.prepared_generation && unchanged.tick==initial.tick &&
+        unchanged.report.particles64==initial.report.particles64 && unchanged.report.groups64==initial.report.groups64 &&
+        capture(unchanged,false).at("coverage")==steps[0]["state"]["coverage"],
+        "refused exchange changed the current completed study");
+  const PreparedOccurrenceEdit presence{aggregate.occurrence,false,*initial.prepared_generation};
+  check(session.edit_prepared(h,source->owner(),presence).publication.status==field::UpdateStatus::Unsupported,
+        "fixed Unicode cohort accepted a presence edit");
+
+  auto current=initial;
+  const auto momentum=[](const viewport::CompletedState &s, int axis) {
+    long double sum=0;
+    const auto P=s.report.prepared.capacity;
+    for (const auto &body:s.body_records)
+      sum+=static_cast<long double>(s.report.particles64.at(field::kMass*P+body.record))*
+             s.report.particles64.at((field::kVelX+axis)*P+body.record);
+    return sum;
+  };
+  for (bool parts : {true,false}) {
+    edit.exposure=parts?warm::Exposure::Parts:warm::Exposure::Aggregate;
+    edit.expected_generation=*current.prepared_generation;
+    const auto q=session.lod_prepared(h,source->owner(),edit).publication;
+    if (q.status!=field::UpdateStatus::Ok)
+      std::cerr<<"unicode_exchange,parts="<<parts<<",status="<<int(q.status)
+               <<",budget="<<field::budget_name(q.failure.budget)<<",required="<<q.failure.required
+               <<",capacity="<<q.failure.capacity<<'\n';
+    check(q.status==field::UpdateStatus::Ok && q.generation==*current.prepared_generation+1 &&
+          q.claims.sampled && q.claims.particles_before==(parts?1u:2u) && q.claims.particles_peak==3 &&
+          q.claims.particles_after==(parts?2u:1u) && q.claims.fields_peak==8,
+          "Unicode exchange must claim the whole incoming cohort before retiring the outgoing rows");
+    const auto exchanged=observe();
+    check(exchanged.tick==current.tick && exchanged.prepared_generation==q.generation,
+          "exchange changed the completed tick or omitted native generation");
+    for(const auto &a:exchanged.body_records) for(const auto &b:current.body_records)
+      check(!field::detail::same_handle(a,b),"replaced physical body retained its outgoing claim");
+    for(int axis=0;axis<3;++axis) {
+      const auto before=momentum(current,axis), after=momentum(exchanged,axis);
+      check(std::abs(before-after)<=1e-12L*std::max(1.L,std::abs(before)),
+            "Unicode exchange failed to preserve outgoing group momentum");
+    }
+    auto state=capture(exchanged,parts);
+    field::Parameters64 parameters;
+    parameters.gravity=1;parameters.contact_stiffness=parameters.reach_strength=0;parameters.dt=0.01;
+    check(session.tick_prepared(h,source->owner(),parameters).status==field::TickStatus::Ok,
+          "native tick after Unicode exchange failed");
+    current=observe();
+    auto tick=capture(current,parts);
+    check(current.tick==exchanged.tick+1 && state.at("coverage")==tick.at("coverage"),
+          "following native tick did not preserve occurrence coverage and full claims");
+    steps.push_back({{"phase",parts?"expand":"compress"},{"state",std::move(state)},
+        {"following_tick",std::move(tick)},{"body_peak",q.claims.particles_peak},{"field_peak",q.claims.fields_peak}});
+  }
+  return {{"schema","hcp-live-unicode-exchange"},{"version",1},{"character",pin(tool(source->shared_recipe(),definition).parents[0].target)},
+          {"short_work_refusal","unchanged"},{"steps",std::move(steps)}};
+}
+
 Json signature(const Json &trace) {
   const auto &before=trace.at("native").at("before"), &s=before.at("snapshot");
   Json bodies=Json::array(),fields=Json::array(),definitions=Json::array();
@@ -807,12 +997,19 @@ int main(int argc,char **argv) {
       else if(arg=="--compiler-no-unroll") scoped_audit_no_unroll();
       else if(arg=="--projection-only")project_only=true;
       else if(arg=="--case" && i+1<argc)selected=argv[++i];
-      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--compiler-no-unroll] [--projection-only] [--case all|ascii|unicode|character-rollup|parent-overlap|scoped-nibble|repeated-rollup]");
+      else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--compiler-no-unroll] [--projection-only] [--case all|ascii|unicode|character-rollup|parent-overlap|scoped-nibble|repeated-rollup|unicode-exchange]");
     }
     check(selected=="all" || selected=="ascii" || selected=="unicode" ||
           selected=="character-rollup" || selected=="parent-overlap" || selected=="scoped-nibble" ||
-          selected=="repeated-rollup","unknown trace case");
-    engine::Runtime runtime(settings);letter_fixture::Fixture fixture;
+          selected=="repeated-rollup" || selected=="unicode-exchange","unknown trace case");
+    letter_fixture::Fixture fixture;
+    if (selected=="unicode-exchange") {
+      check(!project_only,"Unicode exchange requires a running native study");
+      std::cout<<unicode_exchange(settings,fixture,path).dump()<<'\n';
+      std::cerr<<"semantic_native_trace,checks="<<checks<<" PASS\n";
+      return 0;
+    }
+    engine::Runtime runtime(settings);
     if (selected=="repeated-rollup") {
       check(!project_only,"repeated-rollup includes native publication and refusal");
       std::cout<<repeated_endpoint_rollup(runtime,fixture,path).dump()<<'\n';
