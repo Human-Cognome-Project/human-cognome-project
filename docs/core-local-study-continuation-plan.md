@@ -1,5 +1,42 @@
 # Core continuation after local CUDA corrections
 
+## November 25, 2026 — hosted scoped displacement audit
+
+Main `9fb4e7a5` integrates #435, #436 and #437. On #439, the hosted
+default repeated rollup hit a response assertion. The no-unroll regression
+and ordinary compiler jobs passed. Integration of #439 and #440 is held
+for the correction and authoritative CI.
+[Maintainer finding](https://github.com/Human-Cognome-Project/human-cognome-project/pull/439#issuecomment-7169839218)
+
+The local optimizer comparison reproduced the assertion when LLVM packed
+X and Z into a two-lane response. The checker verifies the two lanes
+through LLVM scalarization on its diagnostic copy. Local scoped and
+ordinary checks pass in both compiler modes. Hosted capture runs before
+the audit assertions. [Correction and evidence](../engine/docs/SCOPED-HIERARCHY-COMPILER-AUDIT.md#hosted-default-audit-correction)
+
+The maintainer provisionally accepted the disjoint `í` exchange in #440.
+After the audit correction, the next operator slice makes that study
+selectable in the existing live CLI.
+[Maintainer handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7169853406)
+
+## November 25, 2026 — live Unicode character exchange
+
+Main `06414eee` includes #430, #431 and #433. #439 is provisionally
+accepted at `a8e0d8d0` for the fixed repeated endpoint compiler audit.
+Its hosted database and four compiler jobs passed.
+[Maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/439#issuecomment-7169133212) · [Native CI](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45657234407)
+
+The live `í` fixture now expands one aggregate into `C3 AD` and compresses
+it in the same prepared study. Both directions preserve the character field
+claim and verify native coverage and mass 4. The following ticks retain the
+ordered occurrence paths. The `ó` seed and poll audits pass in both
+compiler modes and reject the shifted source row.
+[Implementation and evidence](https://github.com/Human-Cognome-Project/human-cognome-project/blob/3164ee50a93ee4cd255bc2071886bf7c9181a2e0/engine/docs/LIVE-UNICODE-EXCHANGE.md)
+
+The exchange evidence is bounded to the explicit disjoint character cohort.
+The repeated endpoint remains a fixed-study witness. Hosted CI and review
+gate the integration sequence.
+
 ## November 25, 2026 — scoped hierarchy compiler audit
 
 Main includes #430 at `6e290f5b`. The maintainer provisionally accepted
