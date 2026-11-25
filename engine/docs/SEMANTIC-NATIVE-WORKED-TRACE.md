@@ -104,6 +104,11 @@ remain explicit in the trace.
 
 ## Representation boundary and continuation
 
+The follow-up single-character rollup is submitted for review with a native
+publication and tick for `í`. The findings below describe the original seven
+profiles. The repeated-parent byte overlap remains unresolved.
+[Single-character rollup and evidence](CHARACTER-ROLLUP.md)
+
 [Issue #432](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
 records the reproduced boundary for maintainer disposition. At multibyte byte
 exposure, the projection retains the semantic character pin in byte provenance,
