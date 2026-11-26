@@ -147,9 +147,17 @@ void run(int workers,field::HostPath path,bool short_peak) {
     unchanged(after,observe());
     check(resources->result().live_bytes==live_bytes,"whole-field commit grew retained metadata");
     if(exposure==warm::Exposure::Parts) {
-      PreparedOccurrenceEdit add{{h.study,{0,{}}},true,*after.prepared_generation};add.clone_from=OccurrenceKey{h.study,{2,{}}};
+      PreparedOccurrenceEdit add{{h.study,{0,{}}},true,*after.prepared_generation};
+      add.clone_from=OccurrenceKey{h.study,{10,{}}};
       check(no_new([&]{return session.edit_prepared(h,input.source->owner(),add);}).publication.status==UpdateStatus::Ok,"fine-exposure admission failed");
       auto three=observe();survivor(after,three,2);survivor(after,three,10);snapshot(three);
+      auto by_pin=add;
+      by_pin.clone_from.reset();
+      by_pin.definition_pin=input.english;
+      by_pin.expected_generation=*three.prepared_generation;
+      check(no_new([&]{return session.edit_prepared(h,input.source->owner(),by_pin);}).publication.status==
+            UpdateStatus::NoChange,"fine exposure rejected the known clone's aggregate definition pin");
+      unchanged(three,observe());
       PreparedLodEdit over{warm::Exposure::Aggregate,*three.prepared_generation};
       const auto refused=no_new([&]{return session.lod_prepared(h,input.source->owner(),over);});
       check(refused.publication.status==UpdateStatus::CapacityExhausted && refused.publication.failure.budget==field::Budget::Particles &&

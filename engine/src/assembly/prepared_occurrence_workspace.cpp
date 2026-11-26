@@ -148,7 +148,12 @@ field::UpdateResult PreparedOccurrenceWorkspace::prepare(const PreparedStudyOwne
     if (request.occurrence.source == owner.occurrences_[i].occurrence) { declared_template=i; break; }
   }
   std::size_t source_template=definitions_.size();
-  if (request.clone_from) {
+  if (request.definition_pin) {
+    if (!request.present || request.clone_from || !request.occurrence.source.path.empty()) return result;
+    const auto preferred = selected != catalogue_.size() ? templates_[selected] : declared_template;
+    source_template = owner.pinned_template(owner.occurrences_,preferred,*request.definition_pin,work);
+    if (source_template == definitions_.size() || owner.occurrences_[source_template].node != 0) return result;
+  } else if (request.clone_from) {
     if (!request.present || !request.occurrence.source.path.empty() ||
         !work.equal(request.clone_from->study,owner.source_->study())) return result;
     for (std::size_t i=0; i<owner.occurrences_.size(); ++i) {

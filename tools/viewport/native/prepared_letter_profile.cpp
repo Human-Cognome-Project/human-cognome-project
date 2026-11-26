@@ -54,6 +54,16 @@ std::array<warm::ToolRef,4> memberships(const warm::Bundle &b, const warm::Tool 
   }
   return refs;
 }
+void enable_occurrence_edits(assembly::PreparedStudySubmission &request) {
+  using field::Budget;
+  auto limits = request.capacity.limits();
+  limits[Budget::Batch] = 32;
+  limits[Budget::Participation] = limits[Budget::Fields] * limits[Budget::Particles];
+  limits[Budget::ScratchBytes] = field::detail::PreparedStorage::required_scratch(
+      limits,false,request.capacity.profile()) + 256*1024*1024;
+  request.capacity = field::PreparedCapacity(limits,request.capacity.profile());
+  request.editable_occurrences = true;
+}
 field::PreparedCapacity capacity(bool retained) {
   using field::Budget;
   field::BudgetDemand l;
@@ -319,12 +329,13 @@ assembly::PreparedStudySubmission editable_english_pair_submission(
   // The live study starts from the English A baseline mass, without the older
   // demonstration's physical-mass override. Exact source mass is already two.
   for (auto &body : out.bindings.bodies) body.mass=2.;
-  auto limits = out.capacity.limits();
-  limits[field::Budget::Batch] = 32;
-  limits[field::Budget::ScratchBytes] = field::detail::PreparedStorage::required_scratch(
-      limits,false,out.capacity.profile()) + 256*1024*1024;
-  out.capacity = field::PreparedCapacity(limits,out.capacity.profile());
-  out.editable_occurrences = true;
+  enable_occurrence_edits(out);
+  return out;
+}
+assembly::PreparedStudySubmission editable_retained_english_pair_submission(
+    std::shared_ptr<const assembly::ActiveAssembly> source, const warm::ToolRef &english, field::HostPath path) {
+  auto out = prepared_retained_english_pair_submission(std::move(source),english,path);
+  enable_occurrence_edits(out);
   return out;
 }
 }

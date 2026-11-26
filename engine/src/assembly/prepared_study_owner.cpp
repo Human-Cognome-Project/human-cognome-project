@@ -130,6 +130,21 @@ PreparedStudyOwner::PreparedStudyOwner(field::Harness &h,
 
 PreparedStudyOwner::~PreparedStudyOwner() = default;
 
+std::size_t PreparedStudyOwner::pinned_template(
+    const ReservedVector<AdmissionOccurrenceCommand> &declared, std::size_t preferred,
+    const warm::ToolRef &pin, PreparationWork &work) {
+  const auto matches = [&](std::size_t index) {
+    work.charge(1);
+    const auto &row = declared[index];
+    return row.occurrence.path.empty() && work.equal(row.definition,pin);
+  };
+  if (preferred < declared.size())
+    return matches(preferred) ? preferred : declared.size();
+  for (std::size_t i=0; i<declared.size(); ++i)
+    if (matches(i)) return i;
+  return declared.size();
+}
+
 void PreparedStudyOwner::reserve_metadata(const warm::Uuid &session,
     const AdmissionBindings &bindings, PreparationWork &work) {
   work.copy_key(session); work.copy_key(source_->study()); work.copy_key(source_->generation());

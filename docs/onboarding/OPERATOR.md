@@ -55,8 +55,13 @@ If the output pipe is full during shutdown, the owner closes the session and
 releases the lease even when the final record cannot be delivered. A malformed
 command produces `invalid_input` and the next command can use the same study.
 
-This mode qualifies startup on a recipe published by the same process.
-Pinned catalogue selection across sessions and mixed-object edits remain in
+Use `list` to read the catalogue’s `definition` and `revision` together.
+Enter `add 27 DEFINITION REVISION` with that exact pair, then `tick 1`,
+`remove 27` and `tick 1`. The definition stays in the catalogue after
+removal. An unlisted pin produces `invalid_input` and leaves the study usable.
+
+The retained qualification recipe contains two English A occurrences.
+Selection across sessions and editing differently composed objects remain in
 the [recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432).
 
 [Viewer controls](../../tools/viewport/README.md) · [Build the engine](FIRST-RUN.md)

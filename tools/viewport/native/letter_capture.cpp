@@ -191,7 +191,7 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
       std::exception_ptr failure;
       try {
         if (!live->commands.stopped()) {
-          auto request = viewport::prepared_retained_english_pair_submission(logical_pin,english,live->path);
+          auto request = viewport::editable_retained_english_pair_submission(logical_pin,english,live->path);
           code = viewport::run_live_study(*live,std::move(request),
               "Retained English pair",{{"kind","retained_cold_to_warm_to_active"},
               {"profile","prepared-retained-english-pair"},

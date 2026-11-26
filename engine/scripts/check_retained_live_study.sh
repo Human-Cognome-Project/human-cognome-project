@@ -114,8 +114,38 @@ generation=$(json_number generation)
 [[ "$study" =~ ^[a-f0-9-]{36}$ ]]
 test "$(state)" = '2|1|1'
 
+claim() {
+  printf '%s\n' "$event" | sed -nE \
+    's|.*(\{"address":[0-9]+,"context":[0-9]+,"id":"'"$study/$1"'","incarnation":[0-9]+,"record":[0-9]+),.*|\1|p'
+}
 expected_exit=0
 if [[ $exit_mode == quit ]]; then
+  step=pin-edits
+  read -r definition definition_revision < <(printf '%s\n' "$event" |
+    sed -nE 's/.*"catalogue":\[\{"definition":"([^"]+)","entry":2,"id":"[^"]+","revision":"([^"]+)"\},.*/\1 \2/p')
+  [[ $definition_revision =~ ^[a-f0-9-]{36}$ ]]
+  first_claim=$(claim 2)
+  second_claim=$(claim 10)
+  test -n "$first_claim"
+  test -n "$second_claim"
+
+  refuse_pin() {
+    send add 27 "$@"
+    receive '"command":"add"'
+    [[ "$event" == *'"status":"invalid_input"'* ]]
+    test "$(json_number generation)" = "$generation"
+    test "$(claim 2)" = "$first_claim"
+    test "$(claim 10)" = "$second_claim"
+    test -z "$(claim 27)"
+  }
+  refuse_pin "$definition" 00000000-0000-0000-0000-000000000000
+  refuse_pin "00000000-0000-0000-0000-000000000001/${definition#*/}" "$definition_revision"
+
+  send add 10 "$definition" "$definition_revision"
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"no_change"'* ]]
+  test "$(json_number generation)" = "$generation"
+
   step=malformed-command
   send add banana
   receive '"command":"add"'
@@ -124,6 +154,17 @@ if [[ $exit_mode == quit ]]; then
   test "$(json_number generation)" = "$generation"
   test "$(state)" = '2|1|1'
   expected_exit=1
+
+  step=add-by-pin
+  send add 27 "$definition" "$definition_revision"
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"ok"'* &&
+     "$event" == *"\"definition\":\"$definition\",\"exact_mass\":\"2\",\"exposure\":\"aggregate\",\"id\":\"$study/27\""* ]]
+  test "$(json_text study)" = "$study"
+  test "$(claim 2)" = "$first_claim"
+  test "$(claim 10)" = "$second_claim"
+  added_claim=$(claim 27)
+  test -n "$added_claim"
 fi
 
 step=tick
@@ -131,6 +172,73 @@ send tick 1
 receive '"command":"tick"'
 [[ "$event" == *'"completed_tick":1'* ]]
 test "$(json_text study)" = "$study"
+if [[ $exit_mode == quit ]]; then
+  test "$(claim 27)" = "$added_claim"
+  step=remove-by-entry
+  send remove 27
+  receive '"command":"remove"'
+  [[ "$event" == *'"status":"ok"'* ]]
+  test "$(claim 2)" = "$first_claim"
+  test "$(claim 10)" = "$second_claim"
+  test -z "$(claim 27)"
+
+  send list
+  receive '"command":"list"'
+  [[ "$event" == *"\"catalogue\":[{\"definition\":\"$definition\",\"entry\":2,\"id\":\"$study/2\",\"revision\":\"$definition_revision\"}"* ]]
+  send tick 1
+  receive '"command":"tick"'
+  [[ "$event" == *'"completed_tick":2'* ]]
+  test "$(json_text study)" = "$study"
+  test "$(state)" = '2|1|1'
+
+  step=explicit-clone-pin
+  send add 28 10
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"ok"'* ]]
+  clone_claim=$(claim 28)
+  test -n "$clone_claim"
+  clone_generation=$(json_number generation)
+
+  send add 28 "$definition" "$definition_revision"
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"no_change"'* ]]
+  test "$(json_number generation)" = "$clone_generation"
+  test "$(claim 28)" = "$clone_claim"
+
+  send add 28 2
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"invalid_input"'* ]]
+  test "$(json_number generation)" = "$clone_generation"
+  test "$(claim 28)" = "$clone_claim"
+
+  send tick 1
+  receive '"command":"tick"'
+  [[ "$event" == *'"completed_tick":3'* ]]
+  test "$(claim 28)" = "$clone_claim"
+  send remove 28
+  receive '"command":"remove"'
+  [[ "$event" == *'"status":"ok"'* ]]
+  test -z "$(claim 28)"
+
+  step=restore-explicit-clone-by-pin
+  send add 28 "$definition" "$definition_revision"
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"ok"'* ]]
+  restored_claim=$(claim 28)
+  test -n "$restored_claim"
+  test "$restored_claim" != "$clone_claim"
+  restore_generation=$(json_number generation)
+
+  send add 28 10
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"no_change"'* ]]
+  test "$(json_number generation)" = "$restore_generation"
+  test "$(claim 28)" = "$restored_claim"
+  test "$(claim 2)" = "$first_claim"
+  test "$(claim 10)" = "$second_claim"
+  test "$(json_text study)" = "$study"
+  test "$(state)" = '2|1|1'
+fi
 
 step=$exit_mode
 case "$exit_mode" in
