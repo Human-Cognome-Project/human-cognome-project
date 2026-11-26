@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cstdlib>
 #include <functional>
@@ -39,6 +40,43 @@ std::string env(const char *name) {
 ObjectKey object(const std::string &text) {
   return {{}, *codec::decode_token_id(text)};
 }
+std::map<ObjectKey, Tool> retained_definitions(const Uuid &author, const Uuid &epoch,
+    const std::vector<ObjectKey> &roots) {
+  ColdReader core(env("HCP_CORE_TEST_CONNINFO")),
+      ling(env("HCP_LING_TEST_CONNINFO"));
+  check(core.read_only() && ling.read_only(),
+        "both retained sources enforced read-only");
+  std::map<ObjectKey, Tool> tools;
+  std::function<ToolRef(ObjectKey)> follow = [&](ObjectKey id) -> ToolRef {
+    if (tools.count(id))
+      return tools.at(id).ref;
+    const auto row = address_text(id.address).substr(0, 2) == "00"
+                         ? core.read(id.address)
+                         : ling.read(id.address);
+    if (!row)
+      throw Error("required retained endpoint absent");
+    Tool t{{id, new_uuid()},
+           epoch,
+           "structural-compatibility-fixture",
+           std::optional<RecipeText>(row->notation),
+           row->mass,
+           {},
+           {},
+           author};
+    tools.emplace(id, t);
+    for (const auto &p : row->parents) {
+      const auto ref = follow({{}, p.address});
+      t.parents.push_back(
+          {ref, p.ordinal, p.stored_mass, *tools.at(ref.object).mass});
+    }
+    for (const auto &g : row->member_of)
+      t.member_of.push_back(follow({{}, g}));
+    tools.at(id) = t;
+    return t.ref;
+  };
+  for (const auto &root : roots) follow(root);
+  return tools;
+}
 Bundle seed(const std::string &conn) {
   Bundle b;
   b.owner = new_uuid();
@@ -61,39 +99,9 @@ Bundle seed(const std::string &conn) {
         "retained-linguistics",
         "9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296",
         {b.creator}}});
-  ColdReader core(env("HCP_CORE_TEST_CONNINFO")),
-      ling(env("HCP_LING_TEST_CONNINFO"));
-  check(core.read_only() && ling.read_only(),
-        "both retained sources enforced read-only");
-  std::map<ObjectKey, Tool> tools;
-  std::function<ToolRef(ObjectKey)> follow = [&](ObjectKey id) -> ToolRef {
-    if (tools.count(id))
-      return tools.at(id).ref;
-    const auto row = address_text(id.address).substr(0, 2) == "00"
-                         ? core.read(id.address)
-                         : ling.read(id.address);
-    if (!row)
-      throw Error("required retained endpoint absent");
-    Tool t{{id, new_uuid()},
-           epoch,
-           "structural-compatibility-fixture",
-           std::optional<RecipeText>(row->notation),
-           row->mass,
-           {},
-           {},
-           b.creator};
-    tools.emplace(id, t);
-    for (const auto &p : row->parents) {
-      const auto ref = follow({{}, p.address});
-      t.parents.push_back(
-          {ref, p.ordinal, p.stored_mass, *tools.at(ref.object).mass});
-    }
-    for (const auto &g : row->member_of)
-      t.member_of.push_back(follow({{}, g}));
-    tools.at(id) = t;
-    return t.ref;
-  };
-  const auto letter = follow(object("02.00.00.00.03"));
+  const auto english = object("02.00.00.00.03");
+  const auto tools = retained_definitions(b.creator, epoch, {english});
+  const auto letter = tools.at(english).ref;
   const auto byte = tools.at(letter.object).parents.at(0).target;
   for (const auto &[unused, t] : tools)
     b.tools.push_back(t);
@@ -110,6 +118,129 @@ Bundle seed(const std::string &conn) {
                   {last, Exposure::Parts, {{last, {0, 0}}}}};
   b.contacts = {{{0, {}}, {last, {0, 0}}}};
   return b;
+}
+void select_from_catalogue(const std::string &conn, detail::Pg &sql, Toolbox &store,
+                           const Bundle &legacy) {
+  const auto english = object("02.00.00.00.03"), accented = object("02.00.00.00.1W");
+  const auto tools = retained_definitions(legacy.creator,legacy.tools.front().epoch,{english,accented});
+  check(tools.at(english).notation == "A" && tools.at(english).mass == 2 &&
+        tools.at(accented).notation == u8"í" && tools.at(accented).mass == 4,
+        "retained catalogue has differently composed A and í definitions");
+  Bundle catalogue;
+  catalogue.ref = {new_uuid(),new_uuid()};
+  catalogue.owner = legacy.owner;
+  catalogue.creator = legacy.creator;
+  catalogue.recipe_version = 2;
+  catalogue.nodes = {{-1,ScaleRole::Root}};
+  catalogue.focal_fields = {{FieldKind::SiblingDefinition,english}};
+  for (const auto &[key,tool] : tools) {
+    catalogue.tools.push_back(tool);
+    if (tool.mass && *tool.mass >= 2) catalogue.geometry.push_back({key,{},{{{},0.125}}});
+  }
+  const auto declare_letter = [&](std::uint64_t entry, const ObjectKey &key) {
+    Selection selection{entry,Exposure::Aggregate,{}};
+    catalogue.structural_occurrences.push_back({{entry,{}},key,0});
+    const auto part = [&](std::uint32_t character, std::uint32_t byte, const ObjectKey &definition) {
+      OccurrenceId id{entry,{character,byte}};
+      selection.parts.push_back(id);
+      catalogue.structural_occurrences.push_back({std::move(id),definition,0});
+    };
+    for (const auto &parent : tools.at(key).parents) {
+      const auto &character = tools.at(parent.target.object);
+      if (character.mass == 2) part(parent.ordinal,0,character.ref.object);
+      else for (const auto &byte : character.parents) part(parent.ordinal,byte.ordinal,byte.target.object);
+    }
+    catalogue.selections.push_back(std::move(selection));
+  };
+  declare_letter(2,english);
+  declare_letter(10,accented);
+  const auto no_cold_reads = [](const ObjectKey &) -> std::optional<ColdRecord> {
+    throw Error("catalogue selection consulted a cold source");
+  };
+  SharedManager manager(store,{object("00"),object("02")},no_cold_reads);
+  const auto catalogue_ticket = manager.publish(std::move(catalogue));
+  const auto catalogue_consumer = new_uuid();
+  const auto retained = manager.acquire(catalogue_ticket,catalogue_consumer).bundle;
+  const auto pin = [&](const ObjectKey &key) {
+    const auto found = std::find_if(retained.tools.begin(),retained.tools.end(),
+                                  [&](const auto &tool) { return tool.ref.object == key; });
+    if (found == retained.tools.end()) throw Error("advertised catalogue root missing");
+    return found->ref;
+  };
+  const auto english_pin = pin(english), accented_pin = pin(accented);
+  const auto state = [&] {
+    auto row = sql.query("SELECT (SELECT count(*) FROM warm_toolbox.tool_revision),"
+                        "(SELECT count(*) FROM warm_toolbox.bundle_revision),"
+                        "(SELECT count(*) FROM warm_toolbox.bundle_lease)");
+    return std::array<std::string,3>{detail::cell(row,0,0),detail::cell(row,0,1),detail::cell(row,0,2)};
+  };
+  const auto pinned_state = state();
+  auto selected = retained;
+  selected.ref = {new_uuid(),new_uuid()};
+  selected.tools.clear();
+  selected.nodes.push_back({0,ScaleRole::PrimaryStep});
+  selected.selections.at(1).exposure = Exposure::Parts;
+  for (auto &occurrence : selected.structural_occurrences)
+    occurrence.node = occurrence.id.path.empty() ? 1 : 0;
+  const std::vector<ToolRef> roots{accented_pin,english_pin};
+  const auto readers = manager.activity().pinned_reads;
+  auto wrong = roots;
+  wrong.front().object.scope = new_uuid();
+  rejects<Unauthorized>([&] { manager.publish_selection(catalogue_ticket,catalogue_consumer,selected,wrong); },
+                        "foreign scope refused before a catalogue read");
+  check(manager.activity().pinned_reads == readers, "foreign selection did not read the catalogue");
+  wrong = roots;
+  wrong.front().revision = new_uuid();
+  rejects<Unauthorized>([&] { manager.publish_selection(catalogue_ticket,catalogue_consumer,selected,wrong); },
+                        "unadvertised revision refused");
+  rejects<Unauthorized>([&] { manager.publish_selection(catalogue_ticket,new_uuid(),selected,roots); },
+                        "selection requires the acquired catalogue's owned lease");
+  auto unadvertised = selected;
+  const auto byte = tools.at(english).parents.front().target.object;
+  unadvertised.structural_occurrences.front().definition = byte;
+  rejects<Unauthorized>([&] {
+    manager.publish_selection(catalogue_ticket,catalogue_consumer,unadvertised,{accented_pin,pin(byte)});
+  }, "an acquired dependency is not an advertised root");
+  check(state() == pinned_state, "refused selections changed no revisions or leases");
+
+  const auto selection_ticket = manager.publish_selection(catalogue_ticket,catalogue_consumer,selected,roots);
+  const auto selection_consumer = new_uuid();
+  const auto opened = manager.acquire(selection_ticket,selection_consumer).bundle;
+  bool exact = opened.tools.size() == retained.tools.size();
+  for (const auto &tool : opened.tools) {
+    const auto old = std::find_if(retained.tools.begin(),retained.tools.end(),
+                                  [&](const auto &item) { return item.ref == tool.ref; });
+    exact &= old != retained.tools.end() && old->author == tool.author && tool_body(*old) == tool_body(tool);
+  }
+  check(exact, "mixed selection reused exact retained definitions and their authors");
+  check(opened.selections.at(0).exposure == Exposure::Aggregate &&
+        opened.selections.at(1).exposure == Exposure::Parts &&
+        opened.selections.at(0).parts == RecipeTable<OccurrenceId>{{2,{0,0}}} &&
+        opened.selections.at(1).parts == RecipeTable<OccurrenceId>{{10,{0,0}},{10,{0,1}}},
+        "opened mixed selection retains A aggregate and ordered í byte paths");
+  manager.release(selection_ticket,selection_consumer);
+
+  auto single = structural_from_v1(legacy,{new_uuid(),new_uuid()},
+                                   {retained.focal_fields.front()});
+  single.tools.clear();
+  Toolbox next_store(conn,{legacy.creator,legacy.owner,WriterRole::Manager});
+  SharedManager next_manager(next_store,{object("00"),object("02")},no_cold_reads);
+  const auto second_ticket =
+      next_manager.publish_selection(catalogue_ticket,catalogue_consumer,single,{english_pin});
+  const auto second_consumer = new_uuid();
+  const auto second = next_manager.acquire(second_ticket,second_consumer).bundle;
+  check(std::none_of(second.tools.begin(),second.tools.end(),
+                     [&](const auto &tool) { return tool.ref.object == accented; }),
+        "a fresh owner connection reused the catalogue for only the chosen root");
+  next_manager.release(second_ticket,second_consumer);
+  const auto after = state();
+  check(after[0] == pinned_state[0] && std::stoull(after[1]) == std::stoull(pinned_state[1])+2 &&
+        after[2] == pinned_state[2] && manager.activity().source_calls == 0 &&
+        next_manager.activity().source_calls == 0,
+        "both selections reused warm definitions and returned to the catalogue lease");
+  manager.release(catalogue_ticket,catalogue_consumer);
+  check(std::stoull(state()[2])+1 == std::stoull(pinned_state[2]),
+        "catalogue and both derived selections released their leases");
 }
 } // namespace
 
@@ -320,6 +451,7 @@ int main(int argc, char **argv) {
                   .bundle.structural_occurrences.size() == 4,
           "superseded v2 pin remains readable");
     fresh.release(published, consumer);
+    select_from_catalogue(conn,sql,store,legacy);
     // Retain the original v1 pin for independent historical-reader inspection.
     std::cout << checks << " structural PostgreSQL checks passed\n";
     return 0;
