@@ -1,4 +1,17 @@
-# Core continuation after local CUDA corrections
+# Core continuation plan
+
+## Current assignment for the coding agent
+
+**Continue on #460 at `d63d86aa`, branch `codex/retained-editable-mixed-study`.** The retained CLI opens A, inserts í by exact pin, ticks, expands and rolls up the whole field, removes í and ticks again on the original handle. Independent PostgreSQL runs on one-worker bulk and two-worker direct CPU preserved the surviving claims, exact mass 2 → 6 → 6 → 6 → 2, and 6 → 12 → 24 → 12 → 6 native response rows. The removed definition stayed selectable. The operator starts from a fresh dedicated warm database. [Replays and correction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/460#issuecomment-7196466960) · [Coding handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7196474048)
+
+1. **Correct bare add in the retained CLI.** After creating a new A occurrence by pin, a bare retry currently supplies template 2 and refuses the live clone. The same fallback prevents restoration immediately after removal and can implicitly introduce í for a new occurrence. Let the owner use recorded identity for known destinations. Define the selector-free behavior for new retained destinations from the offered catalogue, preserving explicit mismatch refusal and the existing English-pair fixture shorthand. [Command sequence](https://github.com/Human-Cognome-Project/human-cognome-project/pull/460#issuecomment-7196466960)
+2. **Support shared parents and distinct language memberships.** Retained English A and B (bytes 41 and 42) share nibble 4. English A and French A share byte 41 and have different memberships. The current profile refuses both combinations. Derive each live occurrence’s ordered contributions from its pinned composition and memberships, keep the shared field identity, and count each occurrence’s mass once. Exercise insertion, whole-field exchange, removal and the next tick through the same operator entry point. [Retained inputs and addresses](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7196474048)
+
+**Intended operator workload.** Patrick intends to load at least one live occurrence of every letter object for every language represented in the retained catalogue, together in one running field. The small studies make individual contributions easy to verify. Use the same object admission and tick path for the catalogue, with the selected definitions and occurrences determining the workload. When that study runs, record the catalogue revision, languages covered and live occurrence count so its scale can be checked against the input.
+
+A letter is an ordinary composed object. #438 integrated data-derived endpoint and branch coverage with selective polling, including the changed `abá` witness and the refusal case. #446 integrated the ordered binary64 publication check. Keep the fixed Unicode operator replay as a CPU regression. The same-input GPU trial is separate, and Patrick will examine patterns over ticks before selecting PoC criteria. [Admission evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#data-driven-admission-correction) · [Numerical review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/446#issuecomment-7176160407) · [GPU trial](https://github.com/Human-Cognome-Project/human-cognome-project/issues/70#issuecomment-7172012834)
+
+## Dated handoffs
 
 ## November 25, 2026 — first live Unicode operator observation
 
@@ -97,6 +110,21 @@ The proposed scoped inherited response uses the singleton byte position and the
 owning byte comparison. It is flagged for review alongside the source and CI.
 The scoped compiler-shape audit and live Unicode exposure remain separate.
 [Implementation and evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md)
+
+### Data-driven admission correction
+
+The #438 follow-up takes the implementation assignment from #443. It derives
+endpoint and branch coverage from pinned parent contributions and occurrence
+paths. The same executable admits the changed `abá` recipe, publishes mass
+10 through five byte paths and follows a native tick. An inconsistent branch
+declaration refuses without publishing on the Harness used for the valid retry.
+Integration and the downstream carry remain subject to maintainer review.
+[Correction and local evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#data-driven-admission-correction)
+
+The follow-up routes accepted movement to scoped byte comparisons during
+ordinary selective ticks. In the multi-tick `abá` witness, both shared
+nibble packets stay fixed while the byte centre moves and the endpoint
+republishes. [Selective polling evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#selective-polling-correction)
 
 ## November 25, 2026 — scoped nibble experiment
 
