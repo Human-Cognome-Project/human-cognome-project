@@ -32,11 +32,11 @@ AdmissionOccurrenceCommand copy(const AdmissionOccurrenceCommand &s,
 }
 }
 PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAssembly &alternative,
-    ReservedUnique<StructuralAdmissionPlan> plan,bool fixed_character,PreparationWork &w)
+    ReservedUnique<StructuralAdmissionPlan> plan,bool editable,bool fixed_character,PreparationWork &w)
     :sides_{{Side(o.domain_.get()),Side(o.domain_.get())}},
      catalogue_(ReservationAllocator<AdmissionOccurrenceCommand>(o.domain_.get())),
      next_catalogue_(ReservationAllocator<AdmissionOccurrenceCommand>(o.domain_.get())),
-     incoming_source_(fixed_character ? AdmissionOccurrenceCommand{} :
+     incoming_source_(!editable ? AdmissionOccurrenceCommand{} :
                       copy(o.plan_->occurrences().front(),o.domain_,2,w)),
      templates_(ReservationAllocator<std::size_t>(o.domain_.get())),live_(ReservationAllocator<std::size_t>(o.domain_.get())),
      next_(ReservationAllocator<std::size_t>(o.domain_.get())),order_(ReservationAllocator<std::size_t>(o.domain_.get())),
@@ -47,33 +47,47 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
      commands_(ReservationAllocator<field::UpdateCommand>(o.domain_.get())),
      intrinsics_(ReservationAllocator<field::PlacementIntrinsic>(o.domain_.get())),
      groups_(ReservationAllocator<field::PlacementExchangeGroup>(o.domain_.get())),
+     fixed_groups_(ReservationAllocator<field::PlacementExchangeGroup>(o.domain_.get())),
      nodes_(ReservationAllocator<field::LiveRefreshNode>(o.domain_.get())),children_(ReservationAllocator<int>(o.domain_.get())),
      contributions_(ReservationAllocator<field::LiveRefreshContribution>(o.domain_.get())),
-     fixed_character_(fixed_character) {
+     fixed_presence_(!editable) {
   need(o.source_->projection_.recipe_.get()==alternative.projection_.recipe_.get() &&
        o.source_->study()==alternative.study() && o.source_->owner()==alternative.owner() &&
        !o.source_->local() && !alternative.local());
   const auto &a=*o.plan_; const auto &b=*plan;
   need(!a.occurrences().empty() &&
        a.focus().size()==1 && b.focus().size()==1);
-  if (fixed_character_) {
-    need(a.occurrences().size()==1 && b.occurrences().size()==2 &&
-         o.source_->shared_recipe().contacts.empty());
-    const auto &old=a.occurrences().front();
-    const auto declaration=LetterExchangeContract::collect(o.source_->projection_,
-        {o.source_->study(),old.occurrence},warm::Exposure::Parts,o.domain_,&w,
-        o.source_->projection_.recipe_);
-    need(old.occurrence.path.empty() && old.node==1 &&
-         declaration.outgoing().size()==1 && declaration.incoming().size()==2 &&
-         w.equal(declaration.outgoing()[0].definition,old.definition) &&
-         alternative.projection_.exposure(old.occurrence.entry)==warm::Exposure::Parts);
-    for (std::size_t i=0;i<b.occurrences().size();++i) {
+  if (fixed_presence_) {
+    need(o.source_->shared_recipe().contacts.empty());
+    reserve(fixed_groups_,a.occurrences().size(),w);
+    std::size_t fine = 0;
+    for (std::size_t coarse=0; coarse<a.occurrences().size(); ++coarse) {
       w.charge(1);
-      const auto &byte=b.occurrences()[i];
-      need(byte.node==0 && w.equal(declaration.incoming()[i].occurrence.source,byte.occurrence) &&
-           w.equal(declaration.incoming()[i].definition,byte.definition) &&
-           a.commands()[old.command].address!=b.commands()[byte.command].address);
+      const auto &root = a.occurrences()[coarse];
+      need(root.occurrence.path.empty() && root.node==1 &&
+           o.source_->projection_.exposure(root.occurrence.entry)==warm::Exposure::Aggregate &&
+           alternative.projection_.exposure(root.occurrence.entry)==warm::Exposure::Parts);
+      const auto declaration = LetterExchangeContract::collect(o.source_->projection_,
+          {o.source_->study(),root.occurrence},warm::Exposure::Parts,o.domain_,&w,
+          o.source_->projection_.recipe_);
+      need(declaration.outgoing().size()==1 &&
+           w.equal(declaration.outgoing().front().occurrence.source,root.occurrence) &&
+           w.equal(declaration.outgoing().front().definition,root.definition) &&
+           !declaration.incoming().empty() && declaration.incoming().size()<=b.occurrences().size()-fine);
+      const auto begin = fine;
+      for (const auto &expected : declaration.incoming()) {
+        w.charge(1);
+        const auto &part = b.occurrences()[fine++];
+        need(part.node==0 && w.equal(expected.occurrence.source,part.occurrence) &&
+             w.equal(expected.definition,part.definition));
+        for (const auto &outgoing : a.occurrences()) {
+          w.charge(1);
+          need(a.commands()[outgoing.command].address!=b.commands()[part.command].address);
+        }
+      }
+      fixed_groups_.push_back({coarse,1,begin,fine-begin});
     }
+    need(fine==b.occurrences().size());
     for (const auto *side : {&a,&b})
       for (const auto &body : side->intrinsics()) {
         w.charge(1);
@@ -89,9 +103,9 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
   } else need(a.occurrences().size()==b.occurrences().size());
   const auto &limits=o.h_.prepared_storage().capacity.limits();
   const auto slots=limits[field::Budget::Particles],fields=limits[field::Budget::Fields];
-  need(slots && (fixed_character_ || slots<=limits[field::Budget::Potential]/2));
+  need(slots && (fixed_presence_ || slots<=limits[field::Budget::Potential]/2));
   need(o.source_->projection_.exposure(a.occurrences()[0].occurrence.entry)==warm::Exposure::Aggregate);
-  for(std::size_t i=0;!fixed_character_ && i<a.occurrences().size();++i) {
+  for(std::size_t i=0;!fixed_presence_ && i<a.occurrences().size();++i) {
     w.charge(1); const auto &old=a.occurrences()[i]; const auto &fresh=b.occurrences()[i];
     need(old.occurrence.path.empty() && old.node==1 && fresh.node==0 &&
          fresh.occurrence.entry==old.occurrence.entry && fresh.occurrence.path.size()==2 &&
@@ -111,7 +125,7 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
     const auto it=std::find_if(p.fields().begin(),p.fields().end(),[&](const auto &f){w.charge(1);return f.command==command;});
     need(it!=p.fields().end());return *it;
   };
-  if (fixed_character_) {
+  if (fixed_character) {
     const auto &focus_a=focused(a), &focus_b=focused(b);
     const auto hierarchy=b.hierarchy();
     need(focus_a.field.kind==GroupKind::ParentValue && same(focus_a.field,focus_b.field) &&
@@ -133,7 +147,7 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
       sides_[side].edges.push_back({body,field,c});
     }
   }
-  if(!fixed_character_) {
+  if(!fixed_presence_) {
     reserve(catalogue_,slots,w);reserve(next_catalogue_,slots,w);reserve(templates_,slots,w);reserve(known_,slots,w);
     reserve(addresses_,2*slots,w);reserve(live_,slots,w);reserve(next_,slots,w);reserve(order_,slots,w);
   }
@@ -142,7 +156,7 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
   reserve(outgoing_,slots,w);reserve(intrinsics_,slots,w);reserve(groups_,slots,w);
   reserve(commands_,limits[field::Budget::Batch],w);reserve(nodes_,limits[field::Budget::CascadeNodes],w);
   reserve(children_,limits[field::Budget::CascadeLinks],w);reserve(contributions_,limits[field::Budget::CascadeReferences],w);
-  for(std::size_t i=0;!fixed_character_ && i<slots;++i) {
+  for(std::size_t i=0;!fixed_presence_ && i<slots;++i) {
     w.charge(1);const auto index=i<a.occurrences().size()?i:0;
     catalogue_.push_back(copy(a.occurrences()[index],o.domain_,path_capacity_,w));
     next_catalogue_.push_back(copy(a.occurrences()[index],o.domain_,path_capacity_,w));
@@ -165,7 +179,7 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
 field::UpdateResult PreparedLodWorkspace::presence(const PreparedStudyOwner &o,const PreparedOccurrenceEdit &r,PreparationWork &w) {
   field::UpdateResult out;out.generation=o.generation_;
   if(r.expected_generation!=o.generation_) {out.status=field::UpdateStatus::Stale;return out;}
-  if(fixed_character_){out.status=field::UpdateStatus::Unsupported;return out;}
+  if(fixed_presence_){out.status=field::UpdateStatus::Unsupported;return out;}
   if(!w.equal(r.occurrence.study,o.source_->study()) || !r.occurrence.source.path.empty())return out;
   const auto &declared=sides_[0].plan->occurrences(); auto immutable=declared.size();
   for(std::size_t i=0;i<declared.size();++i){w.charge(1);if(declared[i].occurrence.entry==r.occurrence.source.entry)immutable=i;}
@@ -229,18 +243,23 @@ field::UpdateResult PreparedLodWorkspace::build(const PreparedStudyOwner &o,Prep
   const auto incoming=[&](std::size_t slot,std::size_t which) {
     w.charge(1);const auto command=p.occurrences()[which].command;
     auto c=p.commands()[command];
-    if(!fixed_character_)c.address=addresses_[2*slot+target_];
+    if(!fixed_presence_)c.address=addresses_[2*slot+target_];
     const auto index=commands_.size();
     if(!append(c))return false;
     const auto it=std::find_if(p.intrinsics().begin(),p.intrinsics().end(),[&](const auto &v){w.charge(1);return v.command==std::uint64_t(command);});need(it!=p.intrinsics().end());
     auto intrinsic=*it;intrinsic.command=index;intrinsic.order=intrinsics_.size();intrinsics_.push_back(intrinsic);
-    if(!fixed_character_)next_.push_back(slot);
+    if(!fixed_presence_)next_.push_back(slot);
     next_bodies_.push_back({});return true;
   };
-  if(fixed_character_) {
+  if(fixed_presence_) {
     for(const auto &body:o.bodies_){w.charge(1);outgoing_.push_back(body);}
     for(std::size_t i=0;i<p.occurrences().size();++i) if(!incoming(i,i))return out;
-    groups_.push_back({0,outgoing_.size(),0,intrinsics_.size()});
+    for (const auto &group : fixed_groups_) {
+      w.charge(1);
+      if (target_==1) groups_.push_back(group);
+      else groups_.push_back({group.incoming_begin,group.incoming_count,
+                              group.outgoing_begin,group.outgoing_count});
+    }
   } else if(changing_) {
     order_.clear();outgoing_.clear();
     for(const auto slot:live_){w.charge(1);order_.push_back(slot);}
@@ -279,7 +298,7 @@ field::UpdateResult PreparedLodWorkspace::build(const PreparedStudyOwner &o,Prep
   }
   std::size_t position=s.live.edges-removed;
   for(std::size_t i=0;i<intrinsics_.size();++i) {
-    const auto which=fixed_character_ ? i : changing_ ? templates_[order_[i]] : source_template_;
+    const auto which=fixed_presence_ ? i : changing_ ? templates_[order_[i]] : source_template_;
     for(const auto &edge:sides_[target_].edges) {
       w.charge(1);if(edge.occurrence!=which)continue;
       auto c=edge.command;c.first=UpdateRef::pending(int(intrinsics_[i].command));
@@ -327,7 +346,7 @@ void PreparedLodWorkspace::publish(PreparedStudyOwner &o) {
     need(claim.context==s.fields.context() && claim.incarnation && claim.record>=0 && field::detail::same_handle(claim,s.field_headers.at(claim.record)) &&
          claim.address==p.commands()[p.fields()[i].command].address);next_fields_[i]=claim;
   }
-  if(changing_ && !fixed_character_)catalogue_.swap(next_catalogue_);
+  if(changing_ && !fixed_presence_)catalogue_.swap(next_catalogue_);
   else if(new_identity_) {
     static_assert(std::is_nothrow_move_constructible<AdmissionOccurrenceCommand>::value && std::is_nothrow_move_assignable<AdmissionOccurrenceCommand>::value);
     std::swap(catalogue_[selected_],incoming_source_);templates_[selected_]=source_template_;known_[selected_]=1;
