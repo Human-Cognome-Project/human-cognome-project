@@ -388,8 +388,8 @@ void refresh_dirty_and_counts(engine::Runtime &runtime, HostPath path) {
                                                   f.nodes[0].field.record] &
               2,
           "dirty pending native bit was consumed by refresh");
-  const auto expected_parent = fold({selected(before, 0), selected(before, 1)},
-                                    f.nodes[2].retained_fraction_bits);
+  const auto expected_parent = publication_reference(
+      {selected(before, 0), selected(before, 1)}, f.nodes[2].retained_fraction_bits);
   near(selected(after, 2)[0], expected_parent[0],
        "root used an unpublished body input");
   LiveHierarchyAccess::poll(f.h, 0, 0);
