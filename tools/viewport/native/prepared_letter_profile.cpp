@@ -153,8 +153,13 @@ std::vector<assembly::detail::AdmissionBody> declared_aggregate_bodies(
     if (!definition.mass || *definition.mass == 0 || bodies.size() >= INT_MAX)
       throw PreparedLetterProfileError("recipe study: invalid live definition");
     bodies.push_back({{source.study(),occurrence.id},definition.ref,occurrence.node,3,
-        int(bodies.size()),double(*definition.mass),{definition_index+1,1,true}});
+        -1,double(*definition.mass),{definition_index+1,1,true}});
   }
+  std::sort(bodies.begin(),bodies.end(),[](const auto &a, const auto &b) {
+    return a.occurrence.source < b.occurrence.source;
+  });
+  for (std::size_t i=0; i<bodies.size(); ++i)
+    bodies[i].address = int(i);
   return bodies;
 }
 warm::Bundle prepared_english_pair(warm::Bundle b, const warm::ToolRef &english) {

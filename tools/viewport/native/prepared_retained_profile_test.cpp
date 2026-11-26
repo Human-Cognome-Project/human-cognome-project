@@ -2,6 +2,8 @@
 #include "retained_membership_fixture.h"
 #include "snapshot.h"
 #include "field/cascade_source.h"
+#include <algorithm>
+#include <array>
 #include <iostream>
 #include <map>
 
@@ -45,7 +47,29 @@ void run(int workers, field::HostPath path) {
   auto parts = std::make_shared<const ActiveAssembly>(source->expose_all(warm::Exposure::Parts));
   rejects([&] { viewport::prepared_retained_english_pair_submission(parts,english,path); });
 
+  constexpr std::array<std::pair<std::uint64_t,int>,2> expected_catalogue{{{2,40},{10,41}}};
+  const auto check_catalogue = [&](const PreparedStudySubmission &submission) {
+    const auto &bodies = submission.bindings.bodies;
+    check(bodies.size() == expected_catalogue.size(),"preset catalogue size changed");
+    for (std::size_t i=0; i<expected_catalogue.size(); ++i) {
+      const auto [entry,address] = expected_catalogue[i];
+      const auto &body = bodies[i];
+      check(body.occurrence.study == submission.source->study() &&
+            body.occurrence.source == warm::OccurrenceId{entry,{}} && body.address == address,
+            "preset changed catalogue order or occurrence address");
+      check(body.definition == english && body.mass == 1.5 && body.geometry.complete,
+            "preset intrinsics changed");
+    }
+  };
   auto request = viewport::prepared_retained_english_pair_submission(source,english,path);
+  check_catalogue(request);
+  {
+    auto permuted = recipe;
+    std::reverse(permuted.structural_occurrences.begin(),permuted.structural_occurrences.end());
+    auto alternate = std::make_shared<const ActiveAssembly>(
+        ActiveAssembly::assemble(std::move(permuted),owner,false));
+    check_catalogue(viewport::prepared_retained_english_pair_submission(alternate,english,path));
+  }
   const auto &b = request.bindings, &expected = input.bindings;
   check(b.fields.size() == 6 && b.comparisons.size() == 6 && b.bodies.size() == 2 &&
         b.focus.size() == 1 && same(b.focus[0],expected.focus[0]) &&
@@ -60,10 +84,8 @@ void run(int workers, field::HostPath path) {
   check(request.capacity.limits().values == retained_membership_fixture::capacity().limits().values,
         "preset differs from reviewed finite capacity");
   std::map<std::string,int> addresses;
-  for (const auto &body : b.bodies) {
-    check(body.definition == english && body.mass == 1.5 && body.geometry.complete,"preset intrinsics changed");
-    addresses.emplace(occurrence_text(body.occurrence),body.address);
-  }
+  for (const auto &[entry,address] : expected_catalogue)
+    addresses.emplace(occurrence_text(source->study(),{entry,{}}),address);
   engine::InstanceSettings settings; settings.read_environment = false; settings.cpu_threads = workers;
   ActiveSession session(settings);
   const auto result = session.submit_prepared(std::move(request),owner);

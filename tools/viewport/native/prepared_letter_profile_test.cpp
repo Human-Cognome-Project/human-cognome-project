@@ -114,9 +114,12 @@ void run_aggregate_recipes(int workers, field::HostPath path) {
     binding.source = {owner,source->study(),source->generation(),pin};
     binding.layout = {{{nullptr,-1,ScaleRole::Root},1.}};
     binding.bodies = viewport::declared_aggregate_bodies(*source);
-    check(binding.bodies.size() == 2 && binding.bodies[0].definition == endpoint &&
-          binding.bodies[1].definition == english,
-          "recipe selection changed its definition pins");
+    check(binding.bodies.size() == 2 &&
+          binding.bodies[0].occurrence.source == warm::OccurrenceId{9,{}} &&
+          binding.bodies[0].definition == english && binding.bodies[0].address == 0 &&
+          binding.bodies[1].occurrence.source == warm::OccurrenceId{37,{}} &&
+          binding.bodies[1].definition == endpoint && binding.bodies[1].address == 1,
+          "recipe selection changed its occurrence order, addresses or definition pins");
 
     // This study declares a parent-value leaf for each distinct source value,
     // branches by definition, and a common membership as the comparison root.
