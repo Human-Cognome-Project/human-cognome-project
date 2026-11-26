@@ -6,6 +6,30 @@
 
 namespace viewport {
 namespace {
+const assembly::OccurrenceKey &catalogue_pin(
+    const std::vector<assembly::detail::AdmissionBody> &catalogue, std::uint64_t entry,
+    const std::string &definition, const std::string &revision_text) {
+  warm::Uuid revision;
+  try {
+    revision = warm::Uuid(revision_text);
+  } catch (const warm::Error &) {
+    throw UsageError("invalid definition revision");
+  }
+  const assembly::OccurrenceKey *first = nullptr;
+  for (const auto &body : catalogue) {
+    if (!body.occurrence.source.path.empty()) continue;
+    const bool matches = body.definition.revision == revision &&
+        warm::key(body.definition.object) == definition;
+    // A declared entry already owns its exact template.
+    if (body.occurrence.source.entry == entry) {
+      if (matches) return body.occurrence;
+      throw UsageError("definition pin does not match the declared entry");
+    }
+    if (matches && !first) first = &body.occurrence;
+  }
+  if (!first) throw UsageError("definition pin is not in the declared source catalogue");
+  return *first;
+}
 const char *status(field::UpdateStatus value) {
   switch (value) {
     case field::UpdateStatus::Ok: return "ok";
@@ -111,7 +135,8 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
     try {
       if (command == "quit" && argument.empty()) break;
       if (!extra.empty() && command != "add") throw UsageError("too many command arguments");
-      std::string trailing;
+      std::string revision, trailing;
+      if (command == "add") words>>revision;
       if (words>>trailing) throw UsageError("too many command arguments");
       if ((command == "observe" || command == "list") && argument.empty()) {
         emit({{"command",command},{"status","ok"},{"catalogue",available}});
@@ -143,7 +168,9 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
       } else if ((command == "add" || command == "remove") && !argument.empty()) {
         const auto entry=viewport::parse_count("entry",argument,0,UINT64_MAX);
         std::optional<assembly::OccurrenceKey> clone_from;
-        if (command == "add") {
+        if (!revision.empty()) {
+          clone_from=catalogue_pin(catalogue,entry,extra,revision);
+        } else if (command == "add") {
           bool declared_entry=false;
           for (const auto &item : catalogue) declared_entry |= item.occurrence.source.entry == entry;
           const auto template_entry=extra.empty() ? (declared_entry ? entry : 2)
@@ -170,7 +197,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
           {"native_claims",std::move(claims)},
           {"preparation_status",int(result.preparation.status)},
           {"preparation_work",result.preparation.charged}});
-      } else throw UsageError("expected observe, list, add ENTRY, remove ENTRY, lod aggregate|parts, tick [N] or quit");
+      } else throw UsageError("expected observe, list, add ENTRY [TEMPLATE_ENTRY], add ENTRY DEFINITION REVISION, remove ENTRY, lod aggregate|parts, tick [N] or quit");
     } catch (const UsageError &error) {
       rejected=true; emit({{"command",command},{"status","invalid_input"},{"message",error.what()}});
     }

@@ -32,4 +32,7 @@ warm::Bundle prepared_retained_english_pair(warm::Bundle definitions, const warm
 assembly::PreparedStudySubmission prepared_retained_english_pair_submission(
     std::shared_ptr<const assembly::ActiveAssembly> source, const warm::ToolRef &english,
     field::HostPath path = field::HostPath::BulkCopy);
+assembly::PreparedStudySubmission editable_retained_english_pair_submission(
+    std::shared_ptr<const assembly::ActiveAssembly> source, const warm::ToolRef &english,
+    field::HostPath path = field::HostPath::BulkCopy);
 }
