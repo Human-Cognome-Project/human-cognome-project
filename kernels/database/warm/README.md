@@ -32,6 +32,13 @@ remain responsible for supplying explicitly public inputs: the gate checks
 authority before lookup, not whether a caller secretly derived a shared-key
 placement from private information. See the [design](../../../docs/pre-d-hot-workbench-design.md).
 
+`SharedManager::publish_selection` takes the publishing owner's catalogue
+ticket and an owned lease. The request supplies public v2 structure and
+geometry plus the exact pin of each selected root. The manager checks these
+pins against the advertised roots and publishes a new selection using the
+retained definition closure. Reusing the catalogue preserves definition
+revisions and authors across selections.
+
 The library has no engine, Taichi or Python dependency. `values.h` defines scoped
 object/tool/bundle references, exact ordered construction and membership records,
 intrinsic geometry and versioned occurrences/selections/contacts. The

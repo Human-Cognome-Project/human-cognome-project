@@ -33,6 +33,12 @@ class SharedManager {
   std::optional<ColdRecord> read(const ObjectKey &object);
   SharedTicket publish(Bundle explicitly_public_recipe,
                        std::optional<Uuid> expected_head = {});
+  // Publish new v2 structure using only exact root pins advertised by the
+  // acquired catalogue. The request supplies structure and geometry; the
+  // retained store supplies every definition and its dependency closure.
+  SharedTicket publish_selection(const SharedTicket &catalogue,
+      const Uuid &catalogue_consumer, Bundle explicitly_public_selection,
+      const std::vector<ToolRef> &roots);
   Acquired acquire(const SharedTicket &ticket, const Uuid &consumer);
   Acquired pinned(const SharedTicket &ticket, const Uuid &consumer);
   void release(const SharedTicket &ticket, const Uuid &consumer);

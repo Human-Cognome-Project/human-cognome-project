@@ -1,5 +1,8 @@
 #include "shared_manager.h"
 
+#include <map>
+#include <set>
+
 namespace warm {
 SharedManager::SharedManager(Toolbox &store, std::vector<ObjectKey> prefixes,
                              Source source)
@@ -46,6 +49,42 @@ SharedTicket SharedManager::publish(Bundle b, std::optional<Uuid> expected) {
   ++activity_.publications;
   return SharedTicket(store_.publish(store_.prepare(std::move(b)), expected));
 }
+SharedTicket SharedManager::publish_selection(const SharedTicket &catalogue,
+    const Uuid &catalogue_consumer, Bundle recipe, const std::vector<ToolRef> &roots) {
+  gate(recipe);
+  for (const auto &pin : roots) gate(pin.object);
+  if (recipe.recipe_version != 2 || !recipe.tools.empty() || roots.empty() ||
+      recipe.ref.selection == catalogue.ref().selection)
+    throw Error("invalid public catalogue selection");
+
+  std::set<ObjectKey> selected;
+  for (const auto &row : recipe.structural_occurrences)
+    if (row.id.path.empty()) selected.insert(row.definition);
+  if (selected.size() != roots.size()) throw Error("selection requires exact root pins");
+  for (const auto &pin : roots)
+    if (pin.revision.nil() || selected.erase(pin.object) != 1)
+      throw Error("selection requires exact root pins");
+
+  const auto source = pinned(catalogue, catalogue_consumer);
+  if (source.bundle.recipe_version != 2) throw Error("structural catalogue required");
+  gate(source.bundle);
+  std::map<ObjectKey,const ToolRef *> advertised;
+  for (const auto &row : source.bundle.structural_occurrences)
+    if (row.id.path.empty()) advertised.emplace(row.definition,nullptr);
+  for (const auto &tool : source.bundle.tools) {
+    const auto root = advertised.find(tool.ref.object);
+    if (root != advertised.end()) root->second = &tool.ref;
+  }
+  for (const auto &pin : roots) {
+    const auto root = advertised.find(pin.object);
+    if (root == advertised.end() || !root->second || !(*root->second == pin))
+      throw Unauthorized("definition pin outside acquired catalogue");
+  }
+
+  ++activity_.publications;
+  return SharedTicket(store_.publish(store_.prepare(std::move(recipe),roots), {}));
+}
+
 Acquired SharedManager::acquire(const SharedTicket &t, const Uuid &consumer) {
   ++activity_.acquisitions;
   return store_.acquire(t.ref_.selection, consumer, t.ref_.revision);
