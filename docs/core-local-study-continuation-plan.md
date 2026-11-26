@@ -13,6 +13,21 @@ A letter is an ordinary composed object. #438 integrated data-derived endpoint a
 
 ## Dated handoffs
 
+## November 25, 2026 — first live Unicode operator observation
+
+Main is `9fb4e7a5`. The maintainer provisionally accepted #441 at
+`0522268b` as the observation point for the fixed disjoint cohort.
+#438 through #441 remain open in parent order. The viewport workflow passed
+on #441, and its hosted native workflow has work in progress.
+Repeated and overlapping live exchange remains deferred.
+[#441 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/441#issuecomment-7171671405) · [#432 handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7171674217)
+
+The local operator replay compresses and re-expands at tick 2. It observes
+the recreated byte claims, the same character field, and focal x moving
+from −0.5 to −1 without advancing the tick. The completed records follow
+the two eligible inherited responses and the diagnostic candidate when the
+bytes are exposed. [Commands, observation and evidence](../engine/docs/LIVE-UNICODE-EXCHANGE.md#observe-a-round-trip-without-advancing-the-tick)
+
 ## November 25, 2026 — live Unicode operator preset
 
 Main remains at `9fb4e7a5`. The maintainer provisionally accepted the

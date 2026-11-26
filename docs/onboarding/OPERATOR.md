@@ -27,4 +27,6 @@ Enter `observe`, `lod parts`, `tick 3`, `observe`, `lod aggregate`, `tick 2`, `o
 
 Pass `--commands tools/viewport/examples/live-unicode.commands` to replay the [example](../../tools/viewport/examples/live-unicode.commands).
 
+To see what an exchange can change between ticks, compress and re-expand immediately after `tick 2`. Compare the completed tick, body positions and focal field across the three records. [Worked round trip and replay](../../engine/docs/LIVE-UNICODE-EXCHANGE.md#observe-a-round-trip-without-advancing-the-tick)
+
 [Viewer controls](../../tools/viewport/README.md) · [Build the engine](FIRST-RUN.md)

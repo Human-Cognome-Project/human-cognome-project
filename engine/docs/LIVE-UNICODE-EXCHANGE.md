@@ -134,3 +134,71 @@ after fresh extraction.
 The full regression suite, no-unroll compiler matrix, PostgreSQL,
 CUDA and browser runs fall outside this local scope. Hosted CI remains
 authoritative.
+
+## Observe a round trip without advancing the tick
+
+At #441 head `0522268b36de22e7d1d564391eb0037bbcb9ca40`, expand the
+fixed `í` study, advance two ticks, then compress and immediately expand
+again. Read the completed tick and native generation on each JSON line.
+The second pair of LoD commands stays at tick 2 and publishes two new
+generations. [Maintainer observation handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7171674217)
+
+```sh
+. engine/build/engine-env.sh
+engine/build/viewport/viewport_live_study --threads 2 --direct --unicode-i \
+  --response-work-limit 1000000 > /tmp/unicode-i-roundtrip.jsonl <<'EOF'
+lod parts
+tick 2
+lod aggregate
+lod parts
+tick 4
+lod aggregate
+tick 1
+quit
+EOF
+```
+
+| Completed command | Tick / native generation | Body x in occurrence order | Focal x | Response rows / eligible |
+| --- | --- | --- | ---: | ---: |
+| Create aggregate | 0 / 1 | 0 | 0 | 2 / 0 |
+| Expand | 0 / 2 | 0, −1 | −0.5 | 10 / 2 |
+| Tick 2 | 2 / 2 | −1.603175, 0.603175 | −0.5 | 10 / 2 |
+| Compress | 2 / 3 | −0.5 | −0.5 | 2 / 0 |
+| Expand | 2 / 4 | −0.5, −1.5 | −1 | 10 / 2 |
+| Tick 4 | 6 / 4 | −2.291875, 0.291875 | −1 | 10 / 2 |
+| Compress | 6 / 5 | −1 | −1 | 2 / 0 |
+| Tick 1 | 7 / 5 | −1 | −1 | 2 / 0 |
+
+Coordinates are in the capture's unchanged operative frame. At tick 2 the
+two byte velocities are approximately −0.444219 and +0.444219 along x before
+compression. The aggregate receives the group's mass-weighted velocity, zero
+in this pair.
+Re-expansion restores `C3` and `AD` at the same ordered occurrence paths with
+fresh native claims, new starting positions and zero velocities. The two
+exchanges preserve total mass 4 and the complete character-field claim.
+The −0.5 change in focal x on re-expansion occurs at the same completed tick.
+Native grouped placement claims fresh starting positions around the outgoing
+group centre and checks balance. [Transaction and placement contract](WHOLE-FIELD-LOD.md#one-native-transaction)
+
+At byte exposure the two eligible rows are inherited responses from byte
+comparisons 104 and 105 to character comparison 106, each with exact coverage
+2/2 and source mass 4. Adding each row's delta to its recipient position
+recovers the current focal position in this fixture. The existing field-only
+diagnostic reports that position for both byte bodies. At aggregate exposure
+both response rows are ineligible and the single body's diagnostic position
+is null. The comparison inventory, raw response and diagnostic each carry
+their own meaning. The fixed-input structural/confounded comparison and brake
+correspondence belong to [#324](https://github.com/Human-Cognome-Project/human-cognome-project/issues/324).
+[How to read response captures](COMPLETED-RESPONSE-CAPTURE.md#reading-the-payload)
+
+All eight snapshots passed the viewport validator. A capture audit verified
+tick and generation order, study and field identity, ordered paths, exact
+masses, full response claims and packet provenance, and total momentum within
+`1e-12` of zero in each axis. The audit used two-worker direct x64 CPU
+execution with Clang/LLVM 15.0.7, the #441 executable and runtime pins above,
+and Node 24.11.1. The machine-local archive
+`/tmp/hcp-441-operator-observation-evidence.tar.gz` has SHA256
+`6f4fd5c784d76873088e1bd740e75be74ffc0dee25804c0f262e4267bf53fb71`. It contains the original JSONL, commands, audit and toolchain
+pins. The manifest verifies after fresh extraction. This result covers the
+fixed disjoint cohort and one local direct CPU run. Hosted qualification of
+the operator implementation stays with #441.
