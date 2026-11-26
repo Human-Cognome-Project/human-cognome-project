@@ -2,6 +2,8 @@
 #include "field/prepared_storage.h"
 #include <array>
 #include <algorithm>
+#include <climits>
+#include <map>
 
 namespace viewport {
 namespace {
@@ -129,6 +131,33 @@ assembly::PreparedStudySubmission submission(
   return out;
 }
 }
+std::vector<assembly::detail::AdmissionBody> declared_aggregate_bodies(
+    const assembly::ActiveAssembly &source) {
+  if (!source.inputs_available() || source.local() ||
+      source.shared_recipe().recipe_version != 2)
+    throw PreparedLetterProfileError("recipe study: shared v2 source required");
+  const auto &recipe = source.shared_recipe();
+  std::map<warm::ObjectKey,std::size_t> definitions;
+  for (std::size_t i = 0; i < recipe.tools.size(); ++i) {
+    if (!recipe.tools[i].ref.object.scope.nil())
+      throw PreparedLetterProfileError("recipe study: shared definitions required");
+    definitions.emplace(recipe.tools[i].ref.object,i);
+  }
+  std::vector<assembly::detail::AdmissionBody> bodies;
+  bodies.reserve(recipe.selections.size());
+  for (const auto &occurrence : recipe.structural_occurrences) {
+    if (!occurrence.id.path.empty()) continue;
+    if (source.exposure(occurrence.id.entry) != warm::Exposure::Aggregate)
+      throw PreparedLetterProfileError("recipe study: aggregate exposure required");
+    const auto definition_index = definitions.at(occurrence.definition);
+    const auto &definition = recipe.tools[definition_index];
+    if (!definition.mass || *definition.mass == 0 || bodies.size() >= INT_MAX)
+      throw PreparedLetterProfileError("recipe study: invalid live definition");
+    bodies.push_back({{source.study(),occurrence.id},definition.ref,occurrence.node,3,
+        int(bodies.size()),double(*definition.mass),{definition_index+1,1,true}});
+  }
+  return bodies;
+}
 warm::Bundle prepared_english_pair(warm::Bundle b, const warm::ToolRef &english) {
   return recipe(std::move(b),english,false);
 }
@@ -247,7 +276,7 @@ assembly::PreparedStudySubmission unicode_i_submission(
   detail::AdmissionBindings coarse;
   coarse.source={source->owner(),source->study(),source->generation(),source->shared_recipe().ref};
   coarse.layout=fine.layout;
-  coarse.bodies={{{source->study(),{entry,{}}},endpoint,1,3,0,4.,{3,1,true}}};
+  coarse.bodies=declared_aggregate_bodies(*source);
   coarse.fields={{sibling,5,int(fine.fields.size())},fine.fields.back()};
   coarse.comparisons={{sibling,200,0,52,{}},{focus,fine.comparisons.back().comparison,2,52,{0}}};
   coarse.focus={focus};

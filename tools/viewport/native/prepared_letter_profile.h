@@ -10,6 +10,10 @@ assembly::PreparedStudySubmission whole_english_pair_submission(
 assembly::PreparedStudySubmission unicode_i_submission(
     warm::Bundle definitions, const warm::ToolRef &endpoint, warm::Uuid owner,
     field::HostPath path = field::HostPath::BulkCopy);
+// Bind the aggregate bodies declared in an already acquired shared v2 recipe.
+// The study still supplies its comparison tree, focus and capacity.
+std::vector<assembly::detail::AdmissionBody> declared_aggregate_bodies(
+    const assembly::ActiveAssembly &);
 struct PreparedLetterProfileError : warm::Error { using warm::Error::Error; };
 // Explicit, bounded demonstration profile, selected by --study. Source pins
 // supply exact construction; these functions supply the documented model and
