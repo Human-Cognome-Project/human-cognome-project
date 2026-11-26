@@ -6,8 +6,8 @@
 
 namespace viewport {
 namespace {
-const assembly::OccurrenceKey &catalogue_pin(
-    const std::vector<assembly::detail::AdmissionBody> &catalogue, std::uint64_t entry,
+const warm::ToolRef &catalogue_pin(
+    const std::vector<assembly::detail::AdmissionBody> &catalogue,
     const std::string &definition, const std::string &revision_text) {
   warm::Uuid revision;
   try {
@@ -15,20 +15,11 @@ const assembly::OccurrenceKey &catalogue_pin(
   } catch (const warm::Error &) {
     throw UsageError("invalid definition revision");
   }
-  const assembly::OccurrenceKey *first = nullptr;
-  for (const auto &body : catalogue) {
-    if (!body.occurrence.source.path.empty()) continue;
-    const bool matches = body.definition.revision == revision &&
-        warm::key(body.definition.object) == definition;
-    // A declared entry already owns its exact template.
-    if (body.occurrence.source.entry == entry) {
-      if (matches) return body.occurrence;
-      throw UsageError("definition pin does not match the declared entry");
-    }
-    if (matches && !first) first = &body.occurrence;
-  }
-  if (!first) throw UsageError("definition pin is not in the declared source catalogue");
-  return *first;
+  for (const auto &body : catalogue)
+    if (body.occurrence.source.path.empty() && body.definition.revision == revision &&
+        warm::key(body.definition.object) == definition)
+      return body.definition;
+  throw UsageError("definition pin is not in the declared source catalogue");
 }
 const char *status(field::UpdateStatus value) {
   switch (value) {
@@ -167,9 +158,9 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
               {"ticks",completed}});
       } else if ((command == "add" || command == "remove") && !argument.empty()) {
         const auto entry=viewport::parse_count("entry",argument,0,UINT64_MAX);
-        std::optional<assembly::OccurrenceKey> clone_from;
+        assembly::PreparedOccurrenceEdit edit{{source->study(),{entry,{}}},command == "add"};
         if (!revision.empty()) {
-          clone_from=catalogue_pin(catalogue,entry,extra,revision);
+          edit.definition_pin=catalogue_pin(catalogue,extra,revision);
         } else if (command == "add") {
           bool declared_entry=false;
           for (const auto &item : catalogue) declared_entry |= item.occurrence.source.entry == entry;
@@ -177,11 +168,10 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
               : viewport::parse_count("template",extra,0,UINT64_MAX);
           for (const auto &item : catalogue)
             if (item.occurrence.source.entry == template_entry && item.occurrence.source.path.empty())
-              clone_from=item.occurrence;
-          if (!clone_from) throw UsageError("template is not in the declared source catalogue");
+              edit.clone_from=item.occurrence;
+          if (!edit.clone_from) throw UsageError("template is not in the declared source catalogue");
         }
-        assembly::PreparedOccurrenceEdit edit{{source->study(),{entry,{}}},command == "add",*observe().prepared_generation};
-        edit.clone_from=std::move(clone_from);
+        edit.expected_generation=*observe().prepared_generation;
         edit.preparation_work=10000000; edit.placement_work=100000000;
         edit.placement_cells=65536; edit.hierarchy_work=1000000;
         const auto result=session.edit_prepared(handle,source->owner(),edit);

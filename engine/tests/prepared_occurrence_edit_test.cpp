@@ -195,7 +195,7 @@ void session_case(int workers, field::HostPath path) {
     check(state.tick == added.tick+1 && state.body_records.size() == 2,"added occurrence lost during tick");
   }
   OccurrenceKey created{source->study(),{20,{}}};
-  PreparedOccurrenceEdit add{created,true,*state.prepared_generation}; add.clone_from=first;
+  PreparedOccurrenceEdit add{created,true,*state.prepared_generation}; add.clone_from=second;
   const auto clone=no_new([&] { return session.edit_prepared(handle,source->owner(),add); });
   check(clone.publication.status == UpdateStatus::Ok,"new composed occurrence entry was not admitted");
   check(clone.publication.claims.sampled && clone.publication.claims.particles_before == 2 &&
@@ -212,6 +212,17 @@ void session_case(int workers, field::HostPath path) {
   for (const auto &origin : three.report.origins)
     if (origin.occurrence == created && origin.shared == std::optional<warm::ToolRef>(english)) pinned=true;
   check(pinned,"new occurrence lost its exact declared definition pin");
+  auto by_pin=add;
+  by_pin.clone_from.reset();
+  by_pin.definition_pin=english;
+  by_pin.expected_generation=*three.prepared_generation;
+  check(no_new([&] { return session.edit_prepared(handle,source->owner(),by_pin); }).publication.status == UpdateStatus::NoChange,
+        "matching pin did not preserve the live clone's template");
+  auto wrong_pin=by_pin;
+  wrong_pin.definition_pin->revision=warm::new_uuid();
+  check(no_new([&] { return session.edit_prepared(handle,source->owner(),wrong_pin); }).publication.status == UpdateStatus::InvalidInput,
+        "different revision accepted for the known clone");
+  unchanged(three,observe());
   check(session.tick_prepared(handle,source->owner(),parameters).status == field::TickStatus::Ok,
         "tick with new occurrence failed");
   const auto after_tick=observe();
@@ -223,11 +234,14 @@ void session_case(int workers, field::HostPath path) {
   check(session.tick_prepared(handle,source->owner(),parameters).status == field::TickStatus::Ok,
         "tick after new entry removal failed");
   state=observe();
-  add.expected_generation=*state.prepared_generation;
-  check(no_new([&] { return session.edit_prepared(handle,source->owner(),add); }).publication.status == UpdateStatus::Ok,
+  by_pin.expected_generation=*state.prepared_generation;
+  check(no_new([&] { return session.edit_prepared(handle,source->owner(),by_pin); }).publication.status == UpdateStatus::Ok,
         "definition was not reusable after new entry removal");
   three=observe();
   check(!same(fresh,three.body_records[find(three,created)]),"re-added entry reused a stale incarnation");
+  add.expected_generation=*three.prepared_generation;
+  check(no_new([&] { return session.edit_prepared(handle,source->owner(),add); }).publication.status == UpdateStatus::NoChange,
+        "pin restoration replaced the clone's explicit template");
   remove.expected_generation=*three.prepared_generation;
   check(session.edit_prepared(handle,source->owner(),remove).publication.status == UpdateStatus::Ok,"clone cleanup failed");
   state=observe();

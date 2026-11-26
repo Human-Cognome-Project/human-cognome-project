@@ -96,6 +96,8 @@ class PreparedStudyOwner {
   PreparedStudyOwner(field::Harness &, const std::shared_ptr<const ActiveAssembly> &,
       ReservedUnique<StructuralAdmissionPlan>, const std::shared_ptr<ReservationDomain> &);
   void reserve_metadata(const warm::Uuid &, const AdmissionBindings &, PreparationWork &);
+  static std::size_t pinned_template(const ReservedVector<AdmissionOccurrenceCommand> &,
+      std::size_t preferred, const warm::ToolRef &, PreparationWork &);
   void authorize(const warm::Uuid &, const ExecutionHandle &) const;
   void require_published(const warm::Uuid &, const ExecutionHandle &) const;
   field::Harness &h_;

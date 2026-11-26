@@ -172,7 +172,12 @@ field::UpdateResult PreparedLodWorkspace::presence(const PreparedStudyOwner &o,c
   selected_=catalogue_.size();
   for(std::size_t i=0;i<catalogue_.size();++i){w.charge(1);if(known_[i] && catalogue_[i].occurrence.entry==r.occurrence.source.entry)selected_=i;}
   source_template_=declared.size();
-  if(r.clone_from) {
+  if(r.definition_pin) {
+    if(!r.present || r.clone_from)return out;
+    const auto preferred=selected_!=catalogue_.size()?templates_[selected_]:immutable;
+    source_template_=o.pinned_template(declared,preferred,*r.definition_pin,w);
+    if(source_template_==declared.size())return out;
+  } else if(r.clone_from) {
     if(!r.present || !w.equal(r.clone_from->study,o.source_->study()) || !r.clone_from->source.path.empty()) return out;
     for(std::size_t i=0;i<declared.size();++i){w.charge(1);if(declared[i].occurrence.entry==r.clone_from->source.entry)source_template_=i;}
     if(source_template_==declared.size() || (immutable!=declared.size() && source_template_!=immutable) ||

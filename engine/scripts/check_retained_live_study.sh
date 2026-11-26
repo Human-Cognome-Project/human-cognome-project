@@ -190,6 +190,54 @@ if [[ $exit_mode == quit ]]; then
   [[ "$event" == *'"completed_tick":2'* ]]
   test "$(json_text study)" = "$study"
   test "$(state)" = '2|1|1'
+
+  step=explicit-clone-pin
+  send add 28 10
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"ok"'* ]]
+  clone_claim=$(claim 28)
+  test -n "$clone_claim"
+  clone_generation=$(json_number generation)
+
+  send add 28 "$definition" "$definition_revision"
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"no_change"'* ]]
+  test "$(json_number generation)" = "$clone_generation"
+  test "$(claim 28)" = "$clone_claim"
+
+  send add 28 2
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"invalid_input"'* ]]
+  test "$(json_number generation)" = "$clone_generation"
+  test "$(claim 28)" = "$clone_claim"
+
+  send tick 1
+  receive '"command":"tick"'
+  [[ "$event" == *'"completed_tick":3'* ]]
+  test "$(claim 28)" = "$clone_claim"
+  send remove 28
+  receive '"command":"remove"'
+  [[ "$event" == *'"status":"ok"'* ]]
+  test -z "$(claim 28)"
+
+  step=restore-explicit-clone-by-pin
+  send add 28 "$definition" "$definition_revision"
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"ok"'* ]]
+  restored_claim=$(claim 28)
+  test -n "$restored_claim"
+  test "$restored_claim" != "$clone_claim"
+  restore_generation=$(json_number generation)
+
+  send add 28 10
+  receive '"command":"add"'
+  [[ "$event" == *'"status":"no_change"'* ]]
+  test "$(json_number generation)" = "$restore_generation"
+  test "$(claim 28)" = "$restored_claim"
+  test "$(claim 2)" = "$first_claim"
+  test "$(claim 10)" = "$second_claim"
+  test "$(json_text study)" = "$study"
+  test "$(state)" = '2|1|1'
 fi
 
 step=$exit_mode
