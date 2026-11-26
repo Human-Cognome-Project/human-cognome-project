@@ -5,6 +5,7 @@ out=${1:?evidence directory required}
 shift
 : "${HCP_WARM_TEST_CONNINFO:?}"
 exit_mode=${HCP_RETAINED_LIVE_EXIT:-quit}
+root_prefixes=()
 case "$exit_mode" in
   quit|idle-stop|output-disconnect|batch-stop|offer-stop) ;;
   catalogue) set -- "$@" --letter 02.00.00.00.03 --letter 02.00.00.00.1W ;;
@@ -17,6 +18,23 @@ case "$exit_mode" in
     if [[ $exit_mode == catalogue-cross-direct ]]; then set -- "$@" --threads 2 --direct; fi
     set -- "$@" --letter 02.00.00.00.03 --letter 02.01.00.00.03 --focus-byte 00.00.00.00.23
     exit_mode=catalogue-cross ;;
+  catalogue-four-a|catalogue-nine-a|catalogue-nine-a-direct|catalogue-three-b)
+    suffix=03
+    focus_byte=00.00.00.00.23
+    case "$exit_mode" in
+      catalogue-four-a) root_prefixes=(02.00.00 02.00.10 02.00.20 02.01.00) ;;
+      catalogue-three-b)
+        root_prefixes=(02.00.00 02.00.10 02.01.00)
+        suffix=04
+        focus_byte=00.00.00.00.24 ;;
+      *) root_prefixes=(02.00.00 02.00.10 02.00.20 02.01.00 02.01.10 02.01.20 02.01.30 02.02.40 02.20.00) ;;
+    esac
+    if [[ $exit_mode == catalogue-nine-a-direct ]]; then
+      set -- "$@" --threads 2 --direct
+      exit_mode=catalogue-nine-a
+    fi
+    set -- "$@" --focus-byte "$focus_byte"
+    for prefix in "${root_prefixes[@]}"; do set -- "$@" --letter "$prefix.00.$suffix"; done ;;
   batch-disconnect|blocked-write) : "${HCP_RETAINED_LIVE_PIPE_CHECK:?}" ;;
   *) exit 2 ;;
 esac
@@ -98,8 +116,9 @@ claim() {
 if [[ $exit_mode == catalogue* ]]; then
   step=catalogue-offer
   receive '"command":"catalogue_available"'
+  catalogue_offer=$event
   offer_entry() {
-    printf '%s\n' "$event" |
+    printf '%s\n' "$catalogue_offer" |
       sed -nE 's/.*\{"definition":"([^"]+)","entry":'"$1"',"revision":"([^"]+)"\}.*/\1 \2/p'
   }
   read -r a a_revision < <(offer_entry 1)
@@ -134,7 +153,7 @@ if [[ $exit_mode == catalogue* ]]; then
     send quit
     receive '"command":"recipe_release"' 30
     [[ "$event" == *'"acquisitions":2'* && "$event" == *'"releases":2'* ]]
-    wait_for_exit 1
+    wait_for_exit "${1:-1}"
     test "$(state)" = '2|2|0'
     exec {writer}>&- {reader}<&-
     step=complete
@@ -151,35 +170,138 @@ if [[ $exit_mode == catalogue* ]]; then
   test -n "$original"
   test -z "$(claim 2)"
 
-  if [[ $exit_mode == catalogue-cross ]]; then
-    field_row() {
-      local address=${1//./\\.}
+  field_row() {
+    local address=${1//./\\.}
+    printf '%s\n' "$event" | tr '{' '\n' |
+      sed -nE "s/^\"comparison\":\"([0-9]+)\",\"kind\":$2,\"object\":\"[^\"]*$address\",\"record\":([0-9]+)\}.*/\1 \2/p"
+  }
+  field_slot() {
+    local identity
+    identity=$(field_row "$1" "$2")
+    test -n "$identity"
+    printf '%s\n' "$event" | sed -nE "s/.*\"comparison\":\"${identity%% *}\",\"slot\":([0-9]+)\}.*/\1/p"
+  }
+  response_links() {
+    printf '%s\n' "$event" | sed 's/},{"body":/}\n{"body":/g' | sed -nE \
+      's/.*"record":([0-9]+)\},"body_mass":[^,]+,"child":([0-9]+),[^}]*"denominator":"([0-9]+)","extraction_valid":true,"kind":"([^"]+)","numerator":"([0-9]+)","parent":([0-9]+),.*/\1 \2 \6 \4 \5 \3/p'
+  }
+  check_recipient() {
+    local body slot foreign=
+    body=$(claim "$1"); body=${body##*:}
+    slot=$(field_slot "$2" 2)
+    test -n "$body"
+    test -n "$slot"
+    if [[ $# == 3 && -n $(field_row "$3" 2) ]]; then foreign=$(field_slot "$3" 2); fi
+    response_links | awk -v body="$body" -v slot="$slot" -v foreign="$foreign" '
+      $1==body && $3==slot { own=1 }
+      $1==body && foreign!="" && $3==foreign { other=1 }
+      END { exit !(own && !other) }'
+  }
+
+  if ((${#root_prefixes[@]})); then
+    root_count=${#root_prefixes[@]}
+    focus_claim=$(field_row "$focus_byte" 1)
+    test -n "$focus_claim"
+    declare -a live_claims
+    live_claims[1]=$original
+    step=multilingual-add
+    for ((entry=2; entry<=root_count; ++entry)); do
+      read -r definition revision < <(offer_entry "$entry")
+      send add "$entry" "$definition" "$revision"
+      receive '"status":"ok"'
+      observe_state "$((2*entry))"
+      live_claims[entry]=$(claim "$entry")
+      test -n "${live_claims[entry]}"
+    done
+
+    positions() {
       printf '%s\n' "$event" | tr '{' '\n' |
-        sed -nE "s/^\"comparison\":\"([0-9]+)\",\"kind\":$2,\"object\":\"[^\"]*$address\",\"record\":([0-9]+)\}.*/\1 \2/p"
+        sed -nE 's/.*"exact_mass":"2".*"position":(\[[-+0-9.eE,]+\]).*/\1/p'
     }
-    field_slot() {
-      local identity
-      identity=$(field_row "$1" "$2")
-      test -n "$identity"
-      printf '%s\n' "$event" | sed -nE "s/.*\"comparison\":\"${identity%% *}\",\"slot\":([0-9]+)\}.*/\1/p"
+    checkpoint() {
+      local count=$1 completed=$2 entry prefix samples
+      observe_state "$((2*count))"
+      test "$(json_number completed_tick)" = "$completed"
+      test "$(field_row "$focus_byte" 1)" = "$focus_claim"
+      for ((entry=1; entry<=count; ++entry)); do
+        test "$(claim "$entry")" = "${live_claims[entry]}"
+        prefix=${root_prefixes[entry-1]}
+        check_recipient "$entry" "$prefix.00.00"
+        check_recipient "$entry" "$prefix.00.01"
+      done
+      samples=$(positions)
+      test "$(printf '%s\n' "$samples" | wc -l)" -eq "$count"
+      printf '%s|%s|%s\n' "$step" "$completed" "${samples//$'\n'/|}" >> "$out/trajectories.txt"
     }
-    response_links() {
-      printf '%s\n' "$event" | sed 's/},{"body":/}\n{"body":/g' | sed -nE \
-        's/.*"record":([0-9]+)\},"body_mass":[^,]+,"child":([0-9]+),[^}]*"denominator":"([0-9]+)","extraction_valid":true,"kind":"([^"]+)","numerator":"([0-9]+)","parent":([0-9]+),.*/\1 \2 \6 \4 \5 \3/p'
-    }
-    check_recipient() {
-      local body slot foreign
-      body=$(claim "$1"); body=${body##*:}
-      slot=$(field_slot "$2" 2)
-      foreign=$(field_row "$3" 2)
-      test -n "$body"
-      test -n "$slot"
-      if [[ -n $foreign ]]; then foreign=$(field_slot "$3" 2); fi
-      response_links | awk -v body="$body" -v slot="$slot" -v foreign="$foreign" '
-        $1==body && $3==slot { own=1 }
-        $1==body && foreign!="" && $3==foreign { other=1 }
-        END { exit !(own && !other) }'
-    }
+
+    if [[ $exit_mode == catalogue-four-a ]]; then
+      step=multilingual-partial-batch
+      send tick 4 48
+      receive '"status":"capacity_exhausted"'
+      geometry_refusal='"failure":{"budget":"geometry-work","capacity":48,"required":84}'
+      [[ "$event" == *"$geometry_refusal"* ]]
+      test "$(json_number requested_ticks)" = 4
+      test "$(json_number ticks)" = 1
+      checkpoint 4 1
+      generation=$(json_number generation)
+      unchanged_positions=$(positions)
+      step=multilingual-refused-retry
+      send tick 1 48
+      receive '"status":"capacity_exhausted"'
+      [[ "$event" == *"$geometry_refusal"* ]]
+      test "$(json_number ticks)" = 0
+      test "$(json_number generation)" = "$generation"
+      test "$(positions)" = "$unchanged_positions"
+      checkpoint 4 1
+      step=multilingual-recover
+      send remove 4
+      receive '"status":"ok"'
+      test -z "$(claim 4)$(field_row "${root_prefixes[3]}.00.00" 2)"
+      send tick 32 48
+      receive '"status":"ok"'
+      checkpoint 3 33
+      release_catalogue
+      echo 'PASS: budget-limited tick batch reported partial progress and recovered after removal'
+      exit 0
+    fi
+
+    step=multilingual-first-tick
+    send tick 1
+    receive '"status":"ok"'
+    checkpoint "$root_count" 1
+    if [[ $exit_mode == catalogue-three-b ]]; then
+      release_catalogue 0
+      echo 'PASS: three retained B definitions ticked with their own language and alphabet recipients'
+      exit 0
+    fi
+
+    step=multilingual-sustained
+    send tick 255
+    receive '"status":"ok"'
+    checkpoint 9 256
+    step=multilingual-after-remove
+    send remove 9
+    receive '"status":"ok"'
+    test -z "$(claim 9)$(field_row "${root_prefixes[8]}.00.00" 2)"
+    send tick 256
+    receive '"status":"ok"'
+    checkpoint 8 512
+    step=multilingual-after-restore
+    send add 9
+    receive '"status":"ok"'
+    restored=$(claim 9)
+    test -n "$restored"
+    test "$restored" != "${live_claims[9]}"
+    live_claims[9]=$restored
+    send tick 256
+    receive '"status":"ok"'
+    checkpoint 9 768
+    release_catalogue 0
+    echo 'PASS: nine-A study ticked, accepted removal and restoration, and reached tick 768'
+    exit 0
+  fi
+
+  if [[ $exit_mode == catalogue-cross ]]; then
     check_shared_byte() {
       local suffix=$1 english_target=$2 french_target=$3 kind=$4 english french shared_slot en_slot fr_slot links
       english=$(claim "1$suffix"); english=${english##*:}

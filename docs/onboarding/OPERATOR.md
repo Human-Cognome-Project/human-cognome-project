@@ -55,6 +55,13 @@ If the output pipe is full during shutdown, the owner closes the session and
 releases the lease even when the final record cannot be delivered. A malformed
 command produces `invalid_input` and the next command can use the same study.
 
+`tick N` advances the field by up to `N` ticks. Its `ticks` count reports how
+many committed in that command, and `completed_tick` gives the study total.
+Use `tick N GEOMETRY_WORK` to request a per-tick geometry-work budget within
+the study's prepared limits. A capacity refusal reports the native budget,
+required amount and capacity. Earlier ticks in the batch remain committed.
+The same study can accept a removal and resume ticking from that state.
+
 Use `list` to read the catalogue’s `definition` and `revision` together.
 Enter `add 27 DEFINITION REVISION` with that exact pair, then `tick 1`,
 `remove 27` and `tick 1`. The definition stays in the catalogue after

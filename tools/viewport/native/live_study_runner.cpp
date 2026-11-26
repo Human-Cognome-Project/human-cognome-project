@@ -34,6 +34,18 @@ const char *status(field::UpdateStatus value) {
   }
   return "unknown";
 }
+const char *status(field::TickStatus value) {
+  switch (value) {
+    case field::TickStatus::Ok: return "ok";
+    case field::TickStatus::Unsupported: return "unsupported";
+    case field::TickStatus::Stale: return "stale";
+    case field::TickStatus::Unready: return "unready";
+    case field::TickStatus::InvalidInput: return "invalid_input";
+    case field::TickStatus::InvalidNumerics: return "invalid_numerics";
+    case field::TickStatus::CapacityExhausted: return "capacity_exhausted";
+  }
+  return "unknown";
+}
 }
 
 void write_live_event(const LiveStudyInput &input, const Json &event) {
@@ -140,7 +152,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
     words>>argument; words>>extra;
     try {
       if (command == "quit" && argument.empty()) break;
-      if (!extra.empty() && command != "add") throw UsageError("too many command arguments");
+      if (!extra.empty() && command != "add" && command != "tick") throw UsageError("too many command arguments");
       std::string revision, trailing;
       if (command == "add") words>>revision;
       if (words>>trailing) throw UsageError("too many command arguments");
@@ -163,14 +175,35 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
           {"failure",{{"budget",field::budget_name(p.failure.budget)},{"required",p.failure.required},{"capacity",p.failure.capacity}}}});
       } else if (command == "tick") {
         const auto ticks=argument.empty() ? 1 : viewport::parse_count("tick",argument,1,1000000);
+        const auto geometry_work=extra.empty() ? limits[field::Budget::GeometryWork]
+            : viewport::parse_count("geometry work",extra,0,INT64_MAX);
         std::uint64_t completed=0;
+        std::optional<field::TickResult> refusal;
         for (; completed<ticks && !input.commands.stopped(); ++completed) {
           input.commands.check_consumer();
-          const auto result=session.tick_prepared(handle,source->owner(),parameters,1000000000,1000000);
-          if (result.status != field::TickStatus::Ok) throw std::runtime_error("native tick refused");
+          const auto result=session.tick_prepared(handle,source->owner(),parameters,
+              limits[field::Budget::TickWork],geometry_work);
+          if (result.status != field::TickStatus::Ok) {
+            refusal=result;
+            break;
+          }
         }
-        emit({{"command",command},{"status",completed==ticks ? "ok" : "stopped"},
-              {"ticks",completed}});
+        Json result{{"command",command},{"status",refusal ? status(refusal->status) : completed==ticks ? "ok" : "stopped"},
+                    {"requested_ticks",ticks},{"ticks",completed}};
+        if (refusal) {
+          rejected=true;
+          const auto &attempt=*refusal;
+          if (attempt.failure.exhausted())
+            result["failure"]={{"budget",field::budget_name(attempt.failure.budget)},
+                {"required",attempt.failure.required},{"capacity",attempt.failure.capacity}};
+          result["attempt"]={{"required_work",attempt.required_work},{"geometry_work",attempt.geometry_work},
+              {"current_contacts",attempt.current.contacts},{"candidate_contacts",attempt.candidate.contacts}};
+          if (attempt.status==field::TickStatus::Unready) {
+            write_live_event(input,result);
+            return 1;
+          }
+        }
+        emit(std::move(result));
       } else if ((command == "add" || command == "remove") && !argument.empty()) {
         const auto entry=viewport::parse_count("entry",argument,0,UINT64_MAX);
         assembly::PreparedOccurrenceEdit edit{{source->study(),{entry,{}}},command == "add"};
@@ -202,7 +235,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
           {"native_claims",std::move(claims)},
           {"preparation_status",int(result.preparation.status)},
           {"preparation_work",result.preparation.charged}});
-      } else throw UsageError("expected observe, list, add ENTRY [TEMPLATE_ENTRY], add ENTRY DEFINITION REVISION, remove ENTRY, lod aggregate|parts, tick [N] or quit");
+      } else throw UsageError("expected observe, list, add ENTRY [TEMPLATE_ENTRY], add ENTRY DEFINITION REVISION, remove ENTRY, lod aggregate|parts, tick [N [GEOMETRY_WORK]] or quit");
     } catch (const UsageError &error) {
       rejected=true; emit({{"command",command},{"status","invalid_input"},{"message",error.what()}});
     }

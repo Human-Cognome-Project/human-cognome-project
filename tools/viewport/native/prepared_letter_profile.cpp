@@ -513,6 +513,9 @@ assembly::PreparedStudySubmission editable_retained_catalogue_submission(
   for (const auto &selection : recipe.selections)
     maximum_width = std::max(maximum_width,selection.parts.size());
   limits[Budget::Particles] = 2*std::max(coarse.bodies.size(),fine.bodies.size());
+  const auto particles = limits[Budget::Particles];
+  // The tick discovers an unordered pair at most once in each contact ledger.
+  limits[Budget::Contacts] = particles*(particles-1)/2;
   limits[Budget::Potential] = limits[Budget::Particles]*(1+maximum_width);
   limits[Budget::Fields] = limits[Budget::CascadeNodes] = addresses.size();
   limits[Budget::CascadeLevels] = addresses.size();
