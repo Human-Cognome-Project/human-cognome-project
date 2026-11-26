@@ -25,6 +25,14 @@ add_executable(viewport_live_study live_study.cpp)
 target_include_directories(viewport_live_study PRIVATE ../../../engine/tests)
 target_link_libraries(viewport_live_study PRIVATE viewport_snapshot)
 target_compile_options(viewport_live_study PRIVATE -Wall -Wextra -Werror)
+foreach(path bulk direct)
+  add_test(NAME viewport_unicode_i_${path}
+    COMMAND "${CMAKE_COMMAND}" "-DSTUDY=$<TARGET_FILE:viewport_live_study>" "-DHOST_PATH=${path}"
+      "-DCOMMANDS=${CMAKE_CURRENT_SOURCE_DIR}/../examples/live-unicode.commands"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/check_live_unicode.cmake")
+  set_tests_properties(viewport_unicode_i_${path} PROPERTIES
+    ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
+endforeach()
 foreach(workers 1 2)
   foreach(path bulk direct)
     set(live_study_args --threads ${workers})

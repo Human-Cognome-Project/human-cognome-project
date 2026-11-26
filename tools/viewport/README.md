@@ -10,6 +10,10 @@ qualification](../../engine/docs/WHOLE-FIELD-LOD.md) cover ordinary fine edits,
 whole-field exchange and healthy capacity refusal. This operator uses in-memory
 fixture definitions and requires no warm-store acquisition.
 
+Select `viewport_live_study --unicode-i` to expand the fixed `í` profile into
+`C3 AD`, tick it and compress it on the same study handle. The CLI emits a
+completed JSON record after each command. [Operator commands](../../docs/onboarding/OPERATOR.md#change-the-live-í-studys-level-of-detail)
+
 Capture v1 now accepts optional `numerics` metadata. Absent metadata retains
 legacy f32 validation; explicitly tagged `trial_f64` report values preserve
 double precision through native JSON and browser validation, including sub-f32

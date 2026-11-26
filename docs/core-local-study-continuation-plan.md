@@ -13,6 +13,19 @@ A letter is an ordinary composed object. #438 integrated data-derived endpoint a
 
 ## Dated handoffs
 
+## November 25, 2026 — live Unicode operator preset
+
+Main remains at `9fb4e7a5`. The maintainer provisionally accepted the
+corrected #439 head `5e744e34` and the #440 carry-forward head `307511a8`.
+The hosted native runs are pending. [#439 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/439#issuecomment-7170688784) · [#440 review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/440#issuecomment-7170691456)
+
+The existing temporary CLI now selects the fixed disjoint `í` profile with
+`--unicode-i`. The native test and CLI use the same prepared submission.
+Operators can observe, expand to `C3 AD`, choose their tick counts, and
+compress to `í` on the same study handle. Presence edits report
+`unsupported` and leave the current exposure available. Repeated and
+overlapping live exchanges remain deferred. [Maintainer assignment](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7170694271) · [Operator commands](onboarding/OPERATOR.md#change-the-live-í-studys-level-of-detail) · [Scope and evidence](../engine/docs/LIVE-UNICODE-EXCHANGE.md#live-cli-qualification)
+
 ## November 25, 2026 — hosted scoped displacement audit
 
 Main `9fb4e7a5` integrates #435, #436 and #437. On #439, the hosted
