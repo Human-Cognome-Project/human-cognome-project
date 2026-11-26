@@ -36,9 +36,10 @@ class Prepared {
 // production personal/temp address or accepts a request-selected writer role.
 class Administrator {
  public:
+  enum class Setup { Configure, Fresh };
   explicit Administrator(const std::string &conninfo);
   ~Administrator();
-  void configure(std::vector<Binding> directory);
+  void configure(std::vector<Binding> directory, Setup setup = Setup::Configure);
   std::vector<BundleRef> affected(const ObjectKey &prefix, const Uuid &epoch);
 
  private:

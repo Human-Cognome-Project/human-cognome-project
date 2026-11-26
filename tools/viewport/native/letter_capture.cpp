@@ -2,15 +2,18 @@
 #include "signal_guard.h"
 #include "snapshot.h"
 #include "prepared_letter_profile.h"
+#include "live_study.h"
 
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
+#include <exception>
 #include <filesystem>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <thread>
 
 #include "shared_manager.h"
@@ -31,22 +34,15 @@ warm::ObjectKey object(const std::string &s) {
   return {{}, *address};
 }
 }
-int main(int argc, char **argv) {
+static int run_capture(const viewport::Options &options, const viewport::LiveStudyInput *live = nullptr) {
   try {
-    viewport::Options options;
-    try {
-      options = viewport::parse_options(std::vector<std::string>(argv + 1, argv + argc));
-    } catch (const viewport::UsageError &e) {
-      std::cerr << e.what() << '\n' << viewport::usage();
-      return 2;
-    }
     using namespace warm;
     using namespace assembly;
     // From here (argument parsing is over) a first SIGINT/SIGTERM is only noted, with no masking,
     // so a hung start-up or stalled acquire still ends on a second signal. Setup and the current
     // tick finish, then the final capture, release and exit 0.
-    viewport::install_stop_handlers();
-    std::filesystem::create_directories(options.output);
+    if (!live) viewport::install_stop_handlers();
+    if (!live) std::filesystem::create_directories(options.output);
     engine::InstanceSettings settings;
     settings.cuda = options.cuda;
     settings.read_environment = false;
@@ -55,20 +51,21 @@ int main(int argc, char **argv) {
     // on a CPU-only Taichi build) carries no deployment details and is the actionable
     // failure: no CPU fallback.
     std::unique_ptr<ActiveSession> started;
-    try {
-      started = std::make_unique<ActiveSession>(settings);
-    } catch (const std::exception &e) {
-      std::cerr << "viewport letter capture failed: engine startup: " << e.what() << '\n';
-      return 1;
-    }
-    ActiveSession &session = *started;
-    // Construction succeeds even when a CUDA-enabled build has no driver or device: the engine
-    // then silently runs on the CPU. Verify the actual backend before any warm write.
-    if (session.on_cuda() != settings.cuda) {
-      std::cerr << "viewport letter capture failed: requested backend " << (settings.cuda ? "cuda" : "cpu")
-                << " but the engine runs on " << (session.on_cuda() ? "cuda" : "cpu")
-                << (settings.cuda ? " (no CUDA driver or device available); no fallback is permitted\n" : "\n");
-      return 1;
+    if (!live) {
+      try {
+        started = std::make_unique<ActiveSession>(settings);
+      } catch (const std::exception &e) {
+        std::cerr << "viewport letter capture failed: engine startup: " << e.what() << '\n';
+        return 1;
+      }
+      // A CUDA-enabled build can start a CPU runtime when a device is missing.
+      // Verify the actual backend before opening the retained sources.
+      if (started->on_cuda() != settings.cuda) {
+        std::cerr << "viewport letter capture failed: requested backend " << (settings.cuda ? "cuda" : "cpu")
+                  << " but the engine runs on " << (started->on_cuda() ? "cuda" : "cpu")
+                  << (settings.cuda ? " (no CUDA driver or device available); no fallback is permitted\n" : "\n");
+        return 1;
+      }
     }
     if (options.prepared_english_pair)
       for (const auto *name : {"HCP_WARM_TEST_CONNINFO", "HCP_CORE_TEST_CONNINFO", "HCP_LING_TEST_CONNINFO"}) {
@@ -91,7 +88,7 @@ int main(int argc, char **argv) {
     admin.configure({{object("00"), BindingKind::Shared, epoch, new_uuid(), "retained-core",
                        "f8019624a617a84410c0fd927b4947ed87955b48280016af8fb40b35eb8ac121", {actor}},
                      {object("02"), BindingKind::Shared, epoch, new_uuid(), "retained-linguistics",
-                       "9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296", {actor}}});
+                       "9784ed93d361de61bfb169d13a6e2fd9d2a58eb4dd1ac889b9dc6e0d09e32296", {actor}}}, live ? Administrator::Setup::Fresh : Administrator::Setup::Configure);
     SharedManager manager(store, {object("00"), object("02")}, [&](const ObjectKey &o) {
       return address_text(o.address).substr(0, 2) == "00" ? core.read(o.address) : ling.read(o.address);
     });
@@ -151,6 +148,30 @@ int main(int argc, char **argv) {
       return normalize_letters(definitions, requests);
     }();
     const auto ticket = manager.publish(recipe);
+    if (live) {
+      const auto &ref = ticket.ref();
+      viewport::write_live_event(*live,{{"command","recipe_available"},
+          {"selection",ref.selection.str()},{"revision",ref.revision.str()}});
+      std::string line;
+      bool selected = false;
+      while (live->commands.read_line(line)) {
+        std::istringstream words(line);
+        std::string command, selection, revision, trailing;
+        if (!(words >> command) || command[0] == '#') continue;
+        if (command == "quit" && !(words >> trailing)) return 0;
+        const char *status = "invalid_input";
+        if (command == "open" && (words >> selection >> revision) && !(words >> trailing)) {
+          try {
+            const BundleRef requested{Uuid(selection),Uuid(revision)};
+            selected = requested.selection == ref.selection && requested.revision == ref.revision;
+            status = selected ? "ok" : "unavailable";
+          } catch (const warm::Error &) {}
+        }
+        viewport::write_live_event(*live,{{"command","open"},{"status",status}});
+        if (selected) break;
+      }
+      if (!selected || live->commands.stopped()) return 0;
+    }
     const auto consumer = new_uuid();
     // acquire commits the persistent lease before it returns. The handlers are already installed,
     // so a first signal anywhere in that window only sets the flag; the guard is built as soon as
@@ -165,6 +186,29 @@ int main(int argc, char **argv) {
       return input.focus({{GroupKind::SiblingDefinition, assembly::InputText(key(english.object))}});
     }());
     const auto &logical = *logical_pin;
+    if (live) {
+      int code = 0;
+      std::exception_ptr failure;
+      try {
+        if (!live->commands.stopped()) {
+          auto request = viewport::prepared_retained_english_pair_submission(logical_pin,english,live->path);
+          code = viewport::run_live_study(*live,std::move(request),
+              "Retained English pair",{{"kind","retained_cold_to_warm_to_active"},
+              {"profile","prepared-retained-english-pair"},
+              {"selection",ticket.ref().selection.str()},{"revision",ticket.ref().revision.str()}},
+              1.5,2);
+        }
+      } catch (...) {
+        // The runner's native session has unwound before the checked release.
+        failure = std::current_exception();
+      }
+      pin.release();
+      if (failure) std::rethrow_exception(failure);
+      viewport::write_live_event(*live,{{"command","recipe_release"},
+          {"acquisitions",manager.activity().acquisitions},{"releases",manager.activity().releases}});
+      return code;
+    }
+    ActiveSession &session = *started;
     field::Parameters parameters;
     parameters.dt = float(options.dt);
     field::Parameters64 wide_parameters;
@@ -276,6 +320,12 @@ int main(int argc, char **argv) {
     evidence["captures"] = count > 1 ? viewport::Json::array({first, last}) : viewport::Json::array({last});
     viewport::write((std::filesystem::path(options.output) / "native-evidence.json").string(), evidence);
     std::cout << evidence.dump(2) << '\n';
+    return 0;
+  } catch (const viewport::LiveOutputStopped &) {
+    return 0;
+  } catch (const viewport::LiveOutputError &e) {
+    std::cerr << e.what() << '\n';
+    return 1;
   } catch (const viewport::PreparedLetterProfileError &e) {
     // This type contains only fixed profile diagnostics, never source/SQL text.
     std::cerr << e.what() << '\n';
@@ -284,7 +334,24 @@ int main(int argc, char **argv) {
     // Source/SQL exceptions can carry deployment details: keep public output generic. The engine
     // fork throws bare strings from some calls; catching everything here guarantees the stack
     // unwinds (destructors and guards run) instead of std::terminate.
-    std::cerr << "viewport letter capture failed; check owned output path, fixture configuration and retained endpoints\n";
+    std::cerr << (live ? "retained live study failed; check the fresh warm v2 store and read-only sources\n"
+                       : "viewport letter capture failed; check owned output path, fixture configuration and retained endpoints\n");
     return 1;
+  }
+}
+
+int viewport::run_retained_live_study(const LiveStudyInput &input) {
+  Options options;
+  options.prepared_english_pair = true;
+  options.retained_memberships = true;
+  return run_capture(options,&input);
+}
+
+int viewport_letter_capture(int argc, char **argv) {
+  try {
+    return run_capture(viewport::parse_options(std::vector<std::string>(argv + 1, argv + argc)));
+  } catch (const viewport::UsageError &e) {
+    std::cerr << e.what() << '\n' << viewport::usage();
+    return 2;
   }
 }

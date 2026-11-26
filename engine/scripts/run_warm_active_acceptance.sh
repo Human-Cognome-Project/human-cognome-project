@@ -7,12 +7,16 @@ hcp_active_container=${2:?Pass owned PostgreSQL container}
 hcp_active_core=${3:?Pass retained core DB}
 hcp_active_ling=${4:?Pass retained Linguistics DB}
 hcp_active_mode=${5:-legacy}
+hcp_active_live_exit=${6:-quit}
 hcp_active_program=warm_active_integration
 hcp_active_program_path="$hcp_active_build/$hcp_active_program"
 case "$hcp_active_mode" in
   legacy) ;;
   prepared-membership-refusal|prepared-retained-positive)
     hcp_active_program=viewport_letter_capture
+    hcp_active_program_path="$hcp_active_build/viewport/$hcp_active_program" ;;
+  retained-live-study)
+    hcp_active_program=viewport_live_study
     hcp_active_program_path="$hcp_active_build/viewport/$hcp_active_program" ;;
   *) echo 'Unknown acceptance mode' >&2; exit 2 ;;
 esac
@@ -29,6 +33,10 @@ git -C "$hcp_active_repo" rev-parse HEAD > "$hcp_active_evidence/source-pin.txt"
 if test "$hcp_active_mode" != legacy; then
   if test "$hcp_active_mode" = prepared-membership-refusal; then
     cp "$hcp_active_repo/engine/scripts/check_retained_prepared_capture.sh" "$hcp_active_evidence/package/"
+  elif test "$hcp_active_mode" = retained-live-study; then
+    cp "$hcp_active_repo/engine/scripts/check_retained_live_study.sh" "$hcp_active_evidence/package/"
+    cp "$hcp_active_build/viewport/viewport_live_pipe_check" "$hcp_active_evidence/package/"
+    ldd "$hcp_active_evidence/package/viewport_live_pipe_check" >> "$hcp_active_evidence/libraries.txt"
   else
     cp "$hcp_active_repo/engine/scripts/check_retained_positive_capture.sh" "$hcp_active_evidence/package/"
     cp "$hcp_active_build/viewport/viewport_retained_capture_check" "$hcp_active_evidence/package/"
@@ -93,12 +101,17 @@ if test "$hcp_active_mode" = prepared-membership-refusal; then
 elif test "$hcp_active_mode" = prepared-retained-positive; then
   hcp_active_command=(bash "/tmp/$hcp_active_db/check_retained_positive_capture.sh"
     "/tmp/$hcp_active_db-probe" "/tmp/$hcp_active_db/viewport_retained_capture_check" "${hcp_active_command[@]}")
+elif test "$hcp_active_mode" = retained-live-study; then
+  hcp_active_command=(bash "/tmp/$hcp_active_db/check_retained_live_study.sh"
+    "/tmp/$hcp_active_db-probe" "${hcp_active_command[@]}")
 fi
 set +e
 docker exec --user postgres \
   --env "HCP_WARM_TEST_CONNINFO=dbname=$hcp_active_db" \
   --env "HCP_CORE_TEST_CONNINFO=dbname=$hcp_active_core" \
   --env "HCP_LING_TEST_CONNINFO=dbname=$hcp_active_ling" \
+  --env "HCP_RETAINED_LIVE_EXIT=$hcp_active_live_exit" \
+  --env "HCP_RETAINED_LIVE_PIPE_CHECK=/tmp/$hcp_active_db/viewport_live_pipe_check" \
   --env "LD_LIBRARY_PATH=" \
   --env "TI_LIB_DIR=/tmp/$hcp_active_db/runtime" \
   --env "XDG_CACHE_HOME=/tmp/$hcp_active_db-cache" \
