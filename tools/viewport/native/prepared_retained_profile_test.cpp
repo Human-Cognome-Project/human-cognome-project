@@ -42,6 +42,9 @@ void run(int workers, field::HostPath path) {
   }
   const auto owner = warm::new_uuid();
   auto source = std::make_shared<const ActiveAssembly>(ActiveAssembly::assemble(recipe,owner,false));
+  auto parts = std::make_shared<const ActiveAssembly>(source->expose_all(warm::Exposure::Parts));
+  rejects([&] { viewport::prepared_retained_english_pair_submission(parts,english,path); });
+
   auto request = viewport::prepared_retained_english_pair_submission(source,english,path);
   const auto &b = request.bindings, &expected = input.bindings;
   check(b.fields.size() == 6 && b.comparisons.size() == 6 && b.bodies.size() == 2 &&
