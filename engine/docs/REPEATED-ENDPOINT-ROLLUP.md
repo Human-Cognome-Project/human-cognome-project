@@ -200,8 +200,7 @@ and three quick checks. The one-worker bulk and two-worker direct repeated runs
 each pass 291 assertions. An independent audit compares both exposures and both
 ticks in each profile, including the actual field packets, source rows and
 response operands. The ordinary C3 compiler audits and refresh transport
-pass in default and no-unroll modes. Scoped compiler-shape qualification
-remains open.
+pass in default and no-unroll modes. The [compiler follow-up](SCOPED-HIERARCHY-COMPILER-AUDIT.md) records the scoped results.
 
 The first native publication succeeded with four reserved contact slots and
 the candidate tick refused when it needed six. The fixture now reserves all
@@ -230,4 +229,5 @@ The machine-local archive `/tmp/hcp-repeated-rollup-f6bfd323-evidence.tar.gz`, S
 contains the clean source guards, compiler, runtime and binary pins, exact
 commands, development refusals, raw captures and audits. Its manifest passes
 after fresh extraction. The checked-in capture is the one-worker bulk result.
-GitHub CI and maintainer review are pending.
+The maintainer provisionally accepted this fixed CPU scope at `39523794`.
+[Maintainer direction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/438#issuecomment-7167787666)

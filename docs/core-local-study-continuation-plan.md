@@ -12,9 +12,65 @@ Use the existing letter definitions first. A letter is an ordinary composed obje
 
 **Intended operator workload.** Patrick intends to load at least one live occurrence of every letter object for every language represented in the retained catalogue, together in one running field. The small studies make individual contributions easy to verify. Use the same object admission and tick path for the catalogue, with the selected definitions and occurrences determining the workload. When that study runs, record the catalogue revision, languages covered and live occurrence count so its scale can be checked against the input.
 
-#438 passed hosted CI for its fixed example. Its shape-specific production guards await the first correction above. Reuse the #439 compiler audits, #440 exchange, #441 CLI and #442 observations as regression evidence. The same-input GPU binary trial is separate and can follow the common CPU path. Patrick will examine patterns over ticks before selecting PoC criteria. [GPU trial](https://github.com/Human-Cognome-Project/human-cognome-project/issues/70#issuecomment-7172012834)
+#438 is integrated with the data-driven admission and selective polling correction. Its full [hosted CPU run](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45694172654) passed at `5a9900ed`. Reuse the #439 compiler audits, #440 exchange, #441 CLI and #442 observations as regression evidence. The same-input GPU binary trial is separate and can follow the common CPU path. Patrick will examine patterns over ticks before selecting PoC criteria. [GPU trial](https://github.com/Human-Cognome-Project/human-cognome-project/issues/70#issuecomment-7172012834)
 
 ## Dated handoffs
+
+## November 25, 2026 — hosted scoped displacement audit
+
+Main `9fb4e7a5` integrates #435, #436 and #437. On #439, the hosted
+default repeated rollup hit a response assertion. The no-unroll regression
+and ordinary compiler jobs passed. Integration of #439 and #440 is held
+for the correction and authoritative CI.
+[Maintainer finding](https://github.com/Human-Cognome-Project/human-cognome-project/pull/439#issuecomment-7169839218)
+
+The local optimizer comparison reproduced the assertion when LLVM packed
+X and Z into a two-lane response. The checker verifies the two lanes
+through LLVM scalarization on its diagnostic copy. Local scoped and
+ordinary checks pass in both compiler modes. Hosted capture runs before
+the audit assertions. [Correction and evidence](../engine/docs/SCOPED-HIERARCHY-COMPILER-AUDIT.md#hosted-default-audit-correction)
+
+The maintainer provisionally accepted the disjoint `í` exchange in #440.
+After the audit correction, the next operator slice makes that study
+selectable in the existing live CLI.
+[Maintainer handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7169853406)
+
+## November 25, 2026 — live Unicode character exchange
+
+Main `06414eee` includes #430, #431 and #433. #439 is provisionally
+accepted at `a8e0d8d0` for the fixed repeated endpoint compiler audit.
+Its hosted database and four compiler jobs passed.
+[Maintainer review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/439#issuecomment-7169133212) · [Native CI](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45657234407)
+
+The live `í` fixture now expands one aggregate into `C3 AD` and compresses
+it in the same prepared study. Both directions preserve the character field
+claim and verify native coverage and mass 4. The following ticks retain the
+ordered occurrence paths. The `ó` seed and poll audits pass in both
+compiler modes and reject the shifted source row.
+[Implementation and evidence](https://github.com/Human-Cognome-Project/human-cognome-project/blob/3164ee50a93ee4cd255bc2071886bf7c9181a2e0/engine/docs/LIVE-UNICODE-EXCHANGE.md)
+
+The exchange evidence is bounded to the explicit disjoint character cohort.
+The repeated endpoint remains a fixed-study witness. Hosted CI and review
+gate the integration sequence.
+
+## November 25, 2026 — scoped hierarchy compiler audit
+
+Main includes #430 at `6e290f5b`. The maintainer provisionally accepted
+the fixed `aá` study in #438 at `39523794` and requested the scoped
+compiler check before the live Unicode exchange.
+[Maintainer direction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/438#issuecomment-7167787666)
+
+The scoped reduction, force and paired wake operands pass on LLVM CPU
+in default and no-unroll modes. Both modes reject an incorrect scoped
+source and an omitted response operand. Ordinary packet and refresh
+transport checks pass with both settings. The parent hosted database
+job stopped on an HTTP 502 fetching LFS fixtures before acceptance ran.
+[Audit evidence and hosted status](../engine/docs/SCOPED-HIERARCHY-COMPILER-AUDIT.md)
+
+After review, return to changing Unicode levels of detail in the same running
+prepared study. Preserve ordered occurrence paths and compare exact coverage
+and mass through the exchange and a following native tick. Hosted CI and
+parent-first integration still apply.
 
 ## November 25, 2026 — fixed repeated endpoint rollup
 

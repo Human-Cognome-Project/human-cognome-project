@@ -5,6 +5,7 @@
 #include "prepared_owner_fixture.h"
 #include "prepared_fixture.h"
 #include "field/cascade_source.h"
+#include "scoped_hierarchy_audit.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -583,6 +584,7 @@ Json run_input(engine::Runtime &runtime,Input in,field::HostPath path,bool proje
   check(prepared.status==AdmissionPlanStatus::Ok,"native owner preparation failed");
   auto &owner=*prepared.owner;const auto handle=owner.handle();const auto authorization=in.source->owner();
   check(owner.bootstrap(authorization,handle,UINT64_MAX,UINT64_MAX,UINT64_MAX).status==field::UpdateStatus::Ok,"native bootstrap failed");
+  if (repeated) audit_scoped_hierarchy(harness);
   const auto capture=[&] {
     auto state=viewport::observe(owner,authorization,handle,viewport::IntentRequest{1,UINT64_MAX},viewport::ResponseRequest{UINT64_MAX});
     auto context=viewport::context(*in.source,handle,state.tick,"Semantic native fixture trace");
@@ -1027,6 +1029,7 @@ int main(int argc,char **argv) {
       const std::string arg=argv[i];
       if(arg=="--threads" && i+1<argc)settings.cpu_threads=int(viewport::parse_count(arg,argv[++i],1,1024));
       else if(arg=="--direct")path=field::HostPath::CpuDirect;
+      else if(arg=="--compiler-no-unroll") scoped_audit_no_unroll();
       else if(arg=="--projection-only")project_only=true;
       else if(arg=="--case" && i+1<argc)selected=argv[++i];
       else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode|character-rollup|parent-overlap|scoped-nibble|repeated-rollup|varied-rollup]");
