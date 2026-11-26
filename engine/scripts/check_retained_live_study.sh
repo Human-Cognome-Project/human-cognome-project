@@ -13,6 +13,10 @@ case "$exit_mode" in
     if [[ $exit_mode == catalogue-shared-direct ]]; then set -- "$@" --threads 2 --direct; fi
     set -- "$@" --letter 02.00.00.00.03 --letter 02.00.00.00.04
     exit_mode=catalogue-shared ;;
+  catalogue-cross|catalogue-cross-direct)
+    if [[ $exit_mode == catalogue-cross-direct ]]; then set -- "$@" --threads 2 --direct; fi
+    set -- "$@" --letter 02.00.00.00.03 --letter 02.01.00.00.03 --focus-byte 00.00.00.00.23
+    exit_mode=catalogue-cross ;;
   batch-disconnect|blocked-write) : "${HCP_RETAINED_LIVE_PIPE_CHECK:?}" ;;
   *) exit 2 ;;
 esac
@@ -146,6 +150,128 @@ if [[ $exit_mode == catalogue* ]]; then
   original=$(claim 1)
   test -n "$original"
   test -z "$(claim 2)"
+
+  if [[ $exit_mode == catalogue-cross ]]; then
+    field_row() {
+      local address=${1//./\\.}
+      printf '%s\n' "$event" | tr '{' '\n' |
+        sed -nE "s/^\"comparison\":\"([0-9]+)\",\"kind\":$2,\"object\":\"[^\"]*$address\",\"record\":([0-9]+)\}.*/\1 \2/p"
+    }
+    field_slot() {
+      local identity
+      identity=$(field_row "$1" "$2")
+      test -n "$identity"
+      printf '%s\n' "$event" | sed -nE "s/.*\"comparison\":\"${identity%% *}\",\"slot\":([0-9]+)\}.*/\1/p"
+    }
+    response_links() {
+      printf '%s\n' "$event" | sed 's/},{"body":/}\n{"body":/g' | sed -nE \
+        's/.*"record":([0-9]+)\},"body_mass":[^,]+,"child":([0-9]+),[^}]*"denominator":"([0-9]+)","extraction_valid":true,"kind":"([^"]+)","numerator":"([0-9]+)","parent":([0-9]+),.*/\1 \2 \6 \4 \5 \3/p'
+    }
+    check_recipient() {
+      local body slot foreign
+      body=$(claim "$1"); body=${body##*:}
+      slot=$(field_slot "$2" 2)
+      foreign=$(field_row "$3" 2)
+      test -n "$body"
+      test -n "$slot"
+      if [[ -n $foreign ]]; then foreign=$(field_slot "$3" 2); fi
+      response_links | awk -v body="$body" -v slot="$slot" -v foreign="$foreign" '
+        $1==body && $3==slot { own=1 }
+        $1==body && foreign!="" && $3==foreign { other=1 }
+        END { exit !(own && !other) }'
+    }
+    check_shared_byte() {
+      local suffix=$1 english_target=$2 french_target=$3 kind=$4 english french shared_slot en_slot fr_slot links
+      english=$(claim "1$suffix"); english=${english##*:}
+      french=$(claim "2$suffix"); french=${french##*:}
+      shared_slot=$(field_slot "$focus_byte" 1)
+      en_slot=$(field_slot "$english_target" "$kind")
+      fr_slot=$(field_slot "$french_target" "$kind")
+      links=$(response_links)
+      [[ "$links" == *"$english $shared_slot $en_slot scoped_inherited 2 2"* ]]
+      [[ "$links" == *"$french $shared_slot $fr_slot scoped_inherited 2 2"* ]]
+      check_recipient "1$suffix" "$english_group" "$french_group"
+      check_recipient "1$suffix" "$english_alphabet" "$french_alphabet"
+      check_recipient "2$suffix" "$french_group" "$english_group"
+      check_recipient "2$suffix" "$french_alphabet" "$english_alphabet"
+      test "$(field_row "$focus_byte" 1)" = "$focus_claim"
+    }
+    focus_byte=00.00.00.00.23
+    english_group=02.00.00.00.00
+    english_alphabet=02.00.00.00.01
+    french_group=02.01.00.00.00
+    french_alphabet=02.01.00.00.01
+    [[ "$event" == *'"focus":{"kind":"parent","object":'*"$focus_byte"* ]]
+    focus_claim=$(field_row "$focus_byte" 1)
+    test -n "$focus_claim"
+    check_recipient 1 "$english_group" "$french_group"
+    test -z "$(field_row "$french_alphabet" 2)"
+
+    step=cross-refusal
+    send add 2 "$second" 00000000-0000-0000-0000-000000000000
+    receive '"status":"invalid_input"'
+    test "$(claim 1)" = "$original"
+    test -z "$(claim 2)"
+
+    step=cross-add
+    send add 2 "$second" "$second_revision"
+    receive '"status":"ok"'
+    observe_state 4
+    test "$(claim 1)" = "$original"
+    check_shared_byte '' 02.00.00.00.03 02.01.00.00.03 0
+    send tick 1
+    receive '"completed_tick":1'
+    check_shared_byte '' 02.00.00.00.03 02.01.00.00.03 0
+
+    step=cross-parts
+    send lod parts
+    receive '"status":"ok"'
+    observe_state 4
+    [[ "$event" == *"\"id\":\"$study/1/0/0\""*"\"id\":\"$study/2/0/0\""* ]]
+    check_shared_byte /0/0 "$english_alphabet" "$french_alphabet" 2
+    french_part=$(claim 2/0/0)
+
+    step=cross-remove-english
+    send remove 1
+    receive '"status":"ok"'
+    observe_state 2
+    test -z "$(claim 1/0/0)"
+    test -z "$(field_row "$english_group" 2)$(field_row "$english_alphabet" 2)"
+    test "$(claim 2/0/0)" = "$french_part"
+    check_recipient 2/0/0 "$french_group" "$english_group"
+    send tick 1
+    receive '"completed_tick":2'
+    test "$(claim 2/0/0)" = "$french_part"
+
+    step=cross-restore-english
+    send add 1
+    receive '"status":"ok"'
+    observe_state 4
+    check_shared_byte /0/0 "$english_alphabet" "$french_alphabet" 2
+    test "$(claim 2/0/0)" = "$french_part"
+
+    step=cross-rollup
+    send lod aggregate
+    receive '"status":"ok"'
+    observe_state 4
+    check_shared_byte '' 02.00.00.00.03 02.01.00.00.03 0
+    english_rollup=$(claim 1)
+
+    step=cross-remove-french
+    send remove 2
+    receive '"status":"ok"'
+    observe_state 2
+    test -z "$(claim 2)"
+    test -z "$(field_row "$french_group" 2)$(field_row "$french_alphabet" 2)"
+    check_recipient 1 "$english_group" "$french_group"
+    send tick 1
+    receive '"completed_tick":3'
+    test "$(claim 1)" = "$english_rollup"
+    test "$(field_row "$focus_byte" 1)" = "$focus_claim"
+    release_catalogue
+    echo 'PASS: English and French A share their byte and keep their own membership recipients'
+    exit 0
+  fi
 
   if [[ $exit_mode == catalogue-shared ]]; then
     scoped_rows() {

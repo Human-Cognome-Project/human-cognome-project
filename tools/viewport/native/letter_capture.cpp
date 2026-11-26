@@ -116,7 +116,8 @@ int run_catalogue(const viewport::LiveStudyInput &input, warm::SharedManager &ma
 }
 }
 static int run_capture(const viewport::Options &options, const viewport::LiveStudyInput *live = nullptr,
-                       const std::vector<std::string> &letters = {}) {
+                       const std::vector<std::string> &letters = {},
+                       const std::optional<std::string> &focus_byte = {}) {
   try {
     using namespace warm;
     using namespace assembly;
@@ -214,7 +215,9 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
         definitions.geometry.push_back({key, {}, {{{}, !options.prepared_english_pair && key == dutch.object ? 0.25 : 0.125}}});
     }
     const auto recipe = [&] {
-      if (!catalogue.empty()) return viewport::retained_catalogue_recipe(definitions,catalogue);
+      if (!catalogue.empty())
+        return viewport::retained_catalogue_recipe(definitions,catalogue,
+            focus_byte ? std::optional(object(*focus_byte)) : std::nullopt);
       if (options.retained_memberships) return viewport::prepared_retained_english_pair(definitions,english);
       if (options.prepared_english_pair) return viewport::prepared_english_pair(definitions,english);
       // Test geometry and placements are supplied, not inferred from cold records.
@@ -432,11 +435,12 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
   }
 }
 
-int viewport::run_retained_live_study(const LiveStudyInput &input,const std::vector<std::string> &letters) {
+int viewport::run_retained_live_study(const LiveStudyInput &input,const std::vector<std::string> &letters,
+                                      const std::optional<std::string> &focus_byte) {
   Options options;
   options.prepared_english_pair = true;
   options.retained_memberships = true;
-  return run_capture(options,&input,letters);
+  return run_capture(options,&input,letters,focus_byte);
 }
 
 int viewport_letter_capture(int argc, char **argv) {

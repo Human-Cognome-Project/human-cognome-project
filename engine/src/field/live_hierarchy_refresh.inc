@@ -424,7 +424,8 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
   auto &s = *a.h.prepared_;
   const auto &limits = s.capacity.limits();
   const bool scoped_responses = s.capacity.scoped_responses();
-  const bool editable_scopes = s.capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedCatalogue;
+  const bool editable_scopes = s.capacity.editable_scopes();
+  const bool separate_memberships = s.capacity.separate_membership_roots();
   const auto cap = limits[Budget::CascadeWork];
   const auto budget = work_limit == UINT64_MAX ? cap : work_limit;
   const auto reject = [&](UpdateStatus status) -> void {
@@ -642,7 +643,7 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
             if (selected<origin.cohort_begin || selected-origin.cohort_begin>=origin.cohort_count)
               continue;
             const int owner = r.plan[LogicalOrder*a.H+k];
-            if (publisher>=0 || config(ChildCount,owner) ||
+            if (publisher>=0 || (!separate_memberships && config(ChildCount,owner)) ||
                 std::size_t(config(SourceCount,owner))!=origin.cohort_count ||
                 origin.retained_fraction_bits!=52 || origin.level>node.level)
               reject(UpdateStatus::InvalidInput);
@@ -768,12 +769,16 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
       r.plan[Repair * a.H + slot] = repair;
       changed |= repair;
     }
+    if (separate_memberships) {
+      charge(a.P);
+      std::fill_n(r.offsets.begin(),a.P,0);
+    }
     for (std::size_t logical = 0; logical < spec.node_count; ++logical) {
       charge();
       int slot = r.plan[LogicalOrder * a.H + logical],
           parent = config(Parent, slot);
-      bool scoped_leaf = false;
-      if (scoped_count && !config(ChildCount,slot)) {
+      bool scoped_publisher = false;
+      if (scoped_count && (separate_memberships || !config(ChildCount,slot))) {
         const int begin = config(SourceBegin,slot), count = config(SourceCount,slot);
         int selected = 0, branches = 0;
         for (std::size_t branch=0; branch<spec.node_count; ++branch) {
@@ -789,11 +794,19 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
           }
           branches += selected != previous;
         }
-        scoped_leaf = selected != 0;
-        if (scoped_leaf && (selected != count || branches < 2))
+        scoped_publisher = selected != 0;
+        if (scoped_publisher && (selected != count || branches < 2))
           reject(UpdateStatus::InvalidInput);
       }
-      if ((parent < 0) != (logical + 1 == spec.node_count || scoped_leaf))
+      if (separate_memberships) {
+        if (scoped_publisher && parent>=0) reject(UpdateStatus::InvalidInput);
+        if (parent<0 && !scoped_publisher)
+          for (int i=config(CoverBegin,slot); i<config(CoverBegin,slot)+config(CoverCount,slot); ++i) {
+            charge();
+            if (r.exact[i].count!=r.exact[i].denominator || r.offsets[r.coverage[i]]++)
+              reject(UpdateStatus::InvalidInput);
+          }
+      } else if ((parent<0) != (logical+1==spec.node_count || scoped_publisher))
         reject(UpdateStatus::InvalidInput);
       config(Complement, slot) = parent >= 0 && config(ChildCount, parent) > 1;
       if (r.plan[PriorSlot * a.H + slot] >= 0)
@@ -813,6 +826,8 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
     std::size_t nr = 0;
     for (int body = 0; body < a.P; ++body) {
       charge();
+      if (separate_memberships && (s.prospective_particles[body].record>=0) != (r.offsets[body]==1))
+        reject(UpdateStatus::InvalidInput);
       r.offsets[body] = int(nr);
       bool local = false;
       const auto add = [&](int kind, int slot, int parent, std::uint64_t c,

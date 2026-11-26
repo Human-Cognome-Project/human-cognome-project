@@ -65,7 +65,7 @@ struct DenseShape {
 };
 
 enum class PreparedHierarchyMode {
-  ExpressedTree, ScopedNibbleBootstrap, ScopedEndpointBootstrap, ScopedCatalogue
+  ExpressedTree, ScopedNibbleBootstrap, ScopedEndpointBootstrap, ScopedCatalogue, CrossLanguageCatalogue
 };
 
 // Checked logical limits and current numerical layout arithmetic only. Does
@@ -77,9 +77,12 @@ class PreparedCapacity {
   const NumericalProfile &profile() const { return profile_; }
   PreparedHierarchyMode hierarchy_mode() const { return hierarchy_; }
   bool scoped_rows() const { return hierarchy_ != PreparedHierarchyMode::ExpressedTree; }
+  bool editable_scopes() const {
+    return hierarchy_ == PreparedHierarchyMode::ScopedCatalogue || separate_membership_roots();
+  }
+  bool separate_membership_roots() const { return hierarchy_ == PreparedHierarchyMode::CrossLanguageCatalogue; }
   bool scoped_responses() const {
-    return hierarchy_ == PreparedHierarchyMode::ScopedEndpointBootstrap ||
-           hierarchy_ == PreparedHierarchyMode::ScopedCatalogue;
+    return hierarchy_ == PreparedHierarchyMode::ScopedEndpointBootstrap || editable_scopes();
   }
   const BudgetDemand &limits() const {
     return limits_;

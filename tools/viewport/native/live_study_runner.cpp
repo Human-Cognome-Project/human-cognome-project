@@ -47,6 +47,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
   const auto source=request.source;
   const auto catalogue=request.bindings.bodies;
   const bool catalogue_edits=request.lod_alternative && !request.lod_alternative->initially_live.empty();
+  const bool byte_focus=request.capacity.separate_membership_roots();
   const auto limits=request.capacity.limits();
   const auto resources=request.resources;
   assembly::ActiveSession session(input.settings);
@@ -94,6 +95,15 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
     result["generation"]=*state.prepared_generation;
     result["owner_metadata_bytes"]=resources->result().live_bytes;
     result["owner_setup_peak_bytes"]=resources->result().peak_bytes;
+    if (byte_focus) {
+      result["focus"]={{"kind","parent"},{"object",warm::key(source->shared_recipe().focal_fields.front().object)}};
+      result["live_fields"]=Json::array();
+      for (const auto &comparison : state.comparisons) {
+        const auto &group=state.report.prepared.groups.at(comparison.field.record);
+        result["live_fields"].push_back({{"comparison",std::to_string(comparison.comparison)},
+          {"kind",int(group.kind)},{"object",group.value},{"record",comparison.field.record}});
+      }
+    }
     result["live_occurrences"]=Json::array();
     for (std::size_t i=0; i<state.body_records.size(); ++i) {
       const auto &claim=state.body_records[i];

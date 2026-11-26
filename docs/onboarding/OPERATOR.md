@@ -89,8 +89,25 @@ exposure, the response trace shows both scoped contributions under the same
 nibble field. Each contributes through its own byte path. Run `tick 1` in
 parts exposure to observe the shared field before rolling up.
 
-The retained profile currently requires identical membership coverage across
-roots. The [recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
+### Open a retained English/French study
+
+English A and French A share byte `41`. They belong to separate language and
+alphabet groups. Select the shared byte explicitly when offering the two roots.
+
+```sh
+engine/build/viewport/viewport_live_study --retained \
+  --letter 02.00.00.00.03 --letter 02.01.00.00.03 \
+  --focus-byte 00.00.00.00.23 --response-work-limit 1000000
+```
+
+Open either root by its exact pin and `add` the other using its entry, definition
+and revision. Tick, expand with `lod parts`, roll up with `lod aggregate` and
+remove either entry. The `focus` and `live_fields` records identify the shared
+byte and let you match response packet comparisons to each language’s fields.
+
+The explicit byte focus currently requires every declared letter to consist of
+that byte and have a complete membership path. The
+[recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
 tracks wider catalogue qualification.
 
 [Viewer controls](../../tools/viewport/README.md) · [Build the engine](FIRST-RUN.md)

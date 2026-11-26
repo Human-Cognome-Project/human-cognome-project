@@ -7,7 +7,7 @@
 namespace {
 enum class Preset { EditableEnglish, WholeFieldEnglish, UnicodeI, Retained };
 void help() {
-  std::cout << "viewport_live_study [--threads N] [--direct] [--whole-field | --unicode-i | --retained] [--letter ADDRESS] [--response-work-limit N] [--commands FILE]\n"
+  std::cout << "viewport_live_study [--threads N] [--direct] [--whole-field | --unicode-i | --retained] [--letter ADDRESS] [--focus-byte ADDRESS] [--response-work-limit N] [--commands FILE]\n"
       "Commands: observe; list; add ENTRY [TEMPLATE_ENTRY]; add ENTRY DEFINITION REVISION; remove ENTRY; lod aggregate|parts; tick [N]; quit\n"
       "The fixture English-pair catalogue declares entries 2 and 10. Both start live.\n"
       "For the English pair, a new root entry copies a declared template (default 2) within capacity.\n"
@@ -16,6 +16,7 @@ void help() {
       "--retained runs the shared publishing owner on a fresh dedicated warm v2 database.\n"
       "Use open SELECTION REVISION with the offered retained recipe pin.\n"
       "With --retained, repeat --letter ADDRESS to offer a catalogue and use open DEFINITION REVISION.\n"
+      "With --letter, --focus-byte ADDRESS selects a shared direct byte of the declared roots.\n"
       "In that catalogue, bare add ENTRY uses a declared or remembered template. New entries require a selector.\n";
 }
 }
@@ -25,6 +26,7 @@ int main(int argc, char **argv) {
     auto path=field::HostPath::BulkCopy;
     std::string command_file;
     std::vector<std::string> letters;
+    std::optional<std::string> focus_byte;
     Preset preset=Preset::EditableEnglish;
     std::optional<viewport::ResponseRequest> responses;
     for (int i=1; i<argc; ++i) {
@@ -39,6 +41,7 @@ int main(int argc, char **argv) {
         preset=selected;
       }
       else if (arg == "--letter" && i+1<argc) letters.emplace_back(argv[++i]);
+      else if (arg == "--focus-byte" && i+1<argc && !focus_byte) focus_byte=argv[++i];
       else if (arg == "--response-work-limit" && i+1<argc)
         responses=viewport::ResponseRequest{viewport::parse_count("--response-work-limit",argv[++i],0,UINT64_MAX)};
       else if (arg == "--threads" && i+1<argc)
@@ -47,12 +50,13 @@ int main(int argc, char **argv) {
       else throw std::invalid_argument("unknown or incomplete option");
     }
     if (!letters.empty() && preset!=Preset::Retained) throw std::invalid_argument("--letter requires --retained");
+    if (focus_byte && letters.empty()) throw std::invalid_argument("--focus-byte requires a retained letter catalogue");
     viewport::ignore_live_sigpipe();
     viewport::LiveCommandInput input(command_file,preset==Preset::Retained);
     const viewport::LiveStudyInput run{input,std::cout,settings,path,responses};
     if (preset==Preset::Retained) {
 #ifdef HCP_HAS_RETAINED_LIVE_STUDY
-      return viewport::run_retained_live_study(run,letters);
+      return viewport::run_retained_live_study(run,letters,focus_byte);
 #else
       throw std::invalid_argument("retained studies require the warm integration build");
 #endif
