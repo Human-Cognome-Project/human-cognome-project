@@ -46,6 +46,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
                    std::optional<double> physical_mass, std::optional<std::uint64_t> source_mass) {
   const auto source=request.source;
   const auto catalogue=request.bindings.bodies;
+  const bool catalogue_edits=request.lod_alternative && !request.lod_alternative->initially_live.empty();
   const auto limits=request.capacity.limits();
   const auto resources=request.resources;
   assembly::ActiveSession session(input.settings);
@@ -165,7 +166,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
         assembly::PreparedOccurrenceEdit edit{{source->study(),{entry,{}}},command == "add"};
         if (!revision.empty()) {
           edit.definition_pin=catalogue_pin(catalogue,extra,revision);
-        } else if (command == "add") {
+        } else if (command == "add" && (!extra.empty() || !catalogue_edits)) {
           bool declared_entry=false;
           for (const auto &item : catalogue) declared_entry |= item.occurrence.source.entry == entry;
           const auto template_entry=extra.empty() ? (declared_entry ? entry : 2)

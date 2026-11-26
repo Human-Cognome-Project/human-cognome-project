@@ -8,6 +8,7 @@ exit_mode=${HCP_RETAINED_LIVE_EXIT:-quit}
 case "$exit_mode" in
   quit|idle-stop|output-disconnect|batch-stop|offer-stop) ;;
   catalogue) set -- "$@" --letter 02.00.00.00.03 --letter 02.00.00.00.1W ;;
+  catalogue-single) set -- "$@" --letter 02.00.00.00.03 ;;
   batch-disconnect|blocked-write) : "${HCP_RETAINED_LIVE_PIPE_CHECK:?}" ;;
   *) exit 2 ;;
 esac
@@ -86,7 +87,7 @@ claim() {
   printf '%s\n' "$event" | sed -nE \
     's|.*(\{"address":[0-9]+,"context":[0-9]+,"id":"'"$study/$1"'","incarnation":[0-9]+,"record":[0-9]+),.*|\1|p'
 }
-if [[ $exit_mode == catalogue ]]; then
+if [[ $exit_mode == catalogue || $exit_mode == catalogue-single ]]; then
   step=catalogue-offer
   receive '"command":"catalogue_available"'
   offer_entry() {
@@ -94,8 +95,12 @@ if [[ $exit_mode == catalogue ]]; then
       sed -nE 's/.*\{"definition":"([^"]+)","entry":'"$1"',"revision":"([^"]+)"\}.*/\1 \2/p'
   }
   read -r a a_revision < <(offer_entry 1)
-  read -r i i_revision < <(offer_entry 2)
-  test "$a" != "$i"
+  if [[ $exit_mode == catalogue ]]; then
+    read -r i i_revision < <(offer_entry 2)
+    test "$a" != "$i"
+  else
+    test -z "$(offer_entry 2)"
+  fi
   test "$(state)" = '2|1|1'
   send open "$a" 00000000-0000-0000-0000-000000000000
   receive '"status":"unavailable"'
@@ -116,6 +121,16 @@ if [[ $exit_mode == catalogue ]]; then
     printf '%s\n' "$event" |
       sed -nE 's/.*"response_trace":\{"capacity":"[^"]+","count":"([0-9]+)".*/\1/p'
   }
+  release_catalogue() {
+    step=catalogue-release
+    send quit
+    receive '"command":"recipe_release"' 30
+    [[ "$event" == *'"acquisitions":2'* && "$event" == *'"releases":2'* ]]
+    wait_for_exit 1
+    test "$(state)" = '2|2|0'
+    exec {writer}>&- {reader}<&-
+    step=complete
+  }
   observe_state() {
     test "$(json_text study)" = "$study"
     test "$(mass)" = "$1"
@@ -127,6 +142,73 @@ if [[ $exit_mode == catalogue ]]; then
   original=$(claim 1)
   test -n "$original"
   test -z "$(claim 2)"
+
+  step=catalogue-declared-retry
+  send add 1
+  receive '"status":"no_change"'
+  test "$(claim 1)" = "$original"
+
+  step=catalogue-clone-retry
+  send add 27 "$a" "$a_revision"
+  receive '"status":"ok"'
+  clone=$(claim 27)
+  test -n "$clone"
+  clone_generation=$(json_number generation)
+  send add 27
+  receive '"status":"no_change"'
+  test "$(claim 27)" = "$clone"
+  test "$(json_number generation)" = "$clone_generation"
+
+  step=catalogue-clone-conflict
+  if [[ $exit_mode == catalogue ]]; then
+    send add 27 2
+    receive '"status":"invalid_input"'
+    test "$(claim 27)" = "$clone"
+    test "$(json_number generation)" = "$clone_generation"
+    send add 27 "$i" "$i_revision"
+  else
+    send add 27 "$a" 00000000-0000-0000-0000-000000000000
+  fi
+  receive '"status":"invalid_input"'
+  test "$(claim 27)" = "$clone"
+  test "$(json_number generation)" = "$clone_generation"
+
+  step=catalogue-clone-restore
+  send remove 27
+  receive '"status":"ok"'
+  test -z "$(claim 27)"
+  send add 27
+  receive '"status":"ok"'
+  restored=$(claim 27)
+  test -n "$restored"
+  test "$restored" != "$clone"
+  test "$(mass)" = 4
+  send add 27 1
+  receive '"status":"no_change"'
+  test "$(claim 27)" = "$restored"
+
+  step=catalogue-unknown-refusal
+  restored_generation=$(json_number generation)
+  send add 28
+  receive '"status":"invalid_input"'
+  test "$(json_number generation)" = "$restored_generation"
+  test "$(claim 27)" = "$restored"
+  test -z "$(claim 28)"
+  send remove 27
+  receive '"status":"ok"'
+  test "$(claim 1)" = "$original"
+  test -z "$(claim 27)"
+  if [[ $exit_mode == catalogue-single ]]; then
+    step=catalogue-single-tick
+    send tick 1
+    receive '"completed_tick":1'
+    observe_state 2
+    test "$(claim 1)" = "$original"
+    release_catalogue
+    echo 'PASS: single-root retained catalogue retries, restores and requires a selector for new entries'
+    exit 0
+  fi
+
   initial_generation=$(json_number generation)
 
   step=catalogue-refusal
@@ -172,6 +254,17 @@ if [[ $exit_mode == catalogue ]]; then
   send list
   receive '"command":"list"'
   [[ "$event" == *"\"definition\":\"$i\",\"entry\":2,\"id\":\"$study/2\",\"revision\":\"$i_revision\"}"* ]]
+
+  step=catalogue-declared-restore
+  send add 2
+  receive '"status":"ok"'
+  test "$(mass)" = 6
+  test "$(claim 1)" = "$rolled"
+  test -n "$(claim 2)"
+  send remove 2
+  receive '"status":"ok"'
+  test -z "$(claim 2)"
+
   step=catalogue-final-tick
   send tick 1
   receive '"completed_tick":2'
@@ -186,14 +279,7 @@ if [[ $exit_mode == catalogue ]]; then
   test -z "$(claim 2)"
   test -n "$(claim 3)"
 
-  step=catalogue-release
-  send quit
-  receive '"command":"recipe_release"' 30
-  [[ "$event" == *'"acquisitions":2'* && "$event" == *'"releases":2'* ]]
-  wait_for_exit 1
-  test "$(state)" = '2|2|0'
-  exec {writer}>&- {reader}<&-
-  step=complete
+  release_catalogue
   echo 'PASS: retained catalogue edited and exchanged differently composed roots on one handle'
   exit 0
 fi

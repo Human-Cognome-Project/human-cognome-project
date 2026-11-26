@@ -10,12 +10,13 @@ void help() {
   std::cout << "viewport_live_study [--threads N] [--direct] [--whole-field | --unicode-i | --retained] [--letter ADDRESS] [--response-work-limit N] [--commands FILE]\n"
       "Commands: observe; list; add ENTRY [TEMPLATE_ENTRY]; add ENTRY DEFINITION REVISION; remove ENTRY; lod aggregate|parts; tick [N]; quit\n"
       "The fixture English-pair catalogue declares entries 2 and 10. Both start live.\n"
-      "A new root entry copies a declared template (default 2) within capacity.\n"
+      "For the English pair, a new root entry copies a declared template (default 2) within capacity.\n"
       "--unicode-i selects the fixed í cohort. Use lod parts and lod aggregate to exchange C3 AD and í.\n"
       "The fixed cohort reports unsupported for add and remove.\n"
       "--retained runs the shared publishing owner on a fresh dedicated warm v2 database.\n"
       "Use open SELECTION REVISION with the offered retained recipe pin.\n"
-      "With --retained, repeat --letter ADDRESS to offer a catalogue and use open DEFINITION REVISION.\n";
+      "With --retained, repeat --letter ADDRESS to offer a catalogue and use open DEFINITION REVISION.\n"
+      "In that catalogue, bare add ENTRY uses a declared or remembered template. New entries require a selector.\n";
 }
 }
 int main(int argc, char **argv) {

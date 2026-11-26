@@ -77,6 +77,12 @@ row's pin in `add 2 DEFINITION REVISION`, then run `tick 1`, `lod parts`,
 removed definition. The catalogue and study pins are released when their
 owner is finished with them.
 
+With `--letter`, `add ENTRY` uses the native owner's declared or remembered
+template for that entry. Retrying a live entry is a no-op. Use `add ENTRY
+TEMPLATE_ENTRY` or `add ENTRY DEFINITION REVISION` for a new, undeclared
+entry, even in a single-letter catalogue. A selector that conflicts with a
+declared or remembered template is refused.
+
 This retained profile derives one comparison tree from roots with identical
 membership coverage and disjoint parent fields across definitions. The
 [recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
