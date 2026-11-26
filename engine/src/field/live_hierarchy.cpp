@@ -601,7 +601,7 @@ void LiveHierarchy::Impl::prepare_intent_observation() {
 }
 void LiveHierarchy::Impl::prepare_response_observation() {
   IRBuilder b;
-  const bool scoped_responses = h.prepared_->capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedEndpointBootstrap;
+  const bool scoped_responses = h.prepared_->capacity.scoped_responses();
   Args a(b);
   auto *out = array(b, 30, PrimitiveType::f64, 2);
   auto *n = b.create_arg_load({31}, PrimitiveType::i32, false, 0);
@@ -664,7 +664,7 @@ std::array<engine::CompiledKernel, 3> LiveHierarchy::Impl::build_kernels(
   const auto suffix = std::to_string(centroid_selection.cells->id);
   const int threads = h.runtime_->cpu_threads();
   const bool scoped_rows = h.prepared_->capacity.scoped_rows();
-  const bool scoped_responses = h.prepared_->capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedEndpointBootstrap;
+  const bool scoped_responses = h.prepared_->capacity.scoped_responses();
   {
     IRBuilder b;
     Args a(b);

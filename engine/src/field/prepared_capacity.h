@@ -64,7 +64,9 @@ struct DenseShape {
   std::size_t rows, stride, element_bytes, bytes;
 };
 
-enum class PreparedHierarchyMode { ExpressedTree, ScopedNibbleBootstrap, ScopedEndpointBootstrap };
+enum class PreparedHierarchyMode {
+  ExpressedTree, ScopedNibbleBootstrap, ScopedEndpointBootstrap, ScopedCatalogue
+};
 
 // Checked logical limits and current numerical layout arithmetic only. Does
 // not allocate backing, bind kernels, or certify scratch for a future batch.
@@ -75,6 +77,10 @@ class PreparedCapacity {
   const NumericalProfile &profile() const { return profile_; }
   PreparedHierarchyMode hierarchy_mode() const { return hierarchy_; }
   bool scoped_rows() const { return hierarchy_ != PreparedHierarchyMode::ExpressedTree; }
+  bool scoped_responses() const {
+    return hierarchy_ == PreparedHierarchyMode::ScopedEndpointBootstrap ||
+           hierarchy_ == PreparedHierarchyMode::ScopedCatalogue;
+  }
   const BudgetDemand &limits() const {
     return limits_;
   }

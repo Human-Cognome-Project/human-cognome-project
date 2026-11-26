@@ -9,6 +9,10 @@ case "$exit_mode" in
   quit|idle-stop|output-disconnect|batch-stop|offer-stop) ;;
   catalogue) set -- "$@" --letter 02.00.00.00.03 --letter 02.00.00.00.1W ;;
   catalogue-single) set -- "$@" --letter 02.00.00.00.03 ;;
+  catalogue-shared|catalogue-shared-direct)
+    if [[ $exit_mode == catalogue-shared-direct ]]; then set -- "$@" --threads 2 --direct; fi
+    set -- "$@" --letter 02.00.00.00.03 --letter 02.00.00.00.04
+    exit_mode=catalogue-shared ;;
   batch-disconnect|blocked-write) : "${HCP_RETAINED_LIVE_PIPE_CHECK:?}" ;;
   *) exit 2 ;;
 esac
@@ -87,7 +91,7 @@ claim() {
   printf '%s\n' "$event" | sed -nE \
     's|.*(\{"address":[0-9]+,"context":[0-9]+,"id":"'"$study/$1"'","incarnation":[0-9]+,"record":[0-9]+),.*|\1|p'
 }
-if [[ $exit_mode == catalogue || $exit_mode == catalogue-single ]]; then
+if [[ $exit_mode == catalogue* ]]; then
   step=catalogue-offer
   receive '"command":"catalogue_available"'
   offer_entry() {
@@ -95,9 +99,9 @@ if [[ $exit_mode == catalogue || $exit_mode == catalogue-single ]]; then
       sed -nE 's/.*\{"definition":"([^"]+)","entry":'"$1"',"revision":"([^"]+)"\}.*/\1 \2/p'
   }
   read -r a a_revision < <(offer_entry 1)
-  if [[ $exit_mode == catalogue ]]; then
-    read -r i i_revision < <(offer_entry 2)
-    test "$a" != "$i"
+  if [[ $exit_mode != catalogue-single ]]; then
+    read -r second second_revision < <(offer_entry 2)
+    test "$a" != "$second"
   else
     test -z "$(offer_entry 2)"
   fi
@@ -143,6 +147,106 @@ if [[ $exit_mode == catalogue || $exit_mode == catalogue-single ]]; then
   test -n "$original"
   test -z "$(claim 2)"
 
+  if [[ $exit_mode == catalogue-shared ]]; then
+    scoped_rows() {
+      printf '%s\n' "$event" | sed 's/},{"body":/}\n{"body":/g' | sed -nE \
+        's/.*"record":([0-9]+)\},"body_mass":[^,]+,"child":([0-9]+),[^}]*"denominator":"2","extraction_valid":true,"kind":"scoped_inherited","numerator":"1","parent":([0-9]+),"production_eligible":(true|false),.*/\1 \2 \3 \4/p'
+    }
+    shared_nibble() {
+      local a_record b_record r1 r2 child1 child2 parent1 parent2
+      local -a scoped
+      readarray -t scoped < <(scoped_rows)
+      test "${#scoped[@]}" -eq 2
+      a_record=$(claim 1/0/0); a_record=${a_record##*:}
+      b_record=$(claim 2/0/0); b_record=${b_record##*:}
+      read -r r1 child1 parent1 _ <<< "${scoped[0]}"
+      read -r r2 child2 parent2 _ <<< "${scoped[1]}"
+      [[ "$r1 $r2" == "$a_record $b_record" || "$r1 $r2" == "$b_record $a_record" ]]
+      test "$child1" = "$child2"
+      test "$parent1" != "$parent2"
+    }
+
+    step=shared-refusal
+    send add 2 "$second" 00000000-0000-0000-0000-000000000000
+    receive '"status":"invalid_input"'
+    test "$(claim 1)" = "$original"
+    test -z "$(claim 2)"
+
+    step=shared-add
+    send add 2 "$second" "$second_revision"
+    receive '"status":"ok"'
+    observe_state 4
+    test "$(claim 1)" = "$original"
+    test -n "$(claim 2)"
+    send tick 1
+    receive '"completed_tick":1'
+
+    step=shared-parts
+    send lod parts
+    receive '"status":"ok"'
+    observe_state 4
+    [[ "$event" == *"\"id\":\"$study/1/0/0\""*"\"id\":\"$study/2/0/0\""* ]]
+    shared_nibble
+    a_part=$(claim 1/0/0)
+    b_part=$(claim 2/0/0)
+    send tick 1
+    receive '"completed_tick":2'
+    shared_nibble
+
+    step=shared-clone
+    send add 27 "$a" "$a_revision"
+    receive '"status":"ok"'
+    observe_state 6
+    test -n "$(claim 27/0/0)"
+    test "$(scoped_rows | wc -l)" -eq 3
+    send tick 1
+    receive '"completed_tick":3'
+    test "$(scoped_rows | awk '$4=="true"{++eligible} END{print eligible+0}')" -eq 2
+    send remove 27
+    receive '"status":"ok"'
+    shared_nibble
+    test "$(claim 1/0/0)" = "$a_part"
+    test "$(claim 2/0/0)" = "$b_part"
+
+    step=shared-remove-in-parts
+    send remove 2
+    receive '"status":"ok"'
+    observe_state 2
+    test "$(claim 1/0/0)" = "$a_part"
+    test -z "$(claim 2/0/0)"
+    test -z "$(scoped_rows)"
+
+    step=shared-readd-in-parts
+    send add 2 "$second" "$second_revision"
+    receive '"status":"ok"'
+    observe_state 4
+    shared_nibble
+    test "$(claim 1/0/0)" = "$a_part"
+    test "$(claim 2/0/0)" != "$b_part"
+
+    step=shared-rollup
+    send lod aggregate
+    receive '"status":"ok"'
+    observe_state 4
+    rolled=$(claim 1)
+    test -n "$rolled"
+    test -n "$(claim 2)"
+
+    step=shared-remove
+    send remove 2
+    receive '"status":"ok"'
+    observe_state 2
+    test -z "$(claim 2)"
+    step=shared-final-tick
+    send tick 1
+    receive '"completed_tick":4'
+    observe_state 2
+    test "$(claim 1)" = "$rolled"
+    release_catalogue
+    echo 'PASS: retained A and B preserve one shared nibble with ordered per-byte contributions'
+    exit 0
+  fi
+
   step=catalogue-declared-retry
   send add 1
   receive '"status":"no_change"'
@@ -165,7 +269,7 @@ if [[ $exit_mode == catalogue || $exit_mode == catalogue-single ]]; then
     receive '"status":"invalid_input"'
     test "$(claim 27)" = "$clone"
     test "$(json_number generation)" = "$clone_generation"
-    send add 27 "$i" "$i_revision"
+    send add 27 "$second" "$second_revision"
   else
     send add 27 "$a" 00000000-0000-0000-0000-000000000000
   fi
@@ -212,14 +316,14 @@ if [[ $exit_mode == catalogue || $exit_mode == catalogue-single ]]; then
   initial_generation=$(json_number generation)
 
   step=catalogue-refusal
-  send add 2 "$i" 00000000-0000-0000-0000-000000000000
+  send add 2 "$second" 00000000-0000-0000-0000-000000000000
   receive '"status":"invalid_input"'
   test "$(json_number generation)" = "$initial_generation"
   test "$(claim 1)" = "$original"
   test -z "$(claim 2)"
 
   step=catalogue-add
-  send add 2 "$i" "$i_revision"
+  send add 2 "$second" "$second_revision"
   receive '"status":"ok"'
   observe_state 6
   test "$(claim 1)" = "$original"
@@ -253,7 +357,7 @@ if [[ $exit_mode == catalogue || $exit_mode == catalogue-single ]]; then
   test -z "$(claim 2)"
   send list
   receive '"command":"list"'
-  [[ "$event" == *"\"definition\":\"$i\",\"entry\":2,\"id\":\"$study/2\",\"revision\":\"$i_revision\"}"* ]]
+  [[ "$event" == *"\"definition\":\"$second\",\"entry\":2,\"id\":\"$study/2\",\"revision\":\"$second_revision\"}"* ]]
 
   step=catalogue-declared-restore
   send add 2
@@ -272,7 +376,7 @@ if [[ $exit_mode == catalogue || $exit_mode == catalogue-single ]]; then
   test "$(claim 1)" = "$rolled"
 
   step=catalogue-reselect
-  send add 3 "$i" "$i_revision"
+  send add 3 "$second" "$second_revision"
   receive '"status":"ok"'
   observe_state 6
   test "$(claim 1)" = "$rolled"
