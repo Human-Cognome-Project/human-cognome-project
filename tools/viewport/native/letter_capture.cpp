@@ -150,7 +150,7 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
     const auto ticket = manager.publish(recipe);
     if (live) {
       const auto &ref = ticket.ref();
-      viewport::write_live_event(live->output,{{"command","recipe_available"},
+      viewport::write_live_event(*live,{{"command","recipe_available"},
           {"selection",ref.selection.str()},{"revision",ref.revision.str()}});
       std::string line;
       bool selected = false;
@@ -167,7 +167,7 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
             status = selected ? "ok" : "unavailable";
           } catch (const warm::Error &) {}
         }
-        viewport::write_live_event(live->output,{{"command","open"},{"status",status}});
+        viewport::write_live_event(*live,{{"command","open"},{"status",status}});
         if (selected) break;
       }
       if (!selected || live->commands.stopped()) return 0;
@@ -204,7 +204,7 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
       }
       pin.release();
       if (failure) std::rethrow_exception(failure);
-      viewport::write_live_event(live->output,{{"command","recipe_release"},
+      viewport::write_live_event(*live,{{"command","recipe_release"},
           {"acquisitions",manager.activity().acquisitions},{"releases",manager.activity().releases}});
       return code;
     }
@@ -320,6 +320,8 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
     evidence["captures"] = count > 1 ? viewport::Json::array({first, last}) : viewport::Json::array({last});
     viewport::write((std::filesystem::path(options.output) / "native-evidence.json").string(), evidence);
     std::cout << evidence.dump(2) << '\n';
+    return 0;
+  } catch (const viewport::LiveOutputStopped &) {
     return 0;
   } catch (const viewport::LiveOutputError &e) {
     std::cerr << e.what() << '\n';

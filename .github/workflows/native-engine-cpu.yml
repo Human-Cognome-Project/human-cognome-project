@@ -355,7 +355,7 @@ jobs:
           # Separate fresh warm store: reviewed opt-in six-comparison preset.
           bash engine/scripts/run_warm_active_acceptance.sh engine/build \
             "$hcp_active_container" hcp_core hcp_linguistics prepared-retained-positive
-          for hcp_live_exit in quit offer-stop idle-stop batch-stop output-disconnect; do
+          for hcp_live_exit in quit offer-stop idle-stop batch-stop output-disconnect batch-disconnect blocked-write; do
             bash engine/scripts/run_warm_active_acceptance.sh engine/build \
               "$hcp_active_container" hcp_core hcp_linguistics retained-live-study "$hcp_live_exit"
           done

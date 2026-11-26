@@ -14,6 +14,7 @@ namespace viewport {
 struct LiveOutputError : std::runtime_error {
   LiveOutputError() : std::runtime_error("live study output closed") {}
 };
+struct LiveOutputStopped {};
 
 inline void ignore_live_sigpipe() {
   struct sigaction action {};
@@ -41,6 +42,10 @@ class LiveCommandInput {
         if (flags < 0 || fcntl(fd_, F_SETFL, flags | O_NONBLOCK) < 0)
           throw std::runtime_error("cannot configure live study input");
         previous_flags_ = flags;
+        const int output_flags = fcntl(STDOUT_FILENO, F_GETFL);
+        if (output_flags < 0 || fcntl(STDOUT_FILENO, F_SETFL, output_flags | O_NONBLOCK) < 0)
+          throw std::runtime_error("cannot configure live study output");
+        previous_output_flags_ = output_flags;
         int pipe_fds[2];
         if (pipe(pipe_fds) < 0)
           throw std::runtime_error("cannot create the live study stop pipe");
@@ -58,15 +63,48 @@ class LiveCommandInput {
         install_stop_handlers();
       }
     } catch (...) {
-      restore_input();
+      restore_descriptors();
       throw;
     }
   }
   LiveCommandInput(const LiveCommandInput &) = delete;
   LiveCommandInput &operator=(const LiveCommandInput &) = delete;
-  ~LiveCommandInput() { restore_input(); }
+  ~LiveCommandInput() { restore_descriptors(); }
 
-  bool stopped() const { return wake_ >= 0 && stop_requested(); }
+  bool interruptible() const { return wake_ >= 0; }
+  bool stopped() const { return interruptible() && stop_requested(); }
+  void check_consumer() const {
+    if (!interruptible()) return;
+    struct pollfd output{STDOUT_FILENO, 0, 0};
+    while (poll(&output, 1, 0) < 0) {
+      if (errno == EINTR) continue;
+      throw std::runtime_error("live study output poll failed");
+    }
+    if (output.revents & output_closed) throw LiveOutputError();
+  }
+  void write_output(std::string line) const {
+    line.push_back('\n');
+    std::string_view remaining(line);
+    while (!remaining.empty()) {
+      const auto count = ::write(STDOUT_FILENO, remaining.data(), remaining.size());
+      if (count > 0) {
+        remaining.remove_prefix(static_cast<std::size_t>(count));
+        continue;
+      }
+      if (count < 0 && errno == EINTR) continue;
+      if (count == 0 || (errno != EAGAIN && errno != EWOULDBLOCK)) throw LiveOutputError();
+      // A final record can still be delivered if it fits. Shutdown never waits
+      // for the reader to make room once a write has encountered backpressure.
+      if (stopped()) throw LiveOutputStopped();
+      struct pollfd ready[]{{STDOUT_FILENO, POLLOUT, 0}, {wake_, POLLIN, 0}};
+      if (poll(ready, 2, -1) < 0) {
+        if (errno == EINTR) continue;
+        throw std::runtime_error("live study output wait failed");
+      }
+      if (ready[0].revents & output_closed) throw LiveOutputError();
+      if (ready[1].revents || stopped()) throw LiveOutputStopped();
+    }
+  }
   bool read_line(std::string &line) {
     while (!stopped()) {
       const auto newline = pending_.find('\n');
@@ -82,11 +120,11 @@ class LiveCommandInput {
           if (errno == EINTR) continue;
           throw std::runtime_error("command input wait failed");
         }
-        if (ready[2].revents & (POLLERR | POLLHUP | POLLNVAL)) throw LiveOutputError();
+        if (ready[2].revents & output_closed) throw LiveOutputError();
         if (ready[1].revents || stopped()) return false;
       }
       char bytes[4096];
-      const auto count = read(fd_, bytes, sizeof(bytes));
+      const auto count = ::read(fd_, bytes, sizeof(bytes));
       if (count < 0) {
         if (errno == EINTR || (wake_ >= 0 && (errno == EAGAIN || errno == EWOULDBLOCK))) continue;
         throw std::runtime_error("command input failed");
@@ -103,13 +141,16 @@ class LiveCommandInput {
   }
 
  private:
-  void restore_input() {
+  static constexpr short output_closed = POLLERR | POLLHUP | POLLNVAL;
+  void restore_descriptors() {
+    if (previous_output_flags_ >= 0) fcntl(STDOUT_FILENO, F_SETFL, previous_output_flags_);
     if (owned_) close(fd_);
     else if (previous_flags_ >= 0) fcntl(fd_, F_SETFL, previous_flags_);
   }
   int fd_;
   bool owned_;
   int previous_flags_{-1};
+  int previous_output_flags_{-1};
   int wake_{-1};
   std::string pending_;
 };

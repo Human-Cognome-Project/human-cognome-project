@@ -35,6 +35,8 @@ if test "$hcp_active_mode" != legacy; then
     cp "$hcp_active_repo/engine/scripts/check_retained_prepared_capture.sh" "$hcp_active_evidence/package/"
   elif test "$hcp_active_mode" = retained-live-study; then
     cp "$hcp_active_repo/engine/scripts/check_retained_live_study.sh" "$hcp_active_evidence/package/"
+    cp "$hcp_active_build/viewport/viewport_live_pipe_check" "$hcp_active_evidence/package/"
+    ldd "$hcp_active_evidence/package/viewport_live_pipe_check" >> "$hcp_active_evidence/libraries.txt"
   else
     cp "$hcp_active_repo/engine/scripts/check_retained_positive_capture.sh" "$hcp_active_evidence/package/"
     cp "$hcp_active_build/viewport/viewport_retained_capture_check" "$hcp_active_evidence/package/"
@@ -109,6 +111,7 @@ docker exec --user postgres \
   --env "HCP_CORE_TEST_CONNINFO=dbname=$hcp_active_core" \
   --env "HCP_LING_TEST_CONNINFO=dbname=$hcp_active_ling" \
   --env "HCP_RETAINED_LIVE_EXIT=$hcp_active_live_exit" \
+  --env "HCP_RETAINED_LIVE_PIPE_CHECK=/tmp/$hcp_active_db/viewport_live_pipe_check" \
   --env "LD_LIBRARY_PATH=" \
   --env "TI_LIB_DIR=/tmp/$hcp_active_db/runtime" \
   --env "XDG_CACHE_HOME=/tmp/$hcp_active_db-cache" \

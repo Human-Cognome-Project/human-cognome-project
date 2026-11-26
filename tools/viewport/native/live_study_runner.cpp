@@ -21,8 +21,9 @@ const char *status(field::UpdateStatus value) {
 }
 }
 
-void write_live_event(std::ostream &output, const Json &event) {
-  write_live_output(output,event.dump());
+void write_live_event(const LiveStudyInput &input, const Json &event) {
+  if (input.commands.interruptible()) input.commands.write_output(event.dump());
+  else write_live_output(input.output,event.dump());
 }
 
 int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmission request,
@@ -87,7 +88,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
         {"velocity",{velocity(0),velocity(1),velocity(2)}}});
     }
     result["observation"]=viewport::snapshot(state,context);
-    write_live_event(input.output,result);
+    write_live_event(input,result);
   };
   Json available=Json::array();
   for (const auto &entry : catalogue)
@@ -133,6 +134,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
         const auto ticks=argument.empty() ? 1 : viewport::parse_count("tick",argument,1,1000000);
         std::uint64_t completed=0;
         for (; completed<ticks && !input.commands.stopped(); ++completed) {
+          input.commands.check_consumer();
           const auto result=session.tick_prepared(handle,source->owner(),parameters,1000000000,1000000);
           if (result.status != field::TickStatus::Ok) throw std::runtime_error("native tick refused");
         }

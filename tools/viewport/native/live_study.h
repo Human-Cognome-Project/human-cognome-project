@@ -14,7 +14,7 @@ struct LiveStudyInput {
   std::optional<ResponseRequest> responses;
 };
 
-void write_live_event(std::ostream &, const Json &);
+void write_live_event(const LiveStudyInput &, const Json &);
 int run_live_study(const LiveStudyInput &, assembly::PreparedStudySubmission,
                    const std::string &label, const Json &source_metadata,
                    double physical_mass, std::uint64_t source_mass);

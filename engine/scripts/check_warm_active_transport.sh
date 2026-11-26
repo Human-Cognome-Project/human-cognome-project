@@ -9,6 +9,7 @@ mkdir -p "$scratch/bin" "$scratch/build/viewport" "$scratch/build/taichi-runtime
 cp /bin/true "$scratch/build/warm_active_integration"
 cp /bin/true "$scratch/build/viewport/viewport_letter_capture"
 cp /bin/true "$scratch/build/viewport/viewport_live_study"
+cp /bin/true "$scratch/build/viewport/viewport_live_pipe_check"
 cp /bin/true "$scratch/build/viewport/viewport_retained_capture_check"
 printf 'transport fixture\n' > "$scratch/build/taichi-runtime/runtime_x64.bc"
 ldd /bin/true > "$scratch/real-libraries.txt"

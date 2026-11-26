@@ -7,6 +7,7 @@ shift
 exit_mode=${HCP_RETAINED_LIVE_EXIT:-quit}
 case "$exit_mode" in
   quit|idle-stop|output-disconnect|batch-stop|offer-stop) ;;
+  batch-disconnect|blocked-write) : "${HCP_RETAINED_LIVE_PIPE_CHECK:?}" ;;
   *) exit 2 ;;
 esac
 mkdir -p "$out"
@@ -59,6 +60,12 @@ json_text() {
 json_number() {
   local key=$1
   printf '%s\n' "$event" | sed -nE "s/.*\"$key\":([0-9]+)[,}].*/\1/p"
+}
+cpu_time() {
+  local stat fields
+  IFS= read -r stat < "/proc/$pid/stat"
+  read -r -a fields <<< "${stat##*) }"
+  printf '%s\n' "$((fields[11]+fields[12]))"
 }
 wait_for_exit() {
   local expected=$1 attempt status=0
@@ -134,6 +141,35 @@ case "$exit_mode" in
     reader=
     expected_exit=1
     ;;
+  batch-disconnect)
+    before=$(cpu_time)
+    send tick 1000000
+    for ((attempt=0; attempt<100; ++attempt)); do
+      read -r capacity queued < <("$HCP_RETAINED_LIVE_PIPE_CHECK" <&"$writer")
+      active=$(cpu_time)
+      if [[ $queued == 0 && $active -gt $before ]]; then break; fi
+      sleep 0.1
+    done
+    [[ $queued == 0 && $active -gt $before ]]
+    printf 'batch_command_pending_bytes=%s\nnative_cpu_before=%s\nnative_cpu_active=%s\n' \
+      "$queued" "$before" "$active" > "$out/shutdown-witness.txt"
+    exec {reader}<&-
+    reader=
+    expected_exit=1
+    ;;
+  blocked-write)
+    "$HCP_RETAINED_LIVE_PIPE_CHECK" shrink <&"$reader" > "$out/output-pipe-initial.txt"
+    send observe
+    for ((attempt=0; attempt<100; ++attempt)); do
+      read -r capacity queued < <("$HCP_RETAINED_LIVE_PIPE_CHECK" <&"$reader")
+      if [[ $queued == "$capacity" ]]; then break; fi
+      sleep 0.1
+    done
+    [[ $capacity -gt 0 && $queued == "$capacity" ]]
+    printf 'output_pipe_capacity=%s\nqueued_bytes_before_signal=%s\n' \
+      "$capacity" "$queued" > "$out/shutdown-witness.txt"
+    kill -TERM "$pid"
+    ;;
   batch-stop)
     send tick 1000000
     sleep 0.5
@@ -146,9 +182,11 @@ case "$exit_mode" in
     test "$(json_text study)" = "$study"
     ;;
 esac
-if [[ $exit_mode == output-disconnect ]]; then
+if [[ $exit_mode == output-disconnect || $exit_mode == batch-disconnect ]]; then
   wait_for_exit "$expected_exit"
   grep -Fxq 'live study output closed' "$out/live.stderr"
+elif [[ $exit_mode == blocked-write ]]; then
+  wait_for_exit 0
 else
   receive '"command":"recipe_release"' 30
   [[ "$event" == *'"acquisitions":1'* && "$event" == *'"releases":1'* ]]

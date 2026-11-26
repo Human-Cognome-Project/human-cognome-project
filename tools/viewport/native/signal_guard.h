@@ -24,7 +24,7 @@ inline void on_signal(int) {
   const int fd = stop_wake_fd.load(std::memory_order_relaxed);
   if (fd >= 0) {
     const char wake = 0;
-    while (write(fd, &wake, 1) < 0 && errno == EINTR) {}
+    while (::write(fd, &wake, 1) < 0 && errno == EINTR) {}
   }
   errno = saved_errno;
 }
