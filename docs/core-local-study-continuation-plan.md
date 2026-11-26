@@ -1,4 +1,18 @@
-# Core continuation after local CUDA corrections
+# Core continuation plan
+
+## Current assignment for the coding agent
+
+**Start on the existing #448 branch, `codex/retained-live-recipe`, reviewed at `036f3086`.** The CLI can open the exact recipe revision offered by the publishing owner under one persistent lease. The hosted database job verified ordinary quit, the first stop during an offer or idle session, stopping a running batch by signal, and loss of the reader at idle. [November 26 maintainer handoff](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7191152908) · [Hosted database job](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/45724360611/job/139620287869)
+
+1. **Finish retained CLI shutdown.** With stdin open, disconnect the output reader after a long batch starts. In a separate retained process, keep the output reader attached without draining a full pipe and send one stop while an observation write is blocked. In each case, verify prompt process exit and zero committed leases from a second database connection. Keep the existing shutdown controls and the usable session after malformed input. CLI I/O owns cancellation between completed native ticks. [Source review and reproductions](https://github.com/Human-Cognome-Project/human-cognome-project/pull/448#issuecomment-7178452097)
+2. **Select and edit catalogue objects in one study.** Connect #447’s recipe-derived binding to the retained CLI. Resolve definition pins through the publishing owner and reuse retained state. The English-pair publisher and the fixed `í` shortcut are regression inputs. Derive the active bodies and replacement cohorts from the pinned composition and selected exposure. The native owner handles placement, ticks and observation. [Binding scope](https://github.com/Human-Cognome-Project/human-cognome-project/pull/447#issuecomment-7176134111) · [Owner and acquisition contract](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432#issuecomment-7176138782)
+3. **Exercise the operator path.** Use one CLI process and its original study handle. Load an existing object, add a differently composed object selected by pin, tick, expand and roll up the whole field, remove the added occurrence and tick again. Record ordered occurrence paths, exact represented mass, response rows and surviving claims across insertion and removal. Check that the removed occurrence’s definition stays available and a refused malformed or over-budget edit leaves the study usable. Fresh claims and starting positions during whole-field exchange are allowed. [Native transaction](../engine/docs/WHOLE-FIELD-LOD.md#one-native-transaction)
+
+**Intended operator workload.** Patrick intends to load at least one live occurrence of every letter object for every language represented in the retained catalogue, together in one running field. The small studies make individual contributions easy to verify. Use the same object admission and tick path for the catalogue, with the selected definitions and occurrences determining the workload. When that study runs, record the catalogue revision, languages covered and live occurrence count so its scale can be checked against the input.
+
+A letter is an ordinary composed object. #438 integrated data-derived endpoint and branch coverage with selective polling, including the changed `abá` witness and the refusal case. #446 integrated the ordered binary64 publication check. Keep the fixed Unicode operator replay as a CPU regression. The same-input GPU trial is separate, and Patrick will examine patterns over ticks before selecting PoC criteria. [Admission evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#data-driven-admission-correction) · [Numerical review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/446#issuecomment-7176160407) · [GPU trial](https://github.com/Human-Cognome-Project/human-cognome-project/issues/70#issuecomment-7172012834)
+
+## Dated handoffs
 
 ## November 25, 2026 — hosted scoped displacement audit
 
@@ -69,6 +83,21 @@ The proposed scoped inherited response uses the singleton byte position and the
 owning byte comparison. It is flagged for review alongside the source and CI.
 The scoped compiler-shape audit and live Unicode exposure remain separate.
 [Implementation and evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md)
+
+### Data-driven admission correction
+
+The #438 follow-up takes the implementation assignment from #443. It derives
+endpoint and branch coverage from pinned parent contributions and occurrence
+paths. The same executable admits the changed `abá` recipe, publishes mass
+10 through five byte paths and follows a native tick. An inconsistent branch
+declaration refuses without publishing on the Harness used for the valid retry.
+Integration and the downstream carry remain subject to maintainer review.
+[Correction and local evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#data-driven-admission-correction)
+
+The follow-up routes accepted movement to scoped byte comparisons during
+ordinary selective ticks. In the multi-tick `abá` witness, both shared
+nibble packets stay fixed while the byte centre moves and the endpoint
+republishes. [Selective polling evidence](../engine/docs/REPEATED-ENDPOINT-ROLLUP.md#selective-polling-correction)
 
 ## November 25, 2026 — scoped nibble experiment
 

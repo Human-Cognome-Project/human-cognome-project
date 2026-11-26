@@ -8,7 +8,7 @@ Use this route to implement or fix a defined slice without loading the project's
 
 Inspect `git status --short`; preserve existing work. Fetch current refs, record the chosen SHA and check submodule revisions. Inspect [open PRs](https://github.com/Human-Cognome-Project/human-cognome-project/pulls), their scope, latest reviews, heads and checks before choosing work. Use current main unless the task explicitly names a contribution or integration branch.
 
-Start with the latest handoff in the [core continuation plan](../core-local-study-continuation-plan.md). Confirm the assigned slice and any newer decision on the owning issue. Use [current state](CURRENT-STATE.md) for accepted, held and deferred boundaries.
+Start with the [current assignment in the core continuation plan](../core-local-study-continuation-plan.md#current-assignment-for-the-coding-agent). Confirm the assigned slice and any newer decision on the owning issue. Use [current state](CURRENT-STATE.md) for accepted, held and deferred boundaries.
 
 ## 2. Load only the contracts your change touches
 
