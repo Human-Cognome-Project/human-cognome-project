@@ -212,6 +212,17 @@ metadata reuse. Removing the last live cohort is unsupported. General multibyte
 owner adaptation, arbitrary definition replacement, automatic exposure selection,
 focus handover and confounding/structural interpretation remain separate.
 
+### Fixed-presence mixed cohorts
+
+A fixed-presence submission can provide aggregate and parts plans for roots
+whose byte counts differ. The prepared owner verifies each ordered part path
+and definition pin against the immutable composition. It uses one placement
+group per root in each direction. The mixed A and í CPU fixture checks two
+aggregates expanding to three bytes and rolling up to two, with exact mass six
+and a shared focus claim. Each group transfers its own motion. Selecting and
+editing mixed roots from a retained catalogue remains part of the
+[live operator assignment](../../docs/core-local-study-continuation-plan.md#current-assignment-for-the-coding-agent).
+
 ## One native transaction
 
 `PlacementExchangeGroup` partitions validated outgoing handles and canonically

@@ -62,7 +62,7 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
     });
     owner->reserve_metadata(session,bindings,work);
     if (alternative) {
-      if((!editable_occurrences && !fixed_character) || !alternative->source || prepared.work.charged>plan_allowance) {
+      if(!alternative->source || prepared.work.charged>plan_allowance) {
         owner.reset();out.status=AdmissionPlanStatus::InvalidInput;out.metadata_work=work.result();out.reservation=domain->result();return out;
       }
       auto other=StructuralAdmissionPlan::build(*alternative->source,alternative->bindings,
@@ -82,7 +82,7 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
       try {
         owner->lod_=reserve_unique<PreparedLodWorkspace>(domain,[&](auto *p){
           ::new(static_cast<void*>(p))PreparedLodWorkspace(*owner,*alternative->source,
-              std::move(other.plan),fixed_character,work);
+              std::move(other.plan),editable_occurrences,fixed_character,work);
         });
       } catch(const warm::Error &) {
         owner.reset();out.status=AdmissionPlanStatus::Unsupported;out.metadata_work=work.result();out.reservation=domain->result();return out;

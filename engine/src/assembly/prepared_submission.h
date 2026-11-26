@@ -22,7 +22,7 @@ struct PreparedStudySubmission {
   bool editable_occurrences{false};
   // Explicit setup of the other whole-field exposure on the same immutable
   // recipe/study. Native roles/geometry/fields are validated before readiness.
-  // The fixed single-character rollup uses this with presence edits disabled.
+  // With presence edits disabled, each root keeps its own replacement cohort.
   std::optional<PreparedLodAlternative> lod_alternative{};
   std::uint64_t plan_work{UINT64_MAX}, metadata_work{UINT64_MAX};
   std::uint64_t placement_work{UINT64_MAX}, placement_cells{UINT64_MAX}, hierarchy_work{UINT64_MAX};

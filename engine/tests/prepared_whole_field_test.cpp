@@ -7,6 +7,7 @@
 #include "prepared_fixture.h"
 #include "prepared_metrics.h"
 #include "field/cascade_source.h"
+#include <array>
 #include <cstring>
 #include <iostream>
 
@@ -173,6 +174,184 @@ void run(int workers,field::HostPath path,bool short_peak) {
     <<",round_trips=3,distinct_motion=1,own_targets=1,one_generation=1,inherited_focus=same_claim,peak_particles=4,peak_fields=6,"
       "ordinary_fine_edits=1,refusal_unchanged=1,recurring_new=0 PASS\n";
 }
+void mixed_cohorts(int workers,field::HostPath path) {
+  Input input;
+  const auto accented = input.fixture.ref(input.fixture.accented);
+  auto definitions = input.fixture.base;
+  input.fixture.tool(definitions,accented.object).member_of = {input.focus};
+  definitions.focal_fields = {{warm::FieldKind::Membership,input.focus.object}};
+  auto mixed = ActiveAssembly::assemble(normalize_structural_letters(std::move(definitions),
+      {{10,accented,warm::Exposure::Parts},{2,input.english,warm::Exposure::Aggregate}}),
+      input.source->owner(),false);
+  const auto aggregate = std::make_shared<const ActiveAssembly>(
+      mixed.expose_all(warm::Exposure::Aggregate));
+  const auto parts = std::make_shared<const ActiveAssembly>(mixed.expose_all(warm::Exposure::Parts));
+
+  auto request = input.request(path);
+  auto limits = request.capacity.limits();
+  using field::Budget;
+  limits[Budget::Particles] = 5;
+  limits[Budget::Fields] = limits[Budget::CascadeNodes] = 16;
+  limits[Budget::CascadeLinks] = 16;
+  limits[Budget::BootstrapCommands] = 64;
+  const auto profile = request.capacity.profile();
+  limits[Budget::ScratchBytes] = field::detail::PreparedStorage::required_scratch(
+      limits,false,profile) + 256*1024*1024;
+  request.capacity = field::PreparedCapacity(limits,profile);
+  request.source = aggregate;
+  request.editable_occurrences = false;
+  const auto bind = [&](const ActiveAssembly &view,bool fine) {
+    detail::AdmissionBindings binding;
+    binding.source = {view.owner(),view.study(),view.generation(),view.shared_recipe().ref};
+    binding.layout = request.bindings.layout;
+    if (fine) {
+      for (const auto &row : view.shared_recipe().structural_occurrences) {
+        if (row.id.path.empty()) continue;
+        const auto &definition = input.fixture.tool(input.fixture.base,row.definition);
+        binding.bodies.push_back({{view.study(),row.id},definition.ref,row.node,3,
+            80+int(binding.bodies.size()),double(*definition.mass),
+            {input.fixture.tools.at(row.definition)+1,1,true}});
+      }
+      std::sort(binding.bodies.begin(),binding.bodies.end(),[](const auto &a,const auto &b) {
+        return a.occurrence.source < b.occurrence.source;
+      });
+    } else binding.bodies = viewport::declared_aggregate_bodies(view);
+
+    // This witness uses disjoint direct parent fields, then one sibling branch
+    // per definition and one shared membership root.
+    const auto add_field = [&](FieldKey key,int address,int level,std::vector<int> children) {
+      const int index = int(binding.fields.size());
+      binding.fields.push_back({key,5,address});
+      binding.comparisons.push_back({std::move(key),100+std::uint64_t(address),level,52,std::move(children)});
+      return index;
+    };
+    const auto next_address = [&] { return (fine ? 5 : 1)+int(binding.fields.size()); };
+    std::vector<int> branches;
+    for (const auto &row : binding.bodies) {
+      auto &definition = input.fixture.tool(input.fixture.base,row.definition.object);
+      std::vector<int> parents;
+      for (const auto &parent : definition.parents)
+        parents.push_back(add_field({GroupKind::ParentValue,parent.target.object},next_address(),0,{}));
+      branches.push_back(add_field({GroupKind::SiblingDefinition,row.definition.object},next_address(),1,
+                                   std::move(parents)));
+    }
+    const FieldKey focus{GroupKind::Membership,input.focus.object};
+    binding.focus = {focus};
+    add_field(focus,0,2,std::move(branches));
+    return binding;
+  };
+  auto coarse_bindings = bind(*aggregate,false);
+  auto part_bindings = bind(*parts,true);
+  request.bindings = std::move(coarse_bindings);
+  request.lod_alternative = PreparedLodAlternative{parts,std::move(part_bindings)};
+  const auto resources = request.resources;
+
+  engine::InstanceSettings settings;
+  settings.read_environment = false;
+  settings.cpu_threads = workers;
+  ActiveSession session(settings);
+  const auto result = session.submit_prepared(std::move(request),aggregate->owner());
+  if (!result.handle)
+    std::cerr << "mixed admission status=" << int(result.preparation_status)
+              << " publication=" << int(result.publication.status)
+              << " budget=" << field::budget_name(result.failure.budget) << '\n';
+  check(result.handle && !session.on_cuda(),"mixed fixed cohort setup failed");
+  const auto handle = *result.handle;
+  const auto observe = [&] {
+    return viewport::observe(session,aggregate->owner(),handle,std::nullopt,viewport::ResponseRequest{1000000});
+  };
+  field::Parameters64 parameters;
+  parameters.contact_stiffness = 0;
+  check(session.tick_prepared(handle,aggregate->owner(),parameters).status==field::TickStatus::Ok,
+        "mixed field failed initial tick");
+  const auto before = observe();
+  const auto claim = before.comparisons.back().field;
+  const auto metadata = resources->result().live_bytes;
+  const auto check_rows = [&](const viewport::CompletedState &state, const auto &ids,
+                              const auto &masses, const auto &pins, std::size_t local_rows,
+                              std::size_t inherited_rows) {
+    check(state.report.handle.study==handle.study && state.body_records.size()==ids.size(),
+          "mixed exchange changed study or body count");
+    const auto &rows = state.report.prepared.particles;
+    for (std::size_t n=0; n<ids.size(); ++n) {
+      check(std::string(rows[n].occurrence.id)==occurrence_text(handle.study,ids[n]) &&
+            rows[n].exact_mass==masses[n],"mixed exchange lost ordered paths or exact source mass");
+      const OccurrenceKey key{handle.study,ids[n]};
+      const auto origin = std::find_if(state.report.origins.begin(),state.report.origins.end(),
+          [&](const auto &source) { return source.occurrence == key; });
+      check(origin!=state.report.origins.end() && origin->shared && *origin->shared==pins[n],
+            "mixed exchange lost exact definition pin");
+    }
+    check(same(claim,state.comparisons.back().field),"mixed exchange replaced common focus claim");
+    const auto &responses = state.response_trace.at("rows");
+    const auto count = [&](const char *kind) {
+      return std::size_t(std::count_if(responses.begin(),responses.end(),
+          [&](const auto &row) { return row.at("kind")==kind; }));
+    };
+    check(state.response_trace.at("status")=="ok" && count("local")==local_rows &&
+          count("inherited")==inherited_rows && responses.size()==local_rows+inherited_rows,
+          "mixed exchange lost leaf or inherited native response rows");
+  };
+  const std::array<warm::OccurrenceId,2> roots{{{2,{}},{10,{}}}};
+  const std::array<warm::OccurrenceId,3> bytes{{{2,{0,0}},{10,{0,0}},{10,{0,1}}}};
+  const std::array<unsigned,2> root_mass{{2,4}};
+  const std::array<unsigned,3> byte_mass{{2,2,2}};
+  const std::array<warm::ToolRef,2> root_pins{{input.english,accented}};
+  const auto &a = input.fixture.tool(input.fixture.base,input.english.object);
+  const auto &letter = input.fixture.tool(input.fixture.base,accented.object);
+  const auto &scalar = input.fixture.tool(input.fixture.base,letter.parents.front().target.object);
+  const std::array<warm::ToolRef,3> byte_pins{{a.parents.front().target,
+      scalar.parents.at(0).target,scalar.parents.at(1).target}};
+  check_rows(before,roots,root_mass,root_pins,2,4);
+  check(value(before,before.body_records[0],field::kVelX)!=value(before,before.body_records[1],field::kVelX),
+        "mixed roots require distinguishable outgoing velocities");
+
+  PreparedLodEdit edit{warm::Exposure::Parts,*before.prepared_generation};
+  edit.preparation_work = 0;
+  const auto refused = no_new([&] { return session.lod_prepared(handle,aggregate->owner(),edit); });
+  check(refused.preparation.status==detail::PreparationStatus::WorkExhausted,
+        "mixed replacement accepted an exhausted preparation budget");
+  const auto unchanged_state = observe();
+  check_rows(unchanged_state,roots,root_mass,root_pins,2,4);
+  check(unchanged_state.prepared_generation==before.prepared_generation &&
+        unchanged_state.report.particles64==before.report.particles64 &&
+        same(unchanged_state.body_records[0],before.body_records[0]) &&
+        same(unchanged_state.body_records[1],before.body_records[1]),
+        "mixed refusal changed the completed generation, claims or particles");
+  edit.preparation_work = UINT64_MAX;
+  const auto expanded = no_new([&] { return session.lod_prepared(handle,aggregate->owner(),edit); });
+  check(expanded.publication.status==UpdateStatus::Ok && expanded.publication.claims.sampled &&
+        expanded.publication.claims.particles_before==2 && expanded.publication.claims.particles_peak==5 &&
+        expanded.publication.claims.particles_after==3,"mixed expansion lost its simultaneous claims");
+  const auto fine = observe();
+  check_rows(fine,bytes,byte_mass,byte_pins,6,9);
+  check(fine.tick==before.tick && *fine.prepared_generation==*before.prepared_generation+1,
+        "mixed expansion changed tick or failed to publish one generation");
+  for (std::size_t n=0; n<bytes.size(); ++n)
+    for (int axis=0; axis<3; ++axis)
+      check(value(fine,fine.body_records[n],field::kVelX+axis)==
+            value(before,before.body_records[n==0?0:1],field::kVelX+axis),
+            "mixed expansion transferred motion across different logical roots");
+
+  edit = {warm::Exposure::Aggregate,*fine.prepared_generation};
+  const auto compressed = no_new([&] { return session.lod_prepared(handle,aggregate->owner(),edit); });
+  check(compressed.publication.status==UpdateStatus::Ok && compressed.publication.claims.sampled &&
+        compressed.publication.claims.particles_before==3 && compressed.publication.claims.particles_peak==5 &&
+        compressed.publication.claims.particles_after==2,"mixed rollup lost its simultaneous claims");
+  const auto after = observe();
+  check_rows(after,roots,root_mass,root_pins,2,4);
+  for (std::size_t n=0; n<roots.size(); ++n)
+    for (int axis=0; axis<3; ++axis)
+      check(value(after,after.body_records[n],field::kVelX+axis)==
+            value(before,before.body_records[n],field::kVelX+axis),
+            "mixed rollup pooled motion across logical roots");
+  check(resources->result().live_bytes==metadata,"mixed exchange grew retained metadata");
+  check(session.tick_prepared(handle,aggregate->owner(),parameters).status==field::TickStatus::Ok,
+        "original mixed handle failed to tick after rollup");
+  check_rows(observe(),roots,root_mass,root_pins,2,4);
+  std::cout << "mixed_whole_field,aggregate=2,parts=3,exact_mass=6,own_motion=1,peak_claims=5,"
+               "responses=6/15/6,refused_work=1,following_tick=1,recurring_new=0 PASS\n";
+}
 void probe_budgets(int workers,field::HostPath path) {
   Input input;auto request=input.request(path);
   const auto slots=request.capacity.limits()[field::Budget::Particles];
@@ -311,5 +490,6 @@ int main(int argc,char **argv){try{
   const auto path=argc>2&&std::string(argv[2])=="direct"?field::HostPath::CpuDirect:field::HostPath::BulkCopy;
   if(argc>3 && std::string(argv[3])=="probes"){probe_budgets(workers,path);return 0;}
   if(argc>3 && std::string(argv[3])=="setup"){setup_and_failure(workers,path);return 0;}
+  if(argc>3 && std::string(argv[3])=="mixed"){mixed_cohorts(workers,path);return 0;}
   run(workers,path,false);run(workers,path,true);setup_and_failure(workers,path);probe_budgets(workers,path);return 0;
 }catch(const std::exception &e){std::cerr<<"whole-field test: "<<e.what()<<'\n';return 1;}}
