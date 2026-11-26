@@ -58,6 +58,13 @@ target_include_directories(viewport_signal_guard_test PRIVATE .)
 target_link_libraries(viewport_signal_guard_test PRIVATE Threads::Threads)
 target_compile_options(viewport_signal_guard_test PRIVATE -Wall -Wextra -Wpedantic)
 add_test(NAME viewport_signal_guard_test COMMAND viewport_signal_guard_test)
+add_test(NAME semantic_scoped_nibble_no_unroll COMMAND semantic_native_trace_test
+  --case scoped-nibble --threads 2 --direct --compiler-no-unroll)
+add_test(NAME semantic_unicode_exchange_bulk COMMAND semantic_native_trace_test --case unicode-exchange)
+add_test(NAME semantic_unicode_exchange_direct COMMAND semantic_native_trace_test --case unicode-exchange --threads 2 --direct)
+set_tests_properties(semantic_scoped_nibble_no_unroll semantic_unicode_exchange_bulk
+  semantic_unicode_exchange_direct PROPERTIES
+  ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
 add_executable(viewport_snapshot_test snapshot_test.cpp)
 target_link_libraries(viewport_snapshot_test PRIVATE viewport_snapshot)
 target_include_directories(viewport_snapshot_test PRIVATE ../../../engine/tests)

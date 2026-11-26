@@ -5,6 +5,7 @@
 #include "prepared_owner_fixture.h"
 #include "prepared_fixture.h"
 #include "field/cascade_source.h"
+#include "prepared_letter_profile.h"
 #include "scoped_hierarchy_audit.h"
 #include <algorithm>
 #include <array>
@@ -995,6 +996,175 @@ Json signature(const Json &trace) {
     {"frame",s.at("frame").at("reference")},{"tick",s.at("capture").at("tick")},
     {"arithmetic",before.at("arithmetic")}};
 }
+Json unicode_exchange(const engine::InstanceSettings &settings,
+                      const letter_fixture::Fixture &fixture, field::HostPath path) {
+  const auto definition=fixture.ref(fixture.accented);
+  auto request=viewport::unicode_i_submission(fixture.base,definition,warm::new_uuid(),path);
+  const auto source=request.source;
+  const auto domain=request.resources;
+  const auto &coarse=request.bindings;
+  const auto &fine=request.lod_alternative->bindings;
+  const auto aggregate=coarse.bodies.at(0);
+  const auto root_comparison=fine.comparisons.back().comparison;
+  std::array<std::vector<AdmissionBody>,2> expected{{coarse.bodies,fine.bodies}};
+  std::array<std::vector<std::uint64_t>,2> branches{{{coarse.comparisons.front().comparison},{}}};
+  for (int index : fine.comparisons.back().children)
+    branches[1].push_back(fine.comparisons.at(index).comparison);
+  check(expected[0].size()==1 && aggregate.occurrence.source.path.empty() &&
+        expected[1].size()==2 && branches[1].size()==2 &&
+        expected[1][0].occurrence.source.path==warm::OccurrencePath({0,0}) &&
+        expected[1][1].occurrence.source.path==warm::OccurrencePath({0,1}) &&
+        tool(source->shared_recipe(),expected[1][0].definition).notation=="C3" &&
+        tool(source->shared_recipe(),expected[1][1].definition).notation=="AD",
+        "shared Unicode profile declares the exact aggregate and ordered C3 AD paths");
+  ActiveSession session(settings);
+  const auto submitted=session.submit_prepared(std::move(request),source->owner());
+  if (!submitted.handle)
+    std::cerr<<"unicode_exchange,prepare="<<int(submitted.preparation_status)
+             <<",native="<<int(submitted.publication.status)
+             <<",budget="<<field::budget_name(submitted.publication.failure.budget)<<'\n';
+  check(submitted.handle.has_value() && !session.on_cuda(),"Unicode prepared study bootstrap failed");
+  const auto h=*submitted.handle;
+  const auto observe=[&] {
+    return viewport::observe(session,source->owner(),h,std::nullopt,viewport::ResponseRequest{UINT64_MAX});
+  };
+  const auto root_claim=[&](const viewport::CompletedState &s) -> engine::RecordHandle {
+    for(const auto &node:s.comparisons)
+      if(node.comparison==root_comparison)return node.field;
+    throw std::runtime_error("missing retained character comparison");
+  };
+  const auto initial=observe();
+  const auto focal=root_claim(initial);
+  const auto retained_bytes=domain->result().live_bytes;
+  const auto capture=[&](const viewport::CompletedState &s, bool parts) {
+    const auto exposure=parts?warm::Exposure::Parts:warm::Exposure::Aggregate;
+    const auto &report=s.report;
+    const auto &mapped=report.prepared.particles;
+    const auto P=report.prepared.capacity;
+    const auto G=report.prepared.groups.size();
+    check(report.prepared_exposure==exposure && report.handle.study==h.study &&
+          report.handle.generation==h.generation && report.handle.session==h.session,
+          "exchange changed the running study identity or exposure map");
+    check(field::detail::same_handle(focal,root_claim(s)) &&
+          report.prepared.focal_groups.size()==1 && report.prepared.focal_groups.front()==focal.record &&
+          report.groups64.at(3*G+focal.record)==4,
+          "the same character field publishes mass four and remains focused");
+    check(mapped.size()==expected[parts].size() && mapped.size()==s.body_records.size(),
+          "native body map cardinality disagrees with the exposure");
+    viewport::CaptureContext context{h,s.tick,"Live Unicode character exchange",{},Json::object()};
+    context.source={{"kind","fixture_only"},{"profile","live-unicode-exchange"}};
+    const auto packet=[&](std::uint64_t comparison) {
+      for(const auto &p:s.response_trace.at("packets"))
+        if(p.at("comparison")==std::to_string(comparison))return p.at("slot").get<int>();
+      throw std::runtime_error("missing live response packet");
+    };
+    const auto parent=packet(root_comparison);
+    Json coverage=Json::array();
+    int total=0;
+    for (std::size_t i=0;i<mapped.size();++i) {
+      const auto &input=expected[parts][i];
+      const auto id=occurrence_text(input.occurrence);
+      const auto &body=s.body_records[i];
+      const auto &p=mapped[i];
+      const int mass=parts?2:4;
+      const auto declared=std::find_if(report.origins.begin(),report.origins.end(),
+          [&](const Origin &origin) {return origin.occurrence==input.occurrence;});
+      check(p.occurrence.id==InputText(id) &&
+            p.occurrence.definition==InputText(warm::key(input.definition.object)) &&
+            p.occurrence.study_node==input.node &&
+            declared!=report.origins.end() && declared->shared==input.definition &&
+            p.exact_mass==std::uint64_t(mass) && s.report.particles64.at(field::kMass*P+body.record)==mass,
+            "ordered occurrence, pinned byte or exact native mass changed");
+      context.occurrences.emplace(id,viewport::DisplayContext{parts?"parts":"aggregate",
+          occurrence_text(aggregate.occurrence),parts?(i==0?"C3":"AD"):u8"í"});
+      const auto child=packet(branches[parts][i]);
+      int matches=0;
+      for (const auto &r:s.response_trace.at("rows")) {
+        if (r.at("kind")!="inherited" || r.at("child")!=child || r.at("parent")!=parent ||
+            r.at("body")!=claim(body))continue;
+        check(r.at("numerator")==std::to_string(mass) && r.at("denominator")==std::to_string(mass),
+              "published character coverage lost the whole ordered occurrence");
+        ++matches;
+      }
+      check(matches==1,"native character/root coverage is missing or duplicated");
+      total+=mass;
+      coverage.push_back({{"entry",input.occurrence.source.entry},{"path",input.occurrence.source.path},
+          {"definition",pin(input.definition)},{"count",mass},{"claim",claim(body)}});
+    }
+    check(total==4 && domain->result().live_bytes==retained_bytes,
+          "exchange changed total represented mass or retained owner bytes");
+    return Json{{"coverage",coverage},{"character_mass",4},{"focus",claim(focal)},
+                {"snapshot",viewport::snapshot(s,context)}};
+  };
+  Json steps=Json::array({{{"phase","initial"},{"state",capture(initial,false)}}});
+  PreparedLodEdit edit{warm::Exposure::Parts,*initial.prepared_generation};
+  auto short_work=edit;short_work.preparation_work=0;
+  const auto refused=session.lod_prepared(h,source->owner(),short_work);
+  check(refused.preparation.status==PreparationStatus::WorkExhausted &&
+        !refused.publication.claims.sampled,"short preparation unexpectedly sampled native claims");
+  const auto unchanged=observe();
+  check(unchanged.prepared_generation==initial.prepared_generation && unchanged.tick==initial.tick &&
+        unchanged.report.particles64==initial.report.particles64 && unchanged.report.groups64==initial.report.groups64 &&
+        capture(unchanged,false).at("coverage")==steps[0]["state"]["coverage"],
+        "refused exchange changed the current completed study");
+  const PreparedOccurrenceEdit presence{aggregate.occurrence,false,*initial.prepared_generation};
+  check(session.edit_prepared(h,source->owner(),presence).publication.status==field::UpdateStatus::Unsupported,
+        "fixed Unicode cohort accepted a presence edit");
+
+  auto current=initial;
+  const auto momentum=[](const viewport::CompletedState &s, int axis) {
+    long double sum=0;
+    const auto P=s.report.prepared.capacity;
+    for (const auto &body:s.body_records)
+      sum+=static_cast<long double>(s.report.particles64.at(field::kMass*P+body.record))*
+             s.report.particles64.at((field::kVelX+axis)*P+body.record);
+    return sum;
+  };
+  for (bool parts : {true,false}) {
+    edit.exposure=parts?warm::Exposure::Parts:warm::Exposure::Aggregate;
+    edit.expected_generation=*current.prepared_generation;
+    const auto q=session.lod_prepared(h,source->owner(),edit).publication;
+    if (q.status!=field::UpdateStatus::Ok)
+      std::cerr<<"unicode_exchange,parts="<<parts<<",status="<<int(q.status)
+               <<",budget="<<field::budget_name(q.failure.budget)<<",required="<<q.failure.required
+               <<",capacity="<<q.failure.capacity<<'\n';
+    check(q.status==field::UpdateStatus::Ok && q.generation==*current.prepared_generation+1 &&
+          q.claims.sampled && q.claims.particles_before==(parts?1u:2u) && q.claims.particles_peak==3 &&
+          q.claims.particles_after==(parts?2u:1u) && q.claims.fields_peak==8,
+          "Unicode exchange must claim the whole incoming cohort before retiring the outgoing rows");
+    const auto exchanged=observe();
+    check(exchanged.tick==current.tick && exchanged.prepared_generation==q.generation,
+          "exchange changed the completed tick or omitted native generation");
+    for(const auto &a:exchanged.body_records) for(const auto &b:current.body_records)
+      check(!field::detail::same_handle(a,b),"replaced physical body retained its outgoing claim");
+    for(int axis=0;axis<3;++axis) {
+      const auto before=momentum(current,axis), after=momentum(exchanged,axis);
+      check(std::abs(before-after)<=1e-12L*std::max(1.L,std::abs(before)),
+            "Unicode exchange failed to preserve outgoing group momentum");
+    }
+    auto state=capture(exchanged,parts);
+    field::Parameters64 parameters;
+    parameters.gravity=1;parameters.contact_stiffness=parameters.reach_strength=0;parameters.dt=0.01;
+    check(session.tick_prepared(h,source->owner(),parameters).status==field::TickStatus::Ok,
+          "native tick after Unicode exchange failed");
+    current=observe();
+    auto tick=capture(current,parts);
+    check(current.tick==exchanged.tick+1 && state.at("coverage")==tick.at("coverage"),
+          "following native tick did not preserve occurrence coverage and full claims");
+    steps.push_back({{"phase",parts?"expand":"compress"},{"state",std::move(state)},
+        {"following_tick",std::move(tick)},{"body_peak",q.claims.particles_peak},{"field_peak",q.claims.fields_peak}});
+  }
+  return {{"schema","hcp-live-unicode-exchange"},{"version",1},{"character",pin(tool(source->shared_recipe(),definition).parents[0].target)},
+          {"short_work_refusal","unchanged"},{"steps",std::move(steps)}};
+}
+
+int run_unicode_exchange(const engine::InstanceSettings &settings,field::HostPath path,bool project_only) {
+  check(!project_only,"Unicode exchange requires a running native study");
+  std::cout<<unicode_exchange(settings,letter_fixture::Fixture{},path).dump()<<'\n';
+  std::cerr<<"semantic_native_trace,checks="<<checks<<" PASS\n";
+  return 0;
+}
+
 void compare_context(const Json &off,const Json &on,const letter_fixture::Fixture &fixture) {
   check(signature(off)==signature(on),"imposed off/on controls must have identical pre-tick structural inputs, native positions and diagnostic arithmetic");
   const auto &snapshot=on.at("native").at("before").at("snapshot");
@@ -1034,6 +1204,8 @@ int main(int argc,char **argv) {
       else if(arg=="--case" && i+1<argc)selected=argv[++i];
       else throw std::invalid_argument("semantic_native_trace_test [--threads N] [--direct] [--projection-only] [--case all|ascii|unicode|character-rollup|parent-overlap|scoped-nibble|repeated-rollup|varied-rollup]");
     }
+    if (selected=="unicode-exchange")
+      return run_unicode_exchange(settings,path,project_only);
     check(selected=="all" || selected=="ascii" || selected=="unicode" ||
           selected=="character-rollup" || selected=="parent-overlap" || selected=="scoped-nibble" ||
           (selected=="repeated-rollup" || selected=="varied-rollup"),"unknown trace case");
