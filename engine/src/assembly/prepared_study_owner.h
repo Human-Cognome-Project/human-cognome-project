@@ -50,18 +50,18 @@ class PreparedStudyOwner {
   // mutation; retain the stamped view, not its rows, to check again afterwards.
   struct AssociationRows {
     // Live order indexes immutable catalogue rows without copying source pins.
-    struct Occurrences {
-      const ReservedVector<AdmissionOccurrenceCommand> &catalogue;
+    template<class T> struct Rows {
+      const ReservedVector<T> &catalogue;
       const ReservedVector<std::size_t> *live{};
       std::size_t size() const { return live ? live->size() : catalogue.size(); }
-      const AdmissionOccurrenceCommand &at(std::size_t i) const {
+      const T &at(std::size_t i) const {
         return catalogue.at(live ? live->at(i) : i);
       }
-      const AdmissionOccurrenceCommand &operator[](std::size_t i) const { return at(i); }
+      const T &operator[](std::size_t i) const { return at(i); }
     };
     const ActiveAssembly &source;
-    Occurrences occurrences;
-    const ReservedVector<AdmissionFieldCommand> &field_sources;
+    Rows<AdmissionOccurrenceCommand> occurrences;
+    Rows<AdmissionFieldCommand> field_sources;
     const ReservedVector<engine::RecordHandle> &bodies, &fields;
     const ReservedVector<ScaleBinding> &scales;
     const std::vector<std::uint64_t> &exact_masses; // Native exact ledger, never physical floating mass.

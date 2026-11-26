@@ -43,9 +43,10 @@ void write_live_event(const LiveStudyInput &input, const Json &event) {
 
 int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmission request,
                    const std::string &label, const Json &source_metadata,
-                   double physical_mass, std::uint64_t source_mass) {
+                   std::optional<double> physical_mass, std::optional<std::uint64_t> source_mass) {
   const auto source=request.source;
   const auto catalogue=request.bindings.bodies;
+  const bool catalogue_edits=request.lod_alternative && !request.lod_alternative->initially_live.empty();
   const auto limits=request.capacity.limits();
   const auto resources=request.resources;
   assembly::ActiveSession session(input.settings);
@@ -109,13 +110,17 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
   for (const auto &entry : catalogue)
     available.push_back({{"entry",entry.occurrence.source.entry},{"id",assembly::occurrence_text(entry.occurrence)},
         {"definition",warm::key(entry.definition.object)},{"revision",entry.definition.revision.str()}});
-  emit({{"command","create"},{"status","ok"},{"catalogue",available},
+  Json created{{"command","create"},{"status","ok"},{"catalogue",available},
     {"actual_backend","native_cpu"},{"host_path",input.path == field::HostPath::BulkCopy ? "bulk" : "direct"},
     {"capacities",{{"particles",limits[field::Budget::Particles]},{"fields",limits[field::Budget::Fields]},
       {"participation",limits[field::Budget::Participation]},{"contacts",limits[field::Budget::Contacts]},
-      {"batch",limits[field::Budget::Batch]},{"scratch_bytes",limits[field::Budget::ScratchBytes]}}},
-    {"physical_mass_per_occurrence",physical_mass},{"exact_source_mass_per_occurrence",source_mass},
-    {"mass_policy",source_metadata.at("kind")=="fixture_only" ? "baseline_source_mass" : "retained_profile_mass"}});
+      {"batch",limits[field::Budget::Batch]},{"scratch_bytes",limits[field::Budget::ScratchBytes]}}}};
+  if (physical_mass) created["physical_mass_per_occurrence"] = *physical_mass;
+  if (source_mass) created["exact_source_mass_per_occurrence"] = *source_mass;
+  created["mass_policy"] = physical_mass
+      ? (source_metadata.at("kind")=="fixture_only" ? "baseline_source_mass" : "retained_profile_mass")
+      : "definition_source_mass";
+  emit(std::move(created));
   bool rejected=false;
   std::string line;
   while (input.commands.read_line(line)) {
@@ -161,7 +166,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
         assembly::PreparedOccurrenceEdit edit{{source->study(),{entry,{}}},command == "add"};
         if (!revision.empty()) {
           edit.definition_pin=catalogue_pin(catalogue,extra,revision);
-        } else if (command == "add") {
+        } else if (command == "add" && (!extra.empty() || !catalogue_edits)) {
           bool declared_entry=false;
           for (const auto &item : catalogue) declared_entry |= item.occurrence.source.entry == entry;
           const auto template_entry=extra.empty() ? (declared_entry ? entry : 2)

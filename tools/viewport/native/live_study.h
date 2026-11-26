@@ -17,6 +17,7 @@ struct LiveStudyInput {
 void write_live_event(const LiveStudyInput &, const Json &);
 int run_live_study(const LiveStudyInput &, assembly::PreparedStudySubmission,
                    const std::string &label, const Json &source_metadata,
-                   double physical_mass, std::uint64_t source_mass);
-int run_retained_live_study(const LiveStudyInput &);
+                   std::optional<double> physical_mass = {},
+                   std::optional<std::uint64_t> source_mass = {});
+int run_retained_live_study(const LiveStudyInput &,const std::vector<std::string> &letters);
 }  // namespace viewport

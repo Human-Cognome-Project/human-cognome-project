@@ -82,8 +82,18 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
       try {
         owner->lod_=reserve_unique<PreparedLodWorkspace>(domain,[&](auto *p){
           ::new(static_cast<void*>(p))PreparedLodWorkspace(*owner,*alternative->source,
-              std::move(other.plan),editable_occurrences,fixed_character,work);
+              std::move(other.plan),editable_occurrences,fixed_character,alternative->initially_live,work);
         });
+        if (owner->lod_->catalogue_edits_) {
+          owner->lod_->sides_[0].plan = std::move(owner->plan_);
+          const auto candidate = owner->lod_->build_catalogue(*owner,work);
+          if (candidate.status != field::UpdateStatus::Ok) {
+            out.status = candidate.status == field::UpdateStatus::CapacityExhausted
+                ? AdmissionPlanStatus::CapacityExhausted : AdmissionPlanStatus::Unsupported;
+            out.failure = candidate.failure;
+            owner.reset();out.metadata_work=work.result();out.reservation=domain->result();return out;
+          }
+        }
       } catch(const warm::Error &) {
         owner.reset();out.status=AdmissionPlanStatus::Unsupported;out.metadata_work=work.result();out.reservation=domain->result();return out;
       }
@@ -174,9 +184,11 @@ bool PreparedStudyOwner::ready() const {
   if (phase_ != PreparedOwnerPhase::Published || !h_.ready()) return false;
   const auto &s = h_.prepared_storage();
   const auto *selection = lod_ ? lod_->body_selection() : edits_ ? &edits_->live_ : nullptr;
+  const auto *field_selection = lod_ ? lod_->field_selection() : nullptr;
   if (plan_ || (selection ? selection->size() : lod_ ? lod_->body_sources().size()
                                                      : occurrences_.size()) != bodies_.size() ||
-      (lod_ ? lod_->field_sources().size() : field_sources_.size()) != fields_.size() ||
+      (field_selection ? field_selection->size() : lod_ ? lod_->field_sources().size()
+                                                        : field_sources_.size()) != fields_.size() ||
       s.generation != generation_ || s.particles.context() != context_ ||
       s.live.particles != bodies_.size() || s.live.fields != fields_.size()) return false;
   const auto current = [](const auto &handles, const auto &headers, std::uint64_t context) {
@@ -221,7 +233,8 @@ PreparedStudyOwner::AssociationRows PreparedStudyOwner::AssociationView::read() 
     throw warm::Stale("prepared owner: stale association view");
   return {*owner_->source_,{owner_->lod_ ? owner_->lod_->body_sources() : owner_->edits_ ? owner_->edits_->catalogue_ : owner_->occurrences_,
                           owner_->lod_ ? owner_->lod_->body_selection() : owner_->edits_ ? &owner_->edits_->live_ : nullptr},
-          owner_->lod_ ? owner_->lod_->field_sources() : owner_->field_sources_,owner_->bodies_,owner_->fields_,
+          {owner_->lod_ ? owner_->lod_->field_sources() : owner_->field_sources_,
+           owner_->lod_ ? owner_->lod_->field_selection() : nullptr},owner_->bodies_,owner_->fields_,
           owner_->scales_,owner_->h_.prepared_storage().source_masses};
 }
 PreparedStudyOwner::AssociationView PreparedStudyOwner::associations(const warm::Uuid &owner,
@@ -301,6 +314,12 @@ field::UpdateResult PreparedStudyOwner::bootstrap(const warm::Uuid &owner,
     return result;
   }
   if (!empty(h_) || s.completed_ticks != initial_ticks_) return result;
+  if (lod_ && lod_->catalogue_edits_) {
+    PreparedOccurrenceEditResult candidate;
+    candidate.publication.status = field::UpdateStatus::Ok;
+    candidate.publication.generation = generation_;
+    return commit_lod(candidate,placement_work,cells,hierarchy_work).publication;
+  }
   const auto &commands = plan_->commands();
   const auto &intrinsics = plan_->intrinsics();
   const auto &focus = plan_->focus();

@@ -5,6 +5,9 @@ namespace assembly {
 struct PreparedLodAlternative {
   std::shared_ptr<const ActiveAssembly> source;
   detail::AdmissionBindings bindings;
+  // A supplied live set activates only those declared roots at bootstrap.
+  // Both exposure bindings still describe the complete editable catalogue.
+  std::vector<std::uint64_t> initially_live{};
 };
 // Explicit setup operation for the existing shared v2/f64 subset. Layout roles,
 // units and all model/resource choices are supplied; native layout pointers must
