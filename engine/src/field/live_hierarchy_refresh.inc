@@ -423,7 +423,8 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
   auto &r = *a.refresh;
   auto &s = *a.h.prepared_;
   const auto &limits = s.capacity.limits();
-  const bool scoped_responses = s.capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedEndpointBootstrap;
+  const bool scoped_responses = s.capacity.scoped_responses();
+  const bool editable_scopes = s.capacity.hierarchy_mode()==PreparedHierarchyMode::ScopedCatalogue;
   const auto cap = limits[Budget::CascadeWork];
   const auto budget = work_limit == UINT64_MAX ? cap : work_limit;
   const auto reject = [&](UpdateStatus status) -> void {
@@ -444,10 +445,10 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
     if (budget > cap)
       exhaust(Budget::CascadeWork, budget, cap);
     charge(0);
-    if (spec.scoped_nibble_rows != s.capacity.scoped_rows())
+    if (!editable_scopes && spec.scoped_nibble_rows != s.capacity.scoped_rows())
       reject(UpdateStatus::Unsupported);
-    if (a.scoped_nibble_rows || (spec.scoped_nibble_rows &&
-        (a.bound || a.h.actual_arch()!=taichi::Arch::x64)))
+    if ((!editable_scopes && (a.scoped_nibble_rows || (spec.scoped_nibble_rows && a.bound))) ||
+        (spec.scoped_nibble_rows && a.h.actual_arch()!=taichi::Arch::x64))
       reject(UpdateStatus::Unsupported);
     for (auto item :
          {std::pair{Budget::CascadeNodes, std::uint64_t(spec.node_count)},
@@ -740,25 +741,28 @@ UpdateStatus LiveHierarchy::prepare_refresh(const LiveRefreshSpec &spec,
                           .fraction_mask();
       bool repair = r.plan[PriorSlot * a.H + slot] < 0;
       if (!repair) {
+        const auto same_source = [&](int old, int next) {
+          return same_handle(s.particle_headers[a.sources[old]],
+                             s.prospective_particles[r.sources[next]]) &&
+                 a.ratios[old] == r.ratios[next] &&
+                 a.ratios[a.S + old] == r.ratios[a.S + next] &&
+                 a.source_headers[old].ordinal == r.source_headers[next].ordinal;
+        };
         repair = a.masks[slot] != r.masks[slot] ||
                  a.config(SourceCount, slot) != config(SourceCount, slot) ||
                  a.config(ChildCount, slot) != config(ChildCount, slot);
         for (std::size_t j = 0; !repair && j < node.cohort_count; ++j) {
           charge();
           auto old = a.config(SourceBegin, slot) + j, next = source_begin + j;
-          repair =
-              !same_handle(s.particle_headers[a.sources[old]],
-                           s.prospective_particles[r.sources[next]]) ||
-              a.ratios[old] != r.ratios[next] ||
-              a.ratios[a.S + old] != r.ratios[a.S + next] ||
-              a.source_headers[old].ordinal != r.source_headers[next].ordinal;
+          repair = !same_source(old,next);
         }
         for (std::size_t j = 0; !repair && j < node.child_count; ++j) {
           charge();
-          int child = r.children[child_begin + j];
-          repair = a.children[a.config(ChildBegin, slot) + j] != child ||
-                   r.plan[PriorSlot * a.H + child] < 0 ||
-                   r.plan[Repair * a.H + child];
+          const int child = r.children[child_begin + j];
+          const int old = a.children[a.config(ChildBegin, slot) + j];
+          if (old<0 && child<0) repair = !same_source(-1-old,-1-child);
+          else repair = old != child || r.plan[PriorSlot * a.H + child] < 0 ||
+                        r.plan[Repair * a.H + child];
         }
       }
       r.plan[Repair * a.H + slot] = repair;

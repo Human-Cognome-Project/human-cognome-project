@@ -514,10 +514,12 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   const auto edge_begin = occurrences_.size()+fields_.size();
   struct ScopedLink { int branch, child, command; bool confirmed{}; };
   ReservedVector<ScopedLink> scoped{ReservationAllocator<ScopedLink>(domain_.get())};
+  const bool editable_scopes = capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedCatalogue;
   for (std::size_t child=0; child<b.comparisons.size(); ++child) {
     w.charge(1);
     if (child_uses[child] < 2) continue;
-    need((b.character_rollup && capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedNibbleBootstrap) ||
+    need(editable_scopes ||
+         (b.character_rollup && capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedNibbleBootstrap) ||
          (endpoint_rollup && capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedEndpointBootstrap));
     const auto &publisher = b.comparisons[child];
     need(publisher.field.kind == GroupKind::ParentValue && publisher.children.empty() &&
@@ -560,7 +562,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     links = sum(links,count-child_uses[child]);
     scoped_nibble_rows_ = true;
   }
-  need(scoped_nibble_rows_ == capacity.scoped_rows());
+  need(editable_scopes || scoped_nibble_rows_ == capacity.scoped_rows());
   // A caller may additionally assert every derived selection by full byte key
   // and ordinal. The immutable ledger above determines the selections.
   if (!b.nibble_scopes.empty()) {

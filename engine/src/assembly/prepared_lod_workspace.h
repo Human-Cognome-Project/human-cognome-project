@@ -16,10 +16,13 @@ class PreparedLodWorkspace {
       const std::vector<std::uint64_t> &initially_live, PreparationWork &);
  private:
   struct Participation { std::size_t occurrence{}, field{}; field::UpdateCommand command; };
+  struct LiveTemplate { std::size_t occurrence{}; field::UpdateRef body; };
   struct Side {
     ReservedUnique<StructuralAdmissionPlan> plan;
     ReservedVector<Participation> edges;
-    explicit Side(ReservationDomain *d):edges(ReservationAllocator<Participation>(d)){}
+    ReservedVector<std::size_t> scope_publishers;
+    explicit Side(ReservationDomain *d):edges(ReservationAllocator<Participation>(d)),
+        scope_publishers(ReservationAllocator<std::size_t>(d)){}
   };
   field::UpdateResult presence(const PreparedStudyOwner &, const PreparedOccurrenceEdit &, PreparationWork &);
   field::UpdateResult exposure(const PreparedStudyOwner &, const PreparedLodEdit &, PreparationWork &);
@@ -53,12 +56,13 @@ class PreparedLodWorkspace {
   ReservedVector<std::size_t> row_ordinals_, next_row_ordinals_, offsets_;
   ReservedVector<std::size_t> incoming_rows_, incoming_positions_;
   ReservedVector<std::size_t> field_ordinals_, next_field_ordinals_;
-  ReservedVector<int> field_indices_, node_indices_;
+  ReservedVector<int> field_indices_, node_indices_, scope_branches_;
+  ReservedVector<LiveTemplate> live_templates_;
   field::UpdateRef bootstrap_focus_;
   std::size_t side_{}, target_{}, selected_{}, source_template_{}, path_capacity_{}, address_stride_{};
   const bool catalogue_edits_;
   bool bootstrapping_{};
   const bool fixed_presence_;
-  bool changing_{}, adding_{}, new_identity_{};
+  bool changing_{}, adding_{}, new_identity_{}, scoped_rows_{};
 };
 }

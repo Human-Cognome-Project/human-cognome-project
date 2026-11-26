@@ -83,9 +83,14 @@ TEMPLATE_ENTRY` or `add ENTRY DEFINITION REVISION` for a new, undeclared
 entry, even in a single-letter catalogue. A selector that conflicts with a
 declared or remembered template is refused.
 
-This retained profile derives one comparison tree from roots with identical
-membership coverage and disjoint parent fields across definitions. The
-[recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
+English A and B share nibble `4` through their bytes `41` and `42`. Use
+`--letter 02.00.00.00.04` as the second address to replay the pair. In parts
+exposure, the response trace shows both scoped contributions under the same
+nibble field. Each contributes through its own byte path. Run `tick 1` in
+parts exposure to observe the shared field before rolling up.
+
+The retained profile currently requires identical membership coverage across
+roots. The [recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
 tracks wider catalogue qualification.
 
 [Viewer controls](../../tools/viewport/README.md) · [Build the engine](FIRST-RUN.md)

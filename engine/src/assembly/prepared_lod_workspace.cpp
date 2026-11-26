@@ -63,6 +63,8 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
      next_field_ordinals_(ReservationAllocator<std::size_t>(o.domain_.get())),
      field_indices_(ReservationAllocator<int>(o.domain_.get())),
      node_indices_(ReservationAllocator<int>(o.domain_.get())),
+     scope_branches_(ReservationAllocator<int>(o.domain_.get())),
+     live_templates_(ReservationAllocator<LiveTemplate>(o.domain_.get())),
      catalogue_edits_(!initially_live.empty()),bootstrapping_(catalogue_edits_),
      fixed_presence_(!editable) {
   need(!catalogue_edits_ || editable);
@@ -161,6 +163,17 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
       need(body<p.occurrences().size() && field<p.fields().size() && c.exact_count.has_value());
       sides_[side].edges.push_back({body,field,c});
     }
+    const auto spec = p.hierarchy();
+    if (spec.scoped_nibble_rows) {
+      need(catalogue_edits_);
+      auto &publishers = sides_[side].scope_publishers;
+      reserve(publishers,spec.contribution_count,w);
+      for (std::size_t i=0; i<spec.node_count; ++i) {
+        const auto &node = spec.nodes[i];
+        w.elements(node.cohort_count,sizeof(std::size_t));
+        publishers.insert(publishers.end(),node.cohort_count,i);
+      }
+    }
   }
   if(!fixed_presence_) {
     reserve(catalogue_,slots,w);reserve(templates_,slots,w);reserve(known_,slots,w);
@@ -199,6 +212,10 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
     reserve(incoming_rows_,slots,w);reserve(incoming_positions_,slots,w);
     reserve(field_ordinals_,fields,w);reserve(next_field_ordinals_,fields,w);reserve(field_indices_,fields,w);
     reserve(node_indices_,limits[field::Budget::CascadeNodes],w);
+    if (a.hierarchy().scoped_nibble_rows || fine.hierarchy().scoped_nibble_rows) {
+      reserve(scope_branches_,limits[field::Budget::CascadeNodes],w);
+      reserve(live_templates_,slots,w);
+    }
     for (std::size_t i=0; i<slots; ++i) {
       w.charge(1);
       const bool declared = i<a.occurrences().size();
@@ -397,7 +414,9 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
   field::UpdateResult out;
   const auto &s = o.h_.prepared_storage();
   out.generation = s.generation;
-  const auto &plan = *sides_[target_].plan;
+  const auto &side = sides_[target_];
+  const auto &plan = *side.plan;
+  const auto spec = plan.hierarchy();
   const auto &current_fields = field_sources();
   const auto range = [&](std::size_t root, std::size_t side) {
     const auto &group = fixed_groups_[root];
@@ -420,6 +439,8 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
   next_fields_.clear();next_field_ordinals_.clear();field_commands_.clear();
   incoming_rows_.clear();incoming_positions_.clear();
   nodes_.clear();children_.clear();contributions_.clear();
+  live_templates_.clear();
+  scoped_rows_ = false;
   w.elements(catalogue_.size(),sizeof(std::size_t));
   offsets_.assign(catalogue_.size(),SIZE_MAX);
   std::size_t offset = 0;
@@ -488,7 +509,12 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
         incoming_positions_.push_back(at);
         next_bodies_.push_back({});
       } else next_bodies_.push_back(o.bodies_[offsets_[slot]+j]);
-      for (const auto &edge : sides_[target_].edges) {
+      if (spec.scoped_nibble_rows) {
+        w.charge(sizeof(LiveTemplate));
+        live_templates_.push_back({index,fresh ? UpdateRef::pending(int(intrinsics_.back().command))
+                                                : UpdateRef::existing(next_bodies_.back())});
+      }
+      for (const auto &edge : side.edges) {
         w.charge(1);
         if (edge.occurrence==index) field_indices_[edge.field]=-2;
       }
@@ -557,7 +583,7 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
   }
   std::size_t position = s.live.edges-removed;
   for (std::size_t i=0; i<intrinsics_.size(); ++i) {
-    for (const auto &edge : sides_[target_].edges) {
+    for (const auto &edge : side.edges) {
       w.charge(1);
       if (edge.occurrence!=incoming_rows_[i]) continue;
       auto command = edge.command;
@@ -571,7 +597,6 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
     }
   }
 
-  const auto spec = plan.hierarchy();
   const auto field_for = [&](int command) {
     for (std::size_t i=0; i<plan.fields().size(); ++i) {
       w.charge(1);
@@ -587,6 +612,34 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
   if (bootstrapping_) bootstrap_focus_ = UpdateRef::pending(field_commands_[focus]);
   w.elements(spec.node_count,sizeof(int));
   node_indices_.assign(spec.node_count,-1);
+  if (spec.scoped_nibble_rows) {
+    // Plan rows are sealed for the declared catalogue. A publisher still uses
+    // its ordinary packet when just one of its branches is currently present.
+    w.elements(spec.node_count,sizeof(int));
+    scope_branches_.assign(spec.node_count,-1);
+    for (std::size_t i=0; i<spec.node_count; ++i) {
+      const auto &node = spec.nodes[i];
+      if (field_for(node.field_command)<0) continue;
+      for (std::size_t j=node.child_begin; j<node.child_begin+node.child_count; ++j) {
+        w.charge(1);
+        const int child = spec.children[j];
+        if (child>=0) continue;
+        auto &branch = scope_branches_[side.scope_publishers[-1-child]];
+        if (branch==-1) branch = int(i);
+        else if (branch!=int(i)) branch = -2;
+      }
+    }
+  }
+  const auto append_child = [&](int child) {
+    w.charge(sizeof(child));
+    if (children_.size()==children_.capacity()) {
+      out.status = field::UpdateStatus::CapacityExhausted;
+      out.failure = {field::Budget::CascadeLinks,children_.size()+1,children_.capacity()};
+      return false;
+    }
+    children_.push_back(child);
+    return true;
+  };
   for (std::size_t i=0; i<spec.node_count; ++i) {
     w.charge(1);
     auto node = spec.nodes[i];
@@ -600,8 +653,41 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
     for (std::size_t j=0; j<node.child_count; ++j) {
       w.charge(1);
       const int child = spec.children[first+j];
-      need(child>=0 && std::size_t(child)<i);
-      if (node_indices_[child]>=0) children_.push_back(node_indices_[child]);
+      if (child>=0) {
+        need(std::size_t(child)<i);
+        if (node_indices_[child]>=0 && !append_child(node_indices_[child])) return out;
+        continue;
+      }
+      const auto source = std::size_t(-1-child);
+      const auto publisher = side.scope_publishers[source];
+      need(publisher<i && node_indices_[publisher]>=0);
+      const int native_child = node_indices_[publisher];
+      if (scope_branches_[publisher]==int(i)) {
+        const auto already_linked = std::any_of(children_.begin()+node.child_begin,children_.end(),[&](int link) {
+          w.charge(1);return link==native_child;
+        });
+        if (!already_linked && !append_child(native_child)) return out;
+        continue;
+      }
+      need(scope_branches_[publisher]==-2);
+      const auto &input = plan.commands()[spec.contributions[source].source_command];
+      const auto &cohort = nodes_[native_child];
+      for (const auto &live : live_templates_) {
+        w.charge(1);
+        if (int(live.occurrence)!=input.first.command) continue;
+        const auto begin = contributions_.begin()+cohort.cohort_begin;
+        const auto end = begin+cohort.cohort_count;
+        const auto row = std::find_if(begin,end,[&](const auto &candidate) {
+          w.charge(1);
+          const auto ordinal = candidate.source_command<0 ? candidate.source.ordinal
+                                                          : commands_[candidate.source_command].ordinal;
+          return ordinal==input.ordinal && live.body.command==candidate.occurrence.command &&
+                 field::detail::same_handle(live.body.handle,candidate.occurrence.handle);
+        });
+        need(row!=end);
+        if (!append_child(-1-int(row-contributions_.begin()))) return out;
+        scoped_rows_ = true;
+      }
     }
     node.child_count = children_.size()-node.child_begin;
     node.cohort_begin = contributions_.size();
@@ -637,7 +723,7 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
   out.status = field::UpdateStatus::Ok;
   return out;
 }
-field::LiveRefreshSpec PreparedLodWorkspace::hierarchy() const {return {nodes_.data(),nodes_.size(),children_.data(),children_.size(),contributions_.data(),contributions_.size()};}
+field::LiveRefreshSpec PreparedLodWorkspace::hierarchy() const {return {nodes_.data(),nodes_.size(),children_.data(),children_.size(),contributions_.data(),contributions_.size(),scoped_rows_};}
 void PreparedLodWorkspace::publish(PreparedStudyOwner &o) {
   const auto &s=o.h_.prepared_storage();const auto &p=*sides_[target_].plan;
   for(std::size_t i=0;i<intrinsics_.size();++i) {

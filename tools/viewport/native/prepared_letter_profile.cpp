@@ -390,6 +390,7 @@ assembly::PreparedStudySubmission editable_retained_catalogue_submission(
   const auto groups = catalogue_memberships(recipe,coarse.bodies.at(0).definition);
   if (recipe.focal_fields.size()!=1 || recipe.focal_fields[0].kind!=warm::FieldKind::Membership ||
       !groups.count(focus)) throw PreparedLetterProfileError("invalid retained catalogue focus");
+  bool shared_parents = false;
   const auto fields = [&](detail::AdmissionBindings &binding,const ActiveAssembly &view) {
     binding.source = {view.owner(),view.study(),view.generation(),recipe.ref};
     binding.layout = {{{nullptr,-1,ScaleRole::Root},1},{{nullptr,0,ScaleRole::PrimaryStep},64}};
@@ -400,7 +401,8 @@ assembly::PreparedStudySubmission editable_retained_catalogue_submission(
       binding.comparisons.push_back({std::move(key),std::uint64_t(at->second)+1,level,52,std::move(children)});
       return index;
     };
-    std::set<warm::ObjectKey> represented, parent_fields;
+    std::set<warm::ObjectKey> represented;
+    std::map<warm::ObjectKey,int> parent_fields;
     std::vector<int> branches;
     for (const auto &body : binding.bodies) {
       if (!represented.insert(body.definition.object).second) continue;
@@ -409,9 +411,10 @@ assembly::PreparedStudySubmission editable_retained_catalogue_submission(
       std::vector<int> children;
       for (const auto &parent : definition.parents) {
         if (!direct.insert(parent.target.object).second) continue;
-        if (!parent_fields.insert(parent.target.object).second)
-          throw PreparedLetterProfileError("retained catalogue parent fields overlap across definitions");
-        children.push_back(add({GroupKind::ParentValue,parent.target.object},0,{}));
+        const auto [field,created] = parent_fields.try_emplace(parent.target.object,-1);
+        if (created) field->second = add({GroupKind::ParentValue,parent.target.object},0,{});
+        else shared_parents = true;
+        children.push_back(field->second);
       }
       branches.push_back(add({GroupKind::SiblingDefinition,body.definition.object},1,std::move(children)));
     }
@@ -432,16 +435,19 @@ assembly::PreparedStudySubmission editable_retained_catalogue_submission(
   limits[Budget::Particles] = 2*std::max(coarse.bodies.size(),fine.bodies.size());
   limits[Budget::Potential] = limits[Budget::Particles]*(1+maximum_width);
   limits[Budget::Fields] = limits[Budget::CascadeNodes] = addresses.size();
-  limits[Budget::CascadeLevels] = limits[Budget::CascadeLinks] = addresses.size();
+  limits[Budget::CascadeLevels] = addresses.size();
   limits[Budget::Participation] = limits[Budget::Particles]*limits[Budget::Fields];
+  limits[Budget::CascadeLinks] = addresses.size()+(shared_parents ? limits[Budget::Participation] : 0);
   limits[Budget::CascadeReferences] = limits[Budget::CascadeCoverage] = limits[Budget::Participation];
   limits[Budget::LiveResponses] = 2*limits[Budget::Participation];
   limits[Budget::BootstrapCommands] = limits[Budget::Batch] =
       2*(limits[Budget::Particles]+limits[Budget::Fields]+limits[Budget::Participation]);
   const auto profile = field::NumericalProfile::trial();
+  const auto hierarchy = shared_parents ? field::PreparedHierarchyMode::ScopedCatalogue
+                                       : field::PreparedHierarchyMode::ExpressedTree;
   limits[Budget::ScratchBytes] = field::detail::PreparedStorage::required_scratch(
       limits,false,profile)+256*1024*1024;
-  PreparedStudySubmission request{aggregate,std::move(coarse),field::PreparedCapacity(limits,profile),
+  PreparedStudySubmission request{aggregate,std::move(coarse),field::PreparedCapacity(limits,profile,hierarchy),
       std::make_shared<detail::ReservationDomain>(detail::ReservationBudget{16*1024*1024,16*1024*1024})};
   request.path = path;
   request.editable_occurrences = true;
