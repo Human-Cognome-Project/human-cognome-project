@@ -567,7 +567,10 @@ if(HCP_WITH_VIEWPORT)
   endforeach()
   add_test(NAME prepared_mixed_whole_field_bulk COMMAND prepared_whole_field_test 1 bulk mixed)
   add_test(NAME prepared_mixed_whole_field_direct COMMAND prepared_whole_field_test 2 direct mixed)
+  add_test(NAME prepared_mixed_editable_bulk COMMAND prepared_whole_field_test 1 bulk mixed-editable)
+  add_test(NAME prepared_mixed_editable_direct COMMAND prepared_whole_field_test 2 direct mixed-editable)
   set_tests_properties(prepared_mixed_whole_field_bulk prepared_mixed_whole_field_direct
+    prepared_mixed_editable_bulk prepared_mixed_editable_direct
     PROPERTIES ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 300)
   add_executable(prepared_occurrence_edit_test tests/prepared_occurrence_edit_test.cpp)
   target_link_libraries(prepared_occurrence_edit_test PRIVATE viewport_snapshot)

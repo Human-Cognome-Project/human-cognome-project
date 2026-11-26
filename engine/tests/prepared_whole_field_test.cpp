@@ -174,7 +174,7 @@ void run(int workers,field::HostPath path,bool short_peak) {
     <<",round_trips=3,distinct_motion=1,own_targets=1,one_generation=1,inherited_focus=same_claim,peak_particles=4,peak_fields=6,"
       "ordinary_fine_edits=1,refusal_unchanged=1,recurring_new=0 PASS\n";
 }
-void mixed_cohorts(int workers,field::HostPath path) {
+void mixed_cohorts(int workers,field::HostPath path,bool editable=false) {
   Input input;
   const auto accented = input.fixture.ref(input.fixture.accented);
   auto definitions = input.fixture.base;
@@ -199,7 +199,7 @@ void mixed_cohorts(int workers,field::HostPath path) {
       limits,false,profile) + 256*1024*1024;
   request.capacity = field::PreparedCapacity(limits,profile);
   request.source = aggregate;
-  request.editable_occurrences = false;
+  request.editable_occurrences = editable;
   const auto bind = [&](const ActiveAssembly &view,bool fine) {
     detail::AdmissionBindings binding;
     binding.source = {view.owner(),view.study(),view.generation(),view.shared_recipe().ref};
@@ -244,6 +244,7 @@ void mixed_cohorts(int workers,field::HostPath path) {
   auto part_bindings = bind(*parts,true);
   request.bindings = std::move(coarse_bindings);
   request.lod_alternative = PreparedLodAlternative{parts,std::move(part_bindings)};
+  if (editable) request.lod_alternative->initially_live = {2};
   const auto resources = request.resources;
 
   engine::InstanceSettings settings;
@@ -264,9 +265,28 @@ void mixed_cohorts(int workers,field::HostPath path) {
   parameters.contact_stiffness = 0;
   check(session.tick_prepared(handle,aggregate->owner(),parameters).status==field::TickStatus::Ok,
         "mixed field failed initial tick");
-  const auto before = observe();
+  auto before = observe();
   const auto claim = before.comparisons.back().field;
   const auto metadata = resources->result().live_bytes;
+  if (editable) {
+    check(before.body_records.size()==1 && before.report.prepared.particles[0].exact_mass==2,
+          "initial retained subset failed to select one root");
+    PreparedOccurrenceEdit add{{handle.study,{10,{}}},true,*before.prepared_generation};
+    add.definition_pin = accented;
+    const auto initial = before;
+    add.preparation_work = 0;
+    check(no_new([&] { return session.edit_prepared(handle,aggregate->owner(),add); }).preparation.status==
+              detail::PreparationStatus::WorkExhausted,"short mixed insertion accepted");
+    check(same(initial.body_records[0],observe().body_records[0]),"refused insertion changed the first claim");
+    add.preparation_work = UINT64_MAX;
+    check(no_new([&] { return session.edit_prepared(handle,aggregate->owner(),add); }).publication.status==
+              UpdateStatus::Ok,"mixed insertion by definition pin failed");
+    before = observe();
+    survivor(initial,before,2);
+    check(session.tick_prepared(handle,aggregate->owner(),parameters).status==field::TickStatus::Ok,
+          "mixed study failed after insertion");
+    before = observe();
+  }
   const auto check_rows = [&](const viewport::CompletedState &state, const auto &ids,
                               const auto &masses, const auto &pins, std::size_t local_rows,
                               std::size_t inherited_rows) {
@@ -349,6 +369,24 @@ void mixed_cohorts(int workers,field::HostPath path) {
   check(session.tick_prepared(handle,aggregate->owner(),parameters).status==field::TickStatus::Ok,
         "original mixed handle failed to tick after rollup");
   check_rows(observe(),roots,root_mass,root_pins,2,4);
+  if (editable) {
+    const auto live = observe();
+    PreparedOccurrenceEdit remove{{handle.study,{10,{}}},false,*live.prepared_generation};
+    check(no_new([&] { return session.edit_prepared(handle,aggregate->owner(),remove); }).publication.status==
+              UpdateStatus::Ok,"mixed removal failed");
+    const auto one = observe();
+    survivor(live,one,2);
+    check(one.body_records.size()==1 && one.report.prepared.particles[0].exact_mass==2,
+          "mixed removal did not retire only the selected root");
+    check(session.tick_prepared(handle,aggregate->owner(),parameters).status==field::TickStatus::Ok,
+          "original handle failed to tick after mixed removal");
+    PreparedOccurrenceEdit restore{{handle.study,{10,{}}},true,*observe().prepared_generation};
+    restore.definition_pin = accented;
+    check(no_new([&] { return session.edit_prepared(handle,aggregate->owner(),restore); }).publication.status==
+              UpdateStatus::Ok,"removed mixed root was unavailable by its pin");
+    check_rows(observe(),roots,root_mass,root_pins,2,4);
+    std::cout << "editable_mixed_study,initial_mass=2,mixed_mass=6,removed_mass=2,surviving_claims=1 PASS\n";
+  }
   std::cout << "mixed_whole_field,aggregate=2,parts=3,exact_mass=6,own_motion=1,peak_claims=5,"
                "responses=6/15/6,refused_work=1,following_tick=1,recurring_new=0 PASS\n";
 }
@@ -491,5 +529,6 @@ int main(int argc,char **argv){try{
   if(argc>3 && std::string(argv[3])=="probes"){probe_budgets(workers,path);return 0;}
   if(argc>3 && std::string(argv[3])=="setup"){setup_and_failure(workers,path);return 0;}
   if(argc>3 && std::string(argv[3])=="mixed"){mixed_cohorts(workers,path);return 0;}
+  if(argc>3 && std::string(argv[3])=="mixed-editable"){mixed_cohorts(workers,path,true);return 0;}
   run(workers,path,false);run(workers,path,true);setup_and_failure(workers,path);probe_budgets(workers,path);return 0;
 }catch(const std::exception &e){std::cerr<<"whole-field test: "<<e.what()<<'\n';return 1;}}

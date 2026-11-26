@@ -14,6 +14,7 @@
 #include <memory>
 #include <optional>
 #include <sstream>
+#include <set>
 #include <thread>
 
 #include "shared_manager.h"
@@ -33,8 +34,89 @@ warm::ObjectKey object(const std::string &s) {
   if (!address) throw std::invalid_argument("invalid fixture address");
   return {{}, *address};
 }
+int run_catalogue(const viewport::LiveStudyInput &input, warm::SharedManager &manager,
+                  const warm::SharedTicket &catalogue, const warm::Uuid &owner) {
+  using namespace warm;
+  const auto catalogue_consumer = new_uuid();
+  auto [acquired,pin] = viewport::acquire_guarded(
+      [&] { return manager.acquire(catalogue,catalogue_consumer); },
+      [&] { manager.release(catalogue,catalogue_consumer); });
+  std::vector<std::pair<std::uint64_t,ToolRef>> declarations;
+  std::vector<ToolRef> roots;
+  viewport::Json available = viewport::Json::array();
+  for (const auto &row : acquired.bundle.structural_occurrences) {
+    if (!row.id.path.empty()) continue;
+    const auto tool = std::find_if(acquired.bundle.tools.begin(),acquired.bundle.tools.end(),
+        [&](const auto &definition) { return definition.ref.object==row.definition; });
+    if (tool==acquired.bundle.tools.end()) throw Error("catalogue root unavailable");
+    const auto &ref = tool->ref;
+    declarations.emplace_back(row.id.entry,ref);
+    roots.push_back(ref);
+    available.push_back({{"definition",key(ref.object)},{"revision",ref.revision.str()},
+                         {"entry",row.id.entry}});
+  }
+  viewport::write_live_event(input,{{"command","catalogue_available"},
+      {"selection",catalogue.ref().selection.str()},{"revision",catalogue.ref().revision.str()},
+      {"catalogue",std::move(available)}});
+
+  std::optional<std::uint64_t> chosen;
+  std::string line;
+  while (input.commands.read_line(line)) {
+    std::istringstream words(line);
+    std::string command, definition, revision, extra;
+    if (!(words>>command) || command[0]=='#') continue;
+    if (command=="quit" && !(words>>extra)) break;
+    const char *status = "invalid_input";
+    if (command=="open" && (words>>definition>>revision) && !(words>>extra)) {
+      try {
+        const Uuid exact(revision);
+        for (const auto &[entry,pin] : declarations)
+          if (pin.revision==exact && key(pin.object)==definition) {
+            chosen = entry;
+            break;
+          }
+        status = chosen ? "ok" : "unavailable";
+      } catch (const Error &) {}
+    }
+    viewport::write_live_event(input,{{"command","open"},{"status",status}});
+    if (chosen) break;
+  }
+  if (!chosen || input.commands.stopped()) {
+    pin.release();
+    return 0;
+  }
+
+  auto recipe = std::move(acquired.bundle);
+  recipe.ref = {new_uuid(),new_uuid()};
+  recipe.tools.clear();
+  const auto selection = manager.publish_selection(catalogue,catalogue_consumer,std::move(recipe),roots);
+  const auto consumer = new_uuid();
+  auto [selected,study_pin] = viewport::acquire_guarded(
+      [&] { return manager.acquire(selection,consumer); },
+      [&] { manager.release(selection,consumer); });
+  pin.release();
+  int code = 0;
+  std::exception_ptr failure;
+  try {
+    if (!input.commands.stopped()) {
+      auto logical = assembly::ActiveAssembly::assemble(std::move(selected.bundle),owner,false);
+      auto aggregate = std::make_shared<const assembly::ActiveAssembly>(logical.expose_all(Exposure::Aggregate));
+      auto request = viewport::editable_retained_catalogue_submission(std::move(aggregate),*chosen,input.path);
+      code = viewport::run_live_study(input,std::move(request),"Retained catalogue",
+          {{"kind","retained_cold_to_warm_to_active"},{"profile","retained-catalogue"},
+           {"catalogue_selection",catalogue.ref().selection.str()},{"catalogue_revision",catalogue.ref().revision.str()},
+           {"selection",selection.ref().selection.str()},{"revision",selection.ref().revision.str()}});
+    }
+  } catch (...) { failure=std::current_exception(); }
+  study_pin.release();
+  if (failure) std::rethrow_exception(failure);
+  viewport::write_live_event(input,{{"command","recipe_release"},
+      {"acquisitions",manager.activity().acquisitions},{"releases",manager.activity().releases}});
+  return code;
 }
-static int run_capture(const viewport::Options &options, const viewport::LiveStudyInput *live = nullptr) {
+}
+static int run_capture(const viewport::Options &options, const viewport::LiveStudyInput *live = nullptr,
+                       const std::vector<std::string> &letters = {}) {
   try {
     using namespace warm;
     using namespace assembly;
@@ -111,7 +193,15 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
       tools.at(key) = t;
       return t.ref;
     };
-    const auto english = follow(object("02.00.00.00.03"));
+    std::vector<ToolRef> catalogue;
+    std::set<ObjectKey> unique_letters;
+    for (const auto &address : letters) {
+      const auto key = object(address);
+      if (!unique_letters.insert(key).second)
+        throw viewport::PreparedLetterProfileError("duplicate retained catalogue letter");
+      catalogue.push_back(follow(key));
+    }
+    const auto english = catalogue.empty() ? follow(object("02.00.00.00.03")) : catalogue.front();
     const auto french = options.prepared_english_pair ? english : follow(object("02.01.00.00.03"));
     const auto dutch = options.prepared_english_pair ? english : follow(object("02.00.20.00.1W"));
     Bundle definitions;
@@ -124,6 +214,7 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
         definitions.geometry.push_back({key, {}, {{{}, !options.prepared_english_pair && key == dutch.object ? 0.25 : 0.125}}});
     }
     const auto recipe = [&] {
+      if (!catalogue.empty()) return viewport::retained_catalogue_recipe(definitions,catalogue);
       if (options.retained_memberships) return viewport::prepared_retained_english_pair(definitions,english);
       if (options.prepared_english_pair) return viewport::prepared_english_pair(definitions,english);
       // Test geometry and placements are supplied, not inferred from cold records.
@@ -148,6 +239,7 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
       return normalize_letters(definitions, requests);
     }();
     const auto ticket = manager.publish(recipe);
+    if (live && !catalogue.empty()) return run_catalogue(*live,manager,ticket,owner);
     if (live) {
       const auto &ref = ticket.ref();
       viewport::write_live_event(*live,{{"command","recipe_available"},
@@ -340,11 +432,11 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
   }
 }
 
-int viewport::run_retained_live_study(const LiveStudyInput &input) {
+int viewport::run_retained_live_study(const LiveStudyInput &input,const std::vector<std::string> &letters) {
   Options options;
   options.prepared_english_pair = true;
   options.retained_memberships = true;
-  return run_capture(options,&input);
+  return run_capture(options,&input,letters);
 }
 
 int viewport_letter_capture(int argc, char **argv) {

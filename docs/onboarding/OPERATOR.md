@@ -60,8 +60,26 @@ Enter `add 27 DEFINITION REVISION` with that exact pair, then `tick 1`,
 `remove 27` and `tick 1`. The definition stays in the catalogue after
 removal. An unlisted pin produces `invalid_input` and leaves the study usable.
 
-The retained qualification recipe contains two English A occurrences.
-Selection across sessions and editing differently composed objects remain in
-the [recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432).
+### Open one letter from a retained catalogue
+
+On a fresh dedicated fixture, supply the retained addresses the publishing
+owner should offer. The English A and í witness uses these addresses.
+
+```sh
+engine/build/viewport/viewport_live_study --retained \
+  --letter 02.00.00.00.03 --letter 02.00.00.00.1W --response-work-limit 1000000
+```
+
+Use the definition and revision from the first row of `catalogue_available`
+in `open DEFINITION REVISION`. Only that root starts live. Use the second
+row's pin in `add 2 DEFINITION REVISION`, then run `tick 1`, `lod parts`,
+`lod aggregate`, `remove 2`, and `tick 1`. `list` still includes the
+removed definition. The catalogue and study pins are released when their
+owner is finished with them.
+
+This retained profile derives one comparison tree from roots with identical
+membership coverage and disjoint parent fields across definitions. The
+[recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
+tracks wider catalogue qualification.
 
 [Viewer controls](../../tools/viewport/README.md) · [Build the engine](FIRST-RUN.md)

@@ -7,6 +7,7 @@ shift
 exit_mode=${HCP_RETAINED_LIVE_EXIT:-quit}
 case "$exit_mode" in
   quit|idle-stop|output-disconnect|batch-stop|offer-stop) ;;
+  catalogue) set -- "$@" --letter 02.00.00.00.03 --letter 02.00.00.00.1W ;;
   batch-disconnect|blocked-write) : "${HCP_RETAINED_LIVE_PIPE_CHECK:?}" ;;
   *) exit 2 ;;
 esac
@@ -81,6 +82,122 @@ wait_for_exit() {
   echo 'live study remained running with command input open' >&2
   return 1
 }
+claim() {
+  printf '%s\n' "$event" | sed -nE \
+    's|.*(\{"address":[0-9]+,"context":[0-9]+,"id":"'"$study/$1"'","incarnation":[0-9]+,"record":[0-9]+),.*|\1|p'
+}
+if [[ $exit_mode == catalogue ]]; then
+  step=catalogue-offer
+  receive '"command":"catalogue_available"'
+  offer_entry() {
+    printf '%s\n' "$event" |
+      sed -nE 's/.*\{"definition":"([^"]+)","entry":'"$1"',"revision":"([^"]+)"\}.*/\1 \2/p'
+  }
+  read -r a a_revision < <(offer_entry 1)
+  read -r i i_revision < <(offer_entry 2)
+  test "$a" != "$i"
+  test "$(state)" = '2|1|1'
+  send open "$a" 00000000-0000-0000-0000-000000000000
+  receive '"status":"unavailable"'
+  test "$(state)" = '2|1|1'
+  send open "$a" "$a_revision"
+  receive '"status":"ok"'
+
+  step=catalogue-bootstrap
+  receive '"command":"create"'
+  study=$(json_text study)
+  [[ "$study" =~ ^[a-f0-9-]{36}$ ]]
+  test "$(state)" = '2|2|1'
+  mass() {
+    printf '%s\n' "$event" | tr ',' '\n' |
+      sed -nE 's/^"exact_mass":"([0-9]+)"$/\1/p' | awk '{total+=$1} END {print total+0}'
+  }
+  responses() {
+    printf '%s\n' "$event" |
+      sed -nE 's/.*"response_trace":\{"capacity":"[^"]+","count":"([0-9]+)".*/\1/p'
+  }
+  observe_state() {
+    test "$(json_text study)" = "$study"
+    test "$(mass)" = "$1"
+    rows=$(responses)
+    [[ $rows =~ ^[1-9][0-9]*$ ]]
+    printf '%s|%s|%s\n' "$step" "$1" "$rows" >> "$out/catalogue-transitions.txt"
+  }
+  observe_state 2
+  original=$(claim 1)
+  test -n "$original"
+  test -z "$(claim 2)"
+  initial_generation=$(json_number generation)
+
+  step=catalogue-refusal
+  send add 2 "$i" 00000000-0000-0000-0000-000000000000
+  receive '"status":"invalid_input"'
+  test "$(json_number generation)" = "$initial_generation"
+  test "$(claim 1)" = "$original"
+  test -z "$(claim 2)"
+
+  step=catalogue-add
+  send add 2 "$i" "$i_revision"
+  receive '"status":"ok"'
+  observe_state 6
+  test "$(claim 1)" = "$original"
+  test -n "$(claim 2)"
+  send tick 1
+  receive '"completed_tick":1'
+  test "$(claim 1)" = "$original"
+
+  step=catalogue-parts
+  send lod parts
+  receive '"status":"ok"'
+  observe_state 6
+  [[ "$event" == *"\"id\":\"$study/1/0/0\""*"\"id\":\"$study/2/0/0\""*"\"id\":\"$study/2/0/1\""* ]]
+  test -n "$(claim 1/0/0)"
+  test -n "$(claim 2/0/0)"
+  test -n "$(claim 2/0/1)"
+
+  step=catalogue-rollup
+  send lod aggregate
+  receive '"status":"ok"'
+  observe_state 6
+  rolled=$(claim 1)
+  test -n "$rolled"
+  test -n "$(claim 2)"
+
+  step=catalogue-remove
+  send remove 2
+  receive '"status":"ok"'
+  observe_state 2
+  test "$(claim 1)" = "$rolled"
+  test -z "$(claim 2)"
+  send list
+  receive '"command":"list"'
+  [[ "$event" == *"\"definition\":\"$i\",\"entry\":2,\"id\":\"$study/2\",\"revision\":\"$i_revision\"}"* ]]
+  step=catalogue-final-tick
+  send tick 1
+  receive '"completed_tick":2'
+  observe_state 2
+  test "$(claim 1)" = "$rolled"
+
+  step=catalogue-reselect
+  send add 3 "$i" "$i_revision"
+  receive '"status":"ok"'
+  observe_state 6
+  test "$(claim 1)" = "$rolled"
+  test -z "$(claim 2)"
+  test -n "$(claim 3)"
+
+  step=catalogue-release
+  send quit
+  receive '"command":"recipe_release"' 30
+  [[ "$event" == *'"acquisitions":2'* && "$event" == *'"releases":2'* ]]
+  wait_for_exit 1
+  test "$(state)" = '2|2|0'
+  exec {writer}>&- {reader}<&-
+  step=complete
+  echo 'PASS: retained catalogue edited and exchanged differently composed roots on one handle'
+  exit 0
+fi
+
 receive '"command":"recipe_available"'
 selection=$(json_text selection)
 revision=$(json_text revision)
@@ -114,10 +231,6 @@ generation=$(json_number generation)
 [[ "$study" =~ ^[a-f0-9-]{36}$ ]]
 test "$(state)" = '2|1|1'
 
-claim() {
-  printf '%s\n' "$event" | sed -nE \
-    's|.*(\{"address":[0-9]+,"context":[0-9]+,"id":"'"$study/$1"'","incarnation":[0-9]+,"record":[0-9]+),.*|\1|p'
-}
 expected_exit=0
 if [[ $exit_mode == quit ]]; then
   step=pin-edits

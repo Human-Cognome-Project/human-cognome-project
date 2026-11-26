@@ -35,4 +35,7 @@ assembly::PreparedStudySubmission prepared_retained_english_pair_submission(
 assembly::PreparedStudySubmission editable_retained_english_pair_submission(
     std::shared_ptr<const assembly::ActiveAssembly> source, const warm::ToolRef &english,
     field::HostPath path = field::HostPath::BulkCopy);
+warm::Bundle retained_catalogue_recipe(warm::Bundle,const std::vector<warm::ToolRef> &roots);
+assembly::PreparedStudySubmission editable_retained_catalogue_submission(
+    std::shared_ptr<const assembly::ActiveAssembly>,std::uint64_t initial_entry,field::HostPath);
 }

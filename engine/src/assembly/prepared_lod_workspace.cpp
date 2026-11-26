@@ -4,6 +4,7 @@
 #include "field/prepared_storage.h"
 #include "field/cascade_source.h"
 #include <algorithm>
+#include <climits>
 #include <stdexcept>
 #include <type_traits>
 
@@ -32,7 +33,8 @@ AdmissionOccurrenceCommand copy(const AdmissionOccurrenceCommand &s,
 }
 }
 PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAssembly &alternative,
-    ReservedUnique<StructuralAdmissionPlan> plan,bool editable,bool fixed_character,PreparationWork &w)
+    ReservedUnique<StructuralAdmissionPlan> plan,bool editable,bool fixed_character,
+    const std::vector<std::uint64_t> &initially_live,PreparationWork &w)
     :sides_{{Side(o.domain_.get()),Side(o.domain_.get())}},
      catalogue_(ReservationAllocator<AdmissionOccurrenceCommand>(o.domain_.get())),
      next_catalogue_(ReservationAllocator<AdmissionOccurrenceCommand>(o.domain_.get())),
@@ -50,14 +52,27 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
      fixed_groups_(ReservationAllocator<field::PlacementExchangeGroup>(o.domain_.get())),
      nodes_(ReservationAllocator<field::LiveRefreshNode>(o.domain_.get())),children_(ReservationAllocator<int>(o.domain_.get())),
      contributions_(ReservationAllocator<field::LiveRefreshContribution>(o.domain_.get())),
+     rows_(ReservationAllocator<AdmissionOccurrenceCommand>(o.domain_.get())),
+     candidate_rows_(ReservationAllocator<AdmissionOccurrenceCommand>(o.domain_.get())),
+     row_ordinals_(ReservationAllocator<std::size_t>(o.domain_.get())),
+     next_row_ordinals_(ReservationAllocator<std::size_t>(o.domain_.get())),
+     offsets_(ReservationAllocator<std::size_t>(o.domain_.get())),
+     incoming_rows_(ReservationAllocator<std::size_t>(o.domain_.get())),
+     incoming_positions_(ReservationAllocator<std::size_t>(o.domain_.get())),
+     field_ordinals_(ReservationAllocator<std::size_t>(o.domain_.get())),
+     next_field_ordinals_(ReservationAllocator<std::size_t>(o.domain_.get())),
+     field_indices_(ReservationAllocator<int>(o.domain_.get())),
+     node_indices_(ReservationAllocator<int>(o.domain_.get())),
+     catalogue_edits_(!initially_live.empty()),bootstrapping_(catalogue_edits_),
      fixed_presence_(!editable) {
+  need(!catalogue_edits_ || editable);
   need(o.source_->projection_.recipe_.get()==alternative.projection_.recipe_.get() &&
        o.source_->study()==alternative.study() && o.source_->owner()==alternative.owner() &&
        !o.source_->local() && !alternative.local());
   const auto &a=*o.plan_; const auto &b=*plan;
   need(!a.occurrences().empty() &&
        a.focus().size()==1 && b.focus().size()==1);
-  if (fixed_presence_) {
+  if (fixed_presence_ || catalogue_edits_) {
     need(o.source_->shared_recipe().contacts.empty());
     reserve(fixed_groups_,a.occurrences().size(),w);
     std::size_t fine = 0;
@@ -80,7 +95,7 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
         const auto &part = b.occurrences()[fine++];
         need(part.node==0 && w.equal(expected.occurrence.source,part.occurrence) &&
              w.equal(expected.definition,part.definition));
-        for (const auto &outgoing : a.occurrences()) {
+        if (!catalogue_edits_) for (const auto &outgoing : a.occurrences()) {
           w.charge(1);
           need(a.commands()[outgoing.command].address!=b.commands()[part.command].address);
         }
@@ -103,9 +118,9 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
   } else need(a.occurrences().size()==b.occurrences().size());
   const auto &limits=o.h_.prepared_storage().capacity.limits();
   const auto slots=limits[field::Budget::Particles],fields=limits[field::Budget::Fields];
-  need(slots && (fixed_presence_ || slots<=limits[field::Budget::Potential]/2));
+  need(slots && (fixed_presence_ || catalogue_edits_ || slots<=limits[field::Budget::Potential]/2));
   need(o.source_->projection_.exposure(a.occurrences()[0].occurrence.entry)==warm::Exposure::Aggregate);
-  for(std::size_t i=0;!fixed_presence_ && i<a.occurrences().size();++i) {
+  for(std::size_t i=0;!fixed_presence_ && !catalogue_edits_ && i<a.occurrences().size();++i) {
     w.charge(1); const auto &old=a.occurrences()[i]; const auto &fresh=b.occurrences()[i];
     need(old.occurrence.path.empty() && old.node==1 && fresh.node==0 &&
          fresh.occurrence.entry==old.occurrence.entry && fresh.occurrence.path.size()==2 &&
@@ -148,14 +163,56 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
     }
   }
   if(!fixed_presence_) {
-    reserve(catalogue_,slots,w);reserve(next_catalogue_,slots,w);reserve(templates_,slots,w);reserve(known_,slots,w);
-    reserve(addresses_,2*slots,w);reserve(live_,slots,w);reserve(next_,slots,w);reserve(order_,slots,w);
+    reserve(catalogue_,slots,w);reserve(templates_,slots,w);reserve(known_,slots,w);
+    reserve(live_,slots,w);reserve(next_,slots,w);
+    if (!catalogue_edits_) {
+      reserve(next_catalogue_,slots,w);reserve(addresses_,2*slots,w);reserve(order_,slots,w);
+    }
   }
   reserve(next_bodies_,slots,w);
   reserve(o.bodies_,slots,w);reserve(o.fields_,fields,w);reserve(next_fields_,fields,w);reserve(field_commands_,fields,w);
   reserve(outgoing_,slots,w);reserve(intrinsics_,slots,w);reserve(groups_,slots,w);
   reserve(commands_,limits[field::Budget::Batch],w);reserve(nodes_,limits[field::Budget::CascadeNodes],w);
   reserve(children_,limits[field::Budget::CascadeLinks],w);reserve(contributions_,limits[field::Budget::CascadeReferences],w);
+  if (catalogue_edits_) {
+    const auto &fine = *sides_[1].plan;
+    std::size_t address_length = 0;
+    for (const auto *side : {&a,&fine})
+      for (const auto &row : side->occurrences()) {
+        w.charge(1);
+        address_length = std::max(address_length,row.definition.object.address.size());
+      }
+    for (const auto &group : fixed_groups_) {
+      w.charge(1);
+      address_stride_ = std::max(address_stride_,group.incoming_count+1);
+    }
+    need(slots<=std::min(std::uint64_t(INT_MAX),limits[field::Budget::Potential])/address_stride_);
+    const auto buffer = [&](const AdmissionOccurrenceCommand &row) {
+      auto value = copy(row,o.domain_,2,w);
+      w.elements(address_length,sizeof(codec::AddressElement));
+      value.definition.object.address.reserve(address_length);
+      return value;
+    };
+    incoming_source_ = buffer(a.occurrences().front());
+    reserve(rows_,slots,w);reserve(candidate_rows_,slots,w);
+    reserve(row_ordinals_,slots,w);reserve(next_row_ordinals_,slots,w);reserve(offsets_,slots,w);
+    reserve(incoming_rows_,slots,w);reserve(incoming_positions_,slots,w);
+    reserve(field_ordinals_,fields,w);reserve(next_field_ordinals_,fields,w);reserve(field_indices_,fields,w);
+    reserve(node_indices_,limits[field::Budget::CascadeNodes],w);
+    for (std::size_t i=0; i<slots; ++i) {
+      w.charge(1);
+      const bool declared = i<a.occurrences().size();
+      const auto root = declared ? i : 0;
+      catalogue_.push_back(buffer(a.occurrences()[root]));
+      templates_.push_back(root);
+      known_.push_back(declared);
+      rows_.push_back(buffer(a.occurrences().front()));
+      candidate_rows_.push_back(buffer(a.occurrences().front()));
+      if (declared && contains(initially_live,catalogue_.back().occurrence.entry,w)) live_.push_back(i);
+    }
+    need(live_.size()==initially_live.size());
+    return;
+  }
   for(std::size_t i=0;!fixed_presence_ && i<slots;++i) {
     w.charge(1);const auto index=i<a.occurrences().size()?i:0;
     catalogue_.push_back(copy(a.occurrences()[index],o.domain_,path_capacity_,w));
@@ -209,10 +266,11 @@ field::UpdateResult PreparedLodWorkspace::presence(const PreparedStudyOwner &o,c
   if(!r.present && live_.size()==1){out.status=field::UpdateStatus::Unsupported;return out;}
   changing_=false;adding_=r.present;target_=side_;
   if(new_identity_) {
-    const auto &row=sides_[side_].plan->occurrences()[source_template_];w.copy_key(row.definition);w.copy_key(row.occurrence);
+    const auto &row=sides_[catalogue_edits_ ? 0 : side_].plan->occurrences()[source_template_];
+    w.copy_key(row.definition);w.copy_key(row.occurrence);
     incoming_source_=row;incoming_source_.occurrence.entry=r.occurrence.source.entry;
   }
-  return build(o,w);
+  return catalogue_edits_ ? build_catalogue(o,w) : build(o,w);
 }
 field::UpdateResult PreparedLodWorkspace::exposure(const PreparedStudyOwner &o,const PreparedLodEdit &r,PreparationWork &w) {
   field::UpdateResult out;out.generation=o.generation_;
@@ -221,6 +279,7 @@ field::UpdateResult PreparedLodWorkspace::exposure(const PreparedStudyOwner &o,c
   target_=r.exposure==warm::Exposure::Parts;
   if(target_==side_){out.status=field::UpdateStatus::NoChange;return out;}
   changing_=true;adding_=false;new_identity_=false;
+  if (catalogue_edits_) return build_catalogue(o,w);
   for(std::size_t i=0;i<catalogue_.size();++i) {
     w.charge(1);if(!known_[i])continue;
     const auto &row=sides_[target_].plan->occurrences()[templates_[i]];w.copy_key(row.definition);w.copy_key(row.occurrence);
@@ -331,6 +390,253 @@ field::UpdateResult PreparedLodWorkspace::build(const PreparedStudyOwner &o,Prep
   }
   out.status=field::UpdateStatus::Ok;return out;
 }
+field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwner &o,PreparationWork &w) {
+  using field::UpdateCommand;
+  using field::UpdateOp;
+  using field::UpdateRef;
+  field::UpdateResult out;
+  const auto &s = o.h_.prepared_storage();
+  out.generation = s.generation;
+  const auto &plan = *sides_[target_].plan;
+  const auto &current_fields = field_sources();
+  const auto range = [&](std::size_t root, std::size_t side) {
+    const auto &group = fixed_groups_[root];
+    return side ? std::pair{group.incoming_begin,group.incoming_count}
+                : std::pair{group.outgoing_begin,group.outgoing_count};
+  };
+  const auto insert = [&](const UpdateCommand &command) {
+    w.charge(sizeof(command));
+    if (commands_.size()==commands_.capacity()) {
+      out.status = field::UpdateStatus::CapacityExhausted;
+      out.failure = {field::Budget::Batch,commands_.size()+1,commands_.capacity()};
+      return false;
+    }
+    commands_.push_back(command);
+    return true;
+  };
+
+  commands_.clear();intrinsics_.clear();groups_.clear();outgoing_.clear();
+  next_.clear();next_bodies_.clear();next_row_ordinals_.clear();
+  next_fields_.clear();next_field_ordinals_.clear();field_commands_.clear();
+  incoming_rows_.clear();incoming_positions_.clear();
+  nodes_.clear();children_.clear();contributions_.clear();
+  w.elements(catalogue_.size(),sizeof(std::size_t));
+  offsets_.assign(catalogue_.size(),SIZE_MAX);
+  std::size_t offset = 0;
+  for (const auto slot : live_) {
+    w.charge(1);
+    if (!bootstrapping_) {
+      offsets_[slot] = offset;
+      const auto width = range(templates_[slot],side_).second;
+      if (changing_ || (!adding_ && slot==selected_)) {
+        for (std::size_t j=0; j<width; ++j) {
+          w.charge(1);outgoing_.push_back(o.bodies_[offset+j]);
+        }
+      }
+      offset += width;
+    }
+    if (bootstrapping_ || changing_ || adding_ || slot!=selected_) next_.push_back(slot);
+  }
+  if (adding_) next_.push_back(selected_);
+  const auto entry = [&](std::size_t slot) {
+    return new_identity_ && slot==selected_ ? incoming_source_.occurrence.entry
+                                            : catalogue_[slot].occurrence.entry;
+  };
+  std::sort(next_.begin(),next_.end(),[&](auto a,auto b) {
+    w.charge(1);return entry(a)<entry(b);
+  });
+
+  w.elements(plan.fields().size(),sizeof(int));
+  field_indices_.assign(plan.fields().size(),-1);
+  std::size_t retired_begin = 0;
+  for (const auto slot : next_) {
+    w.charge(1);
+    const auto root = new_identity_ && slot==selected_ ? source_template_ : templates_[slot];
+    const auto [begin,width] = range(root,target_);
+    if (width>next_bodies_.capacity()-next_bodies_.size()) {
+      out.status = field::UpdateStatus::CapacityExhausted;
+      out.failure = {field::Budget::Particles,next_bodies_.size()+width,next_bodies_.capacity()};
+      return out;
+    }
+    const bool fresh = bootstrapping_ || changing_ || (adding_ && slot==selected_);
+    if (changing_) {
+      const auto retired_count = range(root,side_).second;
+      groups_.push_back({retired_begin,retired_count,intrinsics_.size(),width});
+      retired_begin += retired_count;
+    }
+    for (std::size_t j=0; j<width; ++j) {
+      w.charge(1);
+      const auto index = begin+j;
+      const auto &source = plan.occurrences()[index];
+      const auto at = next_bodies_.size();
+      w.copy_key(source.definition);w.copy_key(source.occurrence);
+      candidate_rows_[at] = source;
+      candidate_rows_[at].occurrence.entry = entry(slot);
+      next_row_ordinals_.push_back(at);
+      if (fresh) {
+        auto command = plan.commands()[source.command];
+        command.address = int(slot*address_stride_+(target_ ? 1+j : 0));
+        const auto native = commands_.size();
+        if (!insert(command)) return out;
+        w.charge(1);
+        auto intrinsic = plan.intrinsics().at(index);
+        need(intrinsic.command==std::uint64_t(source.command));
+        intrinsic.command = native;
+        intrinsic.order = intrinsics_.size();
+        intrinsics_.push_back(intrinsic);
+        incoming_rows_.push_back(index);
+        incoming_positions_.push_back(at);
+        next_bodies_.push_back({});
+      } else next_bodies_.push_back(o.bodies_[offsets_[slot]+j]);
+      for (const auto &edge : sides_[target_].edges) {
+        w.charge(1);
+        if (edge.occurrence==index) field_indices_[edge.field]=-2;
+      }
+    }
+  }
+
+  for (std::size_t i=0; i<plan.fields().size(); ++i) {
+    w.charge(1);
+    if (field_indices_[i]!=-2) continue;
+    const auto &field = plan.fields()[i];
+    field_indices_[i] = int(next_fields_.size());
+    next_field_ordinals_.push_back(i);
+    const auto retained = std::find_if(field_ordinals_.begin(),field_ordinals_.end(),[&](auto old) {
+      w.charge(1);return same(current_fields[old].field,field.field);
+    });
+    if (retained!=field_ordinals_.end()) {
+      next_fields_.push_back(o.fields_[retained-field_ordinals_.begin()]);
+      field_commands_.push_back(-1);
+    } else {
+      next_fields_.push_back({});
+      field_commands_.push_back(int(commands_.size()));
+      if (!insert(plan.commands()[field.command])) return out;
+    }
+  }
+  const auto retired = [&](const engine::RecordHandle &claim) {
+    return std::any_of(outgoing_.begin(),outgoing_.end(),[&](const auto &old) {
+      w.charge(1);return field::detail::same_handle(claim,old);
+    });
+  };
+  std::size_t removed = 0;
+  for (std::size_t row=0; row<s.live.edges; ++row) {
+    w.charge(1);
+    if (!retired(s.edges[row].first)) continue;
+    UpdateCommand command;
+    command.operation = UpdateOp::RemoveParticipation;
+    command.row = row;command.generation = s.generation;
+    if (!insert(command)) return out;
+    ++removed;
+  }
+  for (std::size_t row=0; row<s.live.contacts; ++row) {
+    w.charge(1);
+    const auto &contact = s.contacts[row];
+    if (!retired(contact.first) && !retired(contact.second)) continue;
+    UpdateCommand command;
+    command.operation = UpdateOp::RemoveContact;
+    command.row = row;command.generation = s.generation;
+    if (!insert(command)) return out;
+  }
+  for (const auto &claim : outgoing_) {
+    UpdateCommand command;
+    command.operation = UpdateOp::RetireParticle;
+    command.first = UpdateRef::existing(claim);
+    if (!insert(command)) return out;
+  }
+  for (std::size_t old=0; old<field_ordinals_.size(); ++old) {
+    w.charge(1);
+    const auto retained = std::any_of(next_field_ordinals_.begin(),next_field_ordinals_.end(),[&](auto i) {
+      w.charge(1);
+      return same(current_fields[field_ordinals_[old]].field,plan.fields()[i].field);
+    });
+    if (retained) continue;
+    UpdateCommand command;
+    command.operation = UpdateOp::RetireField;
+    command.first = UpdateRef::existing(o.fields_[old]);
+    if (!insert(command)) return out;
+  }
+  std::size_t position = s.live.edges-removed;
+  for (std::size_t i=0; i<intrinsics_.size(); ++i) {
+    for (const auto &edge : sides_[target_].edges) {
+      w.charge(1);
+      if (edge.occurrence!=incoming_rows_[i]) continue;
+      auto command = edge.command;
+      const auto field = field_indices_[edge.field];
+      need(field>=0);
+      command.first = UpdateRef::pending(int(intrinsics_[i].command));
+      command.second = field_commands_[field]<0 ? UpdateRef::existing(next_fields_[field])
+                                               : UpdateRef::pending(field_commands_[field]);
+      command.position = position++;
+      if (!insert(command)) return out;
+    }
+  }
+
+  const auto spec = plan.hierarchy();
+  const auto field_for = [&](int command) {
+    for (std::size_t i=0; i<plan.fields().size(); ++i) {
+      w.charge(1);
+      if (plan.fields()[i].command==command) return field_indices_[i];
+    }
+    return -1;
+  };
+  const int focus = field_for(plan.focus().front().command);
+  if (focus<0 || (!bootstrapping_ && field_commands_[focus]>=0)) {
+    out.status = field::UpdateStatus::Unsupported;
+    return out;
+  }
+  if (bootstrapping_) bootstrap_focus_ = UpdateRef::pending(field_commands_[focus]);
+  w.elements(spec.node_count,sizeof(int));
+  node_indices_.assign(spec.node_count,-1);
+  for (std::size_t i=0; i<spec.node_count; ++i) {
+    w.charge(1);
+    auto node = spec.nodes[i];
+    const int field = field_for(node.field_command);
+    if (field<0) continue;
+    node_indices_[i] = int(nodes_.size());
+    node.field = next_fields_[field];
+    node.field_command = field_commands_[field];
+    const auto first = node.child_begin;
+    node.child_begin = children_.size();
+    for (std::size_t j=0; j<node.child_count; ++j) {
+      w.charge(1);
+      const int child = spec.children[first+j];
+      need(child>=0 && std::size_t(child)<i);
+      if (node_indices_[child]>=0) children_.push_back(node_indices_[child]);
+    }
+    node.child_count = children_.size()-node.child_begin;
+    node.cohort_begin = contributions_.size();
+    const auto append = [&](field::LiveRefreshContribution row) {
+      w.charge(sizeof(row));
+      if (contributions_.size()==contributions_.capacity()) {
+        out.status = field::UpdateStatus::CapacityExhausted;
+        out.failure = {field::Budget::CascadeReferences,contributions_.size()+1,contributions_.capacity()};
+        return false;
+      }
+      contributions_.push_back(row);
+      return true;
+    };
+    if (node.field_command<0) for (std::size_t j=0; j<s.live.edges; ++j) {
+      w.charge(1);
+      const auto &edge = s.edges[j];
+      if (field::detail::same_handle(edge.second,node.field) && !retired(edge.first) &&
+          !append({UpdateRef::existing(edge.first),{s.generation,j,edge.ordinal},-1})) return out;
+    }
+    for (std::size_t j=0; j<commands_.size(); ++j) {
+      w.charge(1);
+      const auto &edge = commands_[j];
+      if (edge.operation!=UpdateOp::InsertParticipation) continue;
+      const bool same_field = node.field_command<0
+          ? edge.second.command<0 && field::detail::same_handle(edge.second.handle,node.field)
+          : edge.second.command==node.field_command;
+      if (same_field && !append({edge.first,{},int(j)})) return out;
+    }
+    node.cohort_count = contributions_.size()-node.cohort_begin;
+    need(node.cohort_count);
+    nodes_.push_back(node);
+  }
+  out.status = field::UpdateStatus::Ok;
+  return out;
+}
 field::LiveRefreshSpec PreparedLodWorkspace::hierarchy() const {return {nodes_.data(),nodes_.size(),children_.data(),children_.size(),contributions_.data(),contributions_.size()};}
 void PreparedLodWorkspace::publish(PreparedStudyOwner &o) {
   const auto &s=o.h_.prepared_storage();const auto &p=*sides_[target_].plan;
@@ -339,17 +645,22 @@ void PreparedLodWorkspace::publish(PreparedStudyOwner &o) {
     need(claim.context==s.particles.context() && claim.incarnation && claim.record>=0 &&
          field::detail::same_handle(claim,s.particle_headers.at(claim.record)) &&
          claim.address==commands_[command].address && s.source_masses.at(claim.record)==*commands_[command].exact_mass);
-    next_bodies_[changing_?i:next_bodies_.size()-1]=claim;
+    next_bodies_[catalogue_edits_ ? incoming_positions_[i] : changing_ ? i : next_bodies_.size()-1]=claim;
   }
   for(std::size_t i=0;i<next_fields_.size();++i)if(field_commands_[i]>=0) {
     const auto claim=s.resolved.at(field_commands_[i]);
     need(claim.context==s.fields.context() && claim.incarnation && claim.record>=0 && field::detail::same_handle(claim,s.field_headers.at(claim.record)) &&
-         claim.address==p.commands()[p.fields()[i].command].address);next_fields_[i]=claim;
+         claim.address==p.commands()[p.fields()[catalogue_edits_ ? next_field_ordinals_[i] : i].command].address);
+    next_fields_[i]=claim;
   }
-  if(changing_ && !fixed_presence_)catalogue_.swap(next_catalogue_);
+  if(changing_ && !fixed_presence_ && !catalogue_edits_)catalogue_.swap(next_catalogue_);
   else if(new_identity_) {
     static_assert(std::is_nothrow_move_constructible<AdmissionOccurrenceCommand>::value && std::is_nothrow_move_assignable<AdmissionOccurrenceCommand>::value);
     std::swap(catalogue_[selected_],incoming_source_);templates_[selected_]=source_template_;known_[selected_]=1;
+  }
+  if (catalogue_edits_) {
+    rows_.swap(candidate_rows_);row_ordinals_.swap(next_row_ordinals_);
+    field_ordinals_.swap(next_field_ordinals_);
   }
   live_.swap(next_);o.bodies_.swap(next_bodies_);o.fields_.swap(next_fields_);side_=target_;
 }
@@ -359,7 +670,8 @@ PreparedOccurrenceEditResult PreparedStudyOwner::commit_lod(PreparedOccurrenceEd
   const auto tick=h_.prepared_storage().completed_ticks;
   try {
     if(!lod_->intrinsics_.empty())out.publication=h_.stage_current_admission(generation_,lod_->commands_.data(),lod_->commands_.size(),
-        lod_->intrinsics_.data(),lod_->intrinsics_.size(),lod_->hierarchy(),placement_work,cells,hierarchy_work,true,false,nullptr,0,
+        lod_->intrinsics_.data(),lod_->intrinsics_.size(),lod_->hierarchy(),placement_work,cells,hierarchy_work,true,lod_->bootstrapping_,
+        lod_->bootstrapping_ ? &lod_->bootstrap_focus_ : nullptr,lod_->bootstrapping_ ? 1 : 0,
         lod_->changing_?lod_->outgoing_.data():nullptr,lod_->changing_?lod_->outgoing_.size():0,
         lod_->changing_?lod_->groups_.data():nullptr,lod_->changing_?lod_->groups_.size():0);
     else out.publication=h_.refresh_live_hierarchy(generation_,lod_->commands_.data(),lod_->commands_.size(),lod_->hierarchy(),hierarchy_work);
@@ -368,6 +680,10 @@ PreparedOccurrenceEditResult PreparedStudyOwner::commit_lod(PreparedOccurrenceEd
       if(h_.prepared_storage().completed_ticks!=tick || h_.prepared_storage().generation!=out.publication.generation)
         throw std::runtime_error("inconsistent whole-field commit");
       lod_->publish(*this);generation_=out.publication.generation;
+      if (lod_->bootstrapping_) {
+        lod_->bootstrapping_ = false;
+        phase_ = PreparedOwnerPhase::Published;
+      }
       if(!ready())throw std::runtime_error("unpublished whole-field mapping");
     }
     if(!h_.ready())phase_=PreparedOwnerPhase::Failed;
