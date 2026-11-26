@@ -11,6 +11,7 @@ assembly::PreparedStudySubmission unicode_i_submission(
     warm::Bundle definitions, const warm::ToolRef &endpoint, warm::Uuid owner,
     field::HostPath path = field::HostPath::BulkCopy);
 // Bind the aggregate bodies declared in an already acquired shared v2 recipe.
+// Bodies follow canonical occurrence order with sequential addresses from zero.
 // The study still supplies its comparison tree, focus and capacity.
 std::vector<assembly::detail::AdmissionBody> declared_aggregate_bodies(
     const assembly::ActiveAssembly &);

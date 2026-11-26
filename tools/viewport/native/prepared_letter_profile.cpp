@@ -104,18 +104,17 @@ assembly::PreparedStudySubmission submission(
   auto &b = out.bindings;
   b.source = {source->owner(),source->study(),source->generation(),recipe.ref};
   b.layout.push_back({{nullptr,-1,ScaleRole::Root},1});
-  const auto projected = project_letters(recipe);
-  for (std::size_t i=0;i<projected.occurrence_count();++i) {
-    const auto o=projected.occurrence(i);
-    if (!o.active) continue;
-    if (!(o.definition.object == english.object) || o.definition.revision != english.revision ||
-        o.node != 0 || !o.key.source.path.empty() ||
-        (o.key.source.entry != 2 && o.key.source.entry != 10) || b.bodies.size() >= 2)
+  b.bodies = declared_aggregate_bodies(*source);
+  if (b.bodies.size() != 2)
+    throw PreparedLetterProfileError("prepared English pair: two aggregate occurrences required");
+  for (auto &body : b.bodies) {
+    const auto entry = body.occurrence.source.entry;
+    if (!(body.definition == english) || body.node != 0 || (entry != 2 && entry != 10))
       throw PreparedLetterProfileError("prepared English pair: unsupported active selection");
-    auto occurrence = o.key; occurrence.study = source->study();
-    b.bodies.push_back({std::move(occurrence),o.definition,0,3,40+int(b.bodies.size()),1.5,{1,1,true}});
+    body.address += 40;
+    body.mass = 1.5;
+    body.geometry = {1,1,true};
   }
-  if (b.bodies.size() != 2) throw PreparedLetterProfileError("prepared English pair: two aggregate occurrences required");
   const FieldKey sibling{GroupKind::SiblingDefinition,english.object}, value{GroupKind::ParentValue,parent};
   b.fields = {{sibling,5,0},{value,5,1}};
   b.comparisons = {{sibling,100,0,52,{}},{value,101,1,52,{0}}};
@@ -154,8 +153,13 @@ std::vector<assembly::detail::AdmissionBody> declared_aggregate_bodies(
     if (!definition.mass || *definition.mass == 0 || bodies.size() >= INT_MAX)
       throw PreparedLetterProfileError("recipe study: invalid live definition");
     bodies.push_back({{source.study(),occurrence.id},definition.ref,occurrence.node,3,
-        int(bodies.size()),double(*definition.mass),{definition_index+1,1,true}});
+        -1,double(*definition.mass),{definition_index+1,1,true}});
   }
+  std::sort(bodies.begin(),bodies.end(),[](const auto &a, const auto &b) {
+    return a.occurrence.source < b.occurrence.source;
+  });
+  for (std::size_t i=0; i<bodies.size(); ++i)
+    bodies[i].address = int(i);
   return bodies;
 }
 warm::Bundle prepared_english_pair(warm::Bundle b, const warm::ToolRef &english) {
