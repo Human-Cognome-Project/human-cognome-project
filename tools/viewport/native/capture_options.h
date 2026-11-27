@@ -60,16 +60,20 @@ inline std::uint64_t parse_count(const std::string &name, const std::string &tex
   return v;
 }
 // Plain decimal number (digits, '.', exponent; no sign, space, hex, inf or nan) that is
-// representable as a normal positive engine float: FLT_MIN <= v <= FLT_MAX.
-inline double parse_positive(const std::string &name, const std::string &text) {
+// within the caller's positive normal range (binary32 for legacy capture).
+inline double parse_positive(const std::string &name, const std::string &text,
+                             double minimum = FLT_MIN, double maximum = FLT_MAX) {
   const UsageError bad("invalid value for " + name + ": '" + text + "'");
   if (text.empty() || !(std::isdigit(static_cast<unsigned char>(text[0])) || text[0] == '.')) throw bad;
   for (const char c : text)
     if (!std::isdigit(static_cast<unsigned char>(c)) && !std::strchr(".eE+-", c)) throw bad;
   char *end = nullptr;
   const double v = std::strtod(text.c_str(), &end);
-  if (end != text.c_str() + text.size() || !std::isfinite(v) || v > FLT_MAX || v < FLT_MIN) throw bad;
+  if (end != text.c_str() + text.size() || !std::isfinite(v) || v > maximum || v < minimum) throw bad;
   return v;
+}
+inline double parse_live_dt(const std::string &text) {
+  return parse_positive("dt", text, DBL_MIN, DBL_MAX);
 }
 // args excludes the program name. Accepts "--name value" and "--name=value".
 inline Options parse_options(const std::vector<std::string> &args) {

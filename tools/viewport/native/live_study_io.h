@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <poll.h>
 
+#include <chrono>
+#include <optional>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -28,6 +30,9 @@ inline void write_live_output(std::ostream &output, std::string_view line) {
   if (!(output << line << '\n' << std::flush))
     throw LiveOutputError();
 }
+
+enum class LiveRead { Line, Deadline, Closed };
+using LiveClock = std::chrono::steady_clock;
 
 class LiveCommandInput {
  public:
@@ -106,22 +111,33 @@ class LiveCommandInput {
     }
   }
   bool read_line(std::string &line) {
+    return read_until(line, std::nullopt)==LiveRead::Line;
+  }
+  LiveRead read_until(std::string &line, std::optional<LiveClock::time_point> deadline) {
     while (!stopped()) {
       const auto newline = pending_.find('\n');
       if (newline != std::string::npos) {
         line.assign(pending_, 0, newline);
         pending_.erase(0, newline + 1);
-        return true;
+        return LiveRead::Line;
       }
-      if (wake_ >= 0) {
+      if (wake_ >= 0 || deadline) {
         // A pipe writer reports a lost reader even when no write is pending.
         struct pollfd ready[]{{fd_, POLLIN, 0}, {wake_, POLLIN, 0}, {STDOUT_FILENO, 0, 0}};
-        if (poll(ready, 3, -1) < 0) {
+        int timeout=-1;
+        if (deadline) {
+          const auto left=*deadline-LiveClock::now();
+          timeout=left<=LiveClock::duration::zero() ? 0 :
+              static_cast<int>(std::chrono::ceil<std::chrono::milliseconds>(left).count());
+        }
+        const auto count=poll(ready, 3, timeout);
+        if (count==0) return LiveRead::Deadline;
+        if (count<0) {
           if (errno == EINTR) continue;
           throw std::runtime_error("command input wait failed");
         }
         if (ready[2].revents & output_closed) throw LiveOutputError();
-        if (ready[1].revents || stopped()) return false;
+        if (ready[1].revents || stopped()) return LiveRead::Closed;
       }
       char bytes[4096];
       const auto count = ::read(fd_, bytes, sizeof(bytes));
@@ -130,14 +146,14 @@ class LiveCommandInput {
         throw std::runtime_error("command input failed");
       }
       if (count == 0) {
-        if (pending_.empty() || stopped()) return false;
+        if (pending_.empty() || stopped()) return LiveRead::Closed;
         line = std::move(pending_);
         pending_.clear();
-        return true;
+        return LiveRead::Line;
       }
       pending_.append(bytes, static_cast<std::size_t>(count));
     }
-    return false;
+    return LiveRead::Closed;
   }
 
  private:

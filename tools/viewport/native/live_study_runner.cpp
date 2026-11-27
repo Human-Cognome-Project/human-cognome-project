@@ -76,6 +76,10 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
   }
   auto handle=*submitted.handle;
   field::Parameters64 parameters;
+  if (input.dt) parameters.dt=*input.dt;
+  std::optional<double> last_tick_dt;
+  auto period=input.period;
+  bool running=input.running;
   const auto observe=[&] {
     return viewport::observe(session,source->owner(),handle,viewport::IntentRequest{parameters.gravity,1000000},input.responses);
   };
@@ -111,6 +115,11 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
       }
     }
     context.source=source_metadata;
+    context.source["parameters"]["dt"]=parameters.dt;
+    context.source["last_tick_dt"]=last_tick_dt ? Json(*last_tick_dt) : Json(nullptr);
+    result["dt"]=parameters.dt;
+    result["pace_ms"]=period.count();
+    result["running"]=running;
     if(state.report.prepared_exposure)result["exposure"]=*state.report.prepared_exposure==warm::Exposure::Parts?"parts":"aggregate";
     result["completed_tick"]=state.tick;
     result["generation"]=*state.prepared_generation;
@@ -155,7 +164,21 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
   emit(std::move(created));
   bool rejected=false;
   std::string line;
-  while (input.commands.read_line(line)) {
+  auto due=LiveClock::now()+period;
+  bool handled_command=false;
+  while (!input.commands.stopped()) {
+    // Service an overdue tick even if a driver continuously queries the study.
+    const bool tick_due=running && handled_command && LiveClock::now()>=due;
+    const auto read=tick_due ? LiveRead::Deadline :
+        input.commands.read_until(line,running ? std::optional{due} : std::nullopt);
+    if (read==LiveRead::Closed) break;
+    const bool automatic=read==LiveRead::Deadline;
+    handled_command=!automatic;
+    if (automatic) {
+      if (input.commands.stopped()) break;
+      due=LiveClock::now()+period;
+      line="tick";
+    }
     std::istringstream words(line);
     std::string command, argument, extra;
     if (!(words>>command) || command[0] == '#') continue;
@@ -166,13 +189,25 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
       std::string revision, trailing;
       if (command == "add") words>>revision;
       if (words>>trailing) throw UsageError("too many command arguments");
-      if ((command == "observe" || command == "list") && argument.empty()) {
+      if (command=="dt") {
+        if (!argument.empty()) parameters.dt=parse_live_dt(argument);
+        emit({{"command",command},{"status","ok"}});
+      } else if (command=="run") {
+        if (!argument.empty())
+          period=std::chrono::milliseconds(parse_count("run period",argument,1,86400000));
+        running=true;
+        emit({{"command",command},{"status","ok"}});
+        due=LiveClock::now()+period;
+      } else if (command=="pause" && argument.empty()) {
+        running=false;
+        emit({{"command",command},{"status","ok"}});
+      } else if ((command == "observe" || command == "list") && argument.empty()) {
         emit({{"command",command},{"status","ok"},{"catalogue",available}});
       } else if ((command == "save" || command == "load") && !argument.empty()) {
         if (!catalogue_ref) throw UsageError("position restart requires a retained letter catalogue");
         if (command=="save") {
           const auto state=observe();
-          save_retained_restart(argument,state,source->shared_recipe(),*catalogue_ref);
+          save_retained_restart(argument,state,source->shared_recipe(),*catalogue_ref,parameters.dt);
           emit({{"command",command},{"status","ok"},{"saved_tick",state.tick}});
         } else {
           const auto saved=read_retained_restart(argument);
@@ -187,6 +222,8 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
             emit({{"command",command},{"status",status(result.publication.status)},{"saved_tick",saved.tick}});
             continue;
           }
+          parameters.dt=saved.dt;
+          last_tick_dt.reset();
           handle=*result.handle;
           source=std::move(candidate_source);
           resources=std::move(candidate_resources);
@@ -223,7 +260,9 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
           }
         }
         Json result{{"command",command},{"status",refusal ? status(refusal->status) : completed==ticks ? "ok" : "stopped"},
-                    {"requested_ticks",ticks},{"ticks",completed}};
+                    {"requested_ticks",ticks},{"ticks",completed},{"automatic",automatic}};
+        if (completed) last_tick_dt=parameters.dt;
+        if (refusal && automatic) running=false;
         if (refusal) {
           rejected=true;
           const auto &attempt=*refusal;
@@ -269,7 +308,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
           {"native_claims",std::move(claims)},
           {"preparation_status",int(result.preparation.status)},
           {"preparation_work",result.preparation.charged}});
-      } else throw UsageError("expected observe, list, add ENTRY [TEMPLATE_ENTRY], add ENTRY DEFINITION REVISION, remove ENTRY, lod aggregate|parts, tick [N [GEOMETRY_WORK]], save FILE, load FILE or quit");
+      } else throw UsageError("expected dt [X], run [MS], pause, observe, list, add ENTRY [TEMPLATE_ENTRY], add ENTRY DEFINITION REVISION, remove ENTRY, lod aggregate|parts, tick [N [GEOMETRY_WORK]], save FILE, load FILE or quit");
     } catch (const UsageError &error) {
       rejected=true; emit({{"command",command},{"status","invalid_input"},{"message",error.what()}});
     }

@@ -186,6 +186,8 @@ if [[ $exit_mode == catalogue* ]]; then
     step=restart-save
     send add 2 "$second" "$second_revision"
     receive '"status":"ok"'
+    send save "$out/seed.restart.json"
+    receive '"status":"ok"'
     send tick 1
     receive '"completed_tick":1,'
     send save "$out/tick1.restart.json"
@@ -193,6 +195,8 @@ if [[ $exit_mode == catalogue* ]]; then
     test "$(json_number saved_tick)" = 1
     send tick 127
     receive '"completed_tick":128,'
+    send dt 0.25
+    receive '"status":"ok"'
     send save "$out/tick128.restart.json"
     receive '"status":"ok"'
     test "$(json_number saved_tick)" = 128
@@ -216,6 +220,7 @@ if [[ $exit_mode == catalogue* ]]; then
     receive '"command":"create"'
     [[ "$event" == *'"actual_backend":"native_cpu"'* && "$event" == *'"host_path":"direct"'* ]]
     test "$(json_number saved_tick)" = 128
+    [[ "$event" == *'"dt":0.25,'* ]]
     test "$(json_number completed_tick)" = 0
     test "$(positions)" = "$saved_positions"
     [[ "$event" == *'"focal_fields":[{"kind":"parent_value","mass":4.0,'* ]]
@@ -229,6 +234,12 @@ if [[ $exit_mode == catalogue* ]]; then
     prior_generation=$(json_number generation)
     prior_claim1=$(claim 1)
     prior_claim2=$(claim 2)
+    sed -E 's/^  "dt": [^,]+,/  "dt": 0,/' "$out/tick128.restart.json" > "$out/zero-dt.restart.json"
+    send load "$out/zero-dt.restart.json"
+    receive '"status":"invalid_input"'
+    [[ "$event" == *'"dt":0.25,'* ]]
+    test "$(json_number completed_tick)" = 1
+    test "$(positions)" = "$prior_positions"
     sed '/"position": \[/ { n; s/.*/        1e100,/; }' "$out/tick128.restart.json" > "$out/invalid.restart.json"
     send load "$out/invalid.restart.json"
     receive '"status":"invalid_numerics"'
@@ -249,6 +260,55 @@ if [[ $exit_mode == catalogue* ]]; then
     observe_state 4
     send tick 1
     receive '"completed_tick":1,'
+    step=live-timestep
+    # Compare the same two seeded bodies after one native step at each dt.
+    send load "$out/seed.restart.json"
+    receive '"status":"ok"'
+    [[ "$event" == *'"dt":1.0,'* ]]
+    send tick 1
+    receive '"completed_tick":1,'
+    local_step_positions=$(positions)
+    send load "$out/seed.restart.json"
+    receive '"status":"ok"'
+    send dt 0.25
+    receive '"status":"ok"'
+    send tick 1
+    receive '"completed_tick":1,'
+    test "$(positions)" != "$local_step_positions"
+
+    # Older position-only files predate the timestep field and used dt=1.
+    sed -e '/^  "dt": /d' -e 's/^  "version": 2$/  "version": 1/' \
+      "$out/seed.restart.json" > "$out/legacy.restart.json"
+    send load "$out/legacy.restart.json"
+    receive '"status":"ok"'
+    [[ "$event" == *'"dt":1.0,'* ]]
+
+    step=live-clock
+    pause_clock() {
+      send pause
+      while true; do
+        receive '"status":"ok"'
+        if [[ "$event" == *'"command":"pause"'* ]]; then break; fi
+        [[ "$event" == *'"automatic":true'* ]]
+      done
+      [[ "$event" == *'"running":false'* ]]
+    }
+    send run 50
+    receive '"command":"run"'
+    receive '"automatic":true'
+    pause_clock
+    held=$(json_number completed_tick)
+    sleep 0.15
+    send observe
+    receive '"command":"observe"'
+    test "$(json_number completed_tick)" = "$held"
+    send tick 1
+    receive '"automatic":false'
+    test "$(json_number completed_tick)" -eq "$((held+1))"
+    send run
+    receive '"command":"run"'
+    receive '"automatic":true'
+    pause_clock
     release_catalogue 1
     echo 'PASS: independent CPU receiver restored saved positions, refused an invalid hint and ticked again'
     exit 0

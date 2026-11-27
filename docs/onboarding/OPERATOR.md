@@ -67,6 +67,32 @@ Enter `add 27 DEFINITION REVISION` with that exact pair, then `tick 1`,
 `remove 27` and `tick 1`. The definition stays in the catalogue after
 removal. An unlisted pin produces `invalid_input` and leaves the study usable.
 
+### Control the timestep and the clock
+
+`dt` is the amount of simulated time advanced by one native tick. The clock period is the target wall-clock time between tick starts. At `dt 0.1` and a period of 250 ms, ten successful ticks advance one simulation-time unit and take about 2.5 seconds at the target rate. A slow tick can reduce the achieved rate. The browser can sample completed positions on its own schedule.
+
+| Driver action | Live CLI |
+|---|---|
+| Choose the initial physical step | `--dt 0.1`. A fresh study defaults to `1`. |
+| Query or change the step on an open study | `dt` reports it. `dt 0.05` applies to subsequent ticks. Both commands leave the completed tick count unchanged. |
+| Run continuously | `run 250` requests one tick every 250 ms (4 Hz). `run` resumes at the configured period. |
+| Pause and inspect | `pause` acknowledges the last completed tick. `observe` reads that state. |
+| Single-step or advance a block while paused | `tick 1` advances one step. `tick 10` advances up to ten and emits one result. |
+| Choose startup pacing | An interactive terminal starts paced at 250 ms after study creation. `--paused` starts in step mode. Pipes and command files start paused by default. `--pace-ms 250` selects paced mode for either driver. |
+
+**Human example.** With the retained sources and warm database configured as above, start with two existing A definitions available and open the English A pin printed in `catalogue_available`.
+
+```sh
+engine/build/viewport/viewport_live_study --retained --paused --dt 0.1 \
+  --letter 02.00.00.00.03 --letter 02.01.00.00.03 --focus-byte 00.00.00.00.23
+```
+
+Enter `open DEFINITION REVISION` using the values from the first catalogue row. After `create`, enter `add 2` for French A, then `run 250`. Enter `pause` when you see motion you want to examine. Enter `dt 0.05` and `tick 1` to advance one finer step. Enter `run` to continue, or `save study.json` and `quit` to close the session.
+
+**Agent protocol.** Keep stdin open. Send one newline-terminated command and continuously drain the newline-delimited JSON on stdout. While running, automatic ticks can arrive before a command acknowledgement. Match the `command` field and use `automatic: false` to identify a requested tick. Wait for the `pause` acknowledgement before stepping. Check `status` and the count of committed `ticks` on a batch. A refused automatic tick pauses the clock. Read `completed_tick`, `dt`, `pace_ms` and `running` on state-bearing events. The embedded snapshot records the configured `source.parameters.dt` and the most recently committed `source.last_tick_dt`, which is null before the first receiver tick. Each successful batch advances `ticks × dt` units of simulation time.
+
+A position save records the active timestep. Startup `--load FILE` uses that step unless you explicitly pass `--dt X`. Live `load FILE` restores the saved step when the replacement succeeds. Files from the original position-only format use their historical step of `1`. The local clock period and run/pause mode belong to the driver. Use `--paused` or pause before a live load when you want time to examine receiver tick zero.
+
 ### Open one letter from a retained catalogue
 
 On a fresh dedicated fixture, supply the retained addresses the publishing
@@ -135,8 +161,8 @@ The receiver checks the recorded catalogue against the retained sources, then
 uses the saved pins to publish the catalogue in its own warm database. Its
 `create` record shows `saved_tick` and a receiving `completed_tick` of zero.
 The native owner restores positions and initializes motion under D3. A later
-trajectory can differ from the producer’s. Enter `tick 1` to advance the
-receiving study.
+trajectory can differ from the producer’s. To inspect receiver tick zero interactively,
+start with `--paused`, then enter `tick 1` to advance one step.
 
 `load FILE` on an open study stages a replacement from the same study and exact
 recipe. A stale pin or invalid position leaves the open study available for
