@@ -232,11 +232,25 @@ if [[ $exit_mode == catalogue* ]]; then
     sed '/"position": \[/ { n; s/.*/        1e100,/; }' "$out/tick128.restart.json" > "$out/invalid.restart.json"
     send load "$out/invalid.restart.json"
     receive '"status":"invalid_numerics"'
-    test "$(json_number completed_tick)" = 1
-    test "$(json_number generation)" = "$prior_generation"
-    test "$(positions)" = "$prior_positions"
-    test "$(claim 1)" = "$prior_claim1"
-    test "$(claim 2)" = "$prior_claim2"
+    check_preserved_receiver() {
+      test "$(json_number completed_tick)" = 1
+      test "$(json_number generation)" = "$prior_generation"
+      test "$(positions)" = "$prior_positions"
+      test "$(claim 1)" = "$prior_claim1"
+      test "$(claim 2)" = "$prior_claim2"
+    }
+    check_preserved_receiver
+    sed 's/^  "focus_byte": .*,/  "focus_byte": "00.00.00.00.24",/' \
+      "$out/tick128.restart.json" > "$out/wrong-focus.restart.json"
+    sed 's/^  "focus_byte": .*,/  "focus_byte": null,/' \
+      "$out/tick128.restart.json" > "$out/missing-focus.restart.json"
+    sed '/^  "letters": \[/,/^  \]/c\  "letters": ["02.01.00.00.03", "02.00.00.00.03"],' \
+      "$out/tick128.restart.json" > "$out/reversed-letters.restart.json"
+    for mismatch in wrong-focus missing-focus reversed-letters; do
+      send load "$out/$mismatch.restart.json"
+      receive '"status":"invalid_input"'
+      check_preserved_receiver
+    done
     send tick 1
     receive '"completed_tick":2,'
 
@@ -250,7 +264,7 @@ if [[ $exit_mode == catalogue* ]]; then
     send tick 1
     receive '"completed_tick":1,'
     release_catalogue 1
-    echo 'PASS: independent CPU receiver restored saved positions, refused an invalid hint and ticked again'
+    echo 'PASS: independent CPU receiver restored positions, refused invalid positions and selectors, and ticked again'
     exit 0
   fi
 
