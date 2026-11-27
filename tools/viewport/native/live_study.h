@@ -19,5 +19,6 @@ int run_live_study(const LiveStudyInput &, assembly::PreparedStudySubmission,
                    const std::string &label, const Json &source_metadata,
                    std::optional<double> physical_mass = {},
                    std::optional<std::uint64_t> source_mass = {});
-int run_retained_live_study(const LiveStudyInput &,const std::vector<std::string> &letters);
+int run_retained_live_study(const LiveStudyInput &,const std::vector<std::string> &letters,
+                           const std::optional<std::string> &focus_byte);
 }  // namespace viewport

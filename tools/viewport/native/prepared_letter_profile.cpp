@@ -75,6 +75,33 @@ std::set<warm::ObjectKey> catalogue_memberships(const warm::Bundle &recipe,
   visit(visit,root);
   return result;
 }
+std::vector<warm::ObjectKey> catalogue_membership_path(const warm::Bundle &recipe,
+                                                      const warm::ToolRef &root) {
+  const auto closure = catalogue_memberships(recipe,root);
+  std::map<warm::ObjectKey,const warm::Tool *> groups;
+  std::set<warm::ObjectKey> parents;
+  for (const auto &group : recipe.tools) {
+    if (!closure.count(group.ref.object)) continue;
+    if (group.member_of.size()>1)
+      throw PreparedLetterProfileError("byte-focused catalogue requires a membership path for each letter");
+    groups.emplace(group.ref.object,&group);
+    if (!group.member_of.empty()) parents.insert(group.member_of.front().object);
+  }
+  const warm::Tool *leaf = nullptr;
+  for (const auto &[key,group] : groups) {
+    if (parents.count(key)) continue;
+    if (leaf) throw PreparedLetterProfileError("byte-focused catalogue membership paths branch within one letter");
+    leaf = group;
+  }
+  std::vector<warm::ObjectKey> path;
+  for (auto group=leaf; group && path.size()<groups.size(); ) {
+    path.push_back(group->ref.object);
+    group = group->member_of.empty() ? nullptr : groups.at(group->member_of.front().object);
+  }
+  if (path.empty() || path.size()!=closure.size())
+    throw PreparedLetterProfileError("byte-focused catalogue requires a complete membership path");
+  return path;
+}
 field::PreparedCapacity capacity(bool retained) {
   using field::Budget;
   field::BudgetDemand l;
@@ -350,17 +377,25 @@ assembly::PreparedStudySubmission editable_retained_english_pair_submission(
   return out;
 }
 warm::Bundle retained_catalogue_recipe(warm::Bundle definitions,
-                                       const std::vector<warm::ToolRef> &roots) {
+                                       const std::vector<warm::ToolRef> &roots,
+                                       const std::optional<warm::ObjectKey> &focus_byte) {
   if (roots.empty()) throw PreparedLetterProfileError("retained catalogue requires declared roots");
   const auto groups = catalogue_memberships(definitions,roots.front());
   if (groups.empty()) throw PreparedLetterProfileError("retained catalogue requires membership focus");
   std::vector<assembly::StructuralLetterRequest> requests;
   for (const auto &pin : roots) {
-    if (catalogue_memberships(definitions,pin)!=groups)
-      throw PreparedLetterProfileError("retained catalogue requires a shared membership cohort");
+    if (focus_byte) {
+      const auto &root = tool(definitions,pin);
+      if (root.mass!=2 || root.parents.size()!=1 || root.parents.front().contribution!=2 ||
+          !(root.parents.front().target.object==*focus_byte))
+        throw PreparedLetterProfileError("selected focus byte must be the direct byte of every declared letter");
+      catalogue_membership_path(definitions,pin);
+    } else if (catalogue_memberships(definitions,pin)!=groups)
+      throw PreparedLetterProfileError("different membership cohorts require an explicit shared --focus-byte");
     requests.push_back({requests.size()+1,pin,warm::Exposure::Parts});
   }
-  definitions.focal_fields = {{warm::FieldKind::Membership,*groups.begin()}};
+  definitions.focal_fields = {focus_byte ? warm::FocalField{warm::FieldKind::SiblingDefinition,*focus_byte}
+                                        : warm::FocalField{warm::FieldKind::Membership,*groups.begin()}};
   return assembly::normalize_structural_letters(std::move(definitions),requests);
 }
 
@@ -369,9 +404,17 @@ assembly::PreparedStudySubmission editable_retained_catalogue_submission(
     field::HostPath path) {
   using namespace assembly;
   using field::Budget;
+  const auto &declared_focus = aggregate->shared_recipe().focal_fields.at(0);
+  const auto focus = declared_focus.object;
+  const bool byte_focus = declared_focus.kind==warm::FieldKind::SiblingDefinition;
+  if (byte_focus) {
+    // The retained recipe names the exposed byte. The prepared owner follows
+    // its construction field across both exposure plans.
+    aggregate = std::make_shared<const ActiveAssembly>(
+        aggregate->focus({{GroupKind::ParentValue,InputText(warm::key(focus))}}));
+  }
   auto parts = std::make_shared<const ActiveAssembly>(aggregate->expose_all(warm::Exposure::Parts));
   const auto &recipe = aggregate->shared_recipe();
-  const auto &focus = recipe.focal_fields.at(0).object;
   using FieldIdentity = std::pair<GroupKind,warm::ObjectKey>;
   std::map<FieldIdentity,int> addresses;
   std::map<warm::ObjectKey,std::size_t> definition_index;
@@ -388,10 +431,15 @@ assembly::PreparedStudySubmission editable_retained_catalogue_submission(
         int(fine.bodies.size()),double(definition.mass.value()),{index+1,1,true}});
   }
   const auto groups = catalogue_memberships(recipe,coarse.bodies.at(0).definition);
-  if (recipe.focal_fields.size()!=1 || recipe.focal_fields[0].kind!=warm::FieldKind::Membership ||
-      !groups.count(focus)) throw PreparedLetterProfileError("invalid retained catalogue focus");
+  if (recipe.focal_fields.size()!=1 || (!byte_focus &&
+      (recipe.focal_fields[0].kind!=warm::FieldKind::Membership || !groups.count(focus))))
+    throw PreparedLetterProfileError("invalid retained catalogue focus");
+  std::vector<std::vector<warm::ObjectKey>> membership_paths;
+  if (byte_focus)
+    for (const auto &body : coarse.bodies)
+      membership_paths.push_back(catalogue_membership_path(recipe,body.definition));
   bool shared_parents = false;
-  const auto fields = [&](detail::AdmissionBindings &binding,const ActiveAssembly &view) {
+  const auto fields = [&](detail::AdmissionBindings &binding,const ActiveAssembly &view,bool expanded) {
     binding.source = {view.owner(),view.study(),view.generation(),recipe.ref};
     binding.layout = {{{nullptr,-1,ScaleRole::Root},1},{{nullptr,0,ScaleRole::PrimaryStep},64}};
     const auto add = [&](FieldKey key,int level,std::vector<int> children) {
@@ -401,11 +449,11 @@ assembly::PreparedStudySubmission editable_retained_catalogue_submission(
       binding.comparisons.push_back({std::move(key),std::uint64_t(at->second)+1,level,52,std::move(children)});
       return index;
     };
-    std::set<warm::ObjectKey> represented;
-    std::map<warm::ObjectKey,int> parent_fields;
+    std::map<warm::ObjectKey,int> siblings, parent_fields;
     std::vector<int> branches;
     for (const auto &body : binding.bodies) {
-      if (!represented.insert(body.definition.object).second) continue;
+      const auto [sibling,inserted] = siblings.try_emplace(body.definition.object,-1);
+      if (!inserted) continue;
       const auto &definition = tool(recipe,body.definition);
       std::set<warm::ObjectKey> direct;
       std::vector<int> children;
@@ -416,35 +464,70 @@ assembly::PreparedStudySubmission editable_retained_catalogue_submission(
         else shared_parents = true;
         children.push_back(field->second);
       }
-      branches.push_back(add({GroupKind::SiblingDefinition,body.definition.object},1,std::move(children)));
+      sibling->second = add({GroupKind::SiblingDefinition,body.definition.object},1,std::move(children));
+      branches.push_back(sibling->second);
     }
-    int level = 2;
-    for (const auto &group : groups)
-      if (!(group==focus)) branches = {add({GroupKind::Membership,group},level++,std::move(branches))};
-    const FieldKey root{GroupKind::Membership,focus};
-    add(root,level,std::move(branches));
-    binding.focus = {root};
+    if (byte_focus) {
+      const FieldKey root{GroupKind::ParentValue,focus};
+      int byte = expanded ? add(root,2,std::move(branches)) : parent_fields.at(focus);
+      struct MembershipNode {
+        int level{};
+        std::optional<warm::ObjectKey> parent;
+        std::vector<int> children;
+      };
+      std::map<warm::ObjectKey,MembershipNode> memberships;
+      for (std::size_t i=0; i<membership_paths.size(); ++i) {
+        const auto &path = membership_paths[i];
+        const int child = expanded ? byte : siblings.at(coarse.bodies[i].definition.object);
+        auto &inputs = memberships[path.front()].children;
+        if (std::find(inputs.begin(),inputs.end(),child)==inputs.end()) inputs.push_back(child);
+        for (std::size_t j=0; j<path.size(); ++j) {
+          auto &node = memberships[path[j]];
+          node.level = std::max(node.level,int(j)+3);
+          if (j+1<path.size()) node.parent = path[j+1];
+        }
+      }
+      std::vector<std::pair<int,warm::ObjectKey>> order;
+      for (const auto &[key,node] : memberships) order.emplace_back(node.level,key);
+      std::sort(order.begin(),order.end());
+      for (const auto &[level,key] : order) {
+        auto &node = memberships.at(key);
+        const auto child = add({GroupKind::Membership,key},level,std::move(node.children));
+        if (node.parent) memberships.at(*node.parent).children.push_back(child);
+      }
+      binding.focus = {root};
+    } else {
+      int level = 2;
+      for (const auto &group : groups)
+        if (!(group==focus)) branches = {add({GroupKind::Membership,group},level++,std::move(branches))};
+      const FieldKey root{GroupKind::Membership,focus};
+      add(root,level,std::move(branches));
+      binding.focus = {root};
+    }
   };
-  fields(coarse,*aggregate);
-  fields(fine,*parts);
+  fields(coarse,*aggregate,false);
+  fields(fine,*parts,true);
 
   auto limits = capacity(false).limits();
   std::size_t maximum_width = 1;
   for (const auto &selection : recipe.selections)
     maximum_width = std::max(maximum_width,selection.parts.size());
   limits[Budget::Particles] = 2*std::max(coarse.bodies.size(),fine.bodies.size());
+  const auto particles = limits[Budget::Particles];
+  // The tick discovers an unordered pair at most once in each contact ledger.
+  limits[Budget::Contacts] = particles*(particles-1)/2;
   limits[Budget::Potential] = limits[Budget::Particles]*(1+maximum_width);
   limits[Budget::Fields] = limits[Budget::CascadeNodes] = addresses.size();
   limits[Budget::CascadeLevels] = addresses.size();
   limits[Budget::Participation] = limits[Budget::Particles]*limits[Budget::Fields];
-  limits[Budget::CascadeLinks] = addresses.size()+(shared_parents ? limits[Budget::Participation] : 0);
+  limits[Budget::CascadeLinks] = addresses.size()+((shared_parents || byte_focus) ? limits[Budget::Participation] : 0);
   limits[Budget::CascadeReferences] = limits[Budget::CascadeCoverage] = limits[Budget::Participation];
   limits[Budget::LiveResponses] = 2*limits[Budget::Participation];
   limits[Budget::BootstrapCommands] = limits[Budget::Batch] =
       2*(limits[Budget::Particles]+limits[Budget::Fields]+limits[Budget::Participation]);
   const auto profile = field::NumericalProfile::trial();
-  const auto hierarchy = shared_parents ? field::PreparedHierarchyMode::ScopedCatalogue
-                                       : field::PreparedHierarchyMode::ExpressedTree;
+  const auto hierarchy = byte_focus ? field::PreparedHierarchyMode::CrossLanguageCatalogue
+      : shared_parents ? field::PreparedHierarchyMode::ScopedCatalogue : field::PreparedHierarchyMode::ExpressedTree;
   limits[Budget::ScratchBytes] = field::detail::PreparedStorage::required_scratch(
       limits,false,profile)+256*1024*1024;
   PreparedStudySubmission request{aggregate,std::move(coarse),field::PreparedCapacity(limits,profile,hierarchy),

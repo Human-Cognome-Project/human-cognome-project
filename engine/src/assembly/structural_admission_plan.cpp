@@ -197,6 +197,10 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     }
     need(found); return *found;
   };
+  const bool separate_memberships = capacity.separate_membership_roots();
+  if (separate_memberships)
+    need(!b.character_rollup && !b.endpoint_rollup && b.focus.size()==1 &&
+         b.focus.front().kind==GroupKind::ParentValue);
   ReservedVector<std::size_t> ordered{ReservationAllocator<std::size_t>(domain_.get())};
   reserve(ordered,b.bodies.size(),w);
   std::uint64_t edges = 0;
@@ -208,6 +212,17 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
     ordered.push_back(index);
     const auto *definition=ProjectionAccess::resolve(p,index,&w); need(definition);
     edges = sum(edges,sum(1,definition->parents.size()));
+    if (separate_memberships) {
+      const auto *letter = o.byte ? ProjectionAccess::resolve(p,o.byte->owner_index,&w) : definition;
+      need(letter && letter->mass==2 && letter->parents.size()==1);
+      const auto &byte = letter->parents.front();
+      need(byte.ordinal==0 && byte.contribution==2 && w.equal(byte.target.object,b.focus.front().object));
+      if (o.byte) {
+        need(o.byte->character_ordinal==0 && o.byte->byte_ordinal==0 &&
+             w.equal(o.byte->character,byte.target) && w.equal(definition->ref,byte.target));
+        edges = sum(edges,1);
+      }
+    }
   }
   need(ordered.size() == b.bodies.size());
   const warm::Tool *endpoint_rollup = nullptr;
@@ -384,6 +399,8 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
       edge(GroupKind::ParentValue,parent.target.object,parent.contribution,parent.ordinal);
     }
     need(t.parents.empty() || parent_mass == *t.mass);
+    if (separate_memberships && o.byte)
+      edge(GroupKind::ParentValue,b.focus.front().object,*t.mass,o.byte->character_ordinal);
     if (b.character_rollup) {
       w.charge(1);
       edge(GroupKind::ParentValue,b.character_rollup->character.object,*t.mass,o.byte->byte_ordinal);
@@ -514,7 +531,7 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   const auto edge_begin = occurrences_.size()+fields_.size();
   struct ScopedLink { int branch, child, command; bool confirmed{}; };
   ReservedVector<ScopedLink> scoped{ReservationAllocator<ScopedLink>(domain_.get())};
-  const bool editable_scopes = capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedCatalogue;
+  const bool editable_scopes = capacity.editable_scopes();
   for (std::size_t child=0; child<b.comparisons.size(); ++child) {
     w.charge(1);
     if (child_uses[child] < 2) continue;
@@ -522,8 +539,9 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
          (b.character_rollup && capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedNibbleBootstrap) ||
          (endpoint_rollup && capacity.hierarchy_mode()==field::PreparedHierarchyMode::ScopedEndpointBootstrap));
     const auto &publisher = b.comparisons[child];
-    need(publisher.field.kind == GroupKind::ParentValue && publisher.children.empty() &&
-         publisher.retained_fraction_bits == 52);
+    const bool split_memberships = separate_memberships && !publisher.children.empty();
+    need(publisher.field.kind==GroupKind::ParentValue && publisher.retained_fraction_bits==52 &&
+         (publisher.children.empty() || (split_memberships && w.equal(publisher.field.object,b.focus.front().object))));
     if (scoped.capacity() == 0)
       reserve(scoped,std::min(edges,limits[Budget::CascadeLinks]),w);
     const auto field = fields_[field_index(publisher.field.kind,publisher.field.object)].command;
@@ -535,19 +553,38 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
       const auto body = edge.first.command;
       const auto &part = ProjectionAccess::row(p,ordered[body]);
       const auto *definition = ProjectionAccess::resolve(p,ordered[body],&w);
-      need(part.byte && definition && edge.ordinal < definition->parents.size());
-      const auto &parent = definition->parents[edge.ordinal];
-      need(parent.ordinal == edge.ordinal && parent.contribution == *edge.exact_count &&
-           w.equal(parent.target.object,publisher.field.object));
+      need(definition && (part.byte || separate_memberships));
+      if (split_memberships)
+        need(part.byte && w.equal(definition->ref.object,publisher.field.object) && *edge.exact_count==*definition->mass);
+      else {
+        need(edge.ordinal < definition->parents.size());
+        const auto &parent = definition->parents[edge.ordinal];
+        need(parent.ordinal == edge.ordinal && parent.contribution == *edge.exact_count &&
+             w.equal(parent.target.object,publisher.field.object));
+      }
       int branch = -1;
       for (std::size_t i=child+1; i<b.comparisons.size(); ++i) {
         w.charge(1);
         const auto &candidate = b.comparisons[i];
-        if (candidate.field.kind != GroupKind::SiblingDefinition ||
-            !w.equal(candidate.field.object,definition->ref.object)) continue;
+        if (split_memberships ? candidate.field.kind!=GroupKind::Membership
+            : candidate.field.kind!=GroupKind::SiblingDefinition ||
+                  !w.equal(candidate.field.object,definition->ref.object)) continue;
         for (int link : candidate.children) {
           w.charge(1);
           if (link != int(child)) continue;
+          if (split_memberships) {
+            const auto member = fields_[field_index(GroupKind::Membership,candidate.field.object)].command;
+            bool included = false;
+            for (std::size_t row=edge_begin; row<edge_begin+edges; ++row) {
+              w.charge(1);
+              const auto &participation = commands_[row];
+              if (participation.first.command==body && participation.second.command==member) {
+                included = true;
+                break;
+              }
+            }
+            if (!included) continue;
+          }
           need(branch < 0 && candidate.retained_fraction_bits == 52);
           branch = int(i);
         }
@@ -672,14 +709,25 @@ void StructuralAdmissionPlan::prepare(const ActiveAssembly &assembly,
   }
   need(children_.size()==links);
   for (std::size_t i=0; i<parents.size(); ++i) {
-    w.charge(1); need((parents[i] < 0) == (i+1 == parents.size() || child_uses[i]>1));
+    w.charge(1);
+    if (separate_memberships) {
+      if (parents[i]<0 && child_uses[i]<2) need(b.comparisons[i].field.kind==GroupKind::Membership);
+    } else need((parents[i] < 0) == (i+1 == parents.size() || child_uses[i]>1));
   }
   for (std::size_t body=0; body<occurrences_.size(); ++body) {
     bool leaf = false;
+    std::size_t roots = 0;
     for (std::size_t i=0; i<nodes_.size(); ++i) {
       w.charge(1); if (!nodes_[i].child_count && coverage_at(i,body)) leaf = true;
+      if (separate_memberships && parents[i]<0 && child_uses[i]<2) {
+        const auto *cohort = coverage_at(i,body);
+        if (cohort) {
+          need(cohort->count==cohort->denominator);
+          ++roots;
+        }
+      }
     }
-    need(leaf);
+    need(leaf && (!separate_memberships || roots==1));
   }
   // Inherited recipe focus is typed; explicit ActiveAssembly override retains
   // its existing lossless text representation, including an explicit empty list.

@@ -148,8 +148,11 @@ PreparedLodWorkspace::PreparedLodWorkspace(PreparedStudyOwner &o,const ActiveAss
     need(focus_a.field.kind==GroupKind::ParentValue && same(focus_a.field,focus_b.field) &&
          focus_b.command==hierarchy.nodes[hierarchy.node_count-1].field_command);
   } else {
-    need(focused(a).field.kind==GroupKind::Membership && same(focused(a).field,focused(b).field) &&
-         a.commands()[focused(a).command].address==b.commands()[focused(b).command].address);
+    const auto &focus_a = focused(a), &focus_b = focused(b);
+    const auto kind = o.h_.prepared_storage().capacity.separate_membership_roots()
+        ? GroupKind::ParentValue : GroupKind::Membership;
+    need(focus_a.field.kind==kind && same(focus_a.field,focus_b.field) &&
+         a.commands()[focus_a.command].address==b.commands()[focus_b.command].address);
   }
   sides_[1].plan=std::move(plan);
   for(std::size_t side=0;side<2;++side) {
@@ -612,6 +615,12 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
   if (bootstrapping_) bootstrap_focus_ = UpdateRef::pending(field_commands_[focus]);
   w.elements(spec.node_count,sizeof(int));
   node_indices_.assign(spec.node_count,-1);
+  const auto scope_is_live = [&](int child) {
+    const auto &input = plan.commands()[spec.contributions[-1-child].source_command];
+    return std::any_of(live_templates_.begin(),live_templates_.end(),[&](const auto &live) {
+      w.charge(1);return int(live.occurrence)==input.first.command;
+    });
+  };
   if (spec.scoped_nibble_rows) {
     // Plan rows are sealed for the declared catalogue. A publisher still uses
     // its ordinary packet when just one of its branches is currently present.
@@ -623,7 +632,7 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
       for (std::size_t j=node.child_begin; j<node.child_begin+node.child_count; ++j) {
         w.charge(1);
         const int child = spec.children[j];
-        if (child>=0) continue;
+        if (child>=0 || !scope_is_live(child)) continue;
         auto &branch = scope_branches_[side.scope_publishers[-1-child]];
         if (branch==-1) branch = int(i);
         else if (branch!=int(i)) branch = -2;
@@ -658,6 +667,7 @@ field::UpdateResult PreparedLodWorkspace::build_catalogue(const PreparedStudyOwn
         if (node_indices_[child]>=0 && !append_child(node_indices_[child])) return out;
         continue;
       }
+      if (!scope_is_live(child)) continue;
       const auto source = std::size_t(-1-child);
       const auto publisher = side.scope_publishers[source];
       need(publisher<i && node_indices_[publisher]>=0);

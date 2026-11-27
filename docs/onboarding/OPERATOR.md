@@ -55,6 +55,13 @@ If the output pipe is full during shutdown, the owner closes the session and
 releases the lease even when the final record cannot be delivered. A malformed
 command produces `invalid_input` and the next command can use the same study.
 
+`tick N` advances the field by up to `N` ticks. Its `ticks` count reports how
+many committed in that command, and `completed_tick` gives the study total.
+Use `tick N GEOMETRY_WORK` to request a per-tick geometry-work budget within
+the study's prepared limits. A capacity refusal reports the native budget,
+required amount and capacity. Earlier ticks in the batch remain committed.
+The same study can accept a removal and resume ticking from that state.
+
 Use `list` to read the catalogue’s `definition` and `revision` together.
 Enter `add 27 DEFINITION REVISION` with that exact pair, then `tick 1`,
 `remove 27` and `tick 1`. The definition stays in the catalogue after
@@ -89,8 +96,25 @@ exposure, the response trace shows both scoped contributions under the same
 nibble field. Each contributes through its own byte path. Run `tick 1` in
 parts exposure to observe the shared field before rolling up.
 
-The retained profile currently requires identical membership coverage across
-roots. The [recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
+### Open a retained English/French study
+
+English A and French A share byte `41`. They belong to separate language and
+alphabet groups. Select the shared byte explicitly when offering the two roots.
+
+```sh
+engine/build/viewport/viewport_live_study --retained \
+  --letter 02.00.00.00.03 --letter 02.01.00.00.03 \
+  --focus-byte 00.00.00.00.23 --response-work-limit 1000000
+```
+
+Open either root by its exact pin and `add` the other using its entry, definition
+and revision. Tick, expand with `lod parts`, roll up with `lod aggregate` and
+remove either entry. The `focus` and `live_fields` records identify the shared
+byte and let you match response packet comparisons to each language’s fields.
+
+The explicit byte focus currently requires every declared letter to consist of
+that byte and have a complete membership path. The
+[recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
 tracks wider catalogue qualification.
 
 [Viewer controls](../../tools/viewport/README.md) · [Build the engine](FIRST-RUN.md)
