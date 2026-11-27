@@ -165,8 +165,9 @@ trajectory can differ from the producer’s. To inspect receiver tick zero inter
 start with `--paused`, then enter `tick 1` to advance one step.
 
 `load FILE` on an open study stages a replacement from the same study and exact
-recipe. A stale pin or invalid position leaves the open study available for
-further commands. The `observation` from a completed event is the input for
+recipe. The saved letter order and byte focus must match the pinned catalogue.
+A selector mismatch, stale pin or invalid position preserves the current tick
+and positions. The `observation` from a completed event is the input for
 the browser’s **Open snapshot** action.
 
 [Viewer controls](../../tools/viewport/README.md) · [Build the engine](FIRST-RUN.md)

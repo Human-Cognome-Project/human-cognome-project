@@ -16,6 +16,18 @@ Json revisions(const warm::Bundle &recipe) {
   return pins;
 }
 Json point(const warm::Point &p) { return Json::array({p.x,p.y,p.z}); }
+std::vector<std::string> catalogue_letters(const warm::Bundle &recipe) {
+  std::vector<std::string> letters;
+  for (const auto &row : recipe.structural_occurrences)
+    if (row.id.path.empty()) letters.push_back(warm::address_text(row.definition.address));
+  return letters;
+}
+std::optional<std::string> catalogue_focus_byte(const warm::Bundle &recipe) {
+  if (recipe.focal_fields.size()!=1) throw UsageError("restart requires one catalogue focus");
+  const auto &focus=recipe.focal_fields.front();
+  if (focus.kind==warm::FieldKind::SiblingDefinition) return warm::address_text(focus.object.address);
+  return std::nullopt;
+}
 Json structure(const warm::Bundle &recipe) {
   auto tools=Json::object(), geometry=Json::object();
   auto occurrences=Json::array(), focus=Json::array(), nodes=Json::array();
@@ -42,6 +54,12 @@ Json structure(const warm::Bundle &recipe) {
   for (const auto &row : recipe.nodes) nodes.push_back({row.parent,int(row.role)});
   return {{"tools",std::move(tools)},{"geometry",std::move(geometry)},
           {"occurrences",std::move(occurrences)},{"focus",std::move(focus)},{"nodes",std::move(nodes)}};
+}
+void verify_structure(const RetainedRestart &saved,const warm::Bundle &recipe) {
+  if (saved.letters!=catalogue_letters(recipe) || saved.focus_byte!=catalogue_focus_byte(recipe))
+    throw UsageError("saved catalogue selectors differ from the pinned recipe");
+  if (saved.structure!=structure(recipe))
+    throw UsageError("saved catalogue structure differs from the selected recipe");
 }
 warm::Uuid uuid(const Json &value) {
   warm::Uuid id(value.get<std::string>());
@@ -125,13 +143,14 @@ RetainedRestart read_retained_restart(const std::string &path) {
 }
 
 void verify_retained_restart(const RetainedRestart &saved,const warm::Bundle &recipe) {
+  verify_structure(saved,recipe);
   if (saved.recipe.selection!=recipe.ref.selection || saved.recipe.revision!=recipe.ref.revision ||
-      saved.revisions!=revisions(recipe) || saved.structure!=structure(recipe))
+      saved.revisions!=revisions(recipe))
     throw UsageError("saved recipe differs from the selected catalogue revision");
 }
 void rebind_retained_revisions(const RetainedRestart &saved,warm::Bundle &recipe) {
-  if (saved.structure!=structure(recipe) || !saved.revisions.is_object() ||
-      saved.revisions.size()!=recipe.tools.size())
+  verify_structure(saved,recipe);
+  if (!saved.revisions.is_object() || saved.revisions.size()!=recipe.tools.size())
     throw UsageError("saved catalogue differs from the retained sources");
   const auto rebind=[&](warm::ToolRef &ref) {
     const auto key=warm::key(ref.object);
@@ -154,9 +173,7 @@ void rebind_retained_revisions(const RetainedRestart &saved,warm::Bundle &recipe
 
 void save_retained_restart(const std::string &path,const CompletedState &state,
     const warm::Bundle &recipe,const warm::BundleRef &catalogue,double dt) {
-  auto positions=Json::array(), letters=Json::array();
-  for (const auto &row : recipe.structural_occurrences)
-    if (row.id.path.empty()) letters.push_back(warm::address_text(row.definition.address));
+  auto positions=Json::array();
   const auto &report=state.report;
   for (const auto &particle : report.prepared.particles) {
     const auto &body=particle.occurrence;
@@ -174,13 +191,12 @@ void save_retained_restart(const std::string &path,const CompletedState &state,
         {"definition",warm::key(origin->shared->object)},{"revision",origin->shared->revision.str()},
         {"units",report.prepared.scales.at(body.study_node).units},{"position",position}});
   }
-  const auto &focus=recipe.focal_fields.front();
-  const auto byte_focus=focus.kind==warm::FieldKind::SiblingDefinition ? Json(warm::address_text(focus.object.address)) : Json(nullptr);
+  const auto byte_focus=catalogue_focus_byte(recipe);
   try {
     write_atomic(path,{{"schema",schema},{"version",2},{"dt",dt},{"study",report.handle.study.str()},
         {"catalogue",pin(catalogue)},{"recipe",pin(recipe.ref)},{"saved_tick",state.tick},
         {"exposure",report.prepared_exposure==warm::Exposure::Parts ? "parts" : "aggregate"},
-        {"letters",std::move(letters)},{"focus_byte",byte_focus},{"structure",structure(recipe)},
+        {"letters",catalogue_letters(recipe)},{"focus_byte",byte_focus ? Json(*byte_focus) : Json(nullptr)},{"structure",structure(recipe)},
         {"revisions",revisions(recipe)},{"frame",report.frame_anchor},{"positions",std::move(positions)}});
   } catch (const std::exception &) {
     throw UsageError("restart file could not be saved");
