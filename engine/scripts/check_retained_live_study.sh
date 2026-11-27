@@ -18,6 +18,9 @@ case "$exit_mode" in
     if [[ $exit_mode == catalogue-cross-direct ]]; then set -- "$@" --threads 2 --direct; fi
     set -- "$@" --letter 02.00.00.00.03 --letter 02.01.00.00.03 --focus-byte 00.00.00.00.23
     exit_mode=catalogue-cross ;;
+  catalogue-restart)
+    : "${HCP_RETAINED_RESTART_CONNINFO:?}"
+    set -- "$@" --letter 02.00.00.00.03 --letter 02.01.00.00.03 --focus-byte 00.00.00.00.23 ;;
   catalogue-four-a|catalogue-nine-a|catalogue-nine-a-direct|catalogue-three-b)
     suffix=03
     focus_byte=00.00.00.00.23
@@ -67,12 +70,17 @@ state() {
 initial=$(state)
 test "$initial" = '0|0|0'
 step=offer
-coproc STUDY { exec "$@" --retained --response-work-limit 1000000 2>"$out/live.stderr"; }
-pid=$STUDY_PID
-study_read=${STUDY[0]}
-study_write=${STUDY[1]}
-exec {reader}<&"$study_read" {writer}>&"$study_write"
-exec {study_read}<&- {study_write}>&-
+start_study() {
+  local error_log=$1 study_read study_write
+  shift
+  coproc STUDY { exec "$@" --retained --response-work-limit 1000000 2>"$error_log"; }
+  pid=$STUDY_PID
+  study_read=${STUDY[0]}
+  study_write=${STUDY[1]}
+  exec {reader}<&"$study_read" {writer}>&"$study_write"
+  exec {study_read}<&- {study_write}>&-
+}
+start_study "$out/live.stderr" "$@"
 receive() {
   IFS= read -r -t "${2:-300}" -u "$reader" event
   printf '%s\n' "$event" >> "$out/live.jsonl"
@@ -169,6 +177,96 @@ if [[ $exit_mode == catalogue* ]]; then
   original=$(claim 1)
   test -n "$original"
   test -z "$(claim 2)"
+
+  if [[ $exit_mode == catalogue-restart ]]; then
+    positions() {
+      printf '%s\n' "$event" | tr '{' '\n' | sed -nE \
+        's/^"aggregate":"([^"]+)","binding":([0-9]+),"definition":"([^"]+)","exact_mass":"([0-9]+)","exposure":"([^"]+)","id":"([^"]+)"[^}]*"position":(\[[^]]+\]).*/\1|\2|\3|\4|\5|\6|\7/p'
+    }
+    step=restart-save
+    send add 2 "$second" "$second_revision"
+    receive '"status":"ok"'
+    send tick 1
+    receive '"completed_tick":1,'
+    send save "$out/tick1.restart.json"
+    receive '"status":"ok"'
+    test "$(json_number saved_tick)" = 1
+    send tick 127
+    receive '"completed_tick":128,'
+    send save "$out/tick128.restart.json"
+    receive '"status":"ok"'
+    test "$(json_number saved_tick)" = 128
+    observe_state 4
+    saved_positions=$(positions)
+    test "$(printf '%s\n' "$saved_positions" | wc -l)" -eq 2
+    send lod parts
+    receive '"status":"ok"'
+    send save "$out/parts.restart.json"
+    receive '"status":"ok"'
+    parts_positions=$(positions)
+    test "$(printf '%s\n' "$parts_positions" | wc -l)" -eq 2
+    release_catalogue 0
+
+    step=restart-mount
+    export HCP_WARM_TEST_CONNINFO=$HCP_RETAINED_RESTART_CONNINFO
+    test "$(state)" = '0|0|0'
+    start_study "$out/receiver.stderr" "$@" --load "$out/tick128.restart.json" --threads 2 --direct
+    receive '"command":"catalogue_available"'
+    test "$event" = "$catalogue_offer"
+    receive '"command":"create"'
+    [[ "$event" == *'"actual_backend":"native_cpu"'* && "$event" == *'"host_path":"direct"'* ]]
+    test "$(json_number saved_tick)" = 128
+    test "$(json_number completed_tick)" = 0
+    test "$(positions)" = "$saved_positions"
+    [[ "$event" == *'"focal_fields":[{"kind":"parent_value","mass":4.0,'* ]]
+    test "$(printf '%s\n' "$event" | tr '{' '\n' | sed -nE 's/.*"velocity":\[0\.0,0\.0,0\.0\].*/zero/p' | wc -l)" -eq 2
+    observe_state 4
+    send tick 1
+    receive '"completed_tick":1,'
+
+    step=restart-refusal
+    prior_positions=$(positions)
+    prior_generation=$(json_number generation)
+    prior_claim1=$(claim 1)
+    prior_claim2=$(claim 2)
+    sed '/"position": \[/ { n; s/.*/        1e100,/; }' "$out/tick128.restart.json" > "$out/invalid.restart.json"
+    send load "$out/invalid.restart.json"
+    receive '"status":"invalid_numerics"'
+    check_preserved_receiver() {
+      test "$(json_number completed_tick)" = 1
+      test "$(json_number generation)" = "$prior_generation"
+      test "$(positions)" = "$prior_positions"
+      test "$(claim 1)" = "$prior_claim1"
+      test "$(claim 2)" = "$prior_claim2"
+    }
+    check_preserved_receiver
+    sed 's/^  "focus_byte": .*,/  "focus_byte": "00.00.00.00.24",/' \
+      "$out/tick128.restart.json" > "$out/wrong-focus.restart.json"
+    sed 's/^  "focus_byte": .*,/  "focus_byte": null,/' \
+      "$out/tick128.restart.json" > "$out/missing-focus.restart.json"
+    sed '/^  "letters": \[/,/^  \]/c\  "letters": ["02.01.00.00.03", "02.00.00.00.03"],' \
+      "$out/tick128.restart.json" > "$out/reversed-letters.restart.json"
+    for mismatch in wrong-focus missing-focus reversed-letters; do
+      send load "$out/$mismatch.restart.json"
+      receive '"status":"invalid_input"'
+      check_preserved_receiver
+    done
+    send tick 1
+    receive '"completed_tick":2,'
+
+    step=restart-parts
+    send load "$out/parts.restart.json"
+    receive '"status":"ok"'
+    test "$(json_text exposure)" = parts
+    test "$(json_number completed_tick)" = 0
+    test "$(positions)" = "$parts_positions"
+    observe_state 4
+    send tick 1
+    receive '"completed_tick":1,'
+    release_catalogue 1
+    echo 'PASS: independent CPU receiver restored positions, refused invalid positions and selectors, and ticked again'
+    exit 0
+  fi
 
   field_row() {
     local address=${1//./\\.}

@@ -82,8 +82,8 @@ ActiveAssembly::ActiveAssembly(LetterProjection p, warm::Uuid owner,
 }
 ActiveAssembly ActiveAssembly::assemble(warm::Bundle shared, warm::Uuid owner,
                                         bool required,
-                                        std::optional<LocalInput> local) {
-  return ActiveAssembly(project_letters(shared), std::move(owner), required,
+                                        std::optional<LocalInput> local, const warm::Uuid &study) {
+  return ActiveAssembly(project_letters(shared,study), std::move(owner), required,
                         std::move(local));
 }
 ActiveAssembly ActiveAssembly::revise(std::optional<LocalInput> local) const {

@@ -264,12 +264,12 @@ std::string occurrence_text(const OccurrenceKey &k) {
   return occurrence_text(k.study,k.source);
 }
 
-LetterProjection project_letters(const warm::Bundle &b) {
+LetterProjection project_letters(const warm::Bundle &b,const warm::Uuid &study) {
   warm::validate(b);
   need(b.tools.size() <= UINT32_MAX && b.occurrences.size() <= UINT32_MAX &&
        b.structural_occurrences.size() <= UINT32_MAX,"projection recipe index overflow");
   LetterProjection out;
-  out.study_ = warm::new_uuid();
+  out.study_ = study.nil() ? warm::new_uuid() : study;
   out.recipe_ = std::make_shared<warm::Bundle>(b);
   for (const auto &s : b.selections) out.exposures_.push_back(s.exposure);
   const auto tools = index(b);

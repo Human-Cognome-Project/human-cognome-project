@@ -3,6 +3,7 @@
 #include "snapshot.h"
 #include "prepared_letter_profile.h"
 #include "live_study.h"
+#include "live_restart.h"
 
 #include <algorithm>
 #include <chrono>
@@ -35,7 +36,8 @@ warm::ObjectKey object(const std::string &s) {
   return {{}, *address};
 }
 int run_catalogue(const viewport::LiveStudyInput &input, warm::SharedManager &manager,
-                  const warm::SharedTicket &catalogue, const warm::Uuid &owner) {
+                  const warm::SharedTicket &catalogue, const warm::Uuid &owner,
+                  const std::optional<viewport::RetainedRestart> &saved) {
   using namespace warm;
   const auto catalogue_consumer = new_uuid();
   auto [acquired,pin] = viewport::acquire_guarded(
@@ -60,8 +62,9 @@ int run_catalogue(const viewport::LiveStudyInput &input, warm::SharedManager &ma
       {"catalogue",std::move(available)}});
 
   std::optional<std::uint64_t> chosen;
+  if (saved) chosen=saved->state.positions.front().occurrence.entry;
   std::string line;
-  while (input.commands.read_line(line)) {
+  while (!chosen && input.commands.read_line(line)) {
     std::istringstream words(line);
     std::string command, definition, revision, extra;
     if (!(words>>command) || command[0]=='#') continue;
@@ -87,7 +90,7 @@ int run_catalogue(const viewport::LiveStudyInput &input, warm::SharedManager &ma
   }
 
   auto recipe = std::move(acquired.bundle);
-  recipe.ref = {new_uuid(),new_uuid()};
+  recipe.ref = saved ? saved->recipe : BundleRef{new_uuid(),new_uuid()};
   recipe.tools.clear();
   const auto selection = manager.publish_selection(catalogue,catalogue_consumer,std::move(recipe),roots);
   const auto consumer = new_uuid();
@@ -99,13 +102,16 @@ int run_catalogue(const viewport::LiveStudyInput &input, warm::SharedManager &ma
   std::exception_ptr failure;
   try {
     if (!input.commands.stopped()) {
-      auto logical = assembly::ActiveAssembly::assemble(std::move(selected.bundle),owner,false);
+      auto logical = assembly::ActiveAssembly::assemble(std::move(selected.bundle),owner,false,{},
+          saved ? saved->study : Uuid{});
       auto aggregate = std::make_shared<const assembly::ActiveAssembly>(logical.expose_all(Exposure::Aggregate));
-      auto request = viewport::editable_retained_catalogue_submission(std::move(aggregate),*chosen,input.path);
+      auto request = saved ? viewport::retained_restart_submission(std::move(aggregate),*saved,input.path)
+                           : viewport::editable_retained_catalogue_submission(std::move(aggregate),*chosen,input.path);
       code = viewport::run_live_study(input,std::move(request),"Retained catalogue",
           {{"kind","retained_cold_to_warm_to_active"},{"profile","retained-catalogue"},
            {"catalogue_selection",catalogue.ref().selection.str()},{"catalogue_revision",catalogue.ref().revision.str()},
-           {"selection",selection.ref().selection.str()},{"revision",selection.ref().revision.str()}});
+           {"selection",selection.ref().selection.str()},{"revision",selection.ref().revision.str()}},
+          {},{},saved ? std::optional(saved->tick) : std::nullopt);
     }
   } catch (...) { failure=std::current_exception(); }
   study_pin.release();
@@ -117,7 +123,8 @@ int run_catalogue(const viewport::LiveStudyInput &input, warm::SharedManager &ma
 }
 static int run_capture(const viewport::Options &options, const viewport::LiveStudyInput *live = nullptr,
                        const std::vector<std::string> &letters = {},
-                       const std::optional<std::string> &focus_byte = {}) {
+                       const std::optional<std::string> &focus_byte = {},
+                       const std::optional<viewport::RetainedRestart> &saved = {}) {
   try {
     using namespace warm;
     using namespace assembly;
@@ -214,7 +221,7 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
       if (t.mass && *t.mass >= 2)
         definitions.geometry.push_back({key, {}, {{{}, !options.prepared_english_pair && key == dutch.object ? 0.25 : 0.125}}});
     }
-    const auto recipe = [&] {
+    auto recipe = [&] {
       if (!catalogue.empty())
         return viewport::retained_catalogue_recipe(definitions,catalogue,
             focus_byte ? std::optional(object(*focus_byte)) : std::nullopt);
@@ -241,8 +248,9 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
       }
       return normalize_letters(definitions, requests);
     }();
+    if (saved) viewport::rebind_retained_revisions(*saved,recipe);
     const auto ticket = manager.publish(recipe);
-    if (live && !catalogue.empty()) return run_catalogue(*live,manager,ticket,owner);
+    if (live && !catalogue.empty()) return run_catalogue(*live,manager,ticket,owner,saved);
     if (live) {
       const auto &ref = ticket.ref();
       viewport::write_live_event(*live,{{"command","recipe_available"},
@@ -425,6 +433,9 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
     // This type contains only fixed profile diagnostics, never source/SQL text.
     std::cerr << e.what() << '\n';
     return 1;
+  } catch (const viewport::UsageError &e) {
+    std::cerr << e.what() << '\n';
+    return 1;
   } catch (...) {
     // Source/SQL exceptions can carry deployment details: keep public output generic. The engine
     // fork throws bare strings from some calls; catching everything here guarantees the stack
@@ -436,11 +447,16 @@ static int run_capture(const viewport::Options &options, const viewport::LiveStu
 }
 
 int viewport::run_retained_live_study(const LiveStudyInput &input,const std::vector<std::string> &letters,
-                                      const std::optional<std::string> &focus_byte) {
+                                      const std::optional<std::string> &focus_byte,
+                                      const std::optional<std::string> &load_file) {
   Options options;
   options.prepared_english_pair = true;
   options.retained_memberships = true;
-  return run_capture(options,&input,letters,focus_byte);
+  if (!load_file) return run_capture(options,&input,letters,focus_byte);
+  const auto saved=read_retained_restart(*load_file);
+  if ((!letters.empty() && letters!=saved.letters) || (focus_byte && focus_byte!=saved.focus_byte))
+    throw UsageError("requested catalogue differs from the restart file");
+  return run_capture(options,&input,saved.letters,saved.focus_byte,saved);
 }
 
 int viewport_letter_capture(int argc, char **argv) {

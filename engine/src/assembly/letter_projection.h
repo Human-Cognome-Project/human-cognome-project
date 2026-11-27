@@ -154,7 +154,7 @@ class LetterProjection {
   LetterProjection(const LetterProjection &, const std::shared_ptr<detail::ReservationDomain> &, OwnerSpare);
   LetterProjection(const LetterProjection &, const std::shared_ptr<detail::ReservationDomain> &,
                    std::shared_ptr<const warm::Bundle>);
-  friend LetterProjection project_letters(const warm::Bundle &);
+  friend LetterProjection project_letters(const warm::Bundle &, const warm::Uuid &);
   friend class detail::ExchangeOwner;
   friend class ActiveAssembly;
   friend class detail::PreparedLodWorkspace;
@@ -186,6 +186,6 @@ class LetterProjection {
 
 // Validate a versioned normalized recipe, including exact source-form
 // UTF-8, and project it into a NEW study. No mutable cross-study identity.
-LetterProjection project_letters(const warm::Bundle &recipe);
+LetterProjection project_letters(const warm::Bundle &recipe, const warm::Uuid &study = {});
 
 }  // namespace assembly

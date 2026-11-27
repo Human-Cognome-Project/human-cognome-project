@@ -761,7 +761,8 @@ void PreparedLodWorkspace::publish(PreparedStudyOwner &o) {
   live_.swap(next_);o.bodies_.swap(next_bodies_);o.fields_.swap(next_fields_);side_=target_;
 }
 PreparedOccurrenceEditResult PreparedStudyOwner::commit_lod(PreparedOccurrenceEditResult out,
-    std::uint64_t placement_work,std::uint64_t cells,std::uint64_t hierarchy_work) {
+    std::uint64_t placement_work,std::uint64_t cells,std::uint64_t hierarchy_work,
+    const field::FrameAnchor *restart) {
   if(out.publication.status!=field::UpdateStatus::Ok)return out;
   const auto tick=h_.prepared_storage().completed_ticks;
   try {
@@ -769,7 +770,7 @@ PreparedOccurrenceEditResult PreparedStudyOwner::commit_lod(PreparedOccurrenceEd
         lod_->intrinsics_.data(),lod_->intrinsics_.size(),lod_->hierarchy(),placement_work,cells,hierarchy_work,true,lod_->bootstrapping_,
         lod_->bootstrapping_ ? &lod_->bootstrap_focus_ : nullptr,lod_->bootstrapping_ ? 1 : 0,
         lod_->changing_?lod_->outgoing_.data():nullptr,lod_->changing_?lod_->outgoing_.size():0,
-        lod_->changing_?lod_->groups_.data():nullptr,lod_->changing_?lod_->groups_.size():0);
+        lod_->changing_?lod_->groups_.data():nullptr,lod_->changing_?lod_->groups_.size():0,restart);
     else out.publication=h_.refresh_live_hierarchy(generation_,lod_->commands_.data(),lod_->commands_.size(),lod_->hierarchy(),hierarchy_work);
     if(out.publication.status==field::UpdateStatus::Ok) {
       if(h_.prepared_storage().failure_point==7)throw std::runtime_error("injected failure before whole-field mapping publication");

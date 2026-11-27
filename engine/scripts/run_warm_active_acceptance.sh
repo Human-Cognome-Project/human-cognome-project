@@ -83,13 +83,21 @@ hcp_active_verify_sources() {
   exit "$hcp_active_status"
 }
 trap hcp_active_verify_sources EXIT
-docker exec --user postgres "$hcp_active_container" createdb "$hcp_active_db"
-docker exec -i --user postgres "$hcp_active_container" psql -X -q -v ON_ERROR_STOP=1 \
-  --dbname "$hcp_active_db" -f - < "$hcp_active_repo/kernels/database/warm/schema.sql"
-if test "$hcp_active_mode" != legacy; then
-  docker exec -i --user postgres "$hcp_active_container" psql -X -q -v ON_ERROR_STOP=1 \
-    --dbname "$hcp_active_db" -f - < "$hcp_active_repo/kernels/database/warm/migrations/002-structural-recipes.sql"
+warm_databases=("$hcp_active_db")
+restart_env=()
+if [[ $hcp_active_mode == retained-live-study && $hcp_active_live_exit == catalogue-restart ]]; then
+  warm_databases+=("${hcp_active_db}_receiver")
+  restart_env=(--env "HCP_RETAINED_RESTART_CONNINFO=dbname=${hcp_active_db}_receiver")
 fi
+for warm_database in "${warm_databases[@]}"; do
+  docker exec --user postgres "$hcp_active_container" createdb "$warm_database"
+  docker exec -i --user postgres "$hcp_active_container" psql -X -q -v ON_ERROR_STOP=1 \
+    --dbname "$warm_database" -f - < "$hcp_active_repo/kernels/database/warm/schema.sql"
+  if test "$hcp_active_mode" != legacy; then
+    docker exec -i --user postgres "$hcp_active_container" psql -X -q -v ON_ERROR_STOP=1 \
+      --dbname "$warm_database" -f - < "$hcp_active_repo/kernels/database/warm/migrations/002-structural-recipes.sql"
+  fi
+done
 docker cp "$hcp_active_evidence/package" "$hcp_active_container:/tmp/$hcp_active_db"
 hcp_active_command=("/tmp/$hcp_active_db/libs/$hcp_active_loader_name"
   --library-path "/tmp/$hcp_active_db/libs" "/tmp/$hcp_active_db/$hcp_active_program")
@@ -107,6 +115,7 @@ elif test "$hcp_active_mode" = retained-live-study; then
 fi
 set +e
 docker exec --user postgres \
+  "${restart_env[@]}" \
   --env "HCP_WARM_TEST_CONNINFO=dbname=$hcp_active_db" \
   --env "HCP_CORE_TEST_CONNINFO=dbname=$hcp_active_core" \
   --env "HCP_LING_TEST_CONNINFO=dbname=$hcp_active_ling" \

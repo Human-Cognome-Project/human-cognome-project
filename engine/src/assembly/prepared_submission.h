@@ -8,6 +8,17 @@ struct PreparedLodAlternative {
   // A supplied live set activates only those declared roots at bootstrap.
   // Both exposure bindings still describe the complete editable catalogue.
   std::vector<std::uint64_t> initially_live{};
+  warm::Exposure initial_exposure{warm::Exposure::Aggregate};
+};
+struct PreparedRestartPosition {
+  warm::OccurrenceId occurrence;
+  warm::ToolRef definition;
+  double units{};
+  field::FrameAnchor position{};
+};
+struct PreparedRestart {
+  field::FrameAnchor frame{};
+  std::vector<PreparedRestartPosition> positions;
 };
 // Explicit setup operation for the existing shared v2/f64 subset. Layout roles,
 // units and all model/resource choices are supplied; native layout pointers must
@@ -29,6 +40,7 @@ struct PreparedStudySubmission {
   std::optional<PreparedLodAlternative> lod_alternative{};
   std::uint64_t plan_work{UINT64_MAX}, metadata_work{UINT64_MAX};
   std::uint64_t placement_work{UINT64_MAX}, placement_cells{UINT64_MAX}, hierarchy_work{UINT64_MAX};
+  std::optional<PreparedRestart> restart{};
 };
 struct PreparedSubmissionResult {
   // Present only after native publication and active-session publication succeed.

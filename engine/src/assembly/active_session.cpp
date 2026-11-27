@@ -139,6 +139,14 @@ ExecutionHandle ActiveSession::submit(const ActiveAssembly &a,
 }
 PreparedSubmissionResult ActiveSession::submit_prepared(PreparedStudySubmission request,
                                                         const warm::Uuid &authorization) {
+  return submit_prepared_impl(std::move(request),authorization,nullptr);
+}
+PreparedSubmissionResult ActiveSession::restore_prepared(const ExecutionHandle &old,
+    PreparedStudySubmission request,const warm::Uuid &authorization) {
+  return submit_prepared_impl(std::move(request),authorization,&old);
+}
+PreparedSubmissionResult ActiveSession::submit_prepared_impl(PreparedStudySubmission request,
+    const warm::Uuid &authorization,const ExecutionHandle *replacement) {
   PreparedSubmissionResult out;
   const auto &source = request.source;
   auto &b = request.bindings;
@@ -150,7 +158,17 @@ PreparedSubmissionResult ActiveSession::submit_prepared(PreparedStudySubmission 
     out.preparation_status = detail::AdmissionPlanStatus::Unsupported;
     return out;
   }
-  if (executions_.count(source->study())) return out;
+  auto previous=executions_.find(source->study());
+  if (replacement) {
+    if (replacement->study!=source->study() || !request.restart ||
+        replacement->generation==source->generation()) return out;
+    const auto &old=get(*replacement);
+    if (old.authorization!=authorization) throw warm::Unauthorized("active owner required");
+    if (!old.prepared || !old.prepared->ready()) return out;
+    const auto &old_recipe=old.prepared->source(authorization,*replacement).shared_recipe();
+    if (recipe.ref.selection!=old_recipe.ref.selection || recipe.ref.revision!=old_recipe.ref.revision)
+      return out;
+  } else if (previous!=executions_.end()) return out;
   if (!preflight_prepared_request(request,recipe,out)) return out;
   const auto start = std::chrono::steady_clock::now();
   // Reserve the publication map node before native publication. A successful
@@ -188,7 +206,7 @@ PreparedSubmissionResult ActiveSession::submit_prepared(PreparedStudySubmission 
   e.prepared = std::move(prepared.owner);
   auto handle = e.prepared->handle(); // Detached return storage before commit.
   out.publication = e.prepared->bootstrap(authorization,handle,request.placement_work,
-      request.placement_cells,request.hierarchy_work);
+      request.placement_cells,request.hierarchy_work,request.restart ? &*request.restart : nullptr);
   if (out.publication.status != field::UpdateStatus::Ok) {
     out.failure = out.publication.failure;
     staging.clear();
@@ -196,8 +214,8 @@ PreparedSubmissionResult ActiveSession::submit_prepared(PreparedStudySubmission 
     return out;
   }
   require(e.prepared->ready());
-  const auto published = executions_.insert(staging.extract(candidate));
-  require(published.inserted);
+  if (replacement) previous->second.swap(candidate->second);
+  else require(executions_.insert(staging.extract(candidate)).inserted);
   out.handle.emplace(std::move(handle));
   out.reservation = request.resources->result();
   assembly_ms_ += std::chrono::duration<double,std::milli>(
