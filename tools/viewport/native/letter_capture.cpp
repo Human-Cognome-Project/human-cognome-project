@@ -107,7 +107,9 @@ int run_catalogue(const viewport::LiveStudyInput &input, warm::SharedManager &ma
       auto aggregate = std::make_shared<const assembly::ActiveAssembly>(logical.expose_all(Exposure::Aggregate));
       auto request = saved ? viewport::retained_restart_submission(std::move(aggregate),*saved,input.path)
                            : viewport::editable_retained_catalogue_submission(std::move(aggregate),*chosen,input.path);
-      code = viewport::run_live_study(input,std::move(request),"Retained catalogue",
+      auto live_input=input;
+      if (saved && !live_input.dt) live_input.dt=saved->dt;
+      code = viewport::run_live_study(live_input,std::move(request),"Retained catalogue",
           {{"kind","retained_cold_to_warm_to_active"},{"profile","retained-catalogue"},
            {"catalogue_selection",catalogue.ref().selection.str()},{"catalogue_revision",catalogue.ref().revision.str()},
            {"selection",selection.ref().selection.str()},{"revision",selection.ref().revision.str()}},

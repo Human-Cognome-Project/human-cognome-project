@@ -96,9 +96,16 @@ RetainedRestart read_retained_restart(const std::string &path) {
     input.seekg(0);
     if (!input.read(data.data(),size)) throw UsageError("restart file could not be read");
     const auto file=Json::parse(data);
-    if (file.at("schema")!=schema || file.at("version")!=1)
+    const auto &version=file.at("version");
+    if (file.at("schema")!=schema || (version!=1 && version!=2))
       throw UsageError("unsupported restart format");
     RetainedRestart out;
+    if (version==2) {
+      const auto &value=file.at("dt");
+      if (!value.is_number()) throw UsageError("invalid restart timestep");
+      out.dt=value.get<double>();
+      if (!(out.dt>0 && std::isnormal(out.dt))) throw UsageError("invalid restart timestep");
+    }
     out.study=uuid(file.at("study"));
     out.catalogue=pin(file.at("catalogue"));
     out.recipe=pin(file.at("recipe"));
@@ -165,7 +172,7 @@ void rebind_retained_revisions(const RetainedRestart &saved,warm::Bundle &recipe
 }
 
 void save_retained_restart(const std::string &path,const CompletedState &state,
-    const warm::Bundle &recipe,const warm::BundleRef &catalogue) {
+    const warm::Bundle &recipe,const warm::BundleRef &catalogue,double dt) {
   auto positions=Json::array();
   const auto &report=state.report;
   for (const auto &particle : report.prepared.particles) {
@@ -186,7 +193,7 @@ void save_retained_restart(const std::string &path,const CompletedState &state,
   }
   const auto byte_focus=catalogue_focus_byte(recipe);
   try {
-    write_atomic(path,{{"schema",schema},{"version",1},{"study",report.handle.study.str()},
+    write_atomic(path,{{"schema",schema},{"version",2},{"dt",dt},{"study",report.handle.study.str()},
         {"catalogue",pin(catalogue)},{"recipe",pin(recipe.ref)},{"saved_tick",state.tick},
         {"exposure",report.prepared_exposure==warm::Exposure::Parts ? "parts" : "aggregate"},
         {"letters",catalogue_letters(recipe)},{"focus_byte",byte_focus ? Json(*byte_focus) : Json(nullptr)},{"structure",structure(recipe)},

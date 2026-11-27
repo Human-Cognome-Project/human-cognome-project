@@ -12,6 +12,9 @@ struct LiveStudyInput {
   engine::InstanceSettings settings;
   field::HostPath path;
   std::optional<ResponseRequest> responses;
+  std::optional<double> dt{};
+  std::chrono::milliseconds period{250};
+  bool running{false};
 };
 
 void write_live_event(const LiveStudyInput &, const Json &);

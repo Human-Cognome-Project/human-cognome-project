@@ -7,8 +7,12 @@
 namespace {
 enum class Preset { EditableEnglish, WholeFieldEnglish, UnicodeI, Retained };
 void help() {
-  std::cout << "viewport_live_study [--threads N] [--direct] [--whole-field | --unicode-i | --retained] [--letter ADDRESS] [--focus-byte ADDRESS] [--load FILE] [--response-work-limit N] [--commands FILE]\n"
-      "Commands: observe; list; add ENTRY [TEMPLATE_ENTRY]; add ENTRY DEFINITION REVISION; remove ENTRY; lod aggregate|parts; tick [N [GEOMETRY_WORK]]; quit\n"
+  std::cout << "viewport_live_study [--dt X] [--pace-ms MS] [--paused] [--threads N] [--direct] [--whole-field | --unicode-i | --retained] [--letter ADDRESS] [--focus-byte ADDRESS] [--load FILE] [--response-work-limit N] [--commands FILE]\n"
+      "Commands: dt [X]; run [MS]; pause; observe; list; add ENTRY [TEMPLATE_ENTRY]; add ENTRY DEFINITION REVISION; remove ENTRY; lod aggregate|parts; tick [N [GEOMETRY_WORK]]; quit\n"
+      "--dt X sets simulation time per tick (fresh default 1). dt X changes subsequent ticks.\n"
+      "--pace-ms MS starts a paced run (1..86400000 ms). Interactive terminals start at 250 ms by default.\n"
+      "--paused starts in step mode. Scripts and pipes start paused unless --pace-ms is given.\n"
+      "run [MS] starts or resumes the clock. pause holds state. tick 1 takes one step.\n"
       "The fixture English-pair catalogue declares entries 2 and 10. Both start live.\n"
       "For the English pair, a new root entry copies a declared template (default 2) within capacity.\n"
       "--unicode-i selects the fixed í cohort. Use lod parts and lod aggregate to exchange C3 AD and í.\n"
@@ -29,6 +33,9 @@ int main(int argc, char **argv) {
     std::vector<std::string> letters;
     std::optional<std::string> focus_byte;
     std::optional<std::string> load_file;
+    std::optional<double> dt;
+    std::optional<std::chrono::milliseconds> period;
+    bool paused=false;
     Preset preset=Preset::EditableEnglish;
     std::optional<viewport::ResponseRequest> responses;
     for (int i=1; i<argc; ++i) {
@@ -47,6 +54,11 @@ int main(int argc, char **argv) {
       else if (arg == "--load" && i+1<argc && !load_file) load_file=argv[++i];
       else if (arg == "--response-work-limit" && i+1<argc)
         responses=viewport::ResponseRequest{viewport::parse_count("--response-work-limit",argv[++i],0,UINT64_MAX)};
+      else if (arg == "--dt" && i+1<argc && !dt)
+        dt=viewport::parse_live_dt(argv[++i]);
+      else if (arg == "--pace-ms" && i+1<argc && !period)
+        period=std::chrono::milliseconds(viewport::parse_count("--pace-ms",argv[++i],1,86400000));
+      else if (arg == "--paused") paused=true;
       else if (arg == "--threads" && i+1<argc)
         settings.cpu_threads=int(viewport::parse_count("--threads",argv[++i],1,1024));
       else if (arg == "--commands" && i+1<argc) command_file=argv[++i];
@@ -57,7 +69,10 @@ int main(int argc, char **argv) {
     if (focus_byte && letters.empty() && !load_file) throw std::invalid_argument("--focus-byte requires a retained letter catalogue");
     viewport::ignore_live_sigpipe();
     viewport::LiveCommandInput input(command_file,preset==Preset::Retained);
-    const viewport::LiveStudyInput run{input,std::cout,settings,path,responses};
+    viewport::LiveStudyInput run{input,std::cout,settings,path,responses};
+    run.dt=dt;
+    if (period) run.period=*period;
+    run.running=!paused && (period || (command_file.empty() && isatty(STDIN_FILENO)));
     if (preset==Preset::Retained) {
 #ifdef HCP_HAS_RETAINED_LIVE_STUDY
       return viewport::run_retained_live_study(run,letters,focus_byte,load_file);
