@@ -21,7 +21,7 @@ set_tests_properties(semantic_native_projection semantic_native_trace
   semantic_character_rollup_bulk semantic_character_rollup_direct semantic_parent_overlap semantic_scoped_nibble
   semantic_repeated_rollup semantic_varied_rollup_bulk semantic_varied_rollup_direct PROPERTIES
   ENVIRONMENT "TI_LIB_DIR=${ENGINE_TAICHI_RUNTIME_DIR}" TIMEOUT 900)
-add_library(viewport_live_study_commands STATIC live_study_runner.cpp)
+add_library(viewport_live_study_commands STATIC live_study_runner.cpp live_restart.cpp)
 target_link_libraries(viewport_live_study_commands PUBLIC viewport_snapshot)
 target_compile_options(viewport_live_study_commands PRIVATE -Wall -Wextra -Werror)
 add_executable(viewport_live_study live_study.cpp)

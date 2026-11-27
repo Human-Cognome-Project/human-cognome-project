@@ -672,7 +672,8 @@ UpdateResult Harness::stage_current_admission(
     std::uint64_t placement_cells, std::uint64_t hierarchy_work, bool commit,
     bool bootstrap, const UpdateRef *focus, std::size_t focus_count,
     const engine::RecordHandle *outgoing, std::size_t outgoing_count,
-    const PlacementExchangeGroup *exchange_groups, std::size_t exchange_group_count) {
+    const PlacementExchangeGroup *exchange_groups, std::size_t exchange_group_count,
+    const FrameAnchor *restart) {
   UpdateResult out;
   if (!prepared_ || !ready_) {
     out.status = UpdateStatus::Unready;
@@ -698,7 +699,9 @@ UpdateResult Harness::stage_current_admission(
     return out;
   if ((exchange_groups || exchange_group_count) &&
       (!outgoing || !exchange_groups || !exchange_group_count)) return out;
-  const auto placed = outgoing
+  if (restart && (!bootstrap || !commit)) return out;
+  const auto placed = restart ? placement_->stage_restart(commands,count,intrinsics,bodies,restart,placement_work)
+      : outgoing
       ? placement_->stage_exchange(expected, commands, count, intrinsics, bodies,
                                     outgoing, outgoing_count, placement_work, placement_cells,
                                     exchange_groups, exchange_group_count)

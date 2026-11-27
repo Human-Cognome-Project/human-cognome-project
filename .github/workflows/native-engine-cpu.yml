@@ -357,7 +357,7 @@ jobs:
             "$hcp_active_container" hcp_core hcp_linguistics prepared-retained-positive
           for hcp_live_exit in quit offer-stop idle-stop batch-stop output-disconnect batch-disconnect blocked-write \
             catalogue catalogue-single catalogue-shared catalogue-shared-direct catalogue-cross catalogue-cross-direct \
-            catalogue-four-a catalogue-nine-a catalogue-nine-a-direct catalogue-three-b; do
+            catalogue-four-a catalogue-nine-a catalogue-nine-a-direct catalogue-three-b catalogue-restart; do
             bash engine/scripts/run_warm_active_acceptance.sh engine/build \
               "$hcp_active_container" hcp_core hcp_linguistics retained-live-study "$hcp_live_exit"
           done

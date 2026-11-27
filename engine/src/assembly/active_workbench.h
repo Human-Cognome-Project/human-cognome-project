@@ -45,6 +45,8 @@ class ActiveSession {
                          field::HostPath path = field::HostPath::BulkCopy);
   PreparedSubmissionResult submit_prepared(PreparedStudySubmission,
                                            const warm::Uuid &owner);
+  PreparedSubmissionResult restore_prepared(const ExecutionHandle &, PreparedStudySubmission,
+                                            const warm::Uuid &owner);
   PreparedOccurrenceEditResult edit_prepared(const ExecutionHandle &, const warm::Uuid &owner,
                                              const PreparedOccurrenceEdit &);
   PreparedOccurrenceEditResult lod_prepared(const ExecutionHandle &, const warm::Uuid &owner,
@@ -72,6 +74,8 @@ class ActiveSession {
   detail::PreparedStudyOwner *prepared_owner(const ExecutionHandle &, const warm::Uuid &) const;
   struct Execution;
   Execution &get(const ExecutionHandle &handle) const;
+  PreparedSubmissionResult submit_prepared_impl(PreparedStudySubmission, const warm::Uuid &,
+                                                const ExecutionHandle *replacement);
   warm::Uuid session_{warm::new_uuid()};
   std::unique_ptr<engine::Runtime> runtime_;
   std::map<warm::Uuid, std::unique_ptr<Execution>> executions_;

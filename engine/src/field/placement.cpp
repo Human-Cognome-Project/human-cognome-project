@@ -476,6 +476,62 @@ PlacementResult Placement::stage(std::uint64_t expected,
   return attempt(expected, commands, command_count, inputs, body_count, work,
                  cells, false, bootstrap, focus, focus_count);
 }
+PlacementResult Placement::stage_restart(const UpdateCommand *commands, std::size_t count,
+    const PlacementIntrinsic *intrinsics, std::size_t bodies, const FrameAnchor *positions,
+    std::uint64_t work) {
+  auto &s=*h_.prepared_;
+  const auto &limits=s.capacity.limits();
+  PlacementResult out;
+  out.status=PlacementStatus::InvalidInput;
+  if (!commands || !intrinsics || !positions || !bodies || bodies>count ||
+      count>limits[Budget::BootstrapCommands] || bodies>limits[Budget::Particles]) return out;
+  if (h_.profile_.body_fraction_bits!=52 || std::fegetround()!=FE_TONEAREST) {
+    out.status=PlacementStatus::Unsupported;
+    return out;
+  }
+  if (work==UINT64_MAX) work=limits[Budget::PlacementWork];
+  const auto required=s.new_row_values.size()+std::uint64_t(bodies)*(8+4*std::uint64_t(bodies));
+  if (work>limits[Budget::PlacementWork] || required>work) {
+    out.status=PlacementStatus::CapacityExhausted;
+    out.failure={Budget::PlacementWork,work>limits[Budget::PlacementWork] ? work : required,
+        std::min(work,limits[Budget::PlacementWork])};
+    return out;
+  }
+  for (std::size_t i=0; i<bodies; ++i) {
+    const auto &in=intrinsics[i];
+    if (in.command>=count || commands[in.command].operation!=UpdateOp::DefineParticle ||
+        !in.geometry.complete || !in.geometry.definition || !in.geometry.revision ||
+        !NumericalProfile::supported_real(in.mass) || in.mass<=0 || !radius_supported(in.radius)) return out;
+    for (double value : positions[i])
+      if (!coordinate(value)) { out.status=PlacementStatus::InvalidNumerics; return out; }
+    for (std::size_t j=0; j<i; ++j) {
+      if (in.command==intrinsics[j].command) return out;
+      // The ordinary native contact stage reconstructs supported restored
+      // contacts. Coincident centres with positive extent lack a separation.
+      if ((in.radius>0 || intrinsics[j].radius>0) && positions[i]==positions[j]) return out;
+    }
+  }
+  auto &rows=s.new_row_values.doubles();
+  std::fill(rows.begin(),rows.end(),0.);
+  const auto stride=s.capacity.command_capacity();
+  for (std::size_t i=0; i<bodies; ++i) {
+    const auto &in=intrinsics[i];
+    rows[kMass*stride+in.command]=in.mass;
+    rows[kRadius*stride+in.command]=in.radius;
+    for (int axis=0; axis<3; ++axis) rows[(kPosX+axis)*stride+in.command]=positions[i][axis];
+  }
+  try {
+    engine::upload(*s.new_rows_array,s.new_row_values.data(),s.new_row_values.bytes());
+    h_.runtime_->synchronize();
+    out.upload_bytes=s.new_row_values.bytes();
+    out.synchronizations=1;
+  } catch (...) {
+    h_.ready_=false;
+    throw;
+  }
+  out.status=PlacementStatus::Ok;
+  return out;
+}
 PlacementResult Placement::attempt(std::uint64_t expected,
                                    const UpdateCommand *commands,
                                    std::size_t command_count,

@@ -86,6 +86,7 @@ PreparedOwnerResult PreparedStudyOwner::prepare(field::Harness &h,
         });
         if (owner->lod_->catalogue_edits_) {
           owner->lod_->sides_[0].plan = std::move(owner->plan_);
+          owner->lod_->target_ = alternative->initial_exposure==warm::Exposure::Parts ? 1 : 0;
           const auto candidate = owner->lod_->build_catalogue(*owner,work);
           if (candidate.status != field::UpdateStatus::Ok) {
             out.status = candidate.status == field::UpdateStatus::CapacityExhausted
@@ -298,7 +299,7 @@ ActiveReport PreparedStudyOwner::report(const warm::Uuid &authorization,
 
 field::UpdateResult PreparedStudyOwner::bootstrap(const warm::Uuid &owner,
     const ExecutionHandle &handle, std::uint64_t placement_work,
-    std::uint64_t cells, std::uint64_t hierarchy_work) {
+    std::uint64_t cells, std::uint64_t hierarchy_work, const PreparedRestart *restart) {
   authorize(owner,handle);
   field::UpdateResult result;
   const auto &s = h_.prepared_storage();
@@ -318,8 +319,28 @@ field::UpdateResult PreparedStudyOwner::bootstrap(const warm::Uuid &owner,
     PreparedOccurrenceEditResult candidate;
     candidate.publication.status = field::UpdateStatus::Ok;
     candidate.publication.generation = generation_;
-    return commit_lod(candidate,placement_work,cells,hierarchy_work).publication;
+    if (!restart) return commit_lod(candidate,placement_work,cells,hierarchy_work).publication;
+    if (restart->frame != h_.frame_anchor() || restart->positions.size() != lod_->intrinsics_.size())
+      return result;
+    ReservedVector<field::FrameAnchor> positions{ReservationAllocator<field::FrameAnchor>(domain_.get())};
+    try {
+      positions.reserve(restart->positions.size());
+      for (std::size_t i=0; i<restart->positions.size(); ++i) {
+        const auto &hint=restart->positions[i];
+        const auto &row=lod_->candidate_rows_[lod_->incoming_positions_[i]];
+        if (!(hint.occurrence==row.occurrence && hint.definition==row.definition && hint.units==row.units)) {
+          result.status=field::UpdateStatus::Stale;
+          return result;
+        }
+        positions.push_back(hint.position);
+      }
+    } catch (const ReservationStop &) {
+      result.status=field::UpdateStatus::CapacityExhausted;
+      return result;
+    }
+    return commit_lod(candidate,placement_work,cells,hierarchy_work,positions.data()).publication;
   }
+  if (restart) { result.status=field::UpdateStatus::Unsupported; return result; }
   const auto &commands = plan_->commands();
   const auto &intrinsics = plan_->intrinsics();
   const auto &focus = plan_->focus();

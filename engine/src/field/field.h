@@ -469,7 +469,8 @@ class Harness {
                                         const engine::RecordHandle *outgoing = nullptr,
                                         std::size_t outgoing_count = 0,
                                         const PlacementExchangeGroup *exchange_groups = nullptr,
-                                        std::size_t exchange_group_count = 0);
+                                        std::size_t exchange_group_count = 0,
+                                        const FrameAnchor *restart = nullptr);
   UpdateResult update_prepared_impl(std::uint64_t,
                                     const UpdateCommand *,
                                     std::size_t,

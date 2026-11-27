@@ -1,4 +1,5 @@
 #include "live_study.h"
+#include "live_restart.h"
 #include "capture_options.h"
 #include "assembly/prepared_occurrence_edit.h"
 #include <iostream>
@@ -55,17 +56,25 @@ void write_live_event(const LiveStudyInput &input, const Json &event) {
 
 int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmission request,
                    const std::string &label, const Json &source_metadata,
-                   std::optional<double> physical_mass, std::optional<std::uint64_t> source_mass) {
-  const auto source=request.source;
+                   std::optional<double> physical_mass, std::optional<std::uint64_t> source_mass,
+                   std::optional<std::uint64_t> saved_tick) {
+  auto source=request.source;
   const auto catalogue=request.bindings.bodies;
   const bool catalogue_edits=request.lod_alternative && !request.lod_alternative->initially_live.empty();
   const bool byte_focus=request.capacity.separate_membership_roots();
   const auto limits=request.capacity.limits();
-  const auto resources=request.resources;
+  auto resources=request.resources;
+  std::optional<warm::BundleRef> catalogue_ref;
+  if (catalogue_edits && source_metadata.contains("catalogue_selection"))
+    catalogue_ref=warm::BundleRef{warm::Uuid(source_metadata.at("catalogue_selection").get<std::string>()),
+        warm::Uuid(source_metadata.at("catalogue_revision").get<std::string>())};
   assembly::ActiveSession session(input.settings);
   const auto submitted=session.submit_prepared(std::move(request),source->owner());
-  if (!submitted.handle || session.on_cuda()) throw std::runtime_error("CPU study submission failed");
-  const auto handle=*submitted.handle;
+  if (!submitted.handle || session.on_cuda()) {
+    if (saved_tick) throw UsageError(std::string("native CPU restart refused ")+status(submitted.publication.status));
+    throw std::runtime_error("CPU study submission failed");
+  }
+  auto handle=*submitted.handle;
   field::Parameters64 parameters;
   const auto observe=[&] {
     return viewport::observe(session,source->owner(),handle,viewport::IntentRequest{parameters.gravity,1000000},input.responses);
@@ -139,6 +148,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
       {"batch",limits[field::Budget::Batch]},{"scratch_bytes",limits[field::Budget::ScratchBytes]}}}};
   if (physical_mass) created["physical_mass_per_occurrence"] = *physical_mass;
   if (source_mass) created["exact_source_mass_per_occurrence"] = *source_mass;
+  if (saved_tick) created["saved_tick"]=*saved_tick;
   created["mass_policy"] = physical_mass
       ? (source_metadata.at("kind")=="fixture_only" ? "baseline_source_mass" : "retained_profile_mass")
       : "definition_source_mass";
@@ -158,6 +168,30 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
       if (words>>trailing) throw UsageError("too many command arguments");
       if ((command == "observe" || command == "list") && argument.empty()) {
         emit({{"command",command},{"status","ok"},{"catalogue",available}});
+      } else if ((command == "save" || command == "load") && !argument.empty()) {
+        if (!catalogue_ref) throw UsageError("position restart requires a retained letter catalogue");
+        if (command=="save") {
+          const auto state=observe();
+          save_retained_restart(argument,state,source->shared_recipe(),*catalogue_ref);
+          emit({{"command",command},{"status","ok"},{"saved_tick",state.tick}});
+        } else {
+          const auto saved=read_retained_restart(argument);
+          if (saved.catalogue.selection!=catalogue_ref->selection || saved.catalogue.revision!=catalogue_ref->revision)
+            throw UsageError("saved catalogue pin differs from the open catalogue");
+          auto candidate=retained_restart_submission(std::make_shared<const assembly::ActiveAssembly>(source->revise({})),saved,input.path);
+          auto candidate_source=candidate.source;
+          auto candidate_resources=candidate.resources;
+          const auto result=session.restore_prepared(handle,std::move(candidate),source->owner());
+          if (!result.handle) {
+            rejected=true;
+            emit({{"command",command},{"status",status(result.publication.status)},{"saved_tick",saved.tick}});
+            continue;
+          }
+          handle=*result.handle;
+          source=std::move(candidate_source);
+          resources=std::move(candidate_resources);
+          emit({{"command",command},{"status","ok"},{"saved_tick",saved.tick}});
+        }
       } else if(command == "lod" && (argument=="aggregate" || argument=="parts")) {
         assembly::PreparedLodEdit edit{argument=="parts"?warm::Exposure::Parts:warm::Exposure::Aggregate,*observe().prepared_generation};
         edit.preparation_work=10000000;edit.placement_work=100000000;edit.placement_cells=65536;edit.hierarchy_work=1000000;
@@ -235,7 +269,7 @@ int run_live_study(const LiveStudyInput &input, assembly::PreparedStudySubmissio
           {"native_claims",std::move(claims)},
           {"preparation_status",int(result.preparation.status)},
           {"preparation_work",result.preparation.charged}});
-      } else throw UsageError("expected observe, list, add ENTRY [TEMPLATE_ENTRY], add ENTRY DEFINITION REVISION, remove ENTRY, lod aggregate|parts, tick [N [GEOMETRY_WORK]] or quit");
+      } else throw UsageError("expected observe, list, add ENTRY [TEMPLATE_ENTRY], add ENTRY DEFINITION REVISION, remove ENTRY, lod aggregate|parts, tick [N [GEOMETRY_WORK]], save FILE, load FILE or quit");
     } catch (const UsageError &error) {
       rejected=true; emit({{"command",command},{"status","invalid_input"},{"message",error.what()}});
     }

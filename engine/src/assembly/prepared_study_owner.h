@@ -3,7 +3,7 @@
 #include "assembly/prepared_occurrence_edit.h"
 
 namespace viewport { struct PreparedOwnerAccess; }
-namespace assembly { struct PreparedLodAlternative; }
+namespace assembly { struct PreparedLodAlternative; struct PreparedRestart; }
 namespace assembly::detail {
 struct PreparedOwnerResult;
 class PreparedOccurrenceWorkspace;
@@ -32,7 +32,8 @@ class PreparedStudyOwner {
   bool ready() const;
   std::uint64_t generation() const { return generation_; }
   field::UpdateResult bootstrap(const warm::Uuid &owner, const ExecutionHandle &,
-      std::uint64_t placement_work, std::uint64_t cells, std::uint64_t hierarchy_work);
+      std::uint64_t placement_work, std::uint64_t cells, std::uint64_t hierarchy_work,
+      const PreparedRestart *restart = nullptr);
   field::TickResult tick(const warm::Uuid &owner, const ExecutionHandle &,
       const field::Parameters64 &, std::uint64_t tick_work = UINT64_MAX,
       std::uint64_t geometry_work = UINT64_MAX);
@@ -119,7 +120,7 @@ class PreparedStudyOwner {
   ReservedUnique<PreparedLodWorkspace> lod_;
   PreparedOccurrenceEditResult edit_lod_presence(const PreparedOccurrenceEdit &);
   PreparedOccurrenceEditResult commit_lod(PreparedOccurrenceEditResult, std::uint64_t,
-      std::uint64_t, std::uint64_t);
+      std::uint64_t, std::uint64_t, const field::FrameAnchor *restart = nullptr);
   std::uint64_t context_{}, generation_{}, initial_ticks_{};
   PreparedOwnerPhase phase_{PreparedOwnerPhase::Prepared};
 };

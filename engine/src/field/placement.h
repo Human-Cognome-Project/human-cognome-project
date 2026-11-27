@@ -73,6 +73,8 @@ class Placement {
                         const PlacementIntrinsic *, std::size_t,
                         std::uint64_t, std::uint64_t, bool bootstrap = false,
                         const UpdateRef *focus = nullptr, std::size_t focus_count = 0);
+  PlacementResult stage_restart(const UpdateCommand *, std::size_t,
+      const PlacementIntrinsic *, std::size_t, const FrameAnchor *, std::uint64_t);
   PlacementResult attempt(std::uint64_t, const UpdateCommand *, std::size_t,
                           const PlacementIntrinsic *, std::size_t,
                           std::uint64_t, std::uint64_t, bool publication,

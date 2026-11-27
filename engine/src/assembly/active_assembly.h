@@ -57,7 +57,7 @@ class ActiveAssembly {
  public:
   static ActiveAssembly assemble(warm::Bundle shared, warm::Uuid owner,
                                  bool requires_local,
-                                 std::optional<LocalInput> local = {});
+                                 std::optional<LocalInput> local = {}, const warm::Uuid &study = {});
   ActiveAssembly revise(std::optional<LocalInput> local) const;
   ActiveAssembly restart() const;
   ActiveAssembly focus(std::vector<FocalField> fields) const;

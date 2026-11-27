@@ -117,4 +117,30 @@ that byte and have a complete membership path. The
 [recipe-selected live work](https://github.com/Human-Cognome-Project/human-cognome-project/issues/432)
 tracks wider catalogue qualification.
 
+### Save and reload a retained CPU study
+
+Enter `save FILE` after a completed command. The file records the exact public
+catalogue and recipe pins, live declared occurrences, exposure, selected focus,
+reference frame and completed positions. Restart files cover the retained
+catalogue's declared roots and its binary64 reference-local positions.
+
+Quit the producer. Configure a second fresh warm v2 database with the same
+read-only retained sources and start the receiver.
+
+```sh
+engine/build/viewport/viewport_live_study --retained --load FILE
+```
+
+The receiver checks the recorded catalogue against the retained sources, then
+uses the saved pins to publish the catalogue in its own warm database. Its
+`create` record shows `saved_tick` and a receiving `completed_tick` of zero.
+The native owner restores positions and initializes motion under D3. A later
+trajectory can differ from the producer’s. Enter `tick 1` to advance the
+receiving study.
+
+`load FILE` on an open study stages a replacement from the same study and exact
+recipe. A stale pin or invalid position leaves the open study available for
+further commands. The `observation` from a completed event is the input for
+the browser’s **Open snapshot** action.
+
 [Viewer controls](../../tools/viewport/README.md) · [Build the engine](FIRST-RUN.md)
