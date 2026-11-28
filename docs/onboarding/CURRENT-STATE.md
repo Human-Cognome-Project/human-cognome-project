@@ -6,13 +6,20 @@ The executable baseline through #422 includes standalone logical assembly, nativ
 
 ## Active and deferred work
 
+The coding agent's current assignment is [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476).
+Correct the retained operator's all-pairs contact reservation and discovery.
+Start with native Taichi spatial bins and measure storage and tick work
+separately as prepared capacity and live occupancy grow.
+[Implementation handoff](../core-local-study-continuation-plan.md#scale-retained-contact-storage-and-discovery)
+
 #465 merged into main at `7697f4d6`. Nine retained A roots ran through 768 aggregate ticks with removal and restoration. The expanded study showed a worker-count difference. Patrick closed that investigation for current PoC work. The next catalogue task is English A, French A and English B in the same field. [Measurements and disposition](https://github.com/Human-Cognome-Project/human-cognome-project/pull/465#issuecomment-7225958274) · [Catalogue assignment](../core-local-study-continuation-plan.md#catalogue-expansion-after-465)
 
 #471 adds CPU position save and reload. The maintainer corrected the conflicting-selector case at `38c8fffb` and included the fix in the #473 timestep and clock driver at `1c4a7769`. Patrick's local context owns visual inspection of the running CPU study. The GPU trial follows that inspection. [Restart correction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/471) · [Operator guide](https://github.com/Human-Cognome-Project/human-cognome-project/blob/1c4a776989c1610efd5169e2c880b93a98a5e4ff/docs/onboarding/OPERATOR.md#control-the-timestep-and-the-clock) · [Local handoff](../core-local-study-continuation-plan.md#current-assignment-for-the-coding-agent)
 
 Patrick plans a sustained live stress test with larger populations, live
-edits, viewport observation and CPU/GPU timing. Maintainer review precedes
-full testing. [Scope, preflight and contact scaling findings](../core-local-study-continuation-plan.md#live-stress-test-review--november-28-2026)
+edits, viewport observation and CPU/GPU timing. Small CPU studies can continue
+while #476 addresses the costs identified in the review.
+[Scope, preflight and contact scaling findings](../core-local-study-continuation-plan.md#live-stress-test-review--november-28-2026)
 
 ## Earlier fixed-study handoffs
 
