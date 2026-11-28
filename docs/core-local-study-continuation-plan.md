@@ -8,22 +8,24 @@
 
 <a id="work-one-retained-contact-example-before-implementation"></a>
 
-### Investigate field span and point coincidence
+<a id="investigate-field-span-and-point-coincidence"></a>
 
-The [#476 investigation](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7240671741) established that the retained operator reserves every possible prepared pair and scans present pairs before and after motion. Patrick asks whether these costs serve a direct contact that the model actually needs. The agent’s next deliverable is a worked example and a revised plan on [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476).
+### Investigate retiring direct contact from retained particle motion
 
-At a given LoD the parents’ contributions and the particle’s own organization define its possible manifold. Confounding fields establish attractors within it. Each occurrence has a position and a container identity. Under Patrick’s proposed model, a cluster can gain effective field span as participating mass increases while its centres occupy the same small region. Spans may intersect freely. Locational coincidence means equality of all three published coordinates at the working precision. A small offset on one particle is an option if a calculation needs a direction at coincidence. Whether to publish any offset is an open decision.
+The [#476 investigation](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7240671741) established that the retained operator reserves every possible prepared pair and scans present pairs before and after motion. Patrick asks whether the complete contact path can be retired because the hierarchy already produces the intended motion. The agent’s next deliverable is a worked example and a revised plan on [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476).
+
+The hierarchical centroids and their participating fields establish the gatherings and separations at each LoD. In Patrick’s model this calculation already gives the effective Hill span operationally. The inherited structure and the particle’s own organization define its possible manifold. Confounding fields establish attractors within it. Distinct occurrences keep their container identities as their positions converge. A cluster’s influence can extend across a larger region while its centres occupy the same small space. Intersecting spans have no direct-contact consequence in this model.
 
 | Retained case | Question to answer |
 |---|---|
-| Two occurrences of the same element from distinct containers, with intersecting spans and different coordinate triples | Can each keep its identity and follow its participating fields while generating zero direct-contact pairs from span overlap? Perturb one container and trace any response reaching the other. |
-| The same occurrences at equal published (x, y, z), then one representable step apart on one axis | Identify the first calculation, if any, that needs a direction or separation. Compare leaving coincidence intact with an operation-local offset. If proposing a published offset, show its effect on retained velocity, wakes and replay. |
-| More participating occurrences in the same small region, then the same mass packed closer | At fixed parent conditions, show what changes the proposed span and what merely changes density. Identify the mass, parent scale and field operands available at this exposure, any double counting across levels, and any missing definition for a Hill-style span. |
+| Same element in two containers, near-coincident at the end of a tick | Trace the participating mass and centroid contributions that gather or separate the occurrences. Perturb one container and follow the effect through its fields. Each occurrence keeps its identity. |
+| All three final coordinates equal at the working precision, then one coordinate one representable step away | Identify any consumer that requires distinct positions or a direction at coincidence. If one exists, compare a local offset with a published displacement and account for retained velocity, wakes and replay. If all consumers tolerate coincidence, explain why a global duplicate search can also go. |
+| More participating mass in the same small region, then the same mass packed closer under the same parent conditions | Trace the changes in the existing centroid calculation and its observable influence. Show how the hierarchy accounts for the effective Hill span without introducing a radius calculation, hard cutoff or pair list. |
 
-1. Work the cases above at a named retained exposure. Trace one occurrence’s inherited structure, its own contribution and the fields that establish its attractors. Use the published English/French A evidence where applicable. Identify any fixture-only starts or cases that stock admission refuses.
-2. Trace what the direct-contact path buys today. Follow the extent-based placement check, pair reservation, pre- and post-motion discovery, overlap force, adjacency and wake consumers. Identify any explicit source interaction with an independent purpose. Show how ordinary velocity, braking, centroid publication and field-mediated response would behave if span overlap alone produced no contact.
-3. Estimate the cost difference against the published baseline. Separate prepared slots from present bodies and distinct coordinate triples. Account for reserved bytes, pairs examined per tick and any exact-coincidence lookup. Use a growing co-located group to check for hidden pair expansion. Report independent cascade and tick-work limits. Label measurements and source-derived estimates separately.
-4. Post the worked example, evidence, proposed contract changes and remaining decisions on #476 for Patrick’s review. A disposable local CPU probe is in scope. The assignment ends at the report and revised plan.
+1. Use a named retained exposure for the examples. Identify each occurrence’s inherited structure, its own contribution, and the confounding fields establishing attractors. Distinguish measured behaviour of the stock path, a disposable CPU probe and a prediction of the proposed model.
+2. Evaluate retiring the entire contact mechanism from the retained operational path. Inventory what depends on radius-based admission clearance, all-pairs reservations, pre- and post-motion discovery, contact rows and adjacency, overlap force, contact-driven wakes and contact-specific transaction checks. Check explicit source rows for an independent model purpose. For each dependency identify what can be deleted and what independent behaviour still needs an owner. Account for ordinary motion and velocity, hierarchy-driven wakes, field publication and healthy rollback. A consumer of today’s contact output is evidence of an implementation dependency. Explain the model requirement, if any, for keeping it.
+3. Compare baseline and proposed storage and tick work for the same inputs, including a growing group at one location. Count prepared slots, live occurrences, reserved bytes, pairs examined and hierarchy work. Under the proposal the default direct-contact pair count is zero even in a dense cluster. Treat final three-coordinate coincidence as a numerical case only where a consumer needs it. Account separately for the cascade and tick-work limits already observed.
+4. Publish the worked trace, dependency findings, cost estimates or measurements, and a deletion plan on #476 for Patrick’s review. Identify the placement and contact contracts that would change. Production implementation is paused.
 
 The accepted [contact contract](core-operation-readiness-plan.md#3-contact-coverage-and-numerical-publication) and [placement rules](onboarding/OPERATIONS.md#required-placement-and-allocation-behavior) describe the running engine. Cite any provision the proposal would change. The [numerical notes](onboarding/NUMERICS.md#target-terminology-for-324) and [worked nibble example](parent-structure-notes.md#the-unicode-hex-example) describe how contributions reach a whole occurrence.
 
@@ -87,7 +89,7 @@ present bodies by those scans alone. Ordering the explicit rows and the
 discovered union can consume more work at lower counts. The centroid hierarchy
 has its own publication path: parents consume child centroid packets. Patrick
 expects field reservations to follow centroids as they aggregate across levels.
-The current investigation asks which of those pairs have a direct-contact purpose when field spans can overlap.
+The current investigation tests whether the retained model needs any direct-contact mechanism at all.
 [Geometry work model](../engine/docs/PREPARED-GEOMETRY.md#contact-union-and-resource-bounds) ·
 [Tick transaction](../engine/docs/CONTACT-SAFE-TICKS.md#ownership-and-execution) ·
 [Centroid publication](../engine/docs/LIVE-HIERARCHY.md#force-and-phase-ownership)
@@ -120,7 +122,7 @@ outside the functional pass criteria.
 [Current C3 CUDA boundary](../engine/docs/CUDA-C3-QUALIFICATION.md)
 
 **Maintainer decision.** Use the published investigation as the baseline.
-Review the worked point-coincidence example, remaining direct-contact needs and revised plan before changing reservation or discovery. Check the planned catalogue against the
+Review the evidence for removing the complete contact path and handling any necessary exact-coincidence case before changing the engine. Check the planned catalogue against the
 existing membership and byte-focus constraints when Patrick selects the inputs.
 [Operation contract](core-operation-readiness-plan.md#3-contact-coverage-and-numerical-publication) ·
 [Catalogue constraints](onboarding/OPERATOR.md#open-a-retained-englishfrench-study)
