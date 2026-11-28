@@ -6,23 +6,26 @@
 
 <a id="investigate-contact-scope-and-range-before-implementation"></a>
 
-### Work one retained contact example before implementation
+<a id="work-one-retained-contact-example-before-implementation"></a>
 
-The [#476 investigation](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7240671741) is in. The next deliverable is one worked retained example and a revised plan for Patrick’s review. Production implementation is paused.
+### Investigate field span and point coincidence
 
-**Model.** The parents’ contributions plus what makes the assembly a particle at its working LoD define the shape of its possible manifold. Confounding fields establish attractors within it. Nibble structure recurs across the whole space. Higher-order centroids apply wherever their more specific organization is represented. In the reported English/French A parts study, the exposed bodies are bytes. Each byte carries its ordered nibble contributions. A matching contribution can influence an entire byte through the hierarchy. Establishing direct contact between the exposed bodies is a separate question. [Numerical model](onboarding/NUMERICS.md#target-terminology-for-324) · [Worked nibble example](parent-structure-notes.md#the-unicode-hex-example)
+The [#476 investigation](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7240671741) established that the retained operator reserves every possible prepared pair and scans present pairs before and after motion. Patrick asks whether these costs serve a direct contact that the model actually needs. The agent’s next deliverable is a worked example and a revised plan on [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476).
 
-**Evidence to build on.** Assembly retains the occurrence path, exposure, scale and field shares. The operator reserves space for every prepared pair. Placement gathers prospective occupancy into a common frame, and direct-contact discovery tests all present pairs by position and radius. In the agent’s stock CPU runs with one live A, ten declared roots ticked and eleven hit the cascade-work guard before contact work. Raising that guard isolated the predicted geometry refusal at 126 prepared slots. The existing near/far and translation cases demonstrate geometric behaviour. They leave structural exclusion unresolved.
+At a given LoD the parents’ contributions and the particle’s own organization define its possible manifold. Confounding fields establish attractors within it. Each occurrence has a position and a container identity. Under Patrick’s proposed model, a cluster can gain effective field span as participating mass increases while its centres occupy the same small region. Spans may intersect freely. Locational coincidence means equality of all three published coordinates at the working precision. A small offset on one particle is an option if a calculation needs a direction at coincidence. Whether to publish any offset is an open decision.
 
-**Worked example.** Trace one occurrence at a named exposure. Identify what its parents contribute, what is intrinsic to the assembled particle at this level, and which fields supply attractors. For that tracked occurrence, explain the expected outcomes in the table and cite the data or native operands that support them.
-
-| Peer | Expected direct-contact outcome |
+| Retained case | Question to answer |
 |---|---|
-| Outside structural scope, with overlapping coordinates | Adding the peer contributes zero direct candidates. Identify the structural relationship that justifies exclusion and any influence that still acts through a field. |
-| In scope, outside range | Identify what establishes eligibility and what rules out contact at the observed state. |
-| In scope, within range | Show how the existing exact contact law decides the pair. Account for explicit recipe contacts separately. |
+| Two occurrences of the same element from distinct containers, with intersecting spans and different coordinate triples | Can each keep its identity and follow its participating fields while generating zero direct-contact pairs from span overlap? Perturb one container and trace any response reaching the other. |
+| The same occurrences at equal published (x, y, z), then one representable step apart on one axis | Identify the first calculation, if any, that needs a direction or separation. Compare leaving coincidence intact with an operation-local offset. If proposing a published offset, show its effect on retained velocity, wakes and replay. |
+| More participating occurrences in the same small region, then the same mass packed closer | At fixed parent conditions, show what changes the proposed span and what merely changes density. Identify the mass, parent scale and field operands available at this exposure, any double counting across levels, and any missing definition for a Hill-style span. |
 
-If the retained catalogue cannot express the first case, identify the smallest example and the specific missing rule or operand. Use the result to revise the plan for placement, eligibility, storage, work charges and tests. Explain when translating an assembly together preserves internal relationships and when relative motion requires reconsideration. Evaluate any remaining spatial search among eligible peers. Return the example, plan and open decisions before implementation.
+1. Work the cases above at a named retained exposure. Trace one occurrence’s inherited structure, its own contribution and the fields that establish its attractors. Use the published English/French A evidence where applicable. Identify any fixture-only starts or cases that stock admission refuses.
+2. Trace what the direct-contact path buys today. Follow the extent-based placement check, pair reservation, pre- and post-motion discovery, overlap force, adjacency and wake consumers. Identify any explicit source interaction with an independent purpose. Show how ordinary velocity, braking, centroid publication and field-mediated response would behave if span overlap alone produced no contact.
+3. Estimate the cost difference against the published baseline. Separate prepared slots from present bodies and distinct coordinate triples. Account for reserved bytes, pairs examined per tick and any exact-coincidence lookup. Use a growing co-located group to check for hidden pair expansion. Report independent cascade and tick-work limits. Label measurements and source-derived estimates separately.
+4. Post the worked example, evidence, proposed contract changes and remaining decisions on #476 for Patrick’s review. A disposable local CPU probe is in scope. The assignment ends at the report and revised plan.
+
+The accepted [contact contract](core-operation-readiness-plan.md#3-contact-coverage-and-numerical-publication) and [placement rules](onboarding/OPERATIONS.md#required-placement-and-allocation-behavior) describe the running engine. Cite any provision the proposal would change. The [numerical notes](onboarding/NUMERICS.md#target-terminology-for-324) and [worked nibble example](parent-structure-notes.md#the-unicode-hex-example) describe how contributions reach a whole occurrence.
 
 ### Retained CPU restart and paced local inspection — November 27, 2026
 
@@ -84,7 +87,7 @@ present bodies by those scans alone. Ordering the explicit rows and the
 discovered union can consume more work at lower counts. The centroid hierarchy
 has its own publication path: parents consume child centroid packets. Patrick
 expects field reservations to follow centroids as they aggregate across levels.
-The worked example above asks which of those pairs are in scope and in range at the active exposure.
+The current investigation asks which of those pairs have a direct-contact purpose when field spans can overlap.
 [Geometry work model](../engine/docs/PREPARED-GEOMETRY.md#contact-union-and-resource-bounds) ·
 [Tick transaction](../engine/docs/CONTACT-SAFE-TICKS.md#ownership-and-execution) ·
 [Centroid publication](../engine/docs/LIVE-HIERARCHY.md#force-and-phase-ownership)
@@ -117,8 +120,7 @@ outside the functional pass criteria.
 [Current C3 CUDA boundary](../engine/docs/CUDA-C3-QUALIFICATION.md)
 
 **Maintainer decision.** Use the published investigation as the baseline.
-Review a worked structural exclusion and the revised plan before changing
-reservation or discovery. Check the planned catalogue against the
+Review the worked point-coincidence example, remaining direct-contact needs and revised plan before changing reservation or discovery. Check the planned catalogue against the
 existing membership and byte-focus constraints when Patrick selects the inputs.
 [Operation contract](core-operation-readiness-plan.md#3-contact-coverage-and-numerical-publication) ·
 [Catalogue constraints](onboarding/OPERATOR.md#open-a-retained-englishfrench-study)
