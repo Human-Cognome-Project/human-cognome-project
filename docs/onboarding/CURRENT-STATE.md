@@ -10,6 +10,10 @@ The executable baseline through #422 includes standalone logical assembly, nativ
 
 #471 adds CPU position save and reload. The maintainer corrected the conflicting-selector case at `38c8fffb` and included the fix in the #473 timestep and clock driver at `1c4a7769`. Patrick's local context owns visual inspection of the running CPU study. The GPU trial follows that inspection. [Restart correction](https://github.com/Human-Cognome-Project/human-cognome-project/pull/471) · [Operator guide](https://github.com/Human-Cognome-Project/human-cognome-project/blob/1c4a776989c1610efd5169e2c880b93a98a5e4ff/docs/onboarding/OPERATOR.md#control-the-timestep-and-the-clock) · [Local handoff](../core-local-study-continuation-plan.md#current-assignment-for-the-coding-agent)
 
+Patrick plans a sustained live stress test with larger populations, live
+edits, viewport observation and CPU/GPU timing. Maintainer review precedes
+full testing. [Scope, preflight and contact scaling findings](../core-local-study-continuation-plan.md#live-stress-test-review--november-28-2026)
+
 ## Earlier fixed-study handoffs
 
 These entries describe the fixed-profile work at its recorded stage. The current assignment above governs implementation.
