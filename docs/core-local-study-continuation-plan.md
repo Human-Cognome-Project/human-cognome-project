@@ -2,6 +2,24 @@
 
 ## Current assignment for the coding agent
 
+### Scale retained contact storage and discovery
+
+Implement [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476)
+on current main. In the retained operator, one live body can already exceed
+the admission work allowance when the catalogue prepares 126 particle slots.
+The contact ledger reserves all 7,875 possible pairs and the fixed work charge
+alone reaches 1,032,224 units. A committed tick also clears reserved storage
+and tests all present pairs both before and after motion.
+[Source calculation and review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/475#issuecomment-7239953785)
+
+- Size contact storage and edit headroom independently of all possible particle pairs. Trace the resulting work through admission, scratch clearing and copying, and the tick budget.
+- Try native C++/Taichi sparse-grid neighbour search first. Query current body extents, including sleeping occupants, at admission and both tick boundaries. Use the existing exact contact law and preserve explicit contact order, wake behaviour, centroid calculations and atomic publication. The [vendored example](../engine/taichi/python/taichi/examples/simulation/pbf2d.py#L159-L185) illustrates spatial binning. HCP must handle variable radii and report exhaustion before publishing a partial result.
+- Compare the grid with the all-pairs reference on small cases. Include boundary crossings, live edits, mixed exposure and a refused update followed by a successful tick. With live occupancy fixed, vary prepared capacity through the 126-slot case. Then hold capacity fixed and add separated bodies. Report contact bytes, rows touched, exact tests, accepted contacts and committed CPU tick times. Use mixed-LoD candidate counts to decide whether a multilevel grid or BVH is warranted.
+
+Open the implementation PR against #476. Patrick's workstation inspection and
+choice of experimental inputs can proceed independently. The larger CPU/GPU
+study will use the measured contact costs to interpret throughput.
+
 ### Retained CPU restart and paced local inspection — November 27, 2026
 
 PR #465 merged at `7697f4d6`. PR #471 adds retained CPU position saves and validates saved catalogue selectors at `38c8fffb`. PR #473 includes that correction and the operator clock at `1c4a7769`. Match the binary to its source when running a local study. [Restart PR](https://github.com/Human-Cognome-Project/human-cognome-project/pull/471) · [Operator guide for the combined revision](https://github.com/Human-Cognome-Project/human-cognome-project/blob/1c4a776989c1610efd5169e2c880b93a98a5e4ff/docs/onboarding/OPERATOR.md#control-the-timestep-and-the-clock)
@@ -25,7 +43,7 @@ counts, add and remove elements in the same session, and inspect movement
 patterns and timing as the field evolves. The English A/French A study is a
 preflight for the controls and viewport. Patrick will select the experimental
 elements, counts, simulation timestep, wall-clock pace and run duration. The
-full stress test is pending maintainer review of the scale and backend findings.
+maintainer reviewed the scale findings in #475 and assigned the contact work above.
 
 **Preflight evidence.** Main `b7f55f1b` integrates #465, #471 and #473.
 The #473 native CPU, offline viewport and repository smoke workflows passed.
@@ -61,8 +79,8 @@ profile's one-million-unit tick geometry allowance is exceeded at 1,001
 present bodies by those scans alone. Ordering the explicit rows and the
 discovered union can consume more work at lower counts. The centroid hierarchy
 has its own publication path: parents consume child centroid packets. Patrick
-expects reservations to follow centroids as they aggregate across levels and
-is reviewing whether the current body-pair approach is appropriate.
+expects field reservations to follow centroids as they aggregate across levels.
+The contact assignment addresses physical overlap at the active exposure.
 [Geometry work model](../engine/docs/PREPARED-GEOMETRY.md#contact-union-and-resource-bounds) ·
 [Tick transaction](../engine/docs/CONTACT-SAFE-TICKS.md#ownership-and-execution) ·
 [Centroid publication](../engine/docs/LIVE-HIERARCHY.md#force-and-phase-ownership)
@@ -94,11 +112,9 @@ outside the functional pass criteria.
 [Backend qualification issue](https://github.com/Human-Cognome-Project/human-cognome-project/issues/70) ·
 [Current C3 CUDA boundary](../engine/docs/CUDA-C3-QUALIFICATION.md)
 
-**Review before full testing.** Decide whether to proceed within the prepared
-limits or first investigate contact reservation and discovery at the relevant
-exposures. A smaller ledger still leaves pair discovery work. Any geometry
-change needs to account for present sleepers, explicit contacts and healthy
-resource refusal before publication. Check the planned catalogue against the
+**Maintainer decision.** Small studies can establish a baseline now. Address
+both contact reservation and discovery before using a large run to judge
+centroid throughput. Check the planned catalogue against the
 existing membership and byte-focus constraints when Patrick selects the inputs.
 [Operation contract](core-operation-readiness-plan.md#3-contact-coverage-and-numerical-publication) ·
 [Catalogue constraints](onboarding/OPERATOR.md#open-a-retained-englishfrench-study)
@@ -109,7 +125,7 @@ existing membership and byte-focus constraints when Patrick selects the inputs.
 
 Patrick closed the nine-A worker-count investigation for current PoC work. Revisit it if later experiments show the difference matters. On the expanded field, the English and German byte occurrences were 12.6243 units apart with both worker counts at tick 896. At tick 1,024 their separations were 790.78 and about 1.183 billion. The cause and orbital period remain undetermined. The separate rollup refusal preserved all nine occurrences and the study continued ticking. [Measurements and replay](https://github.com/Human-Cognome-Project/human-cognome-project/pull/465#issuecomment-7200687937) · [Maintainer disposition](https://github.com/Human-Cognome-Project/human-cognome-project/pull/465#issuecomment-7225958274)
 
-**The next catalogue task is to admit English A, French A and English B in one retained study.** Use the same binary and keep byte `41` selected while admitting B (byte `42`). B shares nibble `4` with the two As and participates in its recorded English memberships. Its composition supplies no byte-`41` row. An A remains live during this study so the focus stays available.
+**Catalogue follow-up after the contact adjustment.** Admit English A, French A and English B in one retained study. Use the same binary and keep byte `41` selected while admitting B (byte `42`). B shares nibble `4` with the two As and participates in its recorded English memberships. Its composition supplies no byte-`41` row. An A remains live during this study so the focus stays available.
 
 - Derive admitted roots, ordered parent contributions, membership recipients and represented mass from the pinned recipe. Keep the focus choice independent of whether every declared definition contains it. Exercise the common path with these addresses as inputs.
 - Open an A, add the other two roots by exact pin, tick, expand, roll up, remove B and tick again on the original handle. Check mass 2 → 4 → 6 as the roots enter, 6 through exchange and 4 after B leaves. Record the actual response rows, ordered paths, focus identity and surviving claims on both CPU transfer paths. Advance the field for a sustained interval before and after a live edit or exposure change. Record completed ticks and sample trajectories. Retain the A/B, A/í, English/French A, nine-A and partial-batch recovery cases.
