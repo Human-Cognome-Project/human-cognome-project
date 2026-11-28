@@ -4,16 +4,25 @@
 
 <a id="scale-retained-contact-storage-and-discovery"></a>
 
-### Investigate contact scope and range before implementation
+<a id="investigate-contact-scope-and-range-before-implementation"></a>
 
-The coding agent’s deliverable for [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476) is an investigation and proposed plan. Post both on the issue and return them to Patrick for review. Implementation is paused.
+### Work one retained contact example before implementation
 
-A particle’s structural position in the centroid hierarchy defines its possible state space. The current confounding fields determine the region it occupies. Direct interaction requires both scope and range at the relevant object LoD. Moving an arm as a whole can change its external reach while preserving the relative arrangement of its parts. Trace the equivalent case for a retained assembly. Nibbles participate at nibble LoD, and the assembled byte can carry a matching nibble’s field contribution as it moves. [Worked nibble example](parent-structure-notes.md#the-unicode-hex-example) · [Centroid hierarchy](../engine/docs/LIVE-HIERARCHY.md#force-and-phase-ownership)
+The [#476 investigation](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7240671741) is in. The next deliverable is one worked retained example and a revised plan for Patrick’s review. Production implementation is paused.
 
-1. Follow one occurrence through aggregate and parts exposure, its field bindings and centroid contributions, then into contact reservation, admission and the pre- and post-motion searches. Identify the earliest point at which each path uses or loses scope and range. Account separately for direct geometric contact, explicit recipe contacts and field-mediated effects. Flag unresolved cases for Patrick.
-2. Check the allocation and work bounds against that trace. Separate reserved bytes, memory touched, budget charges, candidate pairs, exact tests and accepted contacts. At 126 prepared slots the current formula reserves 7,875 possible pairs and charges 1,032,224 admission work units before any live comparisons. Distinguish this derived bound from the first refusal actually observed. [Source calculation and review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/475#issuecomment-7239953785)
-3. Compare an out-of-scope occurrence, an in-scope peer outside range and an in-scope peer within range. Adding out-of-scope bodies should add zero direct-contact candidates for the tracked particle, even with overlapping coordinates. Use whole-assembly translation, internal relative motion and LoD changes to expose any difference between the model and the existing all-pairs scan.
-4. Report observed behaviour, source-derived conclusions and open questions. Propose changes in reviewable steps, with tests for live edits, sleeping bodies and refusal recovery. Show what the existing hierarchy can exclude before evaluating a grid or BVH for any remaining spatial work. Patrick owns the larger workstation experiments.
+**Model.** The parents’ contributions plus what makes the assembly a particle at its working LoD define the shape of its possible manifold. Confounding fields establish attractors within it. Nibble structure recurs across the whole space. Higher-order centroids apply wherever their more specific organization is represented. In the reported English/French A parts study, the exposed bodies are bytes. Each byte carries its ordered nibble contributions. A matching contribution can influence an entire byte through the hierarchy. Establishing direct contact between the exposed bodies is a separate question. [Numerical model](onboarding/NUMERICS.md#target-terminology-for-324) · [Worked nibble example](parent-structure-notes.md#the-unicode-hex-example)
+
+**Evidence to build on.** Assembly retains the occurrence path, exposure, scale and field shares. The operator reserves space for every prepared pair. Placement gathers prospective occupancy into a common frame, and direct-contact discovery tests all present pairs by position and radius. In the agent’s stock CPU runs with one live A, ten declared roots ticked and eleven hit the cascade-work guard before contact work. Raising that guard isolated the predicted geometry refusal at 126 prepared slots. The existing near/far and translation cases demonstrate geometric behaviour. They leave structural exclusion unresolved.
+
+**Worked example.** Trace one occurrence at a named exposure. Identify what its parents contribute, what is intrinsic to the assembled particle at this level, and which fields supply attractors. For that tracked occurrence, explain the expected outcomes in the table and cite the data or native operands that support them.
+
+| Peer | Expected direct-contact outcome |
+|---|---|
+| Outside structural scope, with overlapping coordinates | Adding the peer contributes zero direct candidates. Identify the structural relationship that justifies exclusion and any influence that still acts through a field. |
+| In scope, outside range | Identify what establishes eligibility and what rules out contact at the observed state. |
+| In scope, within range | Show how the existing exact contact law decides the pair. Account for explicit recipe contacts separately. |
+
+If the retained catalogue cannot express the first case, identify the smallest example and the specific missing rule or operand. Use the result to revise the plan for placement, eligibility, storage, work charges and tests. Explain when translating an assembly together preserves internal relationships and when relative motion requires reconsideration. Evaluate any remaining spatial search among eligible peers. Return the example, plan and open decisions before implementation.
 
 ### Retained CPU restart and paced local inspection — November 27, 2026
 
@@ -75,7 +84,7 @@ present bodies by those scans alone. Ordering the explicit rows and the
 discovered union can consume more work at lower counts. The centroid hierarchy
 has its own publication path: parents consume child centroid packets. Patrick
 expects field reservations to follow centroids as they aggregate across levels.
-The current investigation asks which of those pairs are in scope and in range at the active exposure.
+The worked example above asks which of those pairs are in scope and in range at the active exposure.
 [Geometry work model](../engine/docs/PREPARED-GEOMETRY.md#contact-union-and-resource-bounds) ·
 [Tick transaction](../engine/docs/CONTACT-SAFE-TICKS.md#ownership-and-execution) ·
 [Centroid publication](../engine/docs/LIVE-HIERARCHY.md#force-and-phase-ownership)
@@ -107,9 +116,9 @@ outside the functional pass criteria.
 [Backend qualification issue](https://github.com/Human-Cognome-Project/human-cognome-project/issues/70) ·
 [Current C3 CUDA boundary](../engine/docs/CUDA-C3-QUALIFICATION.md)
 
-**Maintainer decision.** Use small studies and source traces to investigate
-contact scope, range and allocation. Review the coding agent’s plan before
-changing reservation or discovery. Check the planned catalogue against the
+**Maintainer decision.** Use the published investigation as the baseline.
+Review a worked structural exclusion and the revised plan before changing
+reservation or discovery. Check the planned catalogue against the
 existing membership and byte-focus constraints when Patrick selects the inputs.
 [Operation contract](core-operation-readiness-plan.md#3-contact-coverage-and-numerical-publication) ·
 [Catalogue constraints](onboarding/OPERATOR.md#open-a-retained-englishfrench-study)

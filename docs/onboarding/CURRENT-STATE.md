@@ -6,9 +6,8 @@ The executable baseline through #422 includes standalone logical assembly, nativ
 
 ## Active and deferred work
 
-The coding agent is investigating hierarchical scope and range in retained contacts under [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476).
-Trace what the hierarchy already establishes, where global pair reservation and discovery bypass it, and what that costs. Post the evidence, unresolved questions and a proposed plan for Patrick’s review. Implementation is paused.
-[Investigation handoff](../core-local-study-continuation-plan.md#investigate-contact-scope-and-range-before-implementation)
+The [#476 report](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7240671741) traced retained contact allocation and discovery. The coding agent’s next assignment is a worked example of structural eligibility at a named LoD, followed by a revised plan. Explain why an out-of-scope peer adds zero direct candidates even when coordinates overlap. Patrick will review the example and plan before implementation.
+[Current handoff](../core-local-study-continuation-plan.md#work-one-retained-contact-example-before-implementation)
 
 #465 merged into main at `7697f4d6`. Nine retained A roots ran through 768 aggregate ticks with removal and restoration. The expanded study showed a worker-count difference. Patrick closed that investigation for current PoC work. The next catalogue task is English A, French A and English B in the same field. [Measurements and disposition](https://github.com/Human-Cognome-Project/human-cognome-project/pull/465#issuecomment-7225958274) · [Catalogue assignment](../core-local-study-continuation-plan.md#catalogue-expansion-after-465)
 
@@ -16,7 +15,7 @@ Trace what the hierarchy already establishes, where global pair reservation and 
 
 Patrick plans a sustained live stress test with larger populations, live
 edits, viewport observation and CPU/GPU timing. Small CPU studies can continue
-while #476 investigates the costs identified in the review.
+while the coding agent develops the worked example for #476.
 [Scope, preflight and contact scaling findings](../core-local-study-continuation-plan.md#live-stress-test-review--november-28-2026)
 
 ## Earlier fixed-study handoffs
