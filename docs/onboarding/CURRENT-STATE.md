@@ -6,8 +6,8 @@ The executable baseline through #422 includes standalone logical assembly, nativ
 
 ## Active and deferred work
 
-The [#476 report](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7240671741) traced quadratic contact reservation and discovery. The follow-up investigates retiring the entire contact mechanism. In Patrick’s model the hierarchical centroid calculation already establishes gatherings, separations and the effective Hill span. The agent will trace actual dependencies, check whether any consumer needs special handling for equal final coordinates, and post a deletion plan and cost comparison. Patrick will review the report before implementation.
-[Current handoff](../core-local-study-continuation-plan.md#investigate-retiring-direct-contact-from-retained-particle-motion)
+The [point-centre CPU report](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7241246848) traced the retained contact dependencies and ran a zero-stiffness control. Patrick’s follow-up asks the agent to isolate the complete removal of contact and overlap bookkeeping in a disposable CPU probe and measure what it saves. Each tick’s target contributes to the occurrence’s telos range. The Analyst owns comparisons between ranges and investigations of duplication. Analyst-selected regional FP64 is a separate proposal. The agent will report on [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476) before a production change.
+[Current handoff](../core-local-study-continuation-plan.md#trace-retained-ticks-with-no-contact-or-overlap-processing)
 
 #465 merged into main at `7697f4d6`. Nine retained A roots ran through 768 aggregate ticks with removal and restoration. The expanded study showed a worker-count difference. Patrick closed that investigation for current PoC work. The next catalogue task is English A, French A and English B in the same field. [Measurements and disposition](https://github.com/Human-Cognome-Project/human-cognome-project/pull/465#issuecomment-7225958274) · [Catalogue assignment](../core-local-study-continuation-plan.md#catalogue-expansion-after-465)
 
@@ -15,7 +15,7 @@ The [#476 report](https://github.com/Human-Cognome-Project/human-cognome-project
 
 Patrick plans a sustained live stress test with larger populations, live
 edits, viewport observation and CPU/GPU timing. Small CPU studies can continue
-while the coding agent develops the worked example for #476.
+while the coding agent measures the retained contact costs on #476.
 [Scope, preflight and contact scaling findings](../core-local-study-continuation-plan.md#live-stress-test-review--november-28-2026)
 
 ## Earlier fixed-study handoffs
