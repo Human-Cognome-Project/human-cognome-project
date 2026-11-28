@@ -6,8 +6,7 @@ The executable baseline through #422 includes standalone logical assembly, nativ
 
 ## Active and deferred work
 
-The [contact-free CPU report](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7242228388) measured zero direct-pair storage and discovery work in the disposable retained path. The next investigation compares that measured integrator with publishing each tick’s field-defined target as the occurrence’s position. The agent will test whether carried velocity and both brakes can be retired, identify any undefined target cases, and measure the additional savings. The Analyst consumes selected position samples. In the PoC the browser performs the same CPU math and can render its result. Patrick will review the report before production changes.
-[Current handoff](../core-local-study-continuation-plan.md#investigate-publishing-the-per-tick-target-directly)
+The [direct target study](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7242512697) reached supported targets without carried velocity or either brake. Its retained English/French A example produced a local target and unresolved inherited contributions. The next assignment is to identify the structural and confounding roles, compare the outcomes for zero inherited displacement, and isolate packet publication order. Production changes await Patrick’s model decision. [Current handoff](../core-local-study-continuation-plan.md#resolve-the-retained-all-fields-target-and-packet-timing)
 
 #465 merged into main at `7697f4d6`. Nine retained A roots ran through 768 aggregate ticks with removal and restoration. The expanded study showed a worker-count difference. Patrick closed that investigation for current PoC work. The next catalogue task is English A, French A and English B in the same field. [Measurements and disposition](https://github.com/Human-Cognome-Project/human-cognome-project/pull/465#issuecomment-7225958274) · [Catalogue assignment](../core-local-study-continuation-plan.md#catalogue-expansion-after-465)
 
@@ -15,7 +14,7 @@ The [contact-free CPU report](https://github.com/Human-Cognome-Project/human-cog
 
 Patrick plans a sustained live stress test with larger populations, live
 edits, viewport observation and CPU/GPU timing. Small CPU studies can continue
-while the coding agent investigates direct target publication on #476.
+while the coding agent works through the target policy on #476.
 [Scope, preflight and contact scaling findings](../core-local-study-continuation-plan.md#live-stress-test-review--november-28-2026)
 
 ## Earlier fixed-study handoffs
