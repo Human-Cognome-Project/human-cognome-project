@@ -6,8 +6,8 @@ The executable baseline through #422 includes standalone logical assembly, nativ
 
 ## Active and deferred work
 
-The [#476 report](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7240671741) traced quadratic contact reservation and discovery. Patrick’s follow-up asks whether intersecting field spans need any direct-contact response. The coding agent will trace two retained occurrences at distinct and coincident positions, account for the work that could be removed, and post the findings and revised plan for review. Production implementation is paused.
-[Current handoff](../core-local-study-continuation-plan.md#investigate-field-span-and-point-coincidence)
+The [#476 report](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476#issuecomment-7240671741) traced quadratic contact reservation and discovery. The follow-up investigates retiring the entire contact mechanism. In Patrick’s model the hierarchical centroid calculation already establishes gatherings, separations and the effective Hill span. The agent will trace actual dependencies, check whether any consumer needs special handling for equal final coordinates, and post a deletion plan and cost comparison. Patrick will review the report before implementation.
+[Current handoff](../core-local-study-continuation-plan.md#investigate-retiring-direct-contact-from-retained-particle-motion)
 
 #465 merged into main at `7697f4d6`. Nine retained A roots ran through 768 aggregate ticks with removal and restoration. The expanded study showed a worker-count difference. Patrick closed that investigation for current PoC work. The next catalogue task is English A, French A and English B in the same field. [Measurements and disposition](https://github.com/Human-Cognome-Project/human-cognome-project/pull/465#issuecomment-7225958274) · [Catalogue assignment](../core-local-study-continuation-plan.md#catalogue-expansion-after-465)
 
