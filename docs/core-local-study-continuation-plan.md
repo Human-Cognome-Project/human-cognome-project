@@ -18,6 +18,91 @@ The #473 driver accepts `dt`, `run [MS]`, `pause` and `tick 1`. Its original CPU
 
 **Viewport status.** The particle and centroid panels have a separately tested local prototype with trails for the selection, checkboxes to keep trails visible, a tail-length slider, centroid mass and members. A fresh pull of main still has the existing viewer. The proposed 16-colour nibble palette is browser display work. Shaded Hill boundaries for overlapping fields can wait until after the first visual inspection.
 
+### Live stress test review — November 28, 2026
+
+Patrick intends to run one field continuously at substantially larger resident
+counts, add and remove elements in the same session, and inspect movement
+patterns and timing as the field evolves. The English A/French A study is a
+preflight for the controls and viewport. Patrick will select the experimental
+elements, counts, simulation timestep, wall-clock pace and run duration. The
+full stress test is pending maintainer review of the scale and backend findings.
+
+**Preflight evidence.** Main `b7f55f1b` integrates #465, #471 and #473.
+The #473 native CPU, offline viewport and repository smoke workflows passed.
+A local build of that main revision with LLVM/Clang 15, warm integration and
+viewport enabled ran the in-memory CPU fixture with one worker and bulk
+transfer. It started paused at `dt=0.125`, ran at a target period of 350 ms,
+held tick 1 while paused, changed to `dt=0.25`, stepped once to tick 2 and
+resumed to tick 3. Headless Chromium used the viewer's watch test adapter to
+apply native snapshots at ticks 0 and 3 and rendered both objects.
+[Native CI](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/46053061356) ·
+[Viewport CI](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/46053061286) ·
+[Repository smoke](https://github.com/Human-Cognome-Project/human-cognome-project/actions/runs/46053061275)
+
+**Confirmed contact reservation.** The retained catalogue adapter sets particle
+capacity `P` to twice the larger of the declared aggregate and parts body
+counts, then reserves `P × (P − 1) / 2` contact rows. Its separate field and
+cascade-node capacities use the number of field identities. An archived
+nine-A CPU run at `8823eb65` reported 18 particle slots, 153 contact slots and
+33 field slots at creation, with one live body. Native storage sizes the
+contact headers, adjacency and geometry workspaces from that contact capacity.
+Switching exposure can lower the present-body count. The prepared reserve
+remains sized for the larger exposure.
+[Catalogue sizing change](https://github.com/Human-Cognome-Project/human-cognome-project/commit/3b5446130bad0253af76348bc5c8db35a3b994ff) ·
+[Replay context](https://github.com/Human-Cognome-Project/human-cognome-project/pull/465#issuecomment-7200687937) ·
+[Native contact storage](../engine/docs/CONTACT-SAFE-TICKS.md#reservations-and-measurement)
+
+**Confirmed contact work.** The prepared tick examines every unordered pair of
+present physical bodies, including sleepers, at both the pre-motion and
+post-motion boundaries. The ledger stores the union of explicit contacts and
+contacts found from physical geometry. For a constant population of `N`, the
+two pair scans alone charge `N × (N − 1)` geometry work. The current catalogue
+profile's one-million-unit tick geometry allowance is exceeded at 1,001
+present bodies by those scans alone. Ordering the explicit rows and the
+discovered union can consume more work at lower counts. The centroid hierarchy
+has its own publication path: parents consume child centroid packets. Patrick
+expects reservations to follow centroids as they aggregate across levels and
+is reviewing whether the current body-pair approach is appropriate.
+[Geometry work model](../engine/docs/PREPARED-GEOMETRY.md#contact-union-and-resource-bounds) ·
+[Tick transaction](../engine/docs/CONTACT-SAFE-TICKS.md#ownership-and-execution) ·
+[Centroid publication](../engine/docs/LIVE-HIERARCHY.md#force-and-phase-ownership)
+
+**Measurements for the run.** Record exact source and catalogue pins, actual
+backend and hardware, worker count and transfer path, exposure, live body and
+field counts, requested pace, achieved committed ticks per second, and
+simulation time per tick. Mark additions, removals and exposure changes against
+the completed tick. Preserve refusals, memory readings and completed snapshots
+around each edit. For movement comparisons record the viewport sample cadence,
+positions, focal centroid and relative motion. The Harness records native tick
+latency in `Demand::tick_ms`. The live CLI emits a full observation after each
+automatic tick and currently omits that timing. Record native tick latency
+when available and keep startup/JIT, observation/readback, export and browser
+sampling costs identifiable in the results. Record significant operator and
+viewer observations with their tick ranges for the joint experimental report.
+[Harness timing](https://github.com/Human-Cognome-Project/human-cognome-project/blob/b7f55f1bcd994e147a26a0144dc98c6d03c30295/engine/src/field/tick_execution.cpp#L1050-L1058) ·
+[Live clock and observation](onboarding/OPERATOR.md#control-the-timestep-and-the-clock)
+
+**Hardware scope.** The local host reported an Intel Core i7-12700F and an
+RTX 3060 with 12 GiB on NVIDIA driver 617.14. Record concurrent load on this
+general-purpose host when taking measurements. The local live operator is a
+CPU build, and the existing guarded C3 CUDA qualification path admits the GTX
+1070. The GPU trial is for actual Taichi compilation and execution through
+the Harness on the target hardware. Compare functional behavior on matched
+inputs and settings where the backend path allows it. Record timing as a
+measurement. GPU overhead may dominate at the initial counts and speedup is
+outside the functional pass criteria.
+[Backend qualification issue](https://github.com/Human-Cognome-Project/human-cognome-project/issues/70) ·
+[Current C3 CUDA boundary](../engine/docs/CUDA-C3-QUALIFICATION.md)
+
+**Review before full testing.** Decide whether to proceed within the prepared
+limits or first investigate contact reservation and discovery at the relevant
+exposures. A smaller ledger still leaves pair discovery work. Any geometry
+change needs to account for present sleepers, explicit contacts and healthy
+resource refusal before publication. Check the planned catalogue against the
+existing membership and byte-focus constraints when Patrick selects the inputs.
+[Operation contract](core-operation-readiness-plan.md#3-contact-coverage-and-numerical-publication) ·
+[Catalogue constraints](onboarding/OPERATOR.md#open-a-retained-englishfrench-study)
+
 <a id="continuing-nine-a-orbit-and-catalogue-investigation"></a>
 
 ### Catalogue expansion after #465
