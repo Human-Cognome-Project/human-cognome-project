@@ -2,23 +2,18 @@
 
 ## Current assignment for the coding agent
 
-### Scale retained contact storage and discovery
+<a id="scale-retained-contact-storage-and-discovery"></a>
 
-Implement [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476)
-on current main. In the retained operator, one live body can already exceed
-the admission work allowance when the catalogue prepares 126 particle slots.
-The contact ledger reserves all 7,875 possible pairs and the fixed work charge
-alone reaches 1,032,224 units. A committed tick also clears reserved storage
-and tests all present pairs both before and after motion.
-[Source calculation and review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/475#issuecomment-7239953785)
+### Investigate contact scope and range before implementation
 
-- Size contact storage and edit headroom independently of all possible particle pairs. Trace the resulting work through admission, scratch clearing and copying, and the tick budget.
-- Try native C++/Taichi sparse-grid neighbour search first. Query current body extents, including sleeping occupants, at admission and both tick boundaries. Use the existing exact contact law and preserve explicit contact order, wake behaviour, centroid calculations and atomic publication. The [vendored example](../engine/taichi/python/taichi/examples/simulation/pbf2d.py#L159-L185) illustrates spatial binning. HCP must handle variable radii and report exhaustion before publishing a partial result.
-- Compare the grid with the all-pairs reference on small cases. Include boundary crossings, live edits, mixed exposure and a refused update followed by a successful tick. With live occupancy fixed, vary prepared capacity through the 126-slot case. Then hold capacity fixed and add separated bodies. Report contact bytes, rows touched, exact tests, accepted contacts and committed CPU tick times. Use mixed-LoD candidate counts to decide whether a multilevel grid or BVH is warranted.
+The coding agent’s deliverable for [#476](https://github.com/Human-Cognome-Project/human-cognome-project/issues/476) is an investigation and proposed plan. Post both on the issue and return them to Patrick for review. Implementation is paused.
 
-Open the implementation PR against #476. Patrick's workstation inspection and
-choice of experimental inputs can proceed independently. The larger CPU/GPU
-study will use the measured contact costs to interpret throughput.
+A particle’s structural position in the centroid hierarchy defines its possible state space. The current confounding fields determine the region it occupies. Direct interaction requires both scope and range at the relevant object LoD. Moving an arm as a whole can change its external reach while preserving the relative arrangement of its parts. Trace the equivalent case for a retained assembly. Nibbles participate at nibble LoD, and the assembled byte can carry a matching nibble’s field contribution as it moves. [Worked nibble example](parent-structure-notes.md#the-unicode-hex-example) · [Centroid hierarchy](../engine/docs/LIVE-HIERARCHY.md#force-and-phase-ownership)
+
+1. Follow one occurrence through aggregate and parts exposure, its field bindings and centroid contributions, then into contact reservation, admission and the pre- and post-motion searches. Identify the earliest point at which each path uses or loses scope and range. Account separately for direct geometric contact, explicit recipe contacts and field-mediated effects. Flag unresolved cases for Patrick.
+2. Check the allocation and work bounds against that trace. Separate reserved bytes, memory touched, budget charges, candidate pairs, exact tests and accepted contacts. At 126 prepared slots the current formula reserves 7,875 possible pairs and charges 1,032,224 admission work units before any live comparisons. Distinguish this derived bound from the first refusal actually observed. [Source calculation and review](https://github.com/Human-Cognome-Project/human-cognome-project/pull/475#issuecomment-7239953785)
+3. Compare an out-of-scope occurrence, an in-scope peer outside range and an in-scope peer within range. Adding out-of-scope bodies should add zero direct-contact candidates for the tracked particle, even with overlapping coordinates. Use whole-assembly translation, internal relative motion and LoD changes to expose any difference between the model and the existing all-pairs scan.
+4. Report observed behaviour, source-derived conclusions and open questions. Propose changes in reviewable steps, with tests for live edits, sleeping bodies and refusal recovery. Show what the existing hierarchy can exclude before evaluating a grid or BVH for any remaining spatial work. Patrick owns the larger workstation experiments.
 
 ### Retained CPU restart and paced local inspection — November 27, 2026
 
@@ -80,7 +75,7 @@ present bodies by those scans alone. Ordering the explicit rows and the
 discovered union can consume more work at lower counts. The centroid hierarchy
 has its own publication path: parents consume child centroid packets. Patrick
 expects field reservations to follow centroids as they aggregate across levels.
-The contact assignment addresses physical overlap at the active exposure.
+The current investigation asks which of those pairs are in scope and in range at the active exposure.
 [Geometry work model](../engine/docs/PREPARED-GEOMETRY.md#contact-union-and-resource-bounds) ·
 [Tick transaction](../engine/docs/CONTACT-SAFE-TICKS.md#ownership-and-execution) ·
 [Centroid publication](../engine/docs/LIVE-HIERARCHY.md#force-and-phase-ownership)
@@ -112,9 +107,9 @@ outside the functional pass criteria.
 [Backend qualification issue](https://github.com/Human-Cognome-Project/human-cognome-project/issues/70) ·
 [Current C3 CUDA boundary](../engine/docs/CUDA-C3-QUALIFICATION.md)
 
-**Maintainer decision.** Small studies can establish a baseline now. Address
-both contact reservation and discovery before using a large run to judge
-centroid throughput. Check the planned catalogue against the
+**Maintainer decision.** Use small studies and source traces to investigate
+contact scope, range and allocation. Review the coding agent’s plan before
+changing reservation or discovery. Check the planned catalogue against the
 existing membership and byte-focus constraints when Patrick selects the inputs.
 [Operation contract](core-operation-readiness-plan.md#3-contact-coverage-and-numerical-publication) ·
 [Catalogue constraints](onboarding/OPERATOR.md#open-a-retained-englishfrench-study)
